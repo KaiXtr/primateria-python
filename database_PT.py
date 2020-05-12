@@ -1407,8 +1407,6 @@ ACHIEVEMENTS = [
 ['Podre de Rico','Consiga 1.000.000.000 em dinheiro vivo',0,'']
 ]
 
-LOADING = ['Hello World!','Carregando cabeças dos personagens','Carregando corpo dos personagens','Carregando animações de batalha','Iniciando Mixer','Carregando músicas','Carregando mais músicas']
-
 MESSAGES = [
 ['Não feche o jogo se','o ícone de carregamento','aparecer no canto da tela'],
 ['Esta é uma obra de ficção,','e quaisquer semelhanças com','acontecimentos reais podem','ter alterações artísticas.'],
