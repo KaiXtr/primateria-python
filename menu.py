@@ -1364,11 +1364,11 @@ class Phone:
 
 	def settings(self, opt, mnu, trg):
 		for i in self.scr: i.fill((10,10,10,0))
-		sz = self.scr[1].get_width()
-		hz = 30
-		sp = 1
-		bw = 110
-		bh = 10
+		sz = self.scr[1].get_width() #button width
+		hz = 30 #button height
+		sp = 1 #scroll speed
+		bw = 110 #bar width
+		bh = 10 #bar height
 		bs = 60
 		y = 41
 		ty = 5
@@ -1412,12 +1412,12 @@ class Phone:
 				if self.scroll < 60:
 					self.scroll += 10
 
-			if opt == 0: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,41 - self.scroll,sz,30))
-			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,41 - self.scroll,sz,30))
+			if opt == 0: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,41 - self.scroll,sz,hz))
+			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,41 - self.scroll,sz,hz))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[62] + ': ' + resources.LANG, True, (0,0,0)), (10, 51 - self.scroll))
 
-			if opt == 1: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,72 - self.scroll,sz,30))
-			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,72 - self.scroll,sz,30))
+			if opt == 1: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,72 - self.scroll,sz,hz))
+			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,72 - self.scroll,sz,hz))
 			if resources.SPEED == 5: txt = database.MENU[91]
 			if resources.SPEED == 4: txt = database.MENU[92]
 			if resources.SPEED == 3: txt = database.MENU[93]
@@ -1425,40 +1425,40 @@ class Phone:
 			if resources.SPEED == 1: txt = database.MENU[95]
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[72] + ': ' + txt, True, (0,0,0)), (10, 82 - self.scroll))
 			
-			if opt == 2: pygame.draw.rect(self.scr[1], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(0,103 - self.scroll,sz,30))
-			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,103 - self.scroll,sz,30))
-			pygame.draw.rect(self.scr[1], (210, 210, 210), pygame.Rect(60,113 - self.scroll,110,10))
+			if opt == 2: pygame.draw.rect(self.scr[1], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(0,103 - self.scroll,sz,hz))
+			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,103 - self.scroll,sz,hz))
+			pygame.draw.rect(self.scr[1], (210, 210, 210), pygame.Rect(60,113 - self.scroll,bw,bh))
 			pygame.draw.rect(self.scr[1], (110,110,110), pygame.Rect(60 + int(100/(242/resources.COLOR[0])),113 - self.scroll,10,10))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[73] + ':', True, (0,0,0)), (10, 111 - self.scroll))
 
-			if opt == 3: pygame.draw.rect(self.scr[1], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(0,134 - self.scroll,sz,30))
-			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,134 - self.scroll,sz,30))
-			pygame.draw.rect(self.scr[1], (210, 210, 210), pygame.Rect(60,144 - self.scroll,110,10))
+			if opt == 3: pygame.draw.rect(self.scr[1], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(0,134 - self.scroll,sz,hz))
+			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,134 - self.scroll,sz,hz))
+			pygame.draw.rect(self.scr[1], (210, 210, 210), pygame.Rect(60,144 - self.scroll,bw,bh))
 			pygame.draw.rect(self.scr[1], (110,110,110), pygame.Rect(60 + int(100/(242/resources.COLOR[1])),144 - self.scroll,10,10))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[74] + ':', True, (0,0,0)), (10, 142 - self.scroll))
 
-			if opt == 4: pygame.draw.rect(self.scr[1], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(0,165 - self.scroll,sz,30))
-			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,165 - self.scroll,sz,30))
-			pygame.draw.rect(self.scr[1], (210, 210, 210), pygame.Rect(60,175 - self.scroll,110,10))
+			if opt == 4: pygame.draw.rect(self.scr[1], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(0,165 - self.scroll,sz,hz))
+			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,165 - self.scroll,sz,hz))
+			pygame.draw.rect(self.scr[1], (210, 210, 210), pygame.Rect(60,175 - self.scroll,bw,bh))
 			pygame.draw.rect(self.scr[1], (110,110,110), pygame.Rect(60 + int(100/(242/resources.COLOR[2])),175 - self.scroll,10,10))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[75] + ':', True, (0,0,0)), (10, 171 - self.scroll))
 
-			if opt == 5: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,196 - self.scroll,sz,30))
-			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,196 - self.scroll,sz,30))
+			if opt == 5: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,196 - self.scroll,sz,hz))
+			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,196 - self.scroll,sz,hz))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[87] + ': ', True, (0,0,0)), (10, 204 - self.scroll))
-			pygame.draw.rect(self.scr[1], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(60,196 - self.scroll,sz - 40,30))
+			pygame.draw.rect(self.scr[1], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(60,196 - self.scroll,sz - 40,hz))
 			for i in range(math.floor(sz/10) - 4):
 				for y in range(3): self.scr[0].blit(pygame.image.load('Sprites/border_' + str(resources.BORDER) + '.png'), (60 + i * 10, 196 + (y * 10) - self.scroll))
 
-			if opt == 6: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,227 - self.scroll,sz,30))
-			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,227 - self.scroll,sz,30))
+			if opt == 6: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,227 - self.scroll,sz,hz))
+			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,227 - self.scroll,sz,hz))
 			pygame.draw.rect(self.scr[1], (210, 210, 210), pygame.Rect(75,237 - self.scroll,80,10))
 			if resources.CENSORSHIP == False: pygame.draw.rect(self.scr[1], (255,61,61), pygame.Rect(115,237 - self.scroll,40,10))
 			if resources.CENSORSHIP == True: pygame.draw.rect(self.scr[1], (140,255,124), pygame.Rect(75,237 - self.scroll,40,10))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[96] + ': ', True, (0,0,0)), (10, 233 - self.scroll))
 
-			if opt == 7: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,258 - self.scroll,sz,30))
-			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,258 - self.scroll,sz,30))
+			if opt == 7: pygame.draw.rect(self.scr[1], (91, 91, 91), pygame.Rect(0,258 - self.scroll,sz,hz))
+			else: pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,258 - self.scroll,sz,hz))
 			pygame.draw.rect(self.scr[1], (210, 210, 210), pygame.Rect(75,268 - self.scroll,80,10))
 			if resources.HINT == False: pygame.draw.rect(self.scr[1], (255,61,61), pygame.Rect(115,268 - self.scroll,40,10))
 			if resources.HINT == True: pygame.draw.rect(self.scr[1], (140,255,124), pygame.Rect(75,268 - self.scroll,40,10))
@@ -1470,7 +1470,7 @@ class Phone:
 			for i in range(2):
 				if opt == i: pygame.draw.rect(self.scr[0], (91, 91, 91), pygame.Rect(0,y - self.scroll,sz,hz))
 				else: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,y - self.scroll,sz,hz))
-				pygame.draw.rect(self.scr[0], (210, 210, 210), pygame.Rect(bs,y + ty - self.scroll,bw,bh))
+				pygame.draw.rect(self.scr[0], (230, 210, 210), pygame.Rect(bs,y + ty - self.scroll,bw,bh))
 				pygame.draw.rect(self.scr[0], (110, 110, 110), pygame.Rect(bs + (inpts[i] * (bw - int(bw/10))),y + ty - self.scroll,20,bh))
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[63 + i], True, (0,0,0)), (10, ((y * 2) + (ty * 2)) - 2 - self.scroll))
 				y += hz + sp

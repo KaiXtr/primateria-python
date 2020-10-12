@@ -329,7 +329,7 @@ class Title:
 		#INFO
 		if self.mnu > 0 and self.mnu < 5:
 			self.display[1].blit(self.fnt['DEFAULT'].render(database.ABOUT[0] + ' ' + resources.VERSION, True, (240,240,240)), (-70 + (self.winbar * 2), -70 + (self.winbar * 2)))
-			self.display[1].blit(self.fnt['DEFAULT'].render(database.ABOUT[1], True, (240,240,240)), (1060 - (self.winbar * 2), 840 - (self.winbar * 2)))
+			self.display[1].blit(self.fnt['DEFAULT'].render(database.ABOUT[1], True, (240,240,240)), (990 - (self.winbar * 2), 840 - (self.winbar * 2)))
 
 			#HOLIDAYS
 			for i in database.HOLIDAYS:
