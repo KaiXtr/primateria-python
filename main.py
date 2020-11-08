@@ -2323,20 +2323,20 @@ class Game:
 			elif self.phone == 15:
 				if self.mnu == 1:
 					if self.lopt == 2:
-						if self.pressed[resources.LEFT[0]]: resources.COLOR[0] -= 2; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
-						if self.pressed[resources.RIGHT[0]]: resources.COLOR[0] += 2; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+						if self.pressed[resources.LEFT[0]]: resources.COLOR[0] -= 5; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+						if self.pressed[resources.RIGHT[0]]: resources.COLOR[0] += 5; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
 
 						if resources.COLOR[0] < 30: resources.COLOR[0] = 242
 						if resources.COLOR[0] > 242: resources.COLOR[0] = 30
 					if self.lopt == 3:
-						if self.pressed[resources.LEFT[0]]: resources.COLOR[1] -= 2; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
-						if self.pressed[resources.RIGHT[0]]: resources.COLOR[1] += 2; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+						if self.pressed[resources.LEFT[0]]: resources.COLOR[1] -= 5; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+						if self.pressed[resources.RIGHT[0]]: resources.COLOR[1] += 5; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
 
 						if resources.COLOR[1] < 30: resources.COLOR[1] = 242
 						if resources.COLOR[1] > 242: resources.COLOR[1] = 30
 					if self.lopt == 4:
-						if self.pressed[resources.LEFT[0]]: resources.COLOR[2] -= 2; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
-						if self.pressed[resources.RIGHT[0]]: resources.COLOR[2] += 2; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+						if self.pressed[resources.LEFT[0]]: resources.COLOR[2] -= 5; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+						if self.pressed[resources.RIGHT[0]]: resources.COLOR[2] += 5; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
 
 						if resources.COLOR[2] < 30: resources.COLOR[2] = 242
 						if resources.COLOR[2] > 242: resources.COLOR[2] = 30
@@ -4597,8 +4597,8 @@ class Game:
 				elif self.phone == 15: srf = self.phn.settings(self.lopt, self.mnu, self.opt)
 				elif self.phone == 16: srf = self.phn.info(self.lopt)
 				elif self.phone == 17 and self.nb != '': srf = self.phn.call(self.opt, self.nb)
-				self.display[0].blit(srf[0], (pps,80))
-				self.display[1].blit(srf[1], (pps * 2,170))
+				self.display[0].blit(srf[0], (pps,88))
+				self.display[1].blit(srf[1], (pps * 2,176))
 		elif self.phofa == 360:
 			self.display[0].blit(pygame.image.load('Backgrounds/battery_low.png'), (pps + 60, 510 - self.phofa))
 			if self.battle == True: pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(pps,430 - self.phofa,180,250))
