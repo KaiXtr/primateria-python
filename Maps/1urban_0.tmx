@@ -359,7 +359,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="10" name="PORTAL" visible="0">
+ <objectgroup id="10" name="PORTAL">
   <object id="4" name="portal_2" type="0" x="716.485" y="-1.39361" width="240" height="14">
    <properties>
     <property name="MAP" value="1jungle_0"/>
