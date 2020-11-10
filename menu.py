@@ -966,7 +966,7 @@ class Phone:
 				for l in em[opt][2]:
 					self.scr[1].blit(self.fnt['CALIBRI'].render(l, True, (0, 0, 0)), (15, 130 + y - self.scroll))
 					y += 15
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[15], True, (255, 255, 255)), (50, 400))
+		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[15], True, (255, 255, 255)), (100, 200))
 
 		pygame.draw.rect(self.scr[1], (255, 221, 0), pygame.Rect(0,0,sz * 2,80))
 		self.scr[1].blit(self.fnt['TITLE'].render(database.MENU[2], True, (0, 0, 0)), (10, 10))
@@ -1015,7 +1015,7 @@ class Phone:
 				for l in database.NEWS[resources.DATE[0] - 1][opt][2]:
 					self.scr[1].blit(self.fnt['CALIBRI'].render(l, True, (0, 0, 0)), (20, (100 + y - self.scroll) * 2))
 					y += 15
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[15], True, (255, 255, 255)), (25, 280))
+		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[15], True, (255, 255, 255)), (50, 280))
 
 		pygame.draw.rect(self.scr[1], (219, 49, 37), pygame.Rect(0,0,sz * 2,80))
 		self.scr[1].blit(self.fnt['TITLE'].render(database.MENU[3], True, (0, 0, 0)), (10, 10))
@@ -1074,7 +1074,7 @@ class Phone:
 			else: pygame.draw.rect(self.scr[0], (255, 255, 10), pygame.Rect(0,41 + (y * 51),sz,50))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[61], True, (0, 0, 0)), (20, (61 + (y * 51)) * 2))
 
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[15], True, (255, 255, 255)), (25, 140))
+		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[15], True, (255, 255, 255)), (50, 280))
 
 		pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,0,sz * 2,80))
 		self.scr[1].blit(self.fnt['TITLE'].render(database.MENU[5], True, (0, 0, 0)), (10, 10))
@@ -1151,7 +1151,7 @@ class Phone:
 
 					self.scr[1].blit(self.fnt['CALIBRI'].render(dmg, True, (0, 0, 0)), (20, 210))
 			else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[21], True, (255, 255, 255)), (10, 140))
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[15], True, (255, 255, 255)), (25, 140))
+		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[15], True, (255, 255, 255)), (50, 280))
 
 		pygame.draw.rect(self.scr[1], (134, 0, 211), pygame.Rect(0,0,sz * 2,80))
 		self.scr[1].blit(self.fnt['TITLE'].render(database.MENU[6], True, (0, 0, 0)), (10, 10))

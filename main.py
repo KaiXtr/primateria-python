@@ -2415,12 +2415,13 @@ class Game:
 					if resources.GAS > 0:
 						if self.pressed[resources.UP[p]]:
 							self.driving = 0
-							self.displayzw = 600
+							'''self.displayzw = 600
 							self.displayzh = 400
-							self.display = pygame.Surface((600, 400))
+							self.display[0] = pygame.Surface((600, 400))
 							self.cam.width = self.displayzw
-							self.cam.height = self.displayzh
+							self.cam.height = self.displayzh'''
 							i['DIRECTION'] = 3
+							print(len(self.vehicles))
 
 						if self.pressed[resources.DOWN[p]]:
 							if i['SPEED'] > 0.0: i['SPEED'] -= self.vehicles[self.driving - 1]['ACCELERATION']
@@ -3878,11 +3879,13 @@ class Game:
 						self.npcs.append(npc)
 						self.objects.append([2,int(i.name[4:]),int(obj.y)])
 			#VEICHLES
+			vhn = 0
 			if lyr.name == 'VEHICLES':
 				for i in lyr:
 					obj = self.map.get_object_by_name(i.name)
 					vh = database.VEHICLES['moto_' + str(obj.type)].copy()
-					vh['N'] = int(i.name[8:])
+					vhn = int(i.name[8:])
+					vh['N'] = vhn
 					vh['RECT'] = pygame.Rect(int(obj.x), int(obj.y), 60, 10)
 					vh['INDEX'] = int(obj.type)
 					vh['DIRECTION'] = 1
@@ -3891,6 +3894,17 @@ class Game:
 						if pr[0] == 'DIRECTION': vh['DIRECTION'] = int(pr[1])
 					self.vehicles.append(vh)
 					self.objects.append([3,int(i.name[8:]),int(obj.y)])
+			
+			if self.driving > 0:
+				vh = database.VEHICLES['moto_' + str(self.driving)].copy()
+				vh['N'] = vhn + 1
+				vh['RECT'] = pygame.Rect(int(self.player[0]['RECT'].x), int(self.player[0]['RECT'].y), 60, 10)
+				vh['INDEX'] = self.driving
+				vh['DIRECTION'] = 1
+				vh['MOVE'] = 'fixed'
+				self.vehicles.append(vh)
+				self.objects.append([3,vhn,int(self.player[0]['RECT'].y)])
+
 			#PORTALS
 			if lyr.name == 'PORTAL':
 				for i in lyr:
@@ -4012,6 +4026,7 @@ class Game:
 
 	def draw(self):
 		for i in self.display: i.fill((0,0,0,0))
+		lyr2 = False
 
 		#TILEMATION
 		if self.player[0]['PAUSE'] < 2: self.tilemation += 0.1
@@ -4549,8 +4564,9 @@ class Game:
 			if self.inventory == 2: t = 1
 			else: t = 0
 			isrf = self.inv.show(self.opt, self.lopt, self.mnu, self.exvar, t)
-			self.display[2].blit(isrf[0], (610 - self.invfade,60))
-			self.display[3].blit(isrf[1], ((620 - self.invfade) * 2,140))
+			self.display[0].blit(isrf[0], (610 - self.invfade,60))
+			self.display[1].blit(isrf[1], ((620 - self.invfade) * 2,140))
+			lyr2 = True
 		if self.inventory > 0:
 			if self.invfade < 500: self.invfade += 50
 		else:
@@ -4569,12 +4585,13 @@ class Game:
 				self.display[0].blit(self.shpmnu.mercator(self.opt, self.lopt, lst, self.promo), (100,60))
 			if self.mnu == 3 or self.mnu == 11 or self.mnu == 12:
 				self.display[0].blit(self.shpmnu.bank(self.opt, self.lopt, self.mnu, self.extract), (100,60))
+			lyr2 = True
 
 		#PHONE
 		pps = math.floor(self.displayzw/2) - math.floor(self.phn.scr[1].get_width()/4)
 		if self.phofa > 0:
-			self.display[2].blit(pygame.image.load('Backgrounds/phone.png'), (pps - 10, 400 - self.phofa))
-			if self.battle == False: pygame.draw.rect(self.display[2], (10,10,10), pygame.Rect(pps,430 - self.phofa,math.floor(self.phn.scr[1].get_width()/2),250))
+			self.display[0].blit(pygame.image.load('Backgrounds/phone.png'), (pps - 10, 400 - self.phofa))
+			if self.battle == False: pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(pps,430 - self.phofa,math.floor(self.phn.scr[1].get_width()/2),250))
 		if self.phone > 0:
 			if self.phofa == 320: self.ch_sfx.play(resources.SOUND['PHONE_UNLOCK'])
 			if self.phofa < 360: self.phofa += 40
@@ -4583,8 +4600,8 @@ class Game:
 			if self.phofa > 0: self.phofa -= 40
 		if self.phofa == 360 and resources.BATTERY > 1.0:
 			bsrf = self.phn.bar(self.signal)
-			self.display[2].blit(bsrf[0], (pps,70))
-			self.display[3].blit(bsrf[1], (pps * 2,140))
+			self.display[0].blit(bsrf[0], (pps,70))
+			self.display[1].blit(bsrf[1], (pps * 2,140))
 			if self.battle == False:
 				if self.phone == 1: srf = self.phn.apps(self.opt, self.lopt)
 				elif self.phone == 2: srf = self.phn.map(False, self.map, self.tilrect, self.player[0], self.en, self.signs, self.opt, self.lopt, self.mnu, self.signal)
@@ -4603,22 +4620,26 @@ class Game:
 				elif self.phone == 15: srf = self.phn.settings(self.lopt, self.mnu, self.opt)
 				elif self.phone == 16: srf = self.phn.info(self.lopt)
 				elif self.phone == 17 and self.nb != '': srf = self.phn.call(self.opt, self.nb)
-				self.display[2].blit(srf[0], (pps,88))
-				self.display[3].blit(srf[1], (pps * 2,176))
+				self.display[0].blit(srf[0], (pps,88))
+				self.display[1].blit(srf[1], (pps * 2,176))
+			lyr2 = True
 		elif self.phofa == 360:
-			self.display[2].blit(pygame.image.load('Backgrounds/battery_low.png'), (pps + 60, 510 - self.phofa))
-			if self.battle == True: pygame.draw.rect(self.display[2], (10,10,10), pygame.Rect(pps,430 - self.phofa,180,250))
+			self.display[0].blit(pygame.image.load('Backgrounds/battery_low.png'), (pps + 60, 510 - self.phofa))
+			if self.battle == True: pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(pps,430 - self.phofa,180,250))
+			lyr2 = True
 
 		#NAMING
 		if self.nmenu.show == True:
-			self.display[2].blit(self.nmenu.run()[0], (200, 100))
-			self.display[3].blit(self.nmenu.run()[1], (420, 220))
+			self.display[0].blit(self.nmenu.run()[0], (200, 100))
+			self.display[1].blit(self.nmenu.run()[1], (420, 220))
+			lyr2 = True
 
 		#RADIOPLAY
 		if self.radonoff == True:
-			pygame.draw.rect(self.display[2], (255, 0, 135), pygame.Rect(0,0,180,50))
-			self.display[3].blit(self.fnt['DEFAULT'].render('Tocando:', True, (0, 0, 0)), (20, 10))
-			self.display[3].blit(self.fnt['DEFAULT'].render(resources.RADIO[str(math.floor(self.fm/20))][self.msc][:-4], True, (0, 0, 0)), (20, 50))
+			pygame.draw.rect(self.display[0], (255, 0, 135), pygame.Rect(0,0,180,50))
+			self.display[1].blit(self.fnt['DEFAULT'].render('Tocando:', True, (0, 0, 0)), (20, 10))
+			self.display[1].blit(self.fnt['DEFAULT'].render(resources.RADIO[str(math.floor(self.fm/20))][self.msc][:-4], True, (0, 0, 0)), (20, 50))
+			lyr2 = True
 		if pygame.mixer.music.get_busy() == False and self.radonoff == True:
 			self.msc += 1
 			if self.msc > len(resources.RADIO[str(round(self.fm/20))]) - 1: self.msc = 0
@@ -4649,48 +4670,50 @@ class Game:
 					if isinstance(i,str): txt = self.fnt['DEFAULT'].render(i, True, (255, 255, 255))
 					if i != 1 and i != 0 and len(i) != 0:
 						if sd == False:
-							pygame.draw.rect(self.display[2], (0, 0, 0), pygame.Rect(20,200 - self.dlgy,5 + txt.get_width(),25))
-							pygame.draw.rect(self.display[2], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(20,225 - self.dlgy,5 + txt.get_width(),5))
-							pygame.draw.polygon(self.display[2], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), ((25,225 - self.dlgy),(45,225 - self.dlgy),(25,235 - self.dlgy)))
-							pygame.draw.polygon(self.display[2], (0, 0, 0), ((25,221 - self.dlgy),(45,221 - self.dlgy),(25,231 - self.dlgy)))
+							pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(20,200 - self.dlgy,5 + txt.get_width(),25))
+							pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(20,225 - self.dlgy,5 + txt.get_width(),5))
+							pygame.draw.polygon(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), ((25,225 - self.dlgy),(45,225 - self.dlgy),(25,235 - self.dlgy)))
+							pygame.draw.polygon(self.display[0], (0, 0, 0), ((25,221 - self.dlgy),(45,221 - self.dlgy),(25,231 - self.dlgy)))
+							lyr2 = True
 						else:
 							if self.lopt == opt:
-								pygame.draw.rect(self.display[2], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(578 - txt.get_width(),200 - self.dlgy,5 + txt.get_width(),25))
-								pygame.draw.rect(self.display[2], (0, 0, 0), pygame.Rect(578 - txt.get_width(),225 - self.dlgy,5 + txt.get_width(),5))
-								pygame.draw.polygon(self.display[2], (0, 0, 0), ((558,225 - self.dlgy),(578,225 - self.dlgy),(578,235 - self.dlgy)))
-								pygame.draw.polygon(self.display[2], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), ((558,221 - self.dlgy),(578,221 - self.dlgy),(578,231 - self.dlgy)))
+								pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(578 - txt.get_width(),200 - self.dlgy,5 + txt.get_width(),25))
+								pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(578 - txt.get_width(),225 - self.dlgy,5 + txt.get_width(),5))
+								pygame.draw.polygon(self.display[0], (0, 0, 0), ((558,225 - self.dlgy),(578,225 - self.dlgy),(578,235 - self.dlgy)))
+								pygame.draw.polygon(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), ((558,221 - self.dlgy),(578,221 - self.dlgy),(578,231 - self.dlgy)))
 							else:
-								pygame.draw.rect(self.display[2], (0, 0, 0), pygame.Rect(578 - txt.get_width(),200 - self.dlgy,5 + txt.get_width(),25))
-								pygame.draw.rect(self.display[2], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(578 - txt.get_width(),225 - self.dlgy,5 + txt.get_width(),5))
-								pygame.draw.polygon(self.display[2], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), ((558,225 - self.dlgy),(578,225 - self.dlgy),(578,235 - self.dlgy)))
-								pygame.draw.polygon(self.display[2], (0, 0, 0), ((558,221 - self.dlgy),(578,221 - self.dlgy),(578,231 - self.dlgy)))
+								pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(578 - txt.get_width(),200 - self.dlgy,5 + txt.get_width(),25))
+								pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(578 - txt.get_width(),225 - self.dlgy,5 + txt.get_width(),5))
+								pygame.draw.polygon(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), ((558,225 - self.dlgy),(578,225 - self.dlgy),(578,235 - self.dlgy)))
+								pygame.draw.polygon(self.display[0], (0, 0, 0), ((558,221 - self.dlgy),(578,221 - self.dlgy),(578,231 - self.dlgy)))
 							opt += 1
 					if i == 0:
 						if sd == False: sd = True
 						elif sd == True: sd = False
 					elif isinstance(i, str):
 						if sd == False:
-							self.display[3].blit(txt, (30 * 2, (207 - self.dlgy) * 2))
+							self.display[1].blit(txt, (30 * 2, (207 - self.dlgy) * 2))
 						else:
-							self.display[3].blit(txt, ((588 - txt.get_width()) * 2, (207 - self.dlgy) * 2))
+							self.display[1].blit(txt, ((588 - txt.get_width()) * 2, (207 - self.dlgy) * 2))
 						self.dlgy += 40
 					ind += 1
 
 		#NOTIFICATIONS
 		if self.notx > 0:
-			if self.notcol != (0,0,0): pygame.draw.rect(self.display[2], (0,0,0), pygame.Rect(-183 + self.notx,27,186,56))
-			else: pygame.draw.rect(self.display[2], (255,255,255), pygame.Rect(-183 + self.notx,27,186,56))
-			pygame.draw.rect(self.display[2], self.notcol, pygame.Rect(-180 + self.notx,30,180,50))
+			if self.notcol != (0,0,0): pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-183 + self.notx,27,186,56))
+			else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-183 + self.notx,27,186,56))
+			pygame.draw.rect(self.display[0], self.notcol, pygame.Rect(-180 + self.notx,30,180,50))
 			if isinstance(self.nottxt,str):
-				self.display[3].blit(self.fnt['DEFAULT'].render(self.nottxt, True, (0, 0, 0)), (-170 + self.notx, 40))
+				self.display[1].blit(self.fnt['DEFAULT'].render(self.nottxt, True, (0, 0, 0)), (-170 + self.notx, 40))
 			else:
-				pygame.draw.rect(self.display[2], (255,255,255), pygame.Rect(-170 + self.notx,40,160,30))
-				pygame.draw.rect(self.display[2], (0,0,0), pygame.Rect(-168 + self.notx,42,156,26))
+				pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-170 + self.notx,40,160,30))
+				pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-168 + self.notx,42,156,26))
 				if resources.MORALITY > 0:
-					pygame.draw.rect(self.display[2], (255,255,0), pygame.Rect(-90 + self.notx,45,int(70/(10/resources.MORALITY)),20))
+					pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(-90 + self.notx,45,int(70/(10/resources.MORALITY)),20))
 				if resources.MORALITY < 0:
-					pygame.draw.rect(self.display[2], (175,0,0), pygame.Rect(-int(70/(10/resources.MORALITY)) - 160 + self.notx,45,int(70/(10/resources.MORALITY)),20))
-				pygame.draw.line(self.display[2], (255,255,255), (-90 + self.notx,42),(-90 + self.notx,68),2)
+					pygame.draw.rect(self.display[0], (175,0,0), pygame.Rect(-int(70/(10/resources.MORALITY)) - 160 + self.notx,45,int(70/(10/resources.MORALITY)),20))
+				pygame.draw.line(self.display[0], (255,255,255), (-90 + self.notx,42),(-90 + self.notx,68),2)
+			lyr2 = True
 
 		#TUTORIALS
 		if self.tutorial['OUTPUT'] != []:
@@ -4720,8 +4743,9 @@ class Game:
 					else: self.tutorial['OUTPUT'] = []
 
 			if self.tutorial['GO'] == 0: self.tutorial['TIME'] += 1
-			pygame.draw.rect(self.display[2], (250,250,250), pygame.Rect(578 - self.tutorial['FADE'],18,self.tutorial['FADE'] + 4,int(self.tutorial['FADE']/2) + 4))
-			pygame.draw.rect(self.display[2], (10,10,10), pygame.Rect(580 - self.tutorial['FADE'],20,self.tutorial['FADE'],int(self.tutorial['FADE']/2)))
+			pygame.draw.rect(self.display[0], (250,250,250), pygame.Rect(578 - self.tutorial['FADE'],18,self.tutorial['FADE'] + 4,int(self.tutorial['FADE']/2) + 4))
+			pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(580 - self.tutorial['FADE'],20,self.tutorial['FADE'],int(self.tutorial['FADE']/2)))
+			lyr2 = True
 			if self.tutorial['FADE'] == 200:
 				x = 0
 				y = 0
@@ -4729,8 +4753,8 @@ class Game:
 				end = 0
 				ky = [resources.UP[0],resources.DOWN[0],resources.LEFT[0],resources.RIGHT[0],resources.ACT[0],resources.RUN[0],resources.BAG[0],resources.PHONE[0]]
 				for j in self.tutorial['OUTPUT']:
-					if isinstance(j,str): self.display[3].blit(self.fnt['DEFAULT'].render(j, True, (250, 250, 250)), (770 + x,50 + y))
-					elif isinstance(j,list) and j[0] == 'image': self.display[2].blit(pygame.image.load('Sprites/' + j[1] + '.png'), (520 + x,25 + y))
+					if isinstance(j,str): self.display[1].blit(self.fnt['DEFAULT'].render(j, True, (250, 250, 250)), (770 + x,50 + y))
+					elif isinstance(j,list) and j[0] == 'image': self.display[0].blit(pygame.image.load('Sprites/' + j[1] + '.png'), (520 + x,25 + y))
 					elif j == 0:
 						for i in range(end): sid += 1
 						x = 0
@@ -4749,7 +4773,7 @@ class Game:
 						elif ky[j - 1] == pygame.K_DOWN: out = 'Ê'
 						elif ky[j - 1] == pygame.K_RIGHT: out = 'Ë'
 						else: out = pygame.key.name(ky[j - 1]).upper()
-						self.display[2].blit(self.fnt['CONTROLKEYS'].render(out, True, (250, 250, 250)), (385 + x,30 + y))
+						self.display[0].blit(self.fnt['CONTROLKEYS'].render(out, True, (250, 250, 250)), (385 + x,30 + y))
 						for l in self.tutorial['OUTPUT'][sid:end]:
 							if l in ['m','w','M','Q','T','U','V','W','Y','?']: x += 8
 							elif l in ['f','r']: x += 6
@@ -4764,13 +4788,14 @@ class Game:
 			srf = pygame.Surface((self.displayzw,self.displayzh))
 			srf.set_alpha(200)
 			srf.fill((221, 0, 0))
-			self.display[2].blit(srf, (0,0))
+			self.display[0].blit(srf, (0,0))
 			pygame.draw.rect(self.display[0], (250,250,250), pygame.Rect(0,160,600,80))
-			self.display[2].blit(self.fnt['MININFO'].render(database.CHAPTERS[resources.CHAPTER][0].lower(), True, (10, 10, 10)), (10, 200))
+			self.display[0].blit(self.fnt['MININFO'].render(database.CHAPTERS[resources.CHAPTER][0].lower(), True, (10, 10, 10)), (10, 200))
 			pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(0,167,600,3))
 			pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(0,170,600,22))
 			pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(0,192,600,3))
-			self.display[3].blit(self.fnt['DEFAULT'].render(database.CHAPTERS[resources.CHAPTER][1], True, (250, 250, 250)), (10, 170))
+			self.display[1].blit(self.fnt['DEFAULT'].render(database.CHAPTERS[resources.CHAPTER][1], True, (250, 250, 250)), (10, 170))
+			lyr2 = True
 
 		#CAMERA
 		if (self.map.width * self.map.tilewidth) > self.displayzw:
@@ -4796,18 +4821,24 @@ class Game:
 			if self.ch_rad.get_busy() == False: self.ch_rad.unpause()
 			if self.ch_rng.get_busy() == False: self.ch_rng.unpause()
 			if self.scrmov == None:
+				'''if lyr2 == True:
+					self.display[0].blit(self.display[0], (0, 0))
+					self.display[1].blit(self.display[1], (0, 0))
+					self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy))
+					self.screen.blit(self.display[1], (self.displayx, self.displayy))'''
 				self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy))
 				self.screen.blit(self.display[1], (self.displayx, self.displayy))
-				self.screen.blit(pygame.transform.scale(self.display[2], (self.windoww, self.windowh)), (self.displayx, self.displayy))
-				self.screen.blit(self.display[3], (self.displayx, self.displayy))
 			else:
 				self.scrspd += 2
 				self.scrmov += self.scrspd
 				if self.scrmov > self.windowh: self.scrmov = 0
+				if lyr2 == True:
+					'''self.display[0].blit(self.display[0], (0, 0))
+					self.display[1].blit(self.display[1], (0, 0))
+					self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy + self.scrmov - self.windowh - 20))
+					self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy + self.scrmov))'''
 				self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy + self.scrmov - self.windowh - 20))
 				self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy + self.scrmov))
-				self.screen.blit(pygame.transform.scale(self.display[2], (self.windoww, self.windowh)), (self.displayx, self.displayy + self.scrmov - self.windowh - 20))
-				self.screen.blit(pygame.transform.scale(self.display[2], (self.windoww, self.windowh)), (self.displayx, self.displayy + self.scrmov))
 			pygame.display.flip()
 		else:
 			self.ch_msc.pause()
