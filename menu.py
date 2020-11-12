@@ -252,7 +252,7 @@ class Naming:
 
 class Inventory:
 	def __init__(self):
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 30), 'ALT': pygame.font.Font('Fonts/PrestigeEliteStd.otf', 10)}
+		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 25), 'ALT': pygame.font.Font('Fonts/PrestigeEliteStd.otf', 10)}
 		self.wdw = pygame.Surface((400, 300), pygame.SRCALPHA)
 		self.wdw.fill((resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]))
 		for x in range(40):

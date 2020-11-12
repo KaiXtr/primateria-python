@@ -26,9 +26,11 @@ else: import database_PT as database
 
 class Loading():
 	def __init__(self):
-		self.screen = pygame.display.set_mode((1200, 800), pygame.RESIZABLE)
-		self.display = [pygame.Surface((600, 400))]
-		self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', 30), 'MONOTYPE': pygame.font.Font('Fonts/PrestigeEliteStd.otf', 30)}
+		self.screen = pygame.display.set_mode((1200, 800), pygame.RESIZABLE | pygame.DOUBLEBUF)
+		self.display = pygame.Surface((1200, 800))
+		self.windoww = 1200
+		self.windowh = 800
+		self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', 30)}
 		self.load = 0
 		self.classrun = True
 		self.dot = ''
@@ -66,29 +68,36 @@ class Loading():
 		self.classrun = False
 
 	def run(self):
+		flp = False
 		if self.load == 1:
 			self.callresources()
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
+			if event.type == pygame.VIDEORESIZE:
+				self.windoww = event.w
+				self.windowh = event.h
+				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE | pygame.DOUBLEBUF)
+				self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', math.floor(self.windoww/300) * 8)}
+				flp = True
 
-		flp = False
 		self.tim += 0.01
 		if self.tim >= 1.0: self.tim = 0.0; self.msg = round(random.randint(0,len(database.MESSAGES) - 1)); flp = True
 
-		if flp == True: self.screen.fill((0,0,0))
-		else: self.screen.fill((0,0,0),pygame.Rect(1120,720,30,30))
+		if flp == True: self.display.fill((0,0,0))
+		else: self.display.fill((0,0,0),pygame.Rect(1120,720,30,30))
 
 		for i in range(len(database.MESSAGES[self.msg])):
-			self.screen.blit(self.fnt['DEFAULT'].render(database.MESSAGES[self.msg][i], True, (240,240,240)), (400, 280 + (i * 40)))
+			self.display.blit(self.fnt['DEFAULT'].render(database.MESSAGES[self.msg][i], True, (240,240,240)), (math.floor(self.windoww/300) * 100, (math.floor(self.windoww/300) * 70) + (i * 40)))
 
 		self.gif += 1
 		if self.gif >= 8: self.gif = 0
-		self.screen.blit(pygame.image.load('Sprites/loading_' + str(self.gif) + '.png'), (1120, 720))
+		self.display.blit(pygame.image.load('Sprites/loading_' + str(self.gif) + '.png'), (self.windoww - 80, self.windowh - 80))
 
+		self.screen.blit(self.display, (0, 0))
 		if flp == True: pygame.display.flip()
-		else: pygame.display.update(pygame.Rect(1120,720,30,30))
+		else: pygame.display.update(pygame.Rect(self.windoww - 80, self.windowh - 80,30,30))
 		if self.load == 0: self.load = 1
 
 class Title:
@@ -200,11 +209,9 @@ class Title:
 				exit()
 			#RESIZE
 			if event.type == pygame.VIDEORESIZE:
+				self.windoww = event.w
 				self.windowh = event.h
-				sh = int(event.h/4)
-				self.windoww = 6 * sh
 				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
-				self.FPS = int(event.w/20)
 
 			if self.mnu == 4 and self.n.ind == 7: self.mnu = 2
 			self.pressed = pygame.key.get_pressed()
@@ -349,7 +356,7 @@ class Title:
 				self.mnu = 5
 
 		self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (0, 0))
-		self.screen.blit(self.display[1], (0, 0))
+		self.screen.blit(pygame.transform.scale(self.display[1], (self.windoww, self.windowh)), (0, 0))
 
 		#LOGO
 		if self.mnu == 0:
@@ -971,7 +978,7 @@ class Game:
 
 	def vehicle(self, i):
 		rect = pygame.Rect(i['RECT'].x - 5,i['RECT'].y - 5,60,30)
-		if self.driving == i['INDEX'] + 1:
+		if self.driving == i['N'] + 1:
 			i['RECT'].x = self.player[0]['RECT'].x
 			i['RECT'].y = self.player[0]['RECT'].y
 
@@ -999,7 +1006,7 @@ class Game:
 						if n['TYPE'] in [3,7]:
 							if self.player[0]['RECT'].y > i['RECT'].y: i['DIRECTION'] = 3
 							if self.player[0]['RECT'].y < i['RECT'].y: i['DIRECTION'] = 7
-		if self.driving == 0 and i['MOVE'] != 'fixed':
+		if i['MOVE'] != 'fixed':
 			if i['DIRECTION'] == 1: i['RECT'].x += 4
 			if i['DIRECTION'] == 2: i['RECT'].x += 4; i['RECT'].y += 4
 			if i['DIRECTION'] == 3: i['RECT'].y += 4
@@ -1014,7 +1021,10 @@ class Game:
 			if self.battle == False and self.driving == 0: self.display[0].blit(pygame.image.load('Sprites/arw.png'), (rect.x - self.cam.x + int(rect.width/2) - 5, rect.y - self.cam.y - int(rect.height/2)))
 			if self.pressed[resources.ACT[0]] and self.driving == 0:
 				trigger = True
-				self.driving = i['INDEX'] + 1
+				self.driving = i['N'] + 1
+				self.player[0]['RECT'].x = rect.x
+				self.player[0]['RECT'].y = rect.y
+				i['MOVE'] = 'fixed'
 				'''self.displayzw = 1200
 				self.displayzh = 800
 				self.display = pygame.Surface((1200, 800))
@@ -1171,9 +1181,8 @@ class Game:
 				exit()
 			#RESIZE
 			if event.type == pygame.VIDEORESIZE:
+				self.windoww = event.w
 				self.windowh = event.h
-				sh = int(event.h/4)
-				self.windoww = 6 * sh
 				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
 				self.FPS = int(event.w/20)
 
@@ -2412,17 +2421,15 @@ class Game:
 						else: i['SPEED'] = 0
 
 				elif self.driving > 0:
+					if self.pressed[resources.UP[p]]:
+						self.driving = 0
+						'''self.displayzw = 600
+						self.displayzh = 400
+						self.display[0] = pygame.Surface((600, 400))
+						self.cam.width = self.displayzw
+						self.cam.height = self.displayzh'''
+						i['DIRECTION'] = 3
 					if resources.GAS > 0:
-						if self.pressed[resources.UP[p]]:
-							self.driving = 0
-							'''self.displayzw = 600
-							self.displayzh = 400
-							self.display[0] = pygame.Surface((600, 400))
-							self.cam.width = self.displayzw
-							self.cam.height = self.displayzh'''
-							i['DIRECTION'] = 3
-							print(len(self.vehicles))
-
 						if self.pressed[resources.DOWN[p]]:
 							if i['SPEED'] > 0.0: i['SPEED'] -= self.vehicles[self.driving - 1]['ACCELERATION']
 
@@ -3749,7 +3756,6 @@ class Game:
 						counter = True
 				if counter == False: self.effgif += 0.25
 				if counter == True: self.effgif -= 0.25
-				print(self.effgif)
 
 				if self.effgif == len(resources.SPRITES['ATTACKIMATION_' + str(wh)]): ddg = False; break
 				elif self.effgif == 0.0: ddg = True; break
@@ -3824,9 +3830,10 @@ class Game:
 									if resources.TIME[0] >= 18: fr = 1
 									elif resources.TIME[0] >= 6: fr = 0
 									else: fr = 1
-									print(tl['frames'])
-									print(fr)
-									image = self.map.get_tile_image_by_gid(tl['frames'][fr].gid).convert()
+									if tl['frames'] != []:
+										image = self.map.get_tile_image_by_gid(tl['frames'][fr].gid).convert()
+									else:
+										image = self.map.get_tile_image_by_gid(gid).convert()
 									self.tilmap[int(t[10])][a].blit(image, (x * self.map.tilewidth - self.cam.x, y * self.map.tileheight - self.cam.y))
 								elif t == 'MOON':
 									if len(self.tilmap[4]) < a + 1:
@@ -3834,11 +3841,10 @@ class Game:
 									if resources.TIME[0] >= 18: fr = resources.DATE[4]
 									elif resources.TIME[0] >= 6: fr = 0
 									else: fr = resources.DATE[4]
-									print(tl['frames'])
-									print(fr)
 									image = self.map.get_tile_image_by_gid(tl['frames'][fr].gid).convert()
 									self.tilmap[4][a].blit(image, (x * self.map.tilewidth - self.cam.x, y * self.map.tileheight - self.cam.y))
-								elif t not in ['CARRY','HOLD','HIDEON','HIDEOFF']: self.tilmap[i][a].blit(image, (x * self.map.tilewidth - self.cam.x, y * self.map.tileheight - self.cam.y))
+								elif t not in ['CARRY','HOLD','HIDEON','HIDEOFF']:
+									self.tilmap[i][a].blit(image, (x * self.map.tilewidth - self.cam.x, y * self.map.tileheight - self.cam.y))
 
 								if i < 2 and a == 0:
 									if t in ['CARRY','HOLD']: self.tilrect[2].append([t,pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,self.map.tileheight),image])
@@ -3879,7 +3885,7 @@ class Game:
 						self.npcs.append(npc)
 						self.objects.append([2,int(i.name[4:]),int(obj.y)])
 			#VEICHLES
-			vhn = 0
+			vhn = -1
 			if lyr.name == 'VEHICLES':
 				for i in lyr:
 					obj = self.map.get_object_by_name(i.name)
@@ -3895,15 +3901,16 @@ class Game:
 					self.vehicles.append(vh)
 					self.objects.append([3,int(i.name[8:]),int(obj.y)])
 			
-			if self.driving > 0:
-				vh = database.VEHICLES['moto_' + str(self.driving)].copy()
-				vh['N'] = vhn + 1
-				vh['RECT'] = pygame.Rect(int(self.player[0]['RECT'].x), int(self.player[0]['RECT'].y), 60, 10)
-				vh['INDEX'] = self.driving
-				vh['DIRECTION'] = 1
-				vh['MOVE'] = 'fixed'
-				self.vehicles.append(vh)
-				self.objects.append([3,vhn,int(self.player[0]['RECT'].y)])
+				if self.driving > 0:
+					vh = database.VEHICLES['moto_0'].copy()
+					vh['N'] = vhn + 1
+					vh['RECT'] = pygame.Rect(int(self.player[0]['RECT'].x), int(self.player[0]['RECT'].y), 60, 10)
+					vh['INDEX'] = 0
+					vh['DIRECTION'] = 1
+					vh['MOVE'] = 'fixed'
+					self.vehicles.append(vh)
+					self.objects.append([3,vhn + 1,int(self.player[0]['RECT'].y)])
+					self.driving = vhn + 2
 
 			#PORTALS
 			if lyr.name == 'PORTAL':
@@ -3926,7 +3933,9 @@ class Game:
 						if pr[0] == 'MAP':
 							dt['MAP'] = obj.properties['MAP']
 						if pr[0].startswith('IF'):
-							if resources.CHAPTER == int(pr[0][3:5]):
+							if pr[0][3:6] == 'NOT':
+								pass
+							elif resources.CHAPTER == int(pr[0][3:5]):
 								dt['MAP'] = pr[1]
 							else: dt['MAP'] = obj.properties['IF NOT']
 					self.portals.append(dt)
@@ -4242,8 +4251,8 @@ class Game:
 
 			#BLACK BARS
 			if self.winbar > 0:
-				pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,0,600,self.winbar))
-				pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,400,600,-self.winbar))
+				pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,0,self.displayzw,self.winbar))
+				pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,self.displayzh,self.displayzw,-self.winbar))
 
 			#CITY NAME
 			if self.cityname != '' and self.winbar >= 50:
@@ -4501,10 +4510,11 @@ class Game:
 						del self.particles[p]; break
 				for p in self.particles:
 					if p['TYPE'] == 'blood':
-						p['RADIUS'] -= 0.25
 						p['X'] += int(math.cos(p['DIRECTION']) * p['SPEED'])
 						p['Y'] += int(math.sin(p['DIRECTION']) * p['SPEED'])
 						pygame.draw.circle(self.display[0], (10, 255, 50), (p['X'],p['Y']), math.ceil(p['RADIUS']))
+						p['RADIUS'] -= 0.25
+						if p['RADIUS'] < 0.0: p['RADIUS'] = 0.0
 
 			#INFOHIT
 			if self.dmginfo != '':
@@ -4794,7 +4804,7 @@ class Game:
 			pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(0,167,600,3))
 			pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(0,170,600,22))
 			pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(0,192,600,3))
-			self.display[1].blit(self.fnt['DEFAULT'].render(database.CHAPTERS[resources.CHAPTER][1], True, (250, 250, 250)), (10, 170))
+			self.display[1].blit(self.fnt['DEFAULT'].render(database.CHAPTERS[resources.CHAPTER][1], True, (250, 250, 250)), (20, 340))
 			lyr2 = True
 
 		#CAMERA
@@ -4816,6 +4826,7 @@ class Game:
 			if self.cam.y > (self.map.height * self.map.tileheight) - self.displayzh: self.cam.y = (self.map.height * self.map.tileheight) - self.displayzh
 		else: self.cam.y = -int((self.displayzh - (self.map.height * self.map.tileheight))/2)
 
+		#UPDATE SCREEN & PAUSE SOUND
 		if pygame.display.get_active():
 			if self.ch_msc.get_busy() == False: self.ch_msc.unpause()
 			if self.ch_rad.get_busy() == False: self.ch_rad.unpause()
@@ -4827,7 +4838,8 @@ class Game:
 					self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy))
 					self.screen.blit(self.display[1], (self.displayx, self.displayy))'''
 				self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy))
-				self.screen.blit(self.display[1], (self.displayx, self.displayy))
+				self.screen.blit(pygame.transform.scale(self.display[1], (self.windoww, self.windowh)), (self.displayx, self.displayy))
+				#self.screen.blit(self.display[1], (self.displayx, self.displayy))
 			else:
 				self.scrspd += 2
 				self.scrmov += self.scrspd
@@ -4839,6 +4851,7 @@ class Game:
 					self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy + self.scrmov))'''
 				self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy + self.scrmov - self.windowh - 20))
 				self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy + self.scrmov))
+			#pygame.display.update(0,self.winbar,self.windoww,self.windowh-self.winbar)
 			pygame.display.flip()
 		else:
 			self.ch_msc.pause()
