@@ -50,7 +50,8 @@ SPEED = 2
 COLOR = [255,10,10]
 BORDER = 0
 CENSORSHIP = True
-HINTS = True
+HINT = True
+HELP = True
 
 PARTY = [[0,4,3]]
 FORMATION = 0
@@ -234,153 +235,175 @@ DLGSAV = {}
 MARKER = [['1urban_0',30,30],['1urban_0',200,300]]
 
 def recent_data(m,opt=0):
-    global FILES, ID, CHAPTER, GAMETIME, LANG
+    global FILES, ID, CHAPTER, GAMETIME, LANG, PARTY
     tbl = sqlite3.connect('userdata.db')
     com = tbl.cursor()
 
+    #LOAD FILES
     if m == 0:
         com.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='recent'")
         rs = com.fetchone()
         if rs != None:
-            FILES = [[],[],[],[]]
+            FILES = [[],[],[],[],[]]
             com.execute("SELECT id from recent")
-            for i in com.fetchall()[0]:
-                FILES[0].append(i)
+            for i in com.fetchall(): FILES[0].append(i[0])
             com.execute("SELECT chp from recent")
-            for i in com.fetchall()[0]: FILES[1].append(i)
+            for i in com.fetchall(): FILES[1].append(i[0])
             com.execute("SELECT gt from recent")
-            for i in com.fetchall()[0]: FILES[2].append(i)
+            for i in com.fetchall(): FILES[2].append(i[0])
             com.execute("SELECT lang from recent")
-            for i in com.fetchall()[0]: FILES[3].append(i)
+            for i in com.fetchall(): FILES[3].append(i[0])
+            com.execute("SELECT party from recent")
+            for i in com.fetchall(): FILES[4].append(i[0])
         else:
-            com.execute("CREATE TABLE recent (id integer,chp integer,gt integer,lang text)")
-            com.execute("INSERT INTO recent VALUES (0,0,0,'PT')")
+            com.execute("CREATE TABLE recent (id integer,chp integer,gt integer,lang text,party text)")
+            com.execute("INSERT INTO recent VALUES (0,0,0,'PT','0')")
             tbl.commit()
-            FILES = [[0],[0],[0],['PT']]
-
+            FILES = [[0],[0],[0],['PT'],['0']]
+    #UPDATE FILE
     elif m == 1:
-        com.execute("UPDATE recent SET chp = :chp, gt = :gt, lang = :lang WHERE id = :id",{'id': opt,'chp': CHAPTER,'gt': GAMETIME,'lang': LANG})
+        prt = ''
+        for i in PARTY[FORMATION]:
+            prt += str(i)
+        com.execute("UPDATE recent SET chp = :chp, gt = :gt, lang = :lang, party = :party WHERE id = :id",
+            {'id': opt,'chp': CHAPTER,'gt': GAMETIME,'lang': LANG,'party': prt})
         tbl.commit()
+    #NEW FILE
     elif m == 2:
-        FILES[0].append(0)
-        FILES[1].append(0)
-        FILES[2].append(0)
-        FILES[3].append('PT')
-        ID = 0
+        ID = opt
         CHAPTER = 0
         GAMETIME = 0
         LANG = 'PT'
-        com.execute("INSERT INTO recent VALUES (:id,:chp,:gt,:lang)",{'id': ID,'chp': CHAPTER,'gt': GAMETIME,'lang': LANG})
+        FILES[0].append(ID)
+        FILES[1].append(CHAPTER)
+        FILES[2].append(GAMETIME)
+        FILES[3].append(LANG)
+        FILES[3].append('0')
+        com.execute("INSERT INTO recent VALUES (" + str(ID) + "," + str(CHAPTER) + "," + str(GAMETIME) + ",'" + LANG + "','0')")
         tbl.commit()
-
+    #ADD FILE
+    elif m == 3:
+        ID = opt
+        prt = ''
+        for i in PARTY[FORMATION]:
+            prt += str(i)
+        FILES[0].append(ID)
+        FILES[1].append(CHAPTER)
+        FILES[2].append(GAMETIME)
+        FILES[3].append(LANG)
+        FILES[4].append(prt)
+        com.execute("INSERT INTO recent VALUES (" + str(ID) + "," + str(CHAPTER) + "," + str(GAMETIME) + ",'" + LANG + "','" + prt + "')")
+        tbl.commit()
+    com.close()
     tbl.close()
 
-def new_data():
-    global ID, LANG, SFX, MSC, UP, DOWN, LEFT, RIGHT, ACT, RUN, PHONE, BAG, SPEED, COLOR, INVENTORY, WEATHER, BORDER, CHARACTERS, TASKPIN, MINIMAP, SCENE, CENSORSHIP, HINT,\
+def new_data(add=False):
+    global ID, LANG, SFX, MSC, UP, DOWN, LEFT, RIGHT, ACT, RUN, PHONE, BAG, SPEED, COLOR, INVENTORY, WEATHER, BORDER, CHARACTERS, TASKPIN, MINIMAP, SCENE, CENSORSHIP, HINT, HELP,\
     FORMATION, MAP, PX, PY, TIME, DATE, CHAPTER, MORALITY, ATM, MONEY, CREDIT, BATTERY, GAS, GAMETIME, PARTY, CONTACTS, CALLHIST, INBOX, TASKS, TACTICAL, BESTIARY, ACHIEVEMENTS
  
     tbl = sqlite3.connect('userdata.db')
     com = tbl.cursor()
-      
-    LANG = 'PT'
-    SFX = 0.8
-    MSC = 0.6
-    UP = [pygame.K_w,pygame.K_UP]
-    DOWN = [pygame.K_s,pygame.K_DOWN]
-    LEFT = [pygame.K_a,pygame.K_LEFT]
-    RIGHT = [pygame.K_d,pygame.K_RIGHT]
-    ACT = [pygame.K_g,pygame.K_KP0]
-    RUN = [pygame.K_h,pygame.K_KP_ENTER]
-    PHONE = [pygame.K_BACKSPACE,pygame.K_KP_MULTIPLY]
-    BAG = [pygame.K_RETURN,pygame.K_KP_MINUS]
-    SPEED = 2
-    COLOR = [242,30,30]
-    BORDER = 0
-    CENSORSHIP = True
-    HINT = True
-      
-    MAP = 1
-    PX = 184
-    PY = 476
-    TIME = [0,32,0]
-    DATE = [25,12,2007,1,1]
-    WEATHER = 1
-    CHAPTER = 0
-    SCENE = 0
-    MORALITY = 0
-    GAMETIME = 0
-    FORMATION = 0
-      
-    ATM = 200
-    MONEY = 50
-    CREDIT = 0
-    BATTERY = 360
-    GAS = 100.0
+    
+    if add == False:
+        LANG = 'PT'
+        SFX = 0.8
+        MSC = 0.6
+        UP = [pygame.K_w,pygame.K_UP]
+        DOWN = [pygame.K_s,pygame.K_DOWN]
+        LEFT = [pygame.K_a,pygame.K_LEFT]
+        RIGHT = [pygame.K_d,pygame.K_RIGHT]
+        ACT = [pygame.K_g,pygame.K_KP0]
+        RUN = [pygame.K_h,pygame.K_KP_ENTER]
+        PHONE = [pygame.K_BACKSPACE,pygame.K_KP_MULTIPLY]
+        BAG = [pygame.K_RETURN,pygame.K_KP_MINUS]
+        SPEED = 2
+        COLOR = [242,30,30]
+        BORDER = 0
+        CENSORSHIP = True
+        HINT = True
+        HELP = True
+          
+        MAP = 1
+        PX = 184
+        PY = 476
+        TIME = [0,32,0]
+        DATE = [25,12,2007,1,1]
+        WEATHER = 1
+        CHAPTER = 0
+        SCENE = 0
+        MORALITY = 0
+        GAMETIME = 0
+        FORMATION = 0
+          
+        ATM = 200
+        MONEY = 50
+        CREDIT = 0
+        BATTERY = 360
+        GAS = 100.0
+         
+        for i in range(6):
+            CHARACTERS[i]['NAME'] = ''
+            CHARACTERS[i]['LASTNAME'] = ''
+            CHARACTERS[i]['LEVEL'] = 0
      
-    for i in range(6):
-        CHARACTERS[i]['NAME'] = ''
-        CHARACTERS[i]['LASTNAME'] = ''
-        CHARACTERS[i]['LEVEL'] = 0
- 
-    PARTY = [[1,2]]
-    CONTACTS = [['Maicon','923778988'],['Mercador','969696969'],['Pizza Delivery','953478809']]
-    CALLHIST = []
-    INBOX = []
-    TASKS = []
-    TACTICAL = [[1,1,1,1]]
-    BESTIARY = []
-    for i in database.FREAKS.items(): BESTIARY.append({'N': i[0],'ID': 'xxxx','DATE': '000000','SEEN': 0})
-    for i in database.ACHIEVEMENTS:
-        i[2] = 0
-        i[3] = ''
+        PARTY = [[1,2]]
+        CONTACTS = [['Maicon','923778988'],['Mercador','969696969'],['Pizza Delivery','953478809']]
+        CALLHIST = []
+        INBOX = []
+        TASKS = []
+        TACTICAL = [[1,1,1,1]]
+        BESTIARY = []
+        for i in database.FREAKS.items(): BESTIARY.append({'N': i[0],'ID': 'xxxx','DATE': '000000','SEEN': 0})
+        for i in database.ACHIEVEMENTS:
+            i[2] = 0
+            i[3] = ''
 
-    INVENTORY = [
-    [[['_','0000','_','_'],['phone','360100','_','_'],['wallet','00005000000300','credit_card','id_card0'],['locksmith1','02020000','key_bedroom','key_vehicle'],['_','0000','_','_']],
-    [['amulet1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['clth_jacket2','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['ammo.38','0000','_','_'],['_','0000','_','_']],
-    [['clth_shirt2','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['bag1','0000','_','_'],['gun_revolver.38','0006','aim1','acc_cartridge'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
+        INVENTORY = [
+        [[['_','0000','_','_'],['phone','360100','_','_'],['wallet','00005000000300','credit_card','id_card0'],['locksmith1','02020000','key_bedroom','key_vehicle'],['_','0000','_','_']],
+        [['amulet1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['clth_jacket2','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['ammo.38','0000','_','_'],['_','0000','_','_']],
+        [['clth_shirt2','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['bag1','0000','_','_'],['gun_revolver.38','0006','aim1','acc_cartridge'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
+         
+        [[['head_glasses1','0000','_','_'],['food_peanut_candy','0000','_','_'],['phone','360100','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['clth_jacket5','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
+         
+        [[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
+         
+        [[['amulet4','0000','_','_'],['repellent1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['amulet5','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['food_coxinha','1103','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['charger','000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['bag1','0000','_','_'],['gun_revolver.38','0006','aim3','acc_gunbutt'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
+         
+        [[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
+         
+        [[['amulet7','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['amulet6','0000','_','_'],['condiment_ketchup','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['amulet2','0000','_','_'],['_','0000','_','_'],['pill_vitality','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['amulet3','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
+        [['bag1','0000','_','_'],['gun_revolver.38','0006','aim2','acc_bandolier'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
+        ]
      
-    [[['head_glasses1','0000','_','_'],['food_peanut_candy','0000','_','_'],['phone','360100','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['clth_jacket5','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-     
-    [[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-     
-    [[['amulet4','0000','_','_'],['repellent1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['amulet5','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['food_coxinha','1103','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['charger','000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['bag1','0000','_','_'],['gun_revolver.38','0006','aim3','acc_gunbutt'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-     
-    [[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-     
-    [[['amulet7','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['amulet6','0000','_','_'],['condiment_ketchup','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['amulet2','0000','_','_'],['_','0000','_','_'],['pill_vitality','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['amulet3','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-    [['bag1','0000','_','_'],['gun_revolver.38','0006','aim2','acc_bandolier'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-    ]
- 
-    STORAGE = [['jewel_ruby','0000','_','_'],['drink_whiskey','1503','_','_']]
-    for i in range(23): STORAGE.append(['_','0000','_','_'])
+        STORAGE = [['jewel_ruby','0000','_','_'],['drink_whiskey','1503','_','_']]
+        for i in range(23): STORAGE.append(['_','0000','_','_'])
       
     try:
         com.execute("CREATE TABLE settings (id integer,lang text,sfx integer,msc integer,up text,down text,left text,right text,act text,run text,phone text,inventory text,speed integer,color1 integer,color2 integer,color3 integer,border integer,\
-            censor integer,hint integer)")
+            censor integer,hint integer,help integer)")
         com.execute("CREATE TABLE data (id integer,gt integer,fr integer,map integer,x integer,y integer,time text,date text,weather integer,chapter integer,scene integer,morality integer,atm integer,money integer,credit integer,battery integer,\
             gas integer,taskpin integer,minimap integer)")
-        print('table created')
     except: pass
       
     trg = False
@@ -391,7 +414,7 @@ def new_data():
         com.execute("DELETE FROM settings WHERE id=" + str(ID))
         com.execute("DELETE FROM data WHERE id=" + str(ID))
      
-    com.execute("INSERT INTO settings VALUES (" + str(ID) + ",'PT',0.8,0.6,'W','S','A','D','G','H','BACKSPACE','RETURN',2,255,255,255,0,1,1)")
+    com.execute("INSERT INTO settings VALUES (" + str(ID) + ",'PT',0.8,0.6,'W','S','A','D','G','H','BACKSPACE','RETURN',2,255,255,255,0,1,1,1)")
     com.execute("INSERT INTO data VALUES (" + str(ID) + ",0,0,1,0,0,'0830','2512200711',0,0,0,0,0,0,255,10,10,0,0)")
       
     com.execute("DROP TABLE IF EXISTS characters" + str(ID))
@@ -468,14 +491,13 @@ def new_data():
     tbl.close()
 
 def load_data():
-    global ID, LANG, SFX, MSC, UP, DOWN, LEFT, RIGHT, ACT, RUN, PHONE, BAG, SPEED, COLOR, WEATHER, BORDER, TASKPIN, MINIMAP, SCENE, CENSORSHIP, HINT,\
+    global ID, LANG, SFX, MSC, UP, DOWN, LEFT, RIGHT, ACT, RUN, PHONE, BAG, SPEED, COLOR, WEATHER, BORDER, TASKPIN, MINIMAP, SCENE, CENSORSHIP, HINT, HELP,\
     FORMATION, MAP, PX, PY, TIME, DATE, CHAPTER, MORALITY, ATM, MONEY, CREDIT, BATTERY, GAS, GAMETIME, PARTY, CONTACTS, CALLHIST, INBOX, TASKS, TACTICAL, BESTIARY, INVENTORY
       
     tbl = sqlite3.connect('userdata.db')
     com = tbl.cursor()
      
     com.execute("SELECT id from settings")
-    print(com.fetchall()[0])
     com.execute("SELECT lang FROM settings")
     LANG = com.fetchall()[ID][0]
     com.execute("SELECT sfx FROM settings")
@@ -519,6 +541,8 @@ def load_data():
     CENSORSHIP = bool(com.fetchall()[ID][0])
     com.execute("SELECT hint FROM settings")
     HINT = bool(com.fetchall()[ID][0])
+    com.execute("SELECT help FROM settings")
+    HELP = bool(com.fetchall()[ID][0])
       
     com.execute("SELECT gt FROM data")
     GAMETIME = com.fetchall()[ID][0]
@@ -558,7 +582,7 @@ def load_data():
     TASKPIN = bool(com.fetchall()[ID])
     com.execute("SELECT minimap FROM data")
     MINIMAP = bool(com.fetchall()[ID])
-      
+    
     com.execute("SELECT * FROM characters" + str(ID))
     res = com.fetchall()
     for i in range(len(CHARACTERS)):
@@ -567,27 +591,22 @@ def load_data():
         CHARACTERS[i]['GENDER'] = res[i][3]
         CHARACTERS[i]['LEVEL'] = res[i][4]
         CHARACTERS[i]['XP'] = res[i][5]
-
     com.execute("SELECT * FROM dlgsav" + str(ID))
     res = com.fetchall()
     for i in res: DLGSAV[i[0]] = i[1]
-      
     com.execute("SELECT * FROM party" + str(ID))
     res = com.fetchall()
     PARTY = []
     for i in res: PARTY.append([i[1],i[2],i[3]])
- 
     com.execute("SELECT * FROM contacts" + str(ID))
     res = com.fetchall()
     CONTACTS = []
     for i in res: CONTACTS.append(NUMBERS[i[0]].copy())
     CONTACTS = [['Maicon','923778988'],['Mercador','969696969'],['Pizza Delivery','953478809']]
- 
     com.execute("SELECT * FROM callhist" + str(ID))
     res = com.fetchall()
     CALLHIST = []
     for i in res: CALLHIST.append([i[0],i[1]])
- 
     com.execute("SELECT * FROM inbox" + str(ID))
     res = com.fetchall()
     INBOX = []
@@ -595,23 +614,19 @@ def load_data():
         mail = EMAILS[i[0]].copy()
         mail.append(i[1])
         INBOX.append(mail)
- 
     com.execute("SELECT * FROM tasks" + str(ID))
     res = com.fetchall()
     TASKS = []
     for i in res: TASKS.append([i[0],i[1]])
-          
     com.execute("SELECT * FROM tactical" + str(ID))
     res = com.fetchall()
     TACTICAL = []
     for i in res: TACTICAL.append([i[1],i[2],i[3],i[4]])
-      
     com.execute("SELECT * FROM bestiary" + str(ID))
     res = com.fetchall()
     BESTIARY = []
     for i in res:
         BESTIARY.append({'N': i[0],'ID': i[1],'DATE': i[2],'SEEN': i[3]})
-      
     com.execute("SELECT * FROM achievements"+ str(ID))
     res = com.fetchall()
     for i in res:
@@ -621,7 +636,6 @@ def load_data():
         for i in database.ACHIEVEMENTS:
             i[2] = 0
             i[3] = ''
-     
     com.execute("SELECT * FROM inventory"+ str(ID))
     res = com.fetchall()
     INVENTORY = []
@@ -633,7 +647,6 @@ def load_data():
                 for i in res:
                     if int(i[1][0]) == u and int(i[1][1]) == x and int(i[2][2]) == y:
                         INVENTORY[u][x].append([i[0],i[2],i[3],i[4]])
-
     com.execute("SELECT * FROM storage"+ str(ID))
     res = com.fetchall()
     STORAGE = []
@@ -712,15 +725,15 @@ def save_data():
     tbl.close()
 
 def save_sett():
-    global ID, LANG, SFX, MSC, UP, DOWN, LEFT, RIGHT, ACT, RUN, PHONE, BAG, SPEED, COLOR, BORDER, CENSORSHIP, HINT
+    global ID, LANG, SFX, MSC, UP, DOWN, LEFT, RIGHT, ACT, RUN, PHONE, BAG, SPEED, COLOR, BORDER, CENSORSHIP, HINT, HELP
       
     tbl = sqlite3.connect('userdata.db')
     com = tbl.cursor()
       
     com.execute("UPDATE settings SET lang = :lang,sfx = :sfx,msc = :msc,up = :up,down = :down,left = :left,right = :right,act = :act,run = :run,phone = :phone,inventory = :inventory,\
-        speed = :speed,color1 = :color1,color2 = :color2,color3 = :color3,border = :border,censor = :censor,hint = :hint WHERE id = :id",
+        speed = :speed,color1 = :color1,color2 = :color2,color3 = :color3,border = :border,censor = :censor,hint = :hint,help = :help WHERE id = :id",
         {'id': ID,'lang': LANG,'sfx': SFX,'msc': MSC,'up': UP[0],'down': DOWN[0],'left': LEFT[0],'right': RIGHT[0],'act': ACT[0],'run': RUN[0],'phone': PHONE[0],'inventory': BAG[0],
-        'speed': SPEED,'color1': COLOR[0],'color2': COLOR[1],'color3': COLOR[2],'border': BORDER,'censor': int(CENSORSHIP),'hint': int(HINT)})
+        'speed': SPEED,'color1': COLOR[0],'color2': COLOR[1],'color3': COLOR[2],'border': BORDER,'censor': int(CENSORSHIP),'hint': int(HINT),'help': int(HELP)})
     tbl.commit()
       
     com.close()
@@ -805,7 +818,13 @@ def delete_data():
     global ID
     tbl = sqlite3.connect('userdata.db')
     com = tbl.cursor()
-      
+    
+    del FILES[0][ID]
+    del FILES[1][ID]
+    del FILES[2][ID]
+    del FILES[3][ID]
+
+    com.execute("DELETE FROM recent WHERE id=" + str(ID))
     com.execute("DELETE FROM settings WHERE id=" + str(ID))
     com.execute("DELETE FROM data WHERE id=" + str(ID))
     com.execute("DROP TABLE characters" + str(ID))

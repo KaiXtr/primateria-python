@@ -1303,6 +1303,39 @@ TUTORIALS = {
 'INVENTORYI': [3,' - esquerda',0,4,' - direita',0,2,' - frear',0,1,' - sair do veículo'],
 'KEYS': ['Parece que essa porta precisa',0,'de uma chave',('Items/it_keybedroom'),0,'procure-a pela casa!'],
 }
+
+HINTS = {
+'MENUS': [6,'inventário',7,'celular'],
+'NPC_DIALOG': [4,'conversar'],
+'VEHICLE_USE': [4,'montar'],
+'VEHICLE_CONTROLS': [2,'esquerda',3,'direita',4,'acelerar',1,'freiar',0,'desmontar'],
+'INVENTORY_ITEMS': [4,'usar',5,'segurar'],
+'INVENTORY_HOLD': [4,'juntar',5,'colocar'],
+'INVENTORY_ACCESORIES': [5,'tirar'],
+'BATTLE_TACTICS': [4,'escolher tática'],
+'BATTLE_DIALOG': [4,'dialogar'],
+'BATTLE_GUARD': [4,'defender'],
+'BATTLE_RUN': [4,'fugir'],
+'BATTLE_SHOT': [4,'atacar'],
+'PHONE_APPS': [4,'selecionar'],
+'PHONE_MAP': [4,'aumentar',5,'diminuir'],
+'PHONE_CONTACTS': [4,'conversar'],
+'PHONE_EMAIL': [4,'conversar'],
+'PHONE_NEWS': [4,'conversar'],
+'PHONE_RADIO': [2,3,'mudar estação',4,'tocar'],
+'PHONE_CAMERA': [4,'conversar'],
+'PHONE_BESTIARY': [4,'conversar'],
+'PHONE_TASKS': [4,'conversar'],
+'PHONE_STATUS': [4,'conversar'],
+'PHONE_TACTICS': [4,'conversar'],
+'PHONE_ACHIEVEMENTS': [4,'conversar'],
+'PHONE_RANKING': [4,'conversar'],
+'PHONE_MANUAL': [4,'conversar'],
+'PHONE_SETTINGS': [4,'conversar'],
+'PHONE_ABOUT': [4,'conversar'],
+'PHONE_CALLING': [4,'conversar'],
+'NAMING': ['digite os nomes no teclado',6,'prosseguir']
+}
      
 MANUAL = [['CONTROLES',['Aperte ' + pygame.key.name(rs.LEFT[0]) + ', ' + pygame.key.name(rs.RIGHT[0]) + ', ' + pygame.key.name(rs.UP[0]) + ' e ' + pygame.key.name(rs.DOWN[0]) + ' para mover seu personagem']],\
 ['CELULAR',['O celular é o equivalente ao','menu do jogo, acesse-o','apertando ' + pygame.key.name(rs.PHONE[0]) + '.','\
@@ -1358,7 +1391,7 @@ MENU = ['mapa','chamadas','correios','notícias','rádio','câmera','bestiário'
 'equipamento 1','equipamento 2','equipamento 3','equipamento 4','dialogar','defender','fugir','nova história',
 'idioma','sfx','música','mover cima','mover baixo','mover esquerda','mover direita','ato','celular','inventário','velocidade','cor R','cor G','cor B','salvar',
 'escolha um botão','volume','peso','Nome','Sobrenome','Tudo certo?','Sim','Não','Tem certeza?','correr','borda','gameplay','áudio','controles','muito lento','lento','médio','rápido','muito rápido',
-'censura','dicas']
+'censura','tutoriais','dicas']
   
 SHOP = ['comprar','sair','nada aqui','banco: $','dinheiro: $','sacar','depositar','cancelar','Mercador','vender']
 

@@ -72,7 +72,8 @@ class Debug:
 			elif self.cmd.startswith('weather'):
 				resources.WEATHER = int(self.cmd[8:])
 			elif self.cmd.startswith('party'):
-				resources.PARTY[resources.FORMATION] = [int(self.cmd[6]),int(self.cmd[7]),int(self.cmd[8]),int(self.cmd[9])]
+				resources.PARTY[resources.FORMATION] = [int(self.cmd[6]),int(self.cmd[7]),int(self.cmd[8])]
+				resources.party_make(0)
 			elif self.cmd == 'health':
 				resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['HEALTH'] = int(self.cmd[7:])
 			elif self.cmd == 'rect': self.dlg = 'rectdebug'
@@ -204,14 +205,13 @@ class Naming:
 						else: self.ch_ton.play(pygame.mixer.Sound('SFX/text_enter.wav')); self.ind += 1; self.lopt = 0; self.tim = 3; self.did = 0
 			else:
 				self.ch_sfx.play(pygame.mixer.Sound('SFX/file_new.wav'))
-				resources.new_data()
 				for i in range(len(self.name)):
 					resources.CHARACTERS[i]['NAME'] = self.name[i]
 					resources.CHARACTERS[i]['LASTNAME'] = self.lame[i]
 				resources.save_data()
 				resources.save_sett()
 				resources.party_make(0)
-				resources.recent_data(2)
+				resources.recent_data(1,resources.ID)
 				self.show = False
 		
 		if self.ind < 6:
@@ -463,7 +463,7 @@ class Inventory:
 				x += 32
 				optx += 1
 
-		#DESCRIPTION
+		#HOLDING ITEM
 		if self.itmov != '':
 			ox = (opt * 32) 
 			lox = (lopt * 32)
@@ -1067,6 +1067,10 @@ class Phone:
 				if hh < 10: hh = '0' + str(hh)
 				else: hh = str(hh)
 				self.scr[1].blit(self.fnt['CALIBRI'].render(hh + ' : ' + mm + ' : ' + ss, True, (0, 0, 0)), (20, (65 + (y * 51)) * 2))
+				x = 0
+				for p in resources.FILES[4][i][::-1]:
+					self.scr[0].blit(pygame.image.load('Sprites/who_' + str(p) + '.png'), (sz - 30 - x, 65 + (y * 51)))
+					x += 22
 				y += 1
 
 			if opt != y: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,41 + (y * 51),sz,50))
@@ -1217,13 +1221,13 @@ class Phone:
 		for i in self.scr: i.fill((10,10,10,0))
 
 		x = 0
-		dvd4 = math.floor(sz/4)
+		dvd3 = math.floor(sz/3)
 		for i in resources.PARTY[resources.FORMATION]:
-			if opt == x/dvd4:
-				pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0 + x - self.scroll,45,dvd4,20))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[i]['NAME'], True, (200, 0, 0)), (16 + x - self.scroll, 47))
-			else: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[i]['NAME'], True, (255, 255, 255)), (16 + x - self.scroll, 47))
-			x += dvd4
+			if opt == x/dvd3:
+				pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0 + x - self.scroll,45,dvd3,20))
+				self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'], True, (200, 0, 0)), (16 + x - self.scroll, 40))
+			else: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'], True, (255, 255, 255)), (16 + x - self.scroll, 40))
+			x += dvd3
 
 		self.scr[0].blit(pygame.image.load('Sprites/who_' + str(resources.PARTY[resources.FORMATION][opt]) + '.png'), (10, 74))
 		self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'] + ' ' + resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LASTNAME'], True, (255, 255, 255)), (70, 152))
@@ -1379,7 +1383,7 @@ class Phone:
 		sp = 1 #scroll speed
 		bw = 110 #bar width
 		bh = 10 #bar height
-		bs = 60
+		bs = 60 #bar x
 		y = 41
 		ty = 10
 
@@ -1392,37 +1396,39 @@ class Phone:
 				else: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,y - self.scroll,sz,hz))
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[inpts[i]], True, (0,0,0)), (10, (y + ty - self.scroll) * 2))
 				y += hz + sp
-
 		#GAMEPLAY MENU
 		if mnu == 1:
-			inpts = (62,72,73,74,75,87,96,97)
+			inpts = (62,72,73,74,75,87,96,97,98)
 			if opt == 0:
 				if self.scroll > 0:
 					self.scroll -= 10
-			elif opt == 5:
+			elif opt == 5 or opt == 6:
 				if self.scroll < 60:
 					self.scroll += 10
 			elif opt == 2:
 				if self.scroll > 0:
 					self.scroll -= 10
-			elif opt == 7:
+			elif opt == 8:
 				if self.scroll < 60:
 					self.scroll += 10
 
-			for i in range(7):
+			for i in range(9):
+				#RECT AND SELECT
 				if opt == i:
 					if i >= 2 and i < 6:
 						pygame.draw.rect(self.scr[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(0,y - self.scroll,sz,hz))
 					else:
 						pygame.draw.rect(self.scr[0], (91, 91, 91), pygame.Rect(0,y - self.scroll,sz,hz))
 				else: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,y - self.scroll,sz,hz))
-
+				#SCROLL BAR
 				if i >= 2 and i < 5:
 					pygame.draw.rect(self.scr[0], (230, 210, 210), pygame.Rect(bs,y + ty - self.scroll,bw,bh))
-					pygame.draw.rect(self.scr[0], (110,110,110), pygame.Rect(bs + int(100/(242/resources.COLOR[i - 2])),y + bh - self.scroll,10,10))
+					pygame.draw.rect(self.scr[0], (110,110,110), pygame.Rect(bs + int(bw/(242/resources.COLOR[i - 2])) - 10,y + bh - self.scroll,10,10))
+				#BORDER OPTIONS
 				if i == 5:
 					for b in range(math.floor(sz/10) - 4):
 						for c in range(3): self.scr[0].blit(pygame.image.load('Sprites/border_' + str(resources.BORDER) + '.png'), (60 + b * 10, 196 + (c * 10) - self.scroll))
+				#SWITCH
 				if i == 6:
 					pygame.draw.rect(self.scr[0], (230,230,230), pygame.Rect(75,y + 10 - self.scroll,80,10))
 					if resources.CENSORSHIP == False: pygame.draw.rect(self.scr[0], (255,61,61), pygame.Rect(115,y + 10 - self.scroll,40,10))
@@ -1431,7 +1437,10 @@ class Phone:
 					pygame.draw.rect(self.scr[0], (230,230,230), pygame.Rect(75,y + 10 - self.scroll,80,10))
 					if resources.HINT == False: pygame.draw.rect(self.scr[0], (255,61,61), pygame.Rect(115,y - self.scroll,40,10))
 					if resources.HINT == True: pygame.draw.rect(self.scr[0], (140,255,124), pygame.Rect(75,y - self.scroll,40,10))
-
+				if i == 8:
+					pygame.draw.rect(self.scr[0], (230,230,230), pygame.Rect(75,y + 10 - self.scroll,80,10))
+					if resources.HELP == False: pygame.draw.rect(self.scr[0], (255,61,61), pygame.Rect(115,y - self.scroll,40,10))
+					if resources.HELP == True: pygame.draw.rect(self.scr[0], (140,255,124), pygame.Rect(75,y - self.scroll,40,10))
 				#TEXT
 				if i == 0:
 					txt = resources.LANG
@@ -1444,7 +1453,6 @@ class Phone:
 				else: txt = ''
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[inpts[i]] + ': ' + txt, True, (0,0,0)), (10, (y + ty - 2 - self.scroll) * 2))
 				y += hz + sp
-
 		#AUDIO MENU
 		if mnu == 2:
 			self.scroll = 0
@@ -1453,10 +1461,9 @@ class Phone:
 				if opt == i: pygame.draw.rect(self.scr[0], (91, 91, 91), pygame.Rect(0,y - self.scroll,sz,hz))
 				else: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,y - self.scroll,sz,hz))
 				pygame.draw.rect(self.scr[0], (230, 210, 210), pygame.Rect(bs,y + ty - self.scroll,bw,bh))
-				pygame.draw.rect(self.scr[0], (110, 110, 110), pygame.Rect(bs + (inpts[i] * (bw - int(bw/10))),y + ty - self.scroll,20,bh))
+				pygame.draw.rect(self.scr[0], (110, 110, 110), pygame.Rect(bs + (inpts[i] * (bw - 10)),y + ty - self.scroll,20,bh))
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[63 + i], True, (0,0,0)), (10, (y + ty - 2 - self.scroll)* 2))
 				y += hz + sp
-
 		#CONTROLS MENU
 		if mnu == 3:
 			if opt == 0:
