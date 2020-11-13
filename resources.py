@@ -60,6 +60,8 @@ INBOX = []
 TASKS = []
 TACTICAL = []
 BESTIARY = []
+INVENTORY = []
+STORAGE = []
      
 ATM = 0
 MONEY = 0
@@ -332,7 +334,7 @@ def new_data():
         i[2] = 0
         i[3] = ''
 
-    database.INVENTORY = [
+    INVENTORY = [
     [[['_','0000','_','_'],['phone','360100','_','_'],['wallet','00005000000300','credit_card','id_card0'],['locksmith1','02020000','key_bedroom','key_vehicle'],['_','0000','_','_']],
     [['amulet1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
     [['clth_jacket2','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['ammo.38','0000','_','_'],['_','0000','_','_']],
@@ -370,11 +372,8 @@ def new_data():
     [['bag1','0000','_','_'],['gun_revolver.38','0006','aim2','acc_bandolier'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
     ]
  
-    STORAGE = [['jewel_ruby','0000','_','_'],['drink_whiskey','1503','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],
-    ['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],
-    ['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],
-    ['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],
-    ['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]
+    STORAGE = [['jewel_ruby','0000','_','_'],['drink_whiskey','1503','_','_']]
+    for i in range(23): STORAGE.append(['_','0000','_','_'])
       
     try:
         com.execute("CREATE TABLE settings (id integer,lang text,sfx integer,msc integer,up text,down text,left text,right text,act text,run text,phone text,inventory text,speed integer,color1 integer,color2 integer,color3 integer,border integer,\
@@ -443,7 +442,7 @@ def new_data():
     com.execute("CREATE TABLE achievements" + str(ID) + " (idx integer,got integer,date text)")
       
     com.execute("DROP TABLE IF EXISTS inventory" + str(ID))
-    com.execute("CREATE TABLE inventory" + str(ID) + " (\
+    '''com.execute("CREATE TABLE inventory" + str(ID) + " (\
         it0 text,ip0 text,ic10 text,ic20 text,it1 text,ip1 text,ic11 text,ic21 text,it2 text,ip2 text,ic12 text,ic22 text,\
         it3 text,ip3 text,ic13 text,ic23 text,it4 text,ip4 text,ic14 text,ic24 text,it5 text,ip5 text,ic15 text,ic25 text,\
         it6 text,ip6 text,ic16 text,ic26 text,it7 text,ip7 text,ic17 text,ic27 text,it8 text,ip8 text,ic18 text,ic28 text,\
@@ -452,13 +451,13 @@ def new_data():
         it15 text,ip15 text,ic115 text,ic215 text,it16 text,ip16 text,ic116 text,ic216 text,it17 text,ip17 text,ic117 text,ic217 text,\
         it18 text,ip18 text,ic118 text,ic218 text,it19 text,ip19 text,ic119 text,ic219 text,it20 text,ip20 text,ic120 text,ic220 text,\
         it21 text,ip21 text,ic121 text,ic221 text,it22 text,ip22 text,ic122 text,ic222 text,it23 text,ip23 text,ic123 text,ic223 text,\
-        it24 text,ip24 text,ic124 text,ic224 text,it25 text,ip25 text,ic125 text,ic225)")
-    '''for i in range(13): com.execute("INSERT INTO inventory" + str(ID) + " VALUES(\
-        '_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_',\
-        '_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_',\
-        '_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_',\
-        '_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_',\
-        '_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_','_','0000','_','_','_',0000','_','_')")'''
+        it24 text,ip24 text,ic124 text,ic224 text,it25 text,ip25 text,ic125 text,ic225)")'''
+
+    com.execute("CREATE TABLE inventory" + str(ID) + " (item text,position text,properties text,acc1 text,acc2 text)")
+    for u in range(6):
+        for x in range(5):
+            for y in range(5):
+                com.execute("INSERT INTO inventory" + str(ID) + " VALUES('_','" + str(u) + str(x) + str(y) + "','0000','_','_')")
     tbl.commit()
  
     com.execute("DROP TABLE IF EXISTS storage" + str(ID))
@@ -582,6 +581,7 @@ def load_data():
     res = com.fetchall()
     CONTACTS = []
     for i in res: CONTACTS.append(NUMBERS[i[0]].copy())
+    CONTACTS = [['Maicon','923778988'],['Mercador','969696969'],['Pizza Delivery','953478809']]
  
     com.execute("SELECT * FROM callhist" + str(ID))
     res = com.fetchall()
@@ -622,9 +622,24 @@ def load_data():
             i[2] = 0
             i[3] = ''
      
-    '''com.execute("SELECT * FROM inventory"+ str(ID))
+    com.execute("SELECT * FROM inventory"+ str(ID))
     res = com.fetchall()
-    itm = 1
+    INVENTORY = []
+    for u in range(6):
+        INVENTORY.append([])
+        for x in range(5):
+            INVENTORY[u].append([])
+            for y in range(5):
+                for i in res:
+                    if int(i[1][0]) == u and int(i[1][1]) == x and int(i[2][2]) == y:
+                        INVENTORY[u][x].append([i[0],i[2],i[3],i[4]])
+
+    com.execute("SELECT * FROM storage"+ str(ID))
+    res = com.fetchall()
+    STORAGE = []
+    for i in res:
+        STORAGE.append([i[0],i[1],i[2],i[3]])
+    '''itm = 1
     for i in range(len(res)):
         INVENTORY[i][0] = res[i][0]
         for y in range(len(INVENTORY[i])):
@@ -681,9 +696,17 @@ def save_data():
     for i in BESTIARY:
         com.execute("""UPDATE bestiary""" + str(ID) + """ SET id = :id, date = :date, seen = :seen WHERE idx = :idx""",{'idx': i['N'],'id': i['ID'],'date': i['DATE'],'seen': i['SEEN']})
         tbl.commit()
-    '''
-    for n in range(len(INVENTORY)):
-        com.execute("UPDATE inventory" + str(ID) + " SET it1 = :it1")'''
+    
+    for u in range(6):
+        for x in range(5):
+            for y in range(5):
+                com.execute("UPDATE inventory" + str(ID) + " SET item = :item, properties = :properties, acc1 = :acc1, acc2 = :acc2 WHERE position = :position",
+                    {'item': INVENTORY[u][x][y][0],'position': str(u) + str(x) + str(y),'properties': INVENTORY[u][x][y][1], 'acc1': INVENTORY[u][x][y][2],'acc2': INVENTORY[u][x][y][3]})
+                tbl.commit() 
+
+    '''for i in STORAGE:
+        com.execute("""UPDATE storage""" + str(ID) + """ SET id = :id, date = :date, seen = :seen WHERE idx = :idx""",{'idx': i['N'],'id': i['ID'],'date': i['DATE'],'seen': i['SEEN']})
+        tbl.commit()''' 
  
     com.close()
     tbl.close()

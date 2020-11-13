@@ -212,6 +212,8 @@ class Title:
 				self.windoww = event.w
 				self.windowh = event.h
 				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
+				self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', math.floor(self.windoww/300) * 8)}
+				self.display[1] = pygame.Surface((self.windoww, self.windowh), pygame.SRCALPHA)
 
 			if self.mnu == 4 and self.n.ind == 7: self.mnu = 2
 			self.pressed = pygame.key.get_pressed()
@@ -256,6 +258,7 @@ class Title:
 			if self.lopt > len(resources.FILES[0]): self.lopt = 0
 
 		for i in self.display: i.fill((0,0,0,0))
+		rztxt = math.floor((self.windoww/300)/2)
 
 		#FILES MENU
 		if self.mnu != 5:
@@ -293,7 +296,7 @@ class Title:
 				if self.lopt == i: col = (255,255,0)
 				else: col = (255,255,255)
 				pygame.draw.rect(self.display[0], col, pygame.Rect(400,100 + (i * 51),180,50))
-				self.display[1].blit(self.fnt['DEFAULT'].render(database.CHAPTERS[resources.FILES[1][i]][0], True, (0,0,0)), (810, (105 + (i * 51)) * 2))
+				self.display[1].blit(self.fnt['DEFAULT'].render(database.CHAPTERS[resources.FILES[1][i]][0], True, (0,0,0)), (420 * rztxt, (105 + (i * 51)) * rztxt))
 
 				if self.mnu > 2 and self.lopt == i:
 					if self.opt == 0: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(528,113 + (i * 51),24,24))
@@ -305,16 +308,16 @@ class Title:
 			if self.lopt == len(resources.FILES[0]): col = (255,255,0)
 			else: col = (255,255,255)
 			pygame.draw.rect(self.display[0], col, pygame.Rect(400,100 + (len(resources.FILES[1]) * 51),180,50))
-			self.display[1].blit(self.fnt['DEFAULT'].render(database.MENU[61], True, (0,0,0)), (810, (210 + (len(resources.FILES[1]) * 51) * 2)))
+			self.display[1].blit(self.fnt['DEFAULT'].render(database.MENU[61], True, (0,0,0)), (405 * rztxt, (210 + (len(resources.FILES[1]) * 51)) * rztxt))
 
 		#RECAP
 		if self.mnu == 5:
 			lt = 0
 			self.display[0].blit(pygame.image.load('Backgrounds/recap_' + str(resources.CHAPTER) + '.png'), (0, -self.scroll))
 			for y in database.CHAPTERS[resources.CHAPTER - 1][2]:
-				self.display[1].blit(self.fnt['DEFAULT'].render(y, True, (0,0,0)), (201, 1 + (360 - math.floor(self.scroll * 1.2) + lt) * 2))
-				self.display[1].blit(self.fnt['DEFAULT'].render(y, True, (0,0,0)), (202, 2 + (360 - math.floor(self.scroll * 1.2) + lt) * 2))
-				self.display[1].blit(self.fnt['DEFAULT'].render(y, True, (255,255,255)), (200, (360 - math.floor(self.scroll * 1.2) + lt) * 2))
+				self.display[1].blit(self.fnt['DEFAULT'].render(y, True, (0,0,0)), (101 * rztxt, 1 + (360 - math.floor(self.scroll * 1.2) + lt) * rztxt))
+				self.display[1].blit(self.fnt['DEFAULT'].render(y, True, (0,0,0)), (102 * rztxt, 2 + (360 - math.floor(self.scroll * 1.2) + lt) * rztxt))
+				self.display[1].blit(self.fnt['DEFAULT'].render(y, True, (255,255,255)), (100 * rztxt, (360 - math.floor(self.scroll * 1.2) + lt) * rztxt))
 				lt += 20
 
 			self.scroll += 1
@@ -334,8 +337,8 @@ class Title:
 
 		#INFO
 		if self.mnu > 0 and self.mnu < 5:
-			self.display[1].blit(self.fnt['DEFAULT'].render(database.ABOUT[0] + ' ' + resources.VERSION, True, (240,240,240)), (-70 + (self.winbar * 2), -70 + (self.winbar * 2)))
-			self.display[1].blit(self.fnt['DEFAULT'].render(database.ABOUT[1], True, (240,240,240)), (1060 - (self.winbar * 2), 840 - (self.winbar * 2)))
+			self.display[1].blit(self.fnt['DEFAULT'].render(database.ABOUT[0] + ' ' + resources.VERSION, True, (240,240,240)), ((-35 + self.winbar) * rztxt, (-35 + self.winbar) * rztxt))
+			self.display[1].blit(self.fnt['DEFAULT'].render(database.ABOUT[1], True, (240,240,240)), ((530 - self.winbar) * rztxt, (420 - self.winbar) * rztxt))
 
 			#HOLIDAYS
 			for i in database.HOLIDAYS:
@@ -356,7 +359,8 @@ class Title:
 				self.mnu = 5
 
 		self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (0, 0))
-		self.screen.blit(pygame.transform.scale(self.display[1], (self.windoww, self.windowh)), (0, 0))
+		#self.screen.blit(pygame.transform.scale(self.display[1], (self.windoww, self.windowh)), (0, 0))
+		self.screen.blit(self.display[1], (0, 0))
 
 		#LOGO
 		if self.mnu == 0:
@@ -453,7 +457,7 @@ class Game:
 			self.barhpl.append(100)
 			if resources.CHARACTERS[i]['XP'] > 0: self.barxp.append(int(100/(resources.CHARACTERS[i]['NEXTLEVEL'][resources.CHARACTERS[i]['LEVEL']]/resources.CHARACTERS[i]['XP'])))
 			else: self.barxp.append(0)
-			for j in database.INVENTORY[resources.PARTY[resources.FORMATION][x]][4][1:]:
+			for j in resources.INVENTORY[resources.PARTY[resources.FORMATION][x]][4][1:]:
 				if j[0] != '_':
 					if int(j[1]) > 0: b = int(100/(database.ITEMS[j[0]][5]['CAPACITY']/int(j[1])))
 					else: b = 0
@@ -954,11 +958,11 @@ class Game:
 							self.basket = []
 							j = 0
 							x = 0
-							for p in range(len(database.INVENTORY)):
+							for p in range(len(resources.INVENTORY)):
 								if p in resources.PARTY[resources.FORMATION]:
-									for t in database.INVENTORY[p]:
+									for t in resources.INVENTORY[p]:
 										for k in t:
-											if k[0] != '_' and database.ITEMS[database.INVENTORY[p][j][x][0]][2] != 0:
+											if k[0] != '_' and database.ITEMS[resources.INVENTORY[p][j][x][0]][2] != 0:
 												self.basket.append([p,j,x])
 											x += 1
 										x = 0
@@ -1264,7 +1268,7 @@ class Game:
 
 					if self.pressed[resources.ACT[0]]:
 						if self.equip[self.turn] < 4:
-							if int(database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1]) > 0:
+							if int(resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1]) > 0:
 								self.ch_sfx.play(resources.SOUND['GUN_TRIGGER'])
 								self.mnu = 2
 							else:
@@ -1358,8 +1362,8 @@ class Game:
 								self.shp = False
 								self.lopt = 0
 							elif self.confirmation() == 1:
-								resources.MONEY += int(database.ITEMS[database.INVENTORY[self.basket[self.lopt][0]][self.basket[self.lopt][1]][self.basket[self.lopt][2]][0]][2]/2)
-								database.INVENTORY[self.basket[self.lopt][0]][self.basket[self.lopt][1]][self.basket[self.lopt][2]] = ['_','0000','_','_']
+								resources.MONEY += int(database.ITEMS[resources.INVENTORY[self.basket[self.lopt][0]][self.basket[self.lopt][1]][self.basket[self.lopt][2]][0]][2]/2)
+								resources.INVENTORY[self.basket[self.lopt][0]][self.basket[self.lopt][1]][self.basket[self.lopt][2]] = ['_','0000','_','_']
 								del self.basket[self.lopt]
 								self.ch_sfx.play(resources.SOUND['SELL'])
 
@@ -1475,62 +1479,62 @@ class Game:
 
 				if self.pressed[resources.ACT[0]] and self.opt < 4:
 					if self.inv.itmov == '':
-						if database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('food') and resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['HEALTH'] != 10:
+						if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('food') and resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['HEALTH'] != 10:
 							self.ch_ton.play(resources.SOUND['HEAL'])
-							hl = database.ITEMS[database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0]][5]
-							if database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2] != '_': hl += database.ITEMS[database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2]][5]
-							if database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3] != '_': hl += database.ITEMS[database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3]][5]
-							if database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] in resources.CHARACTERS[self.mnu]['FAVFOOD']:
+							hl = database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0]][5]
+							if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2] != '_': hl += database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2]][5]
+							if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3] != '_': hl += database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3]][5]
+							if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] in resources.CHARACTERS[self.mnu]['FAVFOOD']:
 								hl += int(hl/2)
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['HP'] += hl
 							if resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['HP'] > resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['VITALITY'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['LEVEL']]:
 								resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['HP'] = resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['VITALITY'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['LEVEL']]
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 
-						elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('repellent'):
+						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('repellent'):
 							self.ch_sfx.play(resources.SOUND['MENU_GO'])
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['HEALTH'] = 2
 							self.waitlst.append(['repellent' + str(resources.PARTY[resources.FORMATION][self.mnu]),self.waitime + 7200])
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 
-						elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_strenght':
+						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_strenght':
 							self.ch_ton.play(resources.SOUND['ATTRIBUTE_GAIN'])
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['LEVEL'] += 1
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 
-						elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_attack':
+						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_attack':
 							self.ch_ton.play(resources.SOUND['ATTRIBUTE_GAIN'])
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['LEVEL'] += 1
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 
-						elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_agility':
+						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_agility':
 							self.ch_ton.play(resources.SOUND['ATTRIBUTE_GAIN'])
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['LEVEL'] += 1
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 
-						elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_resistance':
+						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_resistance':
 							self.ch_ton.play(resources.SOUND['ATTRIBUTE_GAIN'])
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['LEVEL'] += 1
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 
-						elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_vitality':
+						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_vitality':
 							self.ch_ton.play(resources.SOUND['ATTRIBUTE_GAIN'])
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['LEVEL'] += 1
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 
-						elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_mistery':
+						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_mistery':
 							self.ch_ton.play(resources.SOUND['ATTRIBUTE_GAIN'])
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['LEVEL'] += 1
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 
-						elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('locksmith'):
+						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('locksmith'):
 							self.ch_ton.play(resources.SOUND['MENU_GO'])
-							self.inv.itmov = [0,database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2],database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3]]
+							self.inv.itmov = [0,resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2],resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3]]
 							self.exvar = 1
 
-						elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'wallet':
+						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'wallet':
 							self.ch_ton.play(resources.SOUND['MENU_GO'])
-							self.inv.itmov = [0,database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2],database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3]]
+							self.inv.itmov = [0,resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2],resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3]]
 							self.inv.money = True
 							self.exvar = 1
 
@@ -1548,35 +1552,35 @@ class Game:
 							self.inv.money = False
 						else: self.ch_ton.play(resources.SOUND['ERROR'])
 
-					elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] != '_':
+					elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] != '_':
 						craft = False
-						if self.inv.itmov[0].startswith('key') and database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('locksmith'): craft = True
-						if self.inv.itmov[0].startswith('id_card') and database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('wallet'): craft = True
-						if self.inv.itmov[0].startswith('credit_card') and database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('wallet'): craft = True
-						elif self.inv.itmov[0].startswith('condiment') and database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('food'): craft = True
-						elif self.inv.itmov[0].startswith('acc') and database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('gun'): craft = True
+						if self.inv.itmov[0].startswith('key') and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('locksmith'): craft = True
+						if self.inv.itmov[0].startswith('id_card') and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('wallet'): craft = True
+						if self.inv.itmov[0].startswith('credit_card') and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('wallet'): craft = True
+						elif self.inv.itmov[0].startswith('condiment') and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('food'): craft = True
+						elif self.inv.itmov[0].startswith('acc') and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('gun'): craft = True
 
 						if craft == True:
-							if database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2] == '_':
+							if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2] == '_':
 								self.ch_ton.play(resources.SOUND['CRAFT'])
-								database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2] = self.inv.itmov[0]
-								database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = self.inv.itmov[1] + database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1]
+								resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2] = self.inv.itmov[0]
+								resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = self.inv.itmov[1] + resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1]
 								self.inv.itmov = ''
-							elif database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3] == '_':
+							elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3] == '_':
 								self.ch_ton.play(resources.SOUND['CRAFT'])
-								database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3] = self.inv.itmov[0]
-								database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] += self.inv.itmov[1]
+								resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][3] = self.inv.itmov[0]
+								resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] += self.inv.itmov[1]
 								self.inv.itmov = ''
 							else: self.ch_ton.play(resources.SOUND['ERROR']); self.shake = 5
 
-						elif self.inv.itmov[0].startswith('ammo') and database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('gun'):
+						elif self.inv.itmov[0].startswith('ammo') and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('gun'):
 							self.ch_ton.play(resources.SOUND['GUN_RECHARGE'])
-							if int(database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][4][self.equip[self.mnu] + 1][1]) > 0:
-								plus = int(100/(database.ITEMS[database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][4][self.equip[self.mnu] + 1][0]][5]['CAPACITY']/int(database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][4][self.equip[self.mnu] + 1][1])))
+							if int(resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][4][self.equip[self.mnu] + 1][1]) > 0:
+								plus = int(100/(database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][4][self.equip[self.mnu] + 1][0]][5]['CAPACITY']/int(resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][4][self.equip[self.mnu] + 1][1])))
 							else: plus = 0
 							while self.barpp[self.mnu][self.equip[self.mnu]] < plus:
 								self.barpp[self.mnu][self.equip[self.mnu]] += 1
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1]
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1]
 							self.inv.itmov = ''
 
 						else: self.ch_ton.play(resources.SOUND['ERROR']); self.inv.shake = 5
@@ -1593,25 +1597,25 @@ class Game:
 							if self.exvar < 3 and self.inv.itmov[self.exvar] != '_':
 								self.ch_sfx.play(resources.SOUND['MENU_GO'])
 								itm = self.inv.itmov[self.exvar]
-								database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][self.exvar + 1] = '_'
+								resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][self.exvar + 1] = '_'
 								if self.exvar == 1:
-									prp = database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][0:4]
-									database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][4:8]
+									prp = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][0:4]
+									resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][4:8]
 								if self.exvar == 2:
-									if database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2] == '_':
-										prp = database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][0:4]
-										database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = ''
+									if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2] == '_':
+										prp = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][0:4]
+										resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = ''
 									else:
-										prp = database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][4:8]
-										database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][0:4]
+										prp = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][4:8]
+										resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1][0:4]
 								self.inv.itmov = [itm,prp,'_','_']
 								self.inv.money = False
 							else: self.ch_sfx.play(resources.SOUND['ERROR']); self.inv.shake = 5
 
 						#PLACE ITEM IN INVENTORY
-						elif self.opt < 5 and database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == '_' and self.inv.space(resources.PARTY[resources.FORMATION][self.mnu],self.exvar,self.opt,self.lopt) == True:
+						elif self.opt < 5 and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == '_' and self.inv.space(resources.PARTY[resources.FORMATION][self.mnu],self.exvar,self.opt,self.lopt) == True:
 							self.ch_sfx.play(resources.SOUND['EQUIP'])
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = self.inv.itmov.copy()
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = self.inv.itmov.copy()
 							if self.inv.itmov[0].startswith('clth'):
 								resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['COSTUME'] = database.ITEMS[self.inv.itmov[0]][5]
 							if self.inv.itmov[0].startswith('head'):
@@ -1637,8 +1641,8 @@ class Game:
 						#SWITCH ITEMS IN INVENTORY
 						elif self.opt < 5 and self.inv.space(self.mnu,self.exvar,self.opt,self.lopt) == True:
 							self.ch_sfx.play(resources.SOUND['EQUIP'])
-							trd = database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt].copy()
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = self.inv.itmov
+							trd = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt].copy()
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = self.inv.itmov
 							if self.inv.itmov[0].startswith('clth'):
 								resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['COSTUME'] = database.ITEMS[self.inv.itmov[0]][5]
 							self.inv.itmov = trd
@@ -1655,10 +1659,10 @@ class Game:
 						else: self.ch_sfx.play(resources.SOUND['ERROR']); self.inv.shake = 5
 
 					#TAKE ITEM FROM INVENTORY
-					elif self.opt < 5 and database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] != '_':
+					elif self.opt < 5 and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] != '_':
 						self.ch_sfx.play(resources.SOUND['MENU_GO'])
-						self.inv.itmov = database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt].copy()
-						database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
+						self.inv.itmov = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt].copy()
+						resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 
 					#TAKE ITEM FROM STORAGE
 					elif database.STORAGE[self.opt + (self.lopt * 5) - 5][0] != '_':
@@ -1667,8 +1671,8 @@ class Game:
 						database.STORAGE[self.opt + (self.lopt * 5) - 5] = ['_','0000','_','_']
 
 					'''elif self.inventory == 3:
-						if database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] != '_' and self.confirmation() == 1:
-							database.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']'''
+						if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] != '_' and self.confirmation() == 1:
+							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']'''
 
 				if self.inventory == 1:
 					if self.opt < 0: self.opt = 4; self.mnu -= 1
@@ -2229,7 +2233,7 @@ class Game:
 							self.phone = 0
 							self.ch_msc.play(resources.SOUND['AMBIENCE_SIREN'],-1)
 							self.transiction(False, 50)
-							#self.dialog(database.DIALOGS['DALIBOR'][0])
+							self.dialog(database.DIALOGS['HHBIANCA'][0])
 							self.player[0]['PAUSE'] = 0
 							self.transiction(False,0)
 
@@ -3237,22 +3241,22 @@ class Game:
 			again = False
 			self.mnu = 3
 			if self.equip[self.turn] < 4:
-				pp = int(database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1])
+				pp = int(resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1])
 				pp -= 1
-				database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1] = str(pp)
+				resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1] = str(pp)
 				gottem = False
 				for i in self.foe:
 					if self.colide(self.aim, i['MASK']) and i['FIGHTING'] == True:
 						gottem = True
-						dmg = int(random.randint(database.ITEMS[database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0]][5]['DAMAGE'] - 2,\
-						database.ITEMS[database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0]][5]['DAMAGE'] + 2)) - i['RESISTANCE']
+						dmg = int(random.randint(database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0]][5]['DAMAGE'] - 2,\
+						database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0]][5]['DAMAGE'] + 2)) - i['RESISTANCE']
 						if resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.turn]]['HEALTH'] == 11: dmg = int(dmg/2)
 						if i['HEALTH'] != 1: i['SPRITE'] = pygame.image.load('Sprites/frk_' + (i['FILE']) + '_damage.png')
 
 						if dmg > 0:
 							for p in range(dmg * 2):
 								self.particles.append({'TYPE': 'blood', 'X': self.aim.x, 'Y': self.aim.y, 'RADIUS': round(random.randint(3,5)), 'DIRECTION': round(random.randint(0,360)), 'SPEED': round(random.randint(2,6))})
-							if dmg == database.ITEMS[database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0]][5]['DAMAGE'] + 2 - i['RESISTANCE']:
+							if dmg == database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0]][5]['DAMAGE'] + 2 - i['RESISTANCE']:
 								self.ch_sfx.play(resources.SOUND['CRITICAL'])
 								self.hitisplay(10, i['MASK'], database.BATTLE[3], (200, 0, 0))
 							else:
@@ -3362,7 +3366,7 @@ class Game:
 						if act[3] == 1:
 							if act[2] < 0:
 								if pl < len(self.fig):
-									for a in database.INVENTORY[pl][:-1]:
+									for a in resources.INVENTORY[pl][:-1]:
 										if a[0][0] != '_':
 											act[2] += int(database.ITEMS[a[0][0]][5])
 											a[0][1] = int(a[0][1])
@@ -3556,7 +3560,7 @@ class Game:
 			self.mnu = 3
 			for p in range(len(self.fig)):
 				dmg.append(5)
-				for a in database.INVENTORY[self.fig[p]['N']][:-1]:
+				for a in resources.INVENTORY[self.fig[p]['N']][:-1]:
 					if a[0][0] != '_':
 						dmg[p] += int(database.ITEMS[a[0][0]][5])
 						a[0][1] = int(a[0][1])
@@ -4427,8 +4431,8 @@ class Game:
 
 					#AMMO BAR
 					if self.equip[p] < 4:
-						if int(database.INVENTORY[resources.PARTY[resources.FORMATION][p]][4][self.equip[p] + 1][1]) > 0:
-							try: minush = int(98/(database.ITEMS[database.INVENTORY[resources.PARTY[resources.FORMATION][p]][4][self.equip[p] + 1][0]][5]['CAPACITY']/int(database.INVENTORY[resources.PARTY[resources.FORMATION][p]][4][self.equip[p] + 1][1])))
+						if int(resources.INVENTORY[resources.PARTY[resources.FORMATION][p]][4][self.equip[p] + 1][1]) > 0:
+							try: minush = int(98/(database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][p]][4][self.equip[p] + 1][0]][5]['CAPACITY']/int(resources.INVENTORY[resources.PARTY[resources.FORMATION][p]][4][self.equip[p] + 1][1])))
 							except: minush = 0
 						else: minush = 0
 						if self.barpp[p][self.equip[p]] > minush:
@@ -4449,12 +4453,12 @@ class Game:
 					#OPTIONS
 					if self.mnu == 1:
 						x = 0
-						for i in database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][1:]:
+						for i in resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][1:]:
 							if self.equip[self.turn] == x: pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(118 + x * 35,338,32,32))
 							else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(118 + x * 35,338,32,32))
 							pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(120 + x * 35,340,28,28))
-							if database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][x + 1][0] != '_':
-								self.display[0].blit(pygame.image.load('Sprites/Items/it_' + database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][x + 1][0] + '.png'), (120 + x * 35, 340))
+							if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][x + 1][0] != '_':
+								self.display[0].blit(pygame.image.load('Sprites/Items/it_' + resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][x + 1][0] + '.png'), (120 + x * 35, 340))
 							x += 1
 
 						if self.equip[self.turn] == 4: pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(304,338,30,30))
@@ -4486,13 +4490,13 @@ class Game:
 							if self.aim.x > 500 - self.patt[self.turn]:
 								self.aim.x = 100 + self.patt[self.turn]
 							chk = False
-							for i in database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1:]:
+							for i in resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1:]:
 								if i.startswith('aim') == True: chk = True; break
 							if chk == True:
 								self.display[0].blit(pygame.image.load('Sprites/aim_' + str(database.ITEMS[i][5]) + '.png'), (self.aim.x - 15, self.aim.y))
 							else:
 								self.display[0].blit(pygame.image.load('Sprites/aim_0.png'), (self.aim.x-15, self.aim.y))
-							self.display[0].blit(pygame.image.load('Sprites/' + database.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0] + '.png'), (150 + int(self.aim.x/2), 255))
+							self.display[0].blit(pygame.image.load('Sprites/' + resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0] + '.png'), (150 + int(self.aim.x/2), 255))
 
 					#TACTICS
 						elif self.equip[self.turn] == 4:
@@ -4647,8 +4651,8 @@ class Game:
 		#RADIOPLAY
 		if self.radonoff == True:
 			pygame.draw.rect(self.display[0], (255, 0, 135), pygame.Rect(0,0,180,50))
-			self.display[1].blit(self.fnt['DEFAULT'].render('Tocando:', True, (0, 0, 0)), (20, 10))
-			self.display[1].blit(self.fnt['DEFAULT'].render(resources.RADIO[str(math.floor(self.fm/20))][self.msc][:-4], True, (0, 0, 0)), (20, 50))
+			self.display[1].blit(self.fnt['DEFAULT'].render('Tocando:', True, (0, 0, 0)), (10 * 2, 5 * 2))
+			self.display[1].blit(self.fnt['DEFAULT'].render(resources.RADIO[str(math.floor(self.fm/20))][self.msc][:-4], True, (0, 0, 0)), (10 * 2, 25 * 2))
 			lyr2 = True
 		if pygame.mixer.music.get_busy() == False and self.radonoff == True:
 			self.msc += 1
@@ -4677,23 +4681,25 @@ class Game:
 							else: lng += 7
 						lng += 20'''
 
-					if isinstance(i,str): txt = self.fnt['DEFAULT'].render(i, True, (255, 255, 255))
+					if isinstance(i,str):
+						txt = self.fnt['DEFAULT'].render(i, True, (255, 255, 255))
+						txtsz = math.floor(self.fnt['DEFAULT'].size(i)[0]/2) + 10
 					if i != 1 and i != 0 and len(i) != 0:
 						if sd == False:
-							pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(20,200 - self.dlgy,5 + txt.get_width(),25))
-							pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(20,225 - self.dlgy,5 + txt.get_width(),5))
+							pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(20,200 - self.dlgy,5 + txtsz,25))
+							pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(20,225 - self.dlgy,5 + txtsz,5))
 							pygame.draw.polygon(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), ((25,225 - self.dlgy),(45,225 - self.dlgy),(25,235 - self.dlgy)))
 							pygame.draw.polygon(self.display[0], (0, 0, 0), ((25,221 - self.dlgy),(45,221 - self.dlgy),(25,231 - self.dlgy)))
 							lyr2 = True
 						else:
 							if self.lopt == opt:
-								pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(578 - txt.get_width(),200 - self.dlgy,5 + txt.get_width(),25))
-								pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(578 - txt.get_width(),225 - self.dlgy,5 + txt.get_width(),5))
+								pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(578 - txtsz,200 - self.dlgy,5 + txtsz,25))
+								pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(578 - txtsz,225 - self.dlgy,5 + txtsz,5))
 								pygame.draw.polygon(self.display[0], (0, 0, 0), ((558,225 - self.dlgy),(578,225 - self.dlgy),(578,235 - self.dlgy)))
 								pygame.draw.polygon(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), ((558,221 - self.dlgy),(578,221 - self.dlgy),(578,231 - self.dlgy)))
 							else:
-								pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(578 - txt.get_width(),200 - self.dlgy,5 + txt.get_width(),25))
-								pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(578 - txt.get_width(),225 - self.dlgy,5 + txt.get_width(),5))
+								pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(578 - txtsz,200 - self.dlgy,5 + txtsz,25))
+								pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(578 - txtsz,225 - self.dlgy,5 + txtsz,5))
 								pygame.draw.polygon(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), ((558,225 - self.dlgy),(578,225 - self.dlgy),(578,235 - self.dlgy)))
 								pygame.draw.polygon(self.display[0], (0, 0, 0), ((558,221 - self.dlgy),(578,221 - self.dlgy),(578,231 - self.dlgy)))
 							opt += 1
@@ -4704,7 +4710,7 @@ class Game:
 						if sd == False:
 							self.display[1].blit(txt, (30 * 2, (207 - self.dlgy) * 2))
 						else:
-							self.display[1].blit(txt, ((588 - txt.get_width()) * 2, (207 - self.dlgy) * 2))
+							self.display[1].blit(txt, ((588 - txtsz) * 2, (207 - self.dlgy) * 2))
 						self.dlgy += 40
 					ind += 1
 
@@ -4714,7 +4720,7 @@ class Game:
 			else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-183 + self.notx,27,186,56))
 			pygame.draw.rect(self.display[0], self.notcol, pygame.Rect(-180 + self.notx,30,180,50))
 			if isinstance(self.nottxt,str):
-				self.display[1].blit(self.fnt['DEFAULT'].render(self.nottxt, True, (0, 0, 0)), (-170 + self.notx, 40))
+				self.display[1].blit(self.fnt['DEFAULT'].render(self.nottxt, True, (0, 0, 0)), ((-85 + self.notx) * 2, 40 * 2))
 			else:
 				pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-170 + self.notx,40,160,30))
 				pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-168 + self.notx,42,156,26))
@@ -4963,7 +4969,7 @@ class Game:
 						self.dialog(database.DIALOGS['ADVICE'])
 
 		#FOOD WASTE
-		for b in database.INVENTORY:
+		for b in resources.INVENTORY:
 			for j in b:
 				for i in j:
 					if i[0].startswith('food') == True and i[0].endswith('wasted') == False:

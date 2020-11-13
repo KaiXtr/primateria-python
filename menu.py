@@ -282,11 +282,11 @@ class Inventory:
 	def find(self, where, item):
 		fnd = None
 		if where != None:
-			for y in database.INVENTORY[where]:
+			for y in resources.INVENTORY[where]:
 				for x in y:
 					if x[0] == item and fnd == None: fnd = x
 		else:
-			for i in database.INVENTORY:
+			for i in resources.INVENTORY:
 				for y in i:
 					for x in y:
 						if x[0] == item and fnd == None: fnd = x
@@ -297,20 +297,20 @@ class Inventory:
 		i = 0
 		j = 0
 		trigg = False
-		for y in database.INVENTORY[where]:
+		for y in resources.INVENTORY[where]:
 			if j != 4:
 				for x in y:
 					if i != 0 and x[0] == '_' and trigg == False:
 						vi = prp
 						if item.startswith('food'):
-							dd = resources.DATE[0] + int(database.ITEMS[item][6][0:2])
-							mm = resources.DATE[1] + int(database.ITEMS[item][6][2:4])
+							dd = resources.DATE[0] + int(resources.ITEMS[item][6][0:2])
+							mm = resources.DATE[1] + int(resources.ITEMS[item][6][2:4])
 							if dd > 30: dd -= 30; mm += 1
 							if mm > 12: dd += 1; mm -= 12
 							if dd < 10: dd = '0' + str(dd)
 							if mm < 10: mm = '0' + str(mm)
 							vi = str(dd) + str(mm)
-						database.INVENTORY[where][j][i] = [item,vi,'_','_']
+						resources.INVENTORY[where][j][i] = [item,vi,'_','_']
 						trigg = True
 					i += 1
 			j += 1
@@ -330,22 +330,22 @@ class Inventory:
 			vlm = 0
 			wei = 0
 		trigg = True
-		for y in database.INVENTORY[where]:
+		for y in resources.INVENTORY[where]:
 			if j != 4:
 				for x in y:
 					if x[0] != '_' and i!= 0:
 						vlm += database.ITEMS[x[0]][3]
 						wei += database.ITEMS[x[0]][4]
-						if database.INVENTORY[where][4][0][0] != '_':
-							if vlm > database.ITEMS[database.INVENTORY[where][4][0][0]][3]: trigg = False
-							if wei > database.ITEMS[database.INVENTORY[where][4][0][0]][4]: trigg = False
+						if resources.INVENTORY[where][4][0][0] != '_':
+							if vlm > database.ITEMS[resources.INVENTORY[where][4][0][0]][3]: trigg = False
+							if wei > database.ITEMS[resources.INVENTORY[where][4][0][0]][4]: trigg = False
 					i += 1
 			j += 1
 			i = 0
 
 		if lopt == 4: trigg = True
 		elif opt == 0: trigg = True
-		if database.INVENTORY[where][4][0][0] == '_': trigg = True
+		if resources.INVENTORY[where][4][0][0] == '_': trigg = True
 		return trigg
 
 	def show(self, opt, lopt, mn, ex, tp):
@@ -374,20 +374,20 @@ class Inventory:
 		#INVENTORY FOR EACH ONE IN THE PARTY
 		for n in resources.PARTY[resources.FORMATION]:
 			self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[n]['NAME'], True, (255, 255, 255)), ((10 + (200 * mnc) - self.scroll) * 2, 25))
-			for j in range(len(database.INVENTORY[n])):
+			for j in range(len(resources.INVENTORY[n])):
 				if opty == 4: y += 5
-				for i in database.INVENTORY[n][j]:
+				for i in resources.INVENTORY[n][j]:
 					if optx == 1: x += 5
 
 					trigg = False
 					if optx == 0 or opty == 4: trigg = True
-					elif database.INVENTORY[mnc][4][0][0] != '_': trigg = True
+					elif resources.INVENTORY[mnc][4][0][0] != '_': trigg = True
 
 					if trigg == True:
 						if opt == optx and lopt == opty and mn == mnc:
 							if tp == 0: pygame.draw.rect(self.scr[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(x + (200 * mnc) - self.scroll,y,30,30))
 							if tp == 1: pygame.draw.rect(self.scr[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(x,y + (210 * mnc) - self.scroll,30,30))
-							dscr = database.INVENTORY[resources.PARTY[resources.FORMATION][mn]][lopt][opt][0]
+							dscr = resources.INVENTORY[resources.PARTY[resources.FORMATION][mn]][lopt][opt][0]
 						else:
 							if tp == 0: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(x + (200 * mnc) - self.scroll,y,30,30))
 							if tp == 1: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(x,y + (210 * mnc) - self.scroll,30,30))
@@ -409,17 +409,17 @@ class Inventory:
 			if tp == 0:
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[78] + ':', True, (255, 255, 255)), ((65 + 200 * mnc - self.scroll) * 2, 15))
 				pygame.draw.rect(self.scr[0], (100, 100, 100), pygame.Rect(120 + (200 * mnc) - self.scroll,10,50,10))
-				if vlm > 0 and database.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120 + (200 * mnc) - self.scroll,10,int(50/(database.ITEMS[database.INVENTORY[mnc][4][0][0]][3]/vlm)),10))
+				if vlm > 0 and resources.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120 + (200 * mnc) - self.scroll,10,int(50/(database.ITEMS[resources.INVENTORY[mnc][4][0][0]][3]/vlm)),10))
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[79] + ':', True, (255, 255, 255)), ((65 + (200 * mnc) - self.scroll) * 2, 45))
 				pygame.draw.rect(self.scr[0], (100, 100, 100), pygame.Rect(120 + (200 * mnc) - self.scroll,25,50,10))
-				if wei > 0 and database.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120 + (200 * mnc) - self.scroll,25,int(50/(database.ITEMS[database.INVENTORY[mnc][4][0][0]][4]/wei)),10))
+				if wei > 0 and resources.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120 + (200 * mnc) - self.scroll,25,int(50/(database.ITEMS[resources.INVENTORY[mnc][4][0][0]][4]/wei)),10))
 			if tp == 1:
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[78] + ':', True, (255, 255, 255)), (65, (10 + (210 * mnc) - self.scroll) * 2))
 				pygame.draw.rect(self.scr[0], (100, 100, 100), pygame.Rect(120,12 + (210 * mnc) - self.scroll,50,10))
-				if vlm > 0 and database.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120,12 + (210 * mnc) - self.scroll,int(50/(database.ITEMS[database.INVENTORY[mnc][4][0][0]][3]/vlm)),10))
+				if vlm > 0 and resources.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120,12 + (210 * mnc) - self.scroll,int(50/(database.ITEMS[resources.INVENTORY[mnc][4][0][0]][3]/vlm)),10))
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[79] + ':', True, (255, 255, 255)), (65, (25 + (210 * mnc) - self.scroll) * 2))
 				pygame.draw.rect(self.scr[0], (100, 100, 100), pygame.Rect(120,27 + (210 * mnc) - self.scroll,50,10))
-				if wei > 0 and database.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120,27 + (210 * mnc) - self.scroll,int(50/(database.ITEMS[database.INVENTORY[mnc][4][0][0]][4]/wei)),10))
+				if wei > 0 and resources.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120,27 + (210 * mnc) - self.scroll,int(50/(database.ITEMS[resources.INVENTORY[mnc][4][0][0]][4]/wei)),10))
 
 			x = 10
 			y = 45
@@ -447,7 +447,7 @@ class Inventory:
 			opty = 0
 
 			self.scr[1].blit(self.fnt['CALIBRI'].render('Depositar', True, (255, 255, 255)), (420, (10 - self.strgscroll) * 2))
-			for j in database.STORAGE:
+			for j in resources.STORAGE:
 				if optx == 10:
 					x = 210
 					y += 32
@@ -489,7 +489,7 @@ class Inventory:
 				if self.money == True:
 					self.scr[0].blit(self.mnbor, (-35 + (mn * 200) + ox - self.scroll + self.shake,35 + lox))
 					pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(-30 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,50,30))
-					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(resources.MONEY), True, (255, 255, 255)), (-25 + (mn * 200) + ox - self.scroll + self.shake,45 + lox))
+					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(resources.MONEY), True, (255, 255, 255)), ((-25 + (mn * 200) + ox - self.scroll + self.shake) * 2,(45 + lox) * 2))
 
 				if ex == 1: pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(25 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
 				else: pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(25 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
@@ -644,9 +644,9 @@ class Shop:
 			elif i[0] == resources.PARTY[resources.FORMATION][opt - 1]:
 				if lopt == y:
 					pygame.draw.rect(self.scr, (255, 255, 255), pygame.Rect(15,50 + (y * 15),370,15))
-					self.scr[0].blit(self.fnt['CALIBRI'].render('$' + str(int(database.ITEMS[database.INVENTORY[i[0]][i[1]][i[2]][0]][2]/2)) + ' - ' + database.ITEMS[database.INVENTORY[i[0]][i[1]][i[2]][0]][0], True, (0, 0, 0)), (20, 50 + (y * 15)))
+					self.scr[0].blit(self.fnt['CALIBRI'].render('$' + str(int(database.ITEMS[resources.INVENTORY[i[0]][i[1]][i[2]][0]][2]/2)) + ' - ' + database.ITEMS[resources.INVENTORY[i[0]][i[1]][i[2]][0]][0], True, (0, 0, 0)), (20, 50 + (y * 15)))
 				else:
-					self.scr[0].blit(self.fnt['CALIBRI'].render('$' + str(int(database.ITEMS[database.INVENTORY[i[0]][i[1]][i[2]][0]][2]/2)) + ' - ' + database.ITEMS[database.INVENTORY[i[0]][i[1]][i[2]][0]][0], True, (255, 255, 255)), (20, 50 + (y * 15)))
+					self.scr[0].blit(self.fnt['CALIBRI'].render('$' + str(int(database.ITEMS[resources.INVENTORY[i[0]][i[1]][i[2]][0]][2]/2)) + ' - ' + database.ITEMS[resources.INVENTORY[i[0]][i[1]][i[2]][0]][0], True, (255, 255, 255)), (20, 50 + (y * 15)))
 				y += 1
 
 		if lopt != len(lst):
@@ -656,7 +656,7 @@ class Shop:
 					self.scr[0].blit(self.fnt['CALIBRI'].render(j, True, (255, 255, 255)), (20,200 + (l * 15)))
 					l += 1
 			else:
-				for t in database.ITEMS[database.INVENTORY[lst[lopt][0]][lst[lopt][1]][lst[lopt][2]][0]][1]:
+				for t in database.ITEMS[resources.INVENTORY[lst[lopt][0]][lst[lopt][1]][lst[lopt][2]][0]][1]:
 					self.scr[0].blit(self.fnt['CALIBRI'].render(t, True, (255, 255, 255)), (20,200 + (l * 15)))
 					l += 1
 
@@ -889,7 +889,7 @@ class Phone:
 		if flt == 0:
 			if opt != y/51: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,66 + y - self.scroll,sz,50))
 			else: pygame.draw.rect(self.scr[0], (15, 255, 0), pygame.Rect(0,66 + y - self.scroll,sz,50))
-			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[31], True, (0, 0, 0)), (20, 152 + y - self.scroll))
+			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[31], True, (0, 0, 0)), (20, (152 + y - self.scroll) * 2))
 		if y == 0 and flt == 1:
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[16], True, (255, 255, 255)), (100, 280))
 
@@ -1051,7 +1051,6 @@ class Phone:
 
 		if sg > 0:
 			y = 0
-			print(resources.FILES)
 			for i in range(len(resources.FILES[1])):
 				if opt != y: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,41 + (y * 51),sz,50))
 				else: pygame.draw.rect(self.scr[0], (255, 255, 10), pygame.Rect(0,41 + (y * 51),sz,50))
