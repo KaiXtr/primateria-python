@@ -128,7 +128,7 @@
  <objectgroup id="10" name="PORTAL">
   <object id="28" name="portal_0" type="0" x="60" y="207.333" width="5" height="36.6667">
    <properties>
-    <property name="MAP" value="urban_0"/>
+    <property name="MAP" value="1urban_0"/>
     <property name="PX" type="int" value="493"/>
     <property name="PY" type="int" value="675"/>
    </properties>

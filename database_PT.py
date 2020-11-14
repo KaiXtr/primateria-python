@@ -282,7 +282,7 @@ ARMY = [[],[],[],[],[]]
 for i in range(40): ARMY[0].append('madladcat')
      
 ITEMS = {
-#BAGS
+#BAGS (name,description,price,volume,weight)
 'bag1': ['bolsinha',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 5 - Peso: 5'],1000,5,5],
 'bag2': ['bolsa',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 10 - Peso: 10'],2500,10,10],
 'bag3': ['mochila',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 20 - Peso: 15'],5000,20,15],
@@ -292,7 +292,7 @@ ITEMS = {
 'bottle250': ['garrafa de sulfúrio 250ml',['Feita especialmente para guardar sangue verde.','Capacidade de 25 inimigos'],200,1,1],
 'wallet': ['carteira',['Use para guardar seu dinheiro e coisas pequenos,','JAMAIS PERCA ISSO'],50,1,1],
    
-#CUSTOM CLOTHES
+#CUSTOM CLOTHES (name,description,price,volume,weight,armor,[costume])
 'head_hairclip': ['xuxinha',['Pra amarrar o cabelo.'],30,1,1,3],
 'head_cap1': ['boné',['Pra proteger do sol e ficar estiloso.'],30,2,1,1],
 'head_cap2': ['gorro',['Pra proteger do sol e ficar estiloso.'],30,2,1,1],
@@ -312,7 +312,7 @@ ITEMS = {
 'clth_jacket5': ['moletom azul',['Pra aqueles que não tem paciêcia','pra escolher roupa.'],30,4,1,'05'],
 'clth_jacket6': ['avental',['Para pesquisadores.'],30,4,1,'06'],
 
-#VESTS
+#VESTS (name,description,price,volume,weight,armor,duration)
 'vest1': ['colete amarelo',['Cuidado pra não pensarem que','é um francês manifestante.'],30,3,1,1,10],
 'vest2': ['colete salva-vidas',['Mesmo sem água por perto, protege bastante.'],60,2,1,3,15],
 'vest3': ['colete I',['Reduz o dano do advesário','DEFESA: 5 DURAÇÃO: 25'],120,3,1,5,20],
@@ -322,7 +322,7 @@ ITEMS = {
 'vest7': ['colete III',['Restrito apenas para','policiais de elite.'],600,3,1,16,40],
 'vest8': ['colete IV',['Restrito apenas para','policiais de elite.'],720,3,1,20,45],
  
-#CHARMS
+#CHARMS (name,description,price,volume,weight,armor,duration)
 'amulet1': ['cruz',['Conçede proteção e espanta espíritos.'],20,1,1,5,50],
 'amulet2': ['ankh',['Conçede proteção e espanta espíritos.'],20,1,1,10,50],
 'amulet3': ['hamsá',['Conçede força e proteção.'],20,1,1,15,50],
@@ -331,7 +331,7 @@ ITEMS = {
 'amulet6': ['ouroboros',['Conçede força, proteção,','vitalidade e resistência.'],20,1,1,25,50],
 'amulet7': ['muiraquitã',['Conçede aumento em todos os atributos.'],20,1,1,25,50],
  
-#AMMO
+#AMMO (name,description,price,volume,weight,calibre)
 'ammo_tranquiizer': ['tranquilizante',['Munição para pistola que faz','o inimigo adormecer.'],100,2,1,0],
 'ammo.12': ['munição.12',[''],200,2,1,12],
 'ammo.16': ['munição.16',[''],200,2,1,16],
@@ -345,7 +345,7 @@ ITEMS = {
 'ammo.5.56mm': ['munição 5.56mm',[''],200,2,1,556],
 'ammo_missile': ['míssel',[''],800,5,4,1000],
  
-#TOOLS
+#TOOLS (name,description,price,volume,weight,{damage,unlock})
 'tool_crowbar': ['pé de cabra',['Use para abrir portas trancadas.'],50,4,3,{'DAMAGE': 5, 'UNLOCK': 'door'}],
 'tool_axe': ['machado',['Use para quebrar madeira.'],50,4,4,{'DAMAGE': 5, 'UNLOCK': 'wood'}],
 'tool_hammer': ['marreta',['Use para quebrar vidro.'],50,4,5,{'DAMAGE': 5, 'UNLOCK': 'stone'}],
@@ -355,9 +355,10 @@ ITEMS = {
 'magnifying_glass': ['lupa',['Use para pesquisar anomalias e registrá-las no Bestiário.'],2,1,1],
 'radar': ['radar',['Use para detectar anomalias no mapa.'],300,2,1],
 'handcuffs': ['algemas',['Use para capturar anomalias e levá-las para pesquisa.'],50,2,1],
-'umbrella': ['guarda-chuva',['Não pegue resfriado meu filho!'],800,5,1],'umbrella_portable': ['guarda-chuva portátil',['Não pegue resfriado meu filho!','Cabe na mochila!'],800,3,1],
+'umbrella': ['guarda-chuva',['Não pegue resfriado meu filho!'],800,5,1],
+'umbrella_portable': ['guarda-chuva portátil',['Não pegue resfriado meu filho!','Cabe na mochila!'],800,3,1],
    
-#MELEE WEAPONS
+#MELEE WEAPONS (name,description,price,volume,weight,{damage})
 'melee_broom': ['vassoura',['Não foi feita para se armar, muito menos','para caçar ou voar, mas funciona.',10,5,2,{'DAMAGE': 2}]],
 'melee_frying_pan': ['frigideira',['Se não tiver o que usar, ela quebra um galho','e ainda frita um ovo legal.',30,3,2,{'DAMAGE': 4}]],
 'melee_bottle': ['garrafa de vidro',['Depois de um drink moderado','é excelente para tacar na cabeça de um nazi.'],10,3,3,{'DAMAGE': 6}],
@@ -369,7 +370,7 @@ ITEMS = {
 'melee_whip': ['chicote',['Útil para ataques corpo-a-corpo, pode ser tão letal','quanto uma arma de fogo.'],500,3,3,{'DAMAGE': 14}],
 'melee_taser': ['taser',['Porque um verdadeiro meliante','não mata, causa dor.'],1500,1,3,{'DAMAGE': 8}],
 
-#WEAPONS
+#WEAPONS (name,description,price,volume,weight,{damage,recharge,cadency,capacity,gauge})
 'gun_revolver.22': ['revólver.22',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 16.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 38}],
 'gun_revolver.32': ['revólver.32',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 16.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 38}],
 'gun_revolver.38': ['revólver.38',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 16.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 38}],
@@ -393,7 +394,7 @@ ITEMS = {
   
 'gun_RPG-7': ['RPG-7',['Bazuca utilizada contra tanques.'],12000,7,5,{'DAMAGE': 50, 'RECHARGE': 10, 'CADENCY': 0, 'CAPACITY': 1, 'GAUGE': 0}],
    
-#BATTLE ITEMS
+#BATTLE ITEMS (name,description,price,volume,weight,damage,type)
 'grenade': ['granada',['Use numa batalha para causar dano á todos os inimigos na tela.'],100,2,3,10,1],
 'grenade_smoke': ['granada de fumaça',['Use numa batalha para que todos os inimigos percam AGILIDADE.'],200,2,3,3,4],
 'grenade_flash': ['granada de luz',['Use numa batalha para que todos os inimigos percam sua vez.'],500,3,3,1,6],
@@ -403,7 +404,7 @@ ITEMS = {
 'extinguisher': ['extintor',['Use num caso de emergência.','...mas não é pra jogar num bulldogue.'],40,4,1,2,6],
 'rope': ['corda',['Use em batalhas para prender seus oponentes','ou dentro de cavernas para descer e subir'],70,4,1],
    
-#DRUGS
+#DRUGS (name,description,price,volume,weight,condition)
 'drug_antibiotic': ['antibiótico',['Use para infeccionar feridas letais e impedir hemorragias, parando de consumir a barra de HP.'],25,2,1,0],
 'drug_syrup': ['xarope',['Remédio utilizado para combater resfriados e alergias.'],10,2,1,0],
 'drug_tablets': ['comprimidos',['Remédios utilizados para combater náusea.'],30,1,1,0],
@@ -420,7 +421,7 @@ ITEMS = {
    
 'drug_adrenaline': ['adrenalina',['Remédio utilizado para reviver uma pessoa inconsciente.'],60,2,1,0],
 
-#CONDIMENTS
+#CONDIMENTS (name,description,price,volume,weight,type,duration)
 'condiment_ketchup': ['ketchup',['Condimento muito usado em salgados.'],5,1,1,6,'0100'],
 'condiment_sugar': ['açúcar',['Condimento muito usado em doces.'],5,1,1,6,'0100'],
 'condiment_salt': ['sal',['Condimento muito usado em refeições.'],5,1,1,6,'0100'],
@@ -428,7 +429,7 @@ ITEMS = {
 'condiment_oregano': ['orégano',['Condimento muito usado em salgados.'],5,1,1,6,'0100'],
 'condiment_shoyu': ['shoyu',['Condimento muito usado em refeições.'],5,1,1,6,'0100'],
 
-#DRINK
+#DRINK (name,description,price,volume,weight,health,duration)
 'drink_water': ['água',['O básico pra te manter de pé','no calor e no cansaço, BEBA ÁGUA.'],8,2,1,10,'0100'],
 'drink_juice_orange': ['suco de laranja',['Saudável e nutritivo, o Jailson aprova.'],8,3,1,10,'0100'],
 'drink_juice_passion_fruit': ['suco de maracujá',['Saudável e nutritivo, acalma a alma e o espírito.'],8,3,1,10,'0100'],
@@ -443,7 +444,7 @@ ITEMS = {
 'drink_whiskey': ['uísque',['Bebida alcóolica para aumentar a energia','Pelo amor de deus COM MODERAÇÃO.'],8,2,1,10,'0100'],
 'drink_yogurt': ['iogurte',['Delicioso e saudável.'],8,3,1,10,'0100'],
  
-#FOOD
+#FOOD (name,description,price,volume,weight,health,duration)
 'food_orange': ['laranja',['Fruta fácil de se achar','num pomar.'],3,1,1,2,'0100'],
 'food_fish': ['pirarucu',['Peixe de água doce.'],3,1,1,2,'0100'],
 'food_bread': ['pão',['O alimento matinal de cada dia.'],15,2,2,30,'0300'],
@@ -468,16 +469,16 @@ ITEMS = {
 'food_pizza_chicken': ['pizza de frango',['Quem não gosta de pizza?.'],15,2,2,30,'0300'],
 'food_pizza_4cheese': ['pizza de 4 queijos',['Quem não gosta de pizza?.'],15,2,2,30,'0300'],
  
-#WASTED FOOD
+#WASTED FOOD (name,description,price,volume,weight,health)
 'food_coxinha_wasted': ['coxinha fria',['Não é mais tão gostosa quanto antes,','mas é comestível.'],2,1,1,4],
 'food_peanut_candy_wasted': ['paçoca esfarelada',['O que antes era um doce maravilhoso','agora são apenas migalhas...'],1,1,1,1],
 'food_egg_wasted': ['ovo podre',['ALGUÉM DESTRUIU O MEU OVO'],15,2,2,30],
  
-#TRASH
+#TRASH (name,description,price,volume,weight,damage,duration)
 'trash_packing': ['embalagem',['Um papel que não serve pra absolutamente nada','a menos que seja uma esponja amarela.'],8,1,1,10,'0100'],
 'trash_bottle': ['garrafa de vidro',['Um item meio perigoso de se levar','nas suas costas,','sabe-se lá o que pode fazer com isso'],8,1,1,10,'0100'],
    
-#KEY ITEMS
+#KEY ITEMS (name,description,price,volume,weight)
 'key_bedroom': ['chave do quarto',['Se perder vai ficar sem caminha.'],10,1,1],
 'key_chest': ['chave de baú',['Use para abrir um compartimento.'],10,1,1],
 'key_vehicle': ['chave do veículo',['É o que põe o motor pra funcionar.'],10,1,1],
@@ -487,7 +488,7 @@ ITEMS = {
 'key_cave': ['signo de mercúrio',['Uma placa de ferro com a inscrição','de mercúrio... estranho'],10,1,1],
 'dungeon_key': ['chave',['Use dentro de instalações para abrir caminhos.'],10,1,1],
    
-#ESSENTIALS
+#ESSENTIALS (name,description,price,volume,weight)
 'id_card0': ['identidade',['Mostra suas informações básicas e prova sua autoridade acima','dos civis.'],0,1,1],
 'id_card1': ['identidade',['Mostra suas informações básicas e prova sua autoridade acima','dos civis.'],0,1,1],
 'id_card2': ['identidade',['Mostra suas informações básicas e prova sua autoridade acima','dos civis.'],0,1,1],
@@ -500,20 +501,20 @@ ITEMS = {
 'headphone': ['fones de ouvido',['Ao obter um, você consegue escutar o rádio do celular, mas atenção! ele quebra nos momentos mais inesperados.'],60,1,1],
 'phone': ['celular',['Mais importante que o cartão só o celular, pode ser usado para fazer','chamadas e receber emails, mas lembre-se de recarregar.'],0,1,1],
  
-#PILLS
+#PILLS (name,description,price,volume,weight,type)
 'pill_strenght': ['suplemento de força',['Aumenta a FORÇA permanentemente em +10.'],500,1,1,0],
 'pill_attack': ['suplemento de ataque',['Aumenta o ATAQUE permanentemente em +10.'],500,1,1,1],
 'pill_agility': ['suplemento de agilidade',['Aumenta a AGILIDADE permanentemente em +10.'],500,1,1,2],
 'pill_resistance': ['suplemento de resistência',['Aumenta a RESISTÊNCIA permanentemente em +10.'],500,1,1,3],
 'pill_vitality': ['suplemento de vitalidade',['Aumenta a VITALIDADE em +10'],500,1,1,4],
 'pill_mistery': ['suplemento misterioso',['Aumenta um atributo aleatório'],500,1,1,4],
-   
-#REPELLENTS
-'repellent1': ['repelente básico',['Evita anomalias de aparecer por 10 minutos.'],50,2,1,10],
-'repellent2': ['super repelente',['Evita anomalias de aparecer por 30 minutos.'],100,2,1,30],
-'repellent3': ['ultra repelente',['Evita anomalias de aparecer por 60 minutos.'],250,2,1,60],
-   
-#ACESSORIES
+
+#REPELLENTS (name,description,price,volume,weight,duration)
+'repellent1': ['repelente básico',['Evita anomalias de aparecer por 10 minutos.'],50,2,1,600],
+'repellent2': ['super repelente',['Evita anomalias de aparecer por 30 minutos.'],100,2,1,1800],
+'repellent3': ['ultra repelente',['Evita anomalias de aparecer por 60 minutos.'],250,2,1,3600],
+
+#ACESSORIES (name,description,price,volume,weight,type)
 'aim1': ['mira 1',['Customiza a mira de sua arma.'],200,1,1,1],
 'aim2': ['mira 1',['Customiza a mira de sua arma.'],200,1,1,2],
 'aim3': ['mira 1',['Customiza a mira de sua arma.'],200,1,1,3],
@@ -533,13 +534,13 @@ ITEMS = {
 'locksmith6': ['chaveiro',['Use para guardar até duas chaves.'],10,1,1,3],
 'locksmith7': ['chaveiro',['Use para guardar até duas chaves.'],10,1,1,3],
  
-#CRAFTING
+#CRAFTING (name,description,price,volume,weight)
 'craft_spring_small': ['mola pequena','',0,1,1],
 'craft_fuel': ['combustível','',0,1,1],
 'craft_cloth': ['pano','',0,1,1],
 'craft_powder': ['pólvora','',0,1,1],
    
-#TREASURES
+#TREASURES (name,description,price,volume,weight,type)
 'treasure_vase': ['vaso marajoara',['Um antigo vaso indígena feita da cerâmica do marajó.'],2000,3,3,0],
  
 'jewel_emerald': ['esmeralda',['Essa jóia deve custar uma fortuna!'],2000,1,3,0],

@@ -74,7 +74,7 @@ class Debug:
 			elif self.cmd.startswith('party'):
 				resources.PARTY[resources.FORMATION] = [int(self.cmd[6]),int(self.cmd[7]),int(self.cmd[8])]
 				resources.party_make(0)
-			elif self.cmd == 'health':
+			elif self.cmd.startswith('health'):
 				resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['HEALTH'] = int(self.cmd[7:])
 			elif self.cmd == 'rect': self.dlg = 'rectdebug'
 			else: self.sfx.play(resources.SOUND['ERROR'])
@@ -1225,8 +1225,8 @@ class Phone:
 		for i in resources.PARTY[resources.FORMATION]:
 			if opt == x/dvd3:
 				pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0 + x - self.scroll,45,dvd3,20))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'], True, (200, 0, 0)), (16 + x - self.scroll, 40))
-			else: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'], True, (255, 255, 255)), (16 + x - self.scroll, 40))
+				self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'], True, (0, 0, 0)), ((16 + x - self.scroll) * 2, 90))
+			else: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'], True, (255, 255, 255)), ((16 + x - self.scroll) * 2, 90))
 			x += dvd3
 
 		self.scr[0].blit(pygame.image.load('Sprites/who_' + str(resources.PARTY[resources.FORMATION][opt]) + '.png'), (10, 74))

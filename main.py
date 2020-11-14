@@ -509,6 +509,7 @@ class Game:
 		self.promo = 0
 		self.winbar = 210
 		self.radonoff = False
+		self.rdscroll = 10
 		self.fm = 0
 		self.vm = 0.5
 		self.msc = 0
@@ -654,10 +655,15 @@ class Game:
 			self.display[0].blit(img, (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y))
 			if i['PATH'] == 'notice': self.display[0].blit(pygame.image.load('Sprites/notice.png'), (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y - 30))
 
+		#REPELLENT
+		rplt = False
+		for c in resources.PARTY[resources.FORMATION]:
+			if resources.CHARACTERS[c]['HEALTH'] == 2: rplt = True
+
 		#MOVEMENT
 		if self.winbar == 0 and self.battle == False and i['FIGHTING'] == False:
 			if i['PATH'] == 'stealth':
-				if self.facing(i,self.player[0]) == 2:
+				if self.facing(i,self.player[0]) == 2 and rplt == False:
 					self.ch_sfx.play(resources.SOUND['NOTICED'])
 					i['PATH'] = 'notice'
 					for r in range(10):
@@ -692,6 +698,10 @@ class Game:
 					if i['RECT'].y - self.cam.y > self.player[0]['RECT'].y - 5 - self.cam.y: i['DIRECTION'] = 6
 					elif i['RECT'].y - self.cam.y < self.player[0]['RECT'].y - 5 - self.cam.y: i['DIRECTION'] = 4
 					else: i['DIRECTION'] = 5
+				if rplt == True:
+					i['PATH'] = 'horizontal'
+					i['DIRECTION'] = 0
+					i['TIME'] = 20
 
 			elif i['PATH'] == 'horizontal':
 				if i['DIRECTION'] == 0:
@@ -715,7 +725,7 @@ class Game:
 
 		#BATTLE ENTER
 		if self.colide(i['RECT'], self.player[0]['RECT']) == True and i['DIRECTION'] > 0 and self.battle == False and self.dlgfa == 500:
-			if i['FIGHTING'] == False:
+			if i['FIGHTING'] == False and rplt == False:
 				if i['TYPE'] != 'mercenary': self.foe.append(i)
 				else: self.mrc.append(i)
 				i['FIGHTING'] = True
@@ -1081,6 +1091,9 @@ class Game:
 				elif resources.TIME[0] == i['CLOSURE'][0]:
 					if resources.TIME[1] < i['CLOSURE'][1]: goto = True
 			else: goto = True
+
+			if i['RECT'].width == 24 and self.driving > 0: goto = False
+			elif i['RECT'].width == 48: goto = False
 
 		if goto == True:
 			for p in self.player:
@@ -1513,7 +1526,7 @@ class Game:
 					#USING ITEMS
 					if self.inv.itmov == '':
 						#HEALING
-						if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('food') and resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['HEALTH'] != 10:
+						if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('food') and resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['HEALTH'] not in [4,10]:
 							self.ch_ton.play(resources.SOUND['HEAL'])
 							hl = database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0]][5]
 							if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2] != '_': hl += database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][2]][5]
@@ -1528,7 +1541,8 @@ class Game:
 						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('repellent'):
 							self.ch_sfx.play(resources.SOUND['MENU_GO'])
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['HEALTH'] = 2
-							self.waitlst.append(['repellent' + str(resources.PARTY[resources.FORMATION][self.mnu]),self.waitime + 7200])
+							print(resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['HEALTH'])
+							self.waitlst.append(['repellent' + str(resources.PARTY[resources.FORMATION][self.mnu]),self.waitime + database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0]][5]])
 							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 						#STRENGHT PILL
 						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0] == 'pill_strenght':
@@ -3255,7 +3269,7 @@ class Game:
 							else:
 								self.ch_sfx.play(resources.SOUND['HIT'])
 								self.hitisplay(10, i['MASK'], str(dmg), (200, 0, 0))
-							if i['HEALTH'] != 1: i['SPRITE'] = pygame.image.load('Sprites/frk_' + (i['FILE'])+ '_stand.png')
+							if i['HEALTH'] != 1: i['SPRITE'] = pygame.image.load('Sprites/frk_' + (i['FILE']) + '_stand.png')
 							i['HP'] -= dmg
 							self.hits += 1
 							self.tdmg += dmg
@@ -3303,6 +3317,7 @@ class Game:
 					self.battle = False
 					self.opt = 1
 					self.player[0]['RECT'].x += 150
+					if self.radonoff == True: pygame.mixer.music.unpause()
 					self.transiction(False, 0)
 				else:
 					self.dialog([database.BATTLE[16]])
@@ -3525,7 +3540,7 @@ class Game:
 						#CHECK DEATH
 						if self.fig[pl]['HP'] <= 0:
 							self.mnu = 1
-							self.fig[pl]['HEALTH'] = 9
+							self.fig[pl]['HEALTH'] = 15
 							self.ch_ton.play(resources.SOUND['INCONSCIOUS'])
 							del self.fig[pl]
 
@@ -3645,6 +3660,7 @@ class Game:
 		for d in self.fig:
 			if d['HP'] <= 0: dth += 1
 		if dth == len(self.fig):
+			if self.radonoff == True: pygame.mixer.music.stop(); self.radonoff = False
 			self.ch_msc.fadeout(500)
 			self.ch_ton.play(resources.SOUND['BATTLE_LOST'])
 			self.transiction(True, 210)
@@ -4239,6 +4255,23 @@ class Game:
 			if self.winbar > 0:
 				pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,0,self.displayzw,self.winbar))
 				pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,self.displayzh,self.displayzw,-self.winbar))
+			#RADIOPLAY
+			if self.radonoff == True:
+				rdsrf = pygame.Surface((360,50))
+				rdsrf.fill((255, 0, 135))
+				ttsz = math.floor(self.fnt['DEFAULT'].size(resources.RADIO[str(math.floor(self.fm/20))][self.msc][:-4])[0]/2)
+				rdsrf.blit(self.fnt['DEFAULT'].render(resources.RADIO[str(math.floor(self.fm/20))][self.msc][:-4], True, (0, 0, 0)), (-self.rdscroll * 2, 5 * 2))
+				self.display[1].blit(rdsrf, (0,0))
+				self.rdscroll += 1
+				if self.rdscroll > ttsz:
+					self.rdscroll = -180
+				lyr2 = True
+			if pygame.mixer.music.get_busy() == False and self.radonoff == True:
+				self.msc += 1
+				if self.msc > len(resources.RADIO[str(round(self.fm/20))]) - 1: self.msc = 0
+				if resources.RADIO[str(round(self.fm/20))] != []:
+					pygame.mixer.music.load('Songs/FM_' + str(round(self.fm/20)) + '/' + resources.RADIO[str(round(self.fm/20))][self.msc])
+					pygame.mixer.music.play()
 			#CITY NAME
 			if self.cityname != '' and self.winbar >= 50:
 				self.display[0].blit(self.fnt['MONOTYPE'].render(self.cityname, True, (250,250,250)), (420, 360))
@@ -4281,13 +4314,16 @@ class Game:
 					resources.CHARACTERS[i]['DMGTIM'] = 100
 					resources.CHARACTERS[i]['SHK'] = 3
 					resources.CHARACTERS[i]['HP'] -= 1
-
+					if resources.CHARACTERS[i]['HEALTH'] == 17:
+						chc = round(random.randint(0,100))
+						if chc > 70: resources.CHARACTERS[i]['HEALTH'] = 0
 					'''dth = 0
 					for d in self.fig:
 						if d['HP'] <= 0: dth += 1
 					if dth == len(self.fig):'''
 					if resources.CHARACTERS[i]['HP'] <= 0:
 						resources.CHARACTERS[i]['HEALTH'] = 0
+						if self.radonoff == True: pygame.mixer.music.unpause(); self.radonoff = False
 						self.ch_msc.fadeout(500)
 						self.ch_ton.play(resources.SOUND['BATTLE_LOST'])
 						self.transiction(True, 210)
@@ -4301,7 +4337,7 @@ class Game:
 							self.run()
 						self.turn = -5
 						self.wait()
-						#database.load_data()
+						resources.load_data()
 						resources.PX = 315
 						resources.PY = 200
 						resources.MONEY -= 100 * len(resources.PARTY[resources.FORMATION])
@@ -4309,7 +4345,7 @@ class Game:
 							resources.CHARACTERS[w]['HP'] = resources.CHARACTERS[w]['VITALITY'][resources.CHARACTERS[w]['LEVEL']]
 							resources.CHARACTERS[w]['HEALTH'] = 0
 						self.__init__()
-						self.rendermap('hospital_0')
+						self.rendermap('hospital_1')
 						self.transiction(False, 0)
 
 					self.ch_ton.play(resources.SOUND['DAMAGE_1'])
@@ -4351,11 +4387,12 @@ class Game:
 						count += 1
 					else: i['MASK'].x -= i['AGILITY']
 
-			#SKIP PLAYER
+			#SKIP PLAYER & BLINDNESS
 			if self.mnu < 3:
+				if self.fig[self.turn]['HEALTH'] == 12: self.display[0].fill((0,0,0))
 				if self.turn >= len(self.fig): self.fight()
 				if self.turn >= 0:
-					if self.fig[self.turn]['HP'] <= 0 or self.fig[self.turn]['HEALTH'] in [8,12,13,14,15]: self.turn += 1
+					if self.fig[self.turn]['HP'] <= 0 or self.fig[self.turn]['HEALTH'] in [8,13,14,15]: self.turn += 1
 
 			#BLACK BARS
 			if self.turn == -6:
@@ -4422,10 +4459,12 @@ class Game:
 
 				if self.turn < len(resources.PARTY[resources.FORMATION]) and self.turn >= 0:
 					#TIME BAR:
-					pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(0,302,int(600/(100/self.btime)),10))
+					if self.btime > 0:
+						pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(0,302,int(600/(100/self.btime)),10))
 					if ce > 0 and self.mnu < 3 and self.turn < len(self.fig): self.btime -= 0.5
 					if self.btime == 0:
 						self.turn = len(self.fig)
+						self.mnu = 1
 						self.fight()
 
 					#OPTIONS
@@ -4634,18 +4673,6 @@ class Game:
 			self.display[1].blit(self.nmenu.run()[1], (420, 220))
 			if self.nmenu.ninput == True: self.hpctrl = database.HINTS['NAMING']
 			lyr2 = True
-		#RADIOPLAY
-		if self.radonoff == True:
-			pygame.draw.rect(self.display[0], (255, 0, 135), pygame.Rect(0,0,180,50))
-			self.display[1].blit(self.fnt['DEFAULT'].render('Tocando:', True, (0, 0, 0)), (10 * 2, 5 * 2))
-			self.display[1].blit(self.fnt['DEFAULT'].render(resources.RADIO[str(math.floor(self.fm/20))][self.msc][:-4], True, (0, 0, 0)), (10 * 2, 25 * 2))
-			lyr2 = True
-		if pygame.mixer.music.get_busy() == False and self.radonoff == True:
-			self.msc += 1
-			if self.msc > len(resources.RADIO[str(round(self.fm/20))]) - 1: self.msc = 0
-			if resources.RADIO[str(round(self.fm/20))] != []:
-				pygame.mixer.music.load('Songs/FM_' + str(round(self.fm/20)) + '/' + resources.RADIO[str(round(self.fm/20))][self.msc])
-				pygame.mixer.music.play()
 		#DIALOG
 		if self.dlgfa < 500 and resources.SCENE != -1 and self.nmenu.show == False:
 			if self.dlg != []:
@@ -4705,7 +4732,7 @@ class Game:
 			else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-183 + self.notx,27,186,56))
 			pygame.draw.rect(self.display[0], self.notcol, pygame.Rect(-180 + self.notx,30,180,50))
 			if isinstance(self.nottxt,str):
-				self.display[1].blit(self.fnt['DEFAULT'].render(self.nottxt, True, (0, 0, 0)), ((-85 + self.notx) * 2, 40 * 2))
+				self.display[1].blit(self.fnt['DEFAULT'].render(self.nottxt, True, (0, 0, 0)), ((-170 + self.notx) * 2, 45 * 2))
 			else:
 				pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-170 + self.notx,40,160,30))
 				pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-168 + self.notx,42,156,26))
