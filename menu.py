@@ -869,10 +869,10 @@ class Phone:
 			if flt > 0: self.scr[1].blit(self.fnt['CALIBRI'].render(i[0], True, (0, 0, 0)), (20, (76 + y - self.scroll) * 2))
 			else:
 				if opt == y/51:
-					if mnu == 1: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(118,74 + y - self.scroll,24,24))
-					self.scr[0].blit(pygame.image.load('Sprites/tc_9.png'), (sz - 44, 76 + y - self.scroll))
-					if mnu == 2: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(140,74 + y - self.scroll,24,24))
-					self.scr[0].blit(pygame.image.load('Sprites/tc_8.png'), (sz - 22, 76 + y - self.scroll))
+					if mnu == 1: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 48,74 + y - self.scroll,24,24))
+					self.scr[0].blit(pygame.image.load('Sprites/tc_9.png'), (sz - 50, 76 + y - self.scroll))
+					if mnu == 2: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 26,74 + y - self.scroll,24,24))
+					self.scr[0].blit(pygame.image.load('Sprites/tc_8.png'), (sz - 28, 76 + y - self.scroll))
 					if mnu == 3: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(8,74 + y - self.scroll,24,24))
 					if mnu == 4: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(30,74 + y - self.scroll,24,24))
 					if mnu == 5: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(52,74 + y - self.scroll,24,24))
@@ -882,7 +882,7 @@ class Phone:
 					self.scr[0].blit(pygame.image.load('Sprites/who_' + str(p) + '.png'), (10 + x, 76 + y - self.scroll))
 					x += 22
 
-			if flt == 0: self.scr[1].blit(self.fnt['CALIBRI'].render('grupo ' + str(int((y + 51)/51)), True, (0, 0, 0)), (20, (192 + y - self.scroll) * 2))
+			if flt == 0: self.scr[1].blit(self.fnt['CALIBRI'].render('grupo ' + str(int((y + 51)/51)), True, (0, 0, 0)), (20, (96 + y - self.scroll) * 2))
 			if flt == 1: self.scr[1].blit(self.fnt['CALIBRI'].render(i[1], True, (0, 0, 0)), (20, (92 + y - self.scroll) * 2))
 			if flt == 2: self.scr[0].blit(pygame.image.load('Sprites/who_' + str(i[1]).lower() + '.png'), (160, (86 + y - self.scroll) * 2))
 			y += 51
@@ -897,15 +897,21 @@ class Phone:
 		if flt == 0:
 			pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,45,dvd3,20))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[23], True, (0, 0, 0)), (16, 94))
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[23], True, (255, 255, 255)), (16, 94))
+		else:
+			pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(0,45,dvd3,20))
+			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[23], True, (255, 255, 255)), (16, 94))
 		if flt == 1:
 			pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(dvd3,45,dvd3,20))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[24], True, (0, 0, 0)), ((dvd3 * 2) + 20, 94))
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[24], True, (255, 255, 255)), ((dvd3 * 2) + 20, 94))
+		else:
+			pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(0,45,dvd3,20))
+			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[24], True, (255, 255, 255)), ((dvd3 * 2) + 20, 94))
 		if flt == 2:
 			pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(dvd3 * 2,45,dvd3,20))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[25], True, (0, 0, 0)), ((dvd3 * 4) + 20, 94))
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[25], True, (255, 255, 255)), ((dvd3 * 4) + 20, 94))
+		else:
+			pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(0,45,dvd3,20))
+			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[25], True, (255, 255, 255)), ((dvd3 * 4) + 20, 94))
 
 		pygame.draw.rect(self.scr[1], (15, 255, 0), pygame.Rect(0,0,sz * 2,80))
 		self.scr[1].blit(self.fnt['TITLE'].render(database.MENU[1], True, (0, 0, 0)), (10, 10))
@@ -1225,8 +1231,8 @@ class Phone:
 		for i in resources.PARTY[resources.FORMATION]:
 			if opt == x/dvd3:
 				pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0 + x - self.scroll,45,dvd3,20))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'], True, (0, 0, 0)), ((16 + x - self.scroll) * 2, 90))
-			else: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'], True, (255, 255, 255)), ((16 + x - self.scroll) * 2, 90))
+				self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[i]['NAME'], True, (0, 0, 0)), ((16 + x - self.scroll) * 2, 95))
+			else: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[i]['NAME'], True, (255, 255, 255)), ((16 + x - self.scroll) * 2, 95))
 			x += dvd3
 
 		self.scr[0].blit(pygame.image.load('Sprites/who_' + str(resources.PARTY[resources.FORMATION][opt]) + '.png'), (10, 74))
@@ -1282,13 +1288,13 @@ class Phone:
 					if mnu > 0 and lopt == y/51:
 						if mnu < 5:
 							pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(8 + (mnu - 1) * 22,49 + y - self.scroll,24,24))
-							if i[mnu - 1] == 1: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[54], True, (0, 0, 0)), (20, (70 + y - self.scroll) * 2))
-							if i[mnu - 1] == 2: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[55], True, (0, 0, 0)), (20, (70 + y - self.scroll) * 2))
-							if i[mnu - 1] == 3: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[56], True, (0, 0, 0)), (20, (70 + y - self.scroll) * 2))
-							if i[mnu - 1] == 4: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[57], True, (0, 0, 0)), (20, (70 + y - self.scroll) * 2))
-							if i[mnu - 1] == 5: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[58], True, (0, 0, 0)), (20, (70 + y - self.scroll) * 2))
-							if i[mnu - 1] == 6: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[59], True, (0, 0, 0)), (20, (70 + y - self.scroll) * 2))
-							if i[mnu - 1] == 7: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[60], True, (0, 0, 0)), (20, (70 + y - self.scroll) * 2))
+							if i[mnu - 1] == 1: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[54], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
+							if i[mnu - 1] == 2: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[55], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
+							if i[mnu - 1] == 3: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[56], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
+							if i[mnu - 1] == 4: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[57], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
+							if i[mnu - 1] == 5: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[58], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
+							if i[mnu - 1] == 6: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[59], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
+							if i[mnu - 1] == 7: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[60], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
 						else: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 42,49 + y - self.scroll,24,24))
 						self.scr[0].blit(pygame.image.load('Sprites/tc_8.png'), (sz - 40, 51 + y - self.scroll))
 
@@ -1300,7 +1306,7 @@ class Phone:
 
 			if lopt != y/51: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,41 + y - self.scroll,sz,50))
 			else: pygame.draw.rect(self.scr[0], (33, 75, 127), pygame.Rect(0,41 + y - self.scroll,sz,50))
-			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[36], True, (0, 0, 0)), (40, 100 + y - self.scroll))
+			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[36], True, (0, 0, 0)), (100, (60 + y - self.scroll) * 2))
 
 		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[15], True, (255, 255, 255)), (50, 280))
 
@@ -1354,13 +1360,13 @@ class Phone:
 		sz = self.scr[0].get_width() #button width
 		if mnu == 0:
 			self.scroll = 0
-			if opt > 2: self.scroll += (opt - 2) * 51
+			if opt > 2: self.scroll += (opt - 2) * 31
 			y = 0
 			for i in database.MANUAL:
-				if opt != y/51: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,41 + y - self.scroll,sz,50))
-				else: pygame.draw.rect(self.scr[0], (137, 50, 0), pygame.Rect(0,41 + y - self.scroll,sz,50))
+				if opt != y/31: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,41 + y - self.scroll,sz,30))
+				else: pygame.draw.rect(self.scr[0], (137, 50, 0), pygame.Rect(0,41 + y - self.scroll,sz,30))
 				self.scr[1].blit(self.fnt['CALIBRI'].render(i[0], True, (0, 0, 0)), (20, (51 + y - self.scroll) * 2))
-				y += 51
+				y += 31
 
 		if mnu > 0:
 			self.scroll = (mnu - 1) * 3

@@ -468,6 +468,8 @@ class Game:
 		self.barpp = []
 		self.barxp = []
 		self.greenblood = 0
+
+		#BARS
 		x = 0
 		for i in resources.PARTY[resources.FORMATION]:
 			resources.CHARACTERS[i]['HP'] = resources.CHARACTERS[i]['VITALITY'][resources.CHARACTERS[i]['LEVEL']]
@@ -478,7 +480,7 @@ class Game:
 			self.barhpl.append(100)
 			if resources.CHARACTERS[i]['XP'] > 0: self.barxp.append(int(100/(resources.CHARACTERS[i]['NEXTLEVEL'][resources.CHARACTERS[i]['LEVEL']]/resources.CHARACTERS[i]['XP'])))
 			else: self.barxp.append(0)
-			for j in resources.INVENTORY[resources.PARTY[resources.FORMATION][x]][4][1:]:
+			for j in resources.INVENTORY[i][4][1:]:
 				if j[0] != '_':
 					if int(j[1]) > 0: b = int(100/(database.ITEMS[j[0]][5]['CAPACITY']/int(j[1])))
 					else: b = 0
@@ -1323,6 +1325,7 @@ class Game:
 						elif self.equip[self.turn] == 6:
 							self.ch_ton.play(resources.SOUND['GUARD'])
 							self.pres[self.turn] += 3
+							self.mnu = 2
 							self.dialog([self.fig[self.turn]['NAME'] + ' está em guarda'])
 							self.turn += 1
 							if self.turn == len(self.fig): self.fight()
@@ -1541,7 +1544,6 @@ class Game:
 						elif resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('repellent'):
 							self.ch_sfx.play(resources.SOUND['MENU_GO'])
 							resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['HEALTH'] = 2
-							print(resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['HEALTH'])
 							self.waitlst.append(['repellent' + str(resources.PARTY[resources.FORMATION][self.mnu]),self.waitime + database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0]][5]])
 							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt] = ['_','0000','_','_']
 						#STRENGHT PILL
@@ -1622,15 +1624,17 @@ class Game:
 							else: self.ch_ton.play(resources.SOUND['ERROR']); self.shake = 5
 						#RECHARGE WEAPONS
 						elif self.inv.itmov[0].startswith('ammo') and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0].startswith('gun'):
-							self.ch_ton.play(resources.SOUND['GUN_RECHARGE'])
-							if int(resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][4][self.equip[self.mnu] + 1][1]) > 0:
-								plus = int(100/(database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][4][self.equip[self.mnu] + 1][0]][5]['CAPACITY']/int(resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][4][self.equip[self.mnu] + 1][1])))
-							else: plus = 0
-							while self.barpp[self.mnu][self.equip[self.mnu]] < plus:
-								self.barpp[self.mnu][self.equip[self.mnu]] += 1
-							resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1]
-							self.inv.itmov = ''
-
+							if database.ITEMS[self.inv.itmov[0]][5] == database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0]][5]['GAUGE']:
+								self.ch_ton.play(resources.SOUND['GUN_RECHARGE'])
+								resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0]][5]['CAPACITY']
+								if self.lopt == 4 and self.opt > 0:
+									if int(resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1]) > 0:
+										plus = int(98/(database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][0]][5]['CAPACITY']/int(resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1])))
+									else: plus = 0
+									self.barpp[self.mnu][self.opt - 1] = plus
+								resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1] = resources.INVENTORY[resources.PARTY[resources.FORMATION][self.mnu]][self.lopt][self.opt][1]
+								self.inv.itmov = ''
+							else: self.ch_ton.play(resources.SOUND['ERROR']); self.inv.shake = 5
 						else: self.ch_ton.play(resources.SOUND['ERROR']); self.inv.shake = 5
 
 						if self.battle == True:
@@ -1668,7 +1672,19 @@ class Game:
 							if self.inv.itmov[0].startswith('head'):
 								resources.CHARACTERS[resources.PARTY[resources.FORMATION][self.mnu]]['ACCESORIES'] = self.inv.itmov[0]
 							self.inv.itmov = ''
-
+							#AMMO BAR
+							self.barpp = []
+							x = 0
+							for i in resources.PARTY[resources.FORMATION]:
+								self.barpp.append([])
+								for j in resources.INVENTORY[i][4][1:]:
+									if j[0] != '_':
+										if int(j[1]) > 0: b = int(100/(database.ITEMS[j[0]][5]['CAPACITY']/int(j[1])))
+										else: b = 0
+										self.barpp[x].append(b)
+									else:
+										self.barpp[x].append(0)
+								x += 1
 							if self.battle == True:
 								self.turn += 1
 								self.mnu = 1
@@ -1683,6 +1699,19 @@ class Game:
 							if chk == True:
 								for i in range(5): database.STORAGE.append(['_','0000','_','_'])
 							self.inv.itmov = ''
+							#AMMO BAR
+							self.barpp = []
+							x = 0
+							for i in resources.PARTY[resources.FORMATION]:
+								self.barpp.append([])
+								for j in resources.INVENTORY[i][4][1:]:
+									if j[0] != '_':
+										if int(j[1]) > 0: b = int(100/(database.ITEMS[j[0]][5]['CAPACITY']/int(j[1])))
+										else: b = 0
+										self.barpp[x].append(b)
+									else:
+										self.barpp[x].append(0)
+								x += 1
 						#SWITCH ITEMS IN INVENTORY
 						elif self.opt < 5 and self.inv.space(self.mnu,self.exvar,self.opt,self.lopt) == True:
 							self.ch_sfx.play(resources.SOUND['EQUIP'])
@@ -4388,7 +4417,7 @@ class Game:
 					else: i['MASK'].x -= i['AGILITY']
 
 			#SKIP PLAYER & BLINDNESS
-			if self.mnu < 3:
+			if self.mnu < 3 and self.turn >= 0:
 				if self.fig[self.turn]['HEALTH'] == 12: self.display[0].fill((0,0,0))
 				if self.turn >= len(self.fig): self.fight()
 				if self.turn >= 0:
@@ -4414,40 +4443,40 @@ class Game:
 				#PLAYER BARS
 				p = 0
 				low = False
-
 				while p < len(resources.PARTY[resources.FORMATION]):
+					ctr = resources.PARTY[resources.FORMATION][p]
 					if p == self.turn:
 						pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(p * 120,0,120,100))
-						self.display[0].blit(self.fnt['MININFO'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['NAME'].lower(), True, (0,0,0)), (10 + p * 120, 10))
+						self.display[0].blit(self.fnt['MININFO'].render(resources.CHARACTERS[ctr]['NAME'].lower(), True, (0,0,0)), (10 + p * 120, 10))
 					else: 
-						self.display[0].blit(self.fnt['MININFO'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['NAME'].lower(), True, (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2])), (10 + p * 120, 10))
+						self.display[0].blit(self.fnt['MININFO'].render(resources.CHARACTERS[ctr]['NAME'].lower(), True, (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2])), (10 + p * 120, 10))
 
 					#LIFE BAR
 					pygame.draw.rect(self.display[0], (10, 10, 10), pygame.Rect(10 + p * 120,40,100,20))
-					if resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['HP'] > 0:
-						minush = int(98/(resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['VITALITY'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['LEVEL']]/resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['HP']))
+					if resources.CHARACTERS[ctr]['HP'] > 0:
+						minush = int(98/(resources.CHARACTERS[ctr]['VITALITY'][resources.CHARACTERS[ctr]['LEVEL']]/resources.CHARACTERS[ctr]['HP']))
 					else: minush = 0
 					if self.barhp[p] > minush:
 						self.ch_sfx.play(resources.SOUND['HP_LOSS'])
 						self.barhp[p] -= 1
 					pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(11 + p * 120,41,98,18))
-					if resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['HP'] > resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['VITALITY'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['LEVEL']]/5: hpcol = (0, 255, 0)
-					elif resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['HP'] > 0:
+					if resources.CHARACTERS[ctr]['HP'] > resources.CHARACTERS[ctr]['VITALITY'][resources.CHARACTERS[ctr]['LEVEL']]/5: hpcol = (0, 255, 0)
+					elif resources.CHARACTERS[ctr]['HP'] > 0:
 						hpcol = (255, 0, 0)
 						low = True
 					else: hpcol = (255, 0, 0)
 					if low == True:
 						if self.ch_ton.get_busy() == False: self.ch_ton.play(resources.SOUND['HP_LOW'])
 					if self.barhp[p] > 0: pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(11 + p * 120,41,self.barhp[p],18))
-					if resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['HP'] > 0:
-						pygame.draw.rect(self.display[0], hpcol, pygame.Rect(11 + p * 120,41,int(98/(resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['VITALITY'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['LEVEL']]/resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['HP'])),18))
-					if resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['HEALTH'] > 1:
-						self.display[0].blit(pygame.image.load('Sprites/hl_' + str(resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['HEALTH']) + '.png'), (14 + p * 120, 44))
+					if resources.CHARACTERS[ctr]['HP'] > 0:
+						pygame.draw.rect(self.display[0], hpcol, pygame.Rect(11 + p * 120,41,int(98/(resources.CHARACTERS[ctr]['VITALITY'][resources.CHARACTERS[ctr]['LEVEL']]/resources.CHARACTERS[ctr]['HP'])),18))
+					if resources.CHARACTERS[ctr]['HEALTH'] > 1:
+						self.display[0].blit(pygame.image.load('Sprites/hl_' + str(resources.CHARACTERS[ctr]['HEALTH']) + '.png'), (14 + p * 120, 44))
 
 					#AMMO BAR
 					if self.equip[p] < 4:
-						if int(resources.INVENTORY[resources.PARTY[resources.FORMATION][p]][4][self.equip[p] + 1][1]) > 0:
-							try: minush = int(98/(database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][p]][4][self.equip[p] + 1][0]][5]['CAPACITY']/int(resources.INVENTORY[resources.PARTY[resources.FORMATION][p]][4][self.equip[p] + 1][1])))
+						if int(resources.INVENTORY[ctr][4][self.equip[p] + 1][1]) > 0:
+							try: minush = int(98/(database.ITEMS[resources.INVENTORY[ctr][4][self.equip[p] + 1][0]][5]['CAPACITY']/int(resources.INVENTORY[ctr][4][self.equip[p] + 1][1])))
 							except: minush = 0
 						else: minush = 0
 						if self.barpp[p][self.equip[p]] > minush:
@@ -4516,12 +4545,12 @@ class Game:
 								self.aim.x = 100 + self.patt[self.turn]
 							chk = False
 							for i in resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1:]:
-								if i.startswith('aim') == True: chk = True; break
+								if isinstance(i,str) and i.startswith('aim') == True: chk = True; break
 							if chk == True:
 								self.display[0].blit(pygame.image.load('Sprites/aim_' + str(database.ITEMS[i][5]) + '.png'), (self.aim.x - 15, self.aim.y))
 							else:
 								self.display[0].blit(pygame.image.load('Sprites/aim_0.png'), (self.aim.x-15, self.aim.y))
-							self.display[0].blit(pygame.image.load('Sprites/' + resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0] + '.png'), (150 + int(self.aim.x/2), 255))
+							#self.display[0].blit(pygame.image.load('Sprites/' + resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0] + '.png'), (150 + int(self.aim.x/2), 255))
 							self.hpctrl = database.HINTS['BATTLE_SHOT']
 
 					#TACTICS
