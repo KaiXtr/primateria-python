@@ -135,7 +135,7 @@ FREAKS = {
 'AGILITY': 4,'HP': 6,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Camuflar',['O réptil se camufla no ambiente,','aumentando sua AGILIDADE.'],2,3],['Língua',['O réptil usa sua língua como','chicote para atacar o oponente.'],-3,1],
 ['Estalo',['O réptil se estala, criando','um campo de força elétrico.'],-13,1]],'BLOOD': 10,'ITEM': ['camarão',50]},
    
-'peacockpigeon': {'NAME': 'Pombo Pavão','INFO': ['Um pombo urbano com uma mutação que o fez desenvolver penas de pavão com olhos reais nas suas pontas. Relativamente ágil, mas fraco.'],'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'mercenary',
+'peacockpigeon': {'NAME': 'Pombo Pavão','INFO': ['Um pombo urbano com uma mutação que o fez desenvolver penas de pavão com olhos reais nas suas pontas. Relativamente ágil, mas fraco.'],'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'flying',
 'AGILITY': 3,'HP': 10,'RESISTANCE': 1,'PATH': 'horizontal','HABILITIES': [['Defecar',['A ave defeca no oponente, infectando-o.'],5,6,20,1],['Hipnose',['A ave hipnotiza o oponente com os olhos das penas de pavão, diminuindo sua AGILIDADE.'],-2,3,20,1],
 ['Bicar',['A ave bica o oponente.'],-4,1,50,1],['Gritar',['A ave grita, com a possibilidade de outra anomalia entrar na batalha.'],['madladcat','peacockpigeon'],7,10,1]],'BLOOD': 20,'ITEM': ['food_peanut_candy',30],'SONG': 'URBAN_PLAGUE'},
      
@@ -288,9 +288,10 @@ ITEMS = {
 'bag3': ['mochila',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 20 - Peso: 15'],5000,20,15],
 'bag4': ['mochila de viagem',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 30 - Peso: 20'],7500,30,20],
 'bag5': ['mochilão',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 30 - Peso: 25'],10000,30,25],
-'bottle100': ['frasco de sulfúrio 100ml',['Feita especialmente para guardar sangue verde.','Capacidade de 10 inimigos'],200,1,1],
-'bottle250': ['garrafa de sulfúrio 250ml',['Feita especialmente para guardar sangue verde.','Capacidade de 25 inimigos'],200,1,1],
-'wallet': ['carteira',['Use para guardar seu dinheiro e coisas pequenos,','JAMAIS PERCA ISSO'],50,1,1],
+'bottle100': ['frasco de sulfúrio 100ml',['Feita especialmente para guardar sangue verde.','Capacidade de 10 inimigos'],200,1,1,100],
+'bottle250': ['pote de sulfúrio 250ml',['Feita especialmente para guardar sangue verde.','Capacidade de 25 inimigos'],200,1,1,250],
+'bottle500': ['garrafa de sulfúrio 500ml',['Feita especialmente para guardar sangue verde.','Capacidade de 500 inimigos'],200,1,1,500],
+'wallet': ['carteira',['Use para guardar seu dinheiro e coisas pequenos.','JAMAIS PERCA ISSO!'],50,1,1],
    
 #CUSTOM CLOTHES (name,description,price,volume,weight,armor,[costume])
 'head_hairclip': ['xuxinha',['Pra amarrar o cabelo.'],30,1,1,3],
@@ -331,13 +332,43 @@ ITEMS = {
 'amulet6': ['ouroboros',['Conçede força, proteção,','vitalidade e resistência.'],20,1,1,25,50],
 'amulet7': ['muiraquitã',['Conçede aumento em todos os atributos.'],20,1,1,25,50],
  
-#AMMO (name,description,price,volume,weight,calibre)
+#AMMO (name,description,price,volume,weight,calibre,metal)
 'ammo_tranquiizer': ['tranquilizante',['Munição para pistola que faz','o inimigo adormecer.'],100,2,1,0],
-'ammo.12': ['munição.12',[''],200,2,1,12],
-'ammo.16': ['munição.16',[''],200,2,1,16],
-'ammo.22': ['munição.22',[''],200,2,1,22],
-'ammo.32': ['munição.32',[''],200,2,1,32],
-'ammo.38': ['munição.38',[''],300,2,1,38],
+'ammo.12_gold': ['munição.12 de ouro',['Balas de ouro de calibre 12.'],200,2,1,12,1],
+'ammo.12_silver': ['munição.12 de prata',['Balas de prata de calibre 12.'],200,2,1,12,2],
+'ammo.12_copper': ['munição.12 de cobre',['Balas de cobre de calibre 12.'],200,2,1,12,3],
+'ammo.12_tin': ['munição.12 de estanho',['Balas de estanho de calibre 12.'],200,2,1,12,4],
+'ammo.12_lead': ['munição.12 de chumbo',['Balas de chumbo de calibre 12.'],200,2,1,12,5],
+'ammo.12_iron': ['munição.12 de ferro',['Balas de ferro de calibre 12.'],200,2,1,12,6],
+'ammo.12_mercury': ['munição.12 de mercúrio',['Balas de mercúrio de calibre 12.'],200,2,1,12,7],
+'ammo.16_gold': ['munição.16 de ouro',['Balas de ouro de calibre 16.'],200,2,1,16,1],
+'ammo.16_silver': ['munição.16 de prata',['Balas de prata de calibre 16.'],200,2,1,16,2],
+'ammo.16_copper': ['munição.16 de cobre',['Balas de cobre de calibre 16.'],200,2,1,16,3],
+'ammo.16_tin': ['munição.16 de estanho',['Balas de estanho de calibre 16.'],200,2,1,16,4],
+'ammo.16_lead': ['munição.16 de chumbo',['Balas de chumbo de calibre 16.'],200,2,1,16,5],
+'ammo.16_iron': ['munição.16 de ferro',['Balas de ferro de calibre 16.'],200,2,1,16,6],
+'ammo.16_mercury': ['munição.16 de mercúrio',['Balas de mercúrio de calibre 16.'],200,2,1,16,7],
+'ammo.22_gold': ['munição.22 de ouro',['Balas de ouro de calibre 22.'],200,2,1,22,1],
+'ammo.22_silver': ['munição.22 de prata',['Balas de prata de calibre 22.'],200,2,1,22,2],
+'ammo.22_copper': ['munição.22 de cobre',['Balas de cobre de calibre 22.'],200,2,1,22,3],
+'ammo.22_tin': ['munição.22 de estanho',['Balas de estanho de calibre 22.'],200,2,1,22,4],
+'ammo.22_lead': ['munição.22 de chumbo',['Balas de chumbo de calibre 22.'],200,2,1,22,5],
+'ammo.22_iron': ['munição.22 de ferro',['Balas de ferro de calibre 22.'],200,2,1,22,6],
+'ammo.22_mercury': ['munição.22 de mercúrio',['Balas de mercúrio de calibre 22.'],200,2,1,22,7],
+'ammo.32_gold': ['munição.32 de ouro',['Balas de ouro de calibre 32.'],200,2,1,32,1],
+'ammo.32_silver': ['munição.32 de prata',['Balas de prata de calibre 32.'],200,2,1,32,2],
+'ammo.32_copper': ['munição.32 de cobre',['Balas de cobre de calibre 32.'],200,2,1,32,3],
+'ammo.32_tin': ['munição.32 de estanho',['Balas de estanho de calibre 32.'],200,2,1,32,4],
+'ammo.32_lead': ['munição.32 de chumbo',['Balas de chumbo de calibre 32.'],200,2,1,32,5],
+'ammo.32_iron': ['munição.32 de ferro',['Balas de ouro de calibre 32.'],200,2,1,32,6],
+'ammo.32_mercury': ['munição.32 de mercúrio',['Balas de mercúrio de calibre 32.'],200,2,1,32,7],
+'ammo.38_gold': ['munição.38 de ouro',['Balas de ouro de calibre 38.'],200,2,1,38,1],
+'ammo.38_silver': ['munição.38 de prata',['Balas de prata de calibre 38.'],200,2,1,38,2],
+'ammo.38_copper': ['munição.38 de cobre',['Balas de cobre de calibre 38.'],200,2,1,38,3],
+'ammo.38_tin': ['munição.38 de estanho',['Balas de estanho de calibre 38.'],200,2,1,38,4],
+'ammo.38_lead': ['munição.38 de chumbo',['Balas de chumbo de calibre 38.'],200,2,1,38,5],
+'ammo.38_iron': ['munição.38 de ferro',['Balas de ferro de calibre 38.'],200,2,1,38,6],
+'ammo.38_mercury': ['munição.38 de mercúrio',['Balas de mercúrio de calibre 38.'],200,2,1,38,7],
 'ammo.42': ['munição.42',[''],400,2,1,42],
 'ammo.44': ['munição.44',[''],200,2,1,44],
 'ammo.45': ['munição.45',[''],200,2,1,45],
@@ -371,20 +402,20 @@ ITEMS = {
 'melee_taser': ['taser',['Porque um verdadeiro meliante','não mata, causa dor.'],1500,1,3,{'DAMAGE': 8}],
 
 #WEAPONS (name,description,price,volume,weight,{damage,recharge,cadency,capacity,gauge})
-'gun_revolver.22': ['revólver.22',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 16.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 38}],
-'gun_revolver.32': ['revólver.32',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 16.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 38}],
-'gun_revolver.38': ['revólver.38',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 16.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 38}],
-'gun_revolver.44': ['revólver.44',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 16.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 38}],
+'gun_revolver.22': ['revólver.22',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 22.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 22}],
+'gun_revolver.32': ['revólver.32',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 32.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 32}],
+'gun_revolver.38': ['revólver.38',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 38.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 38}],
+'gun_revolver.44': ['revólver.44',['Arma de fogo para ataques de curta distância, ela usa munição de','calibre 44.'],2000,3,2,{'DAMAGE': 5, 'RECHARGE': 8, 'CADENCY': 5, 'CAPACITY': 6, 'GAUGE': 44}],
   
 'gun_pistol': ['pistola',['Arma de fogo para ataques de média distância, ela usa munição de calibre 38.'],2500,3,2,{'DAMAGE': 4, 'RECHARGE': 3, 'CADENCY': 3, 'CAPACITY': 16}],
   
 'gun_UZI.22': ['Uzi .22',['Arma de fogo para ataques de média distância.'],4000,3,2,{'DAMAGE': 4, 'RECHARGE': 8, 'CADENCY': 1, 'CAPACITY': 10, 'GAUGE': 22}],
 'gun_UZI.45': ['Uzi .45',['Arma de fogo para ataques de média distância.'],4000,3,2,{'DAMAGE': 4, 'RECHARGE': 8, 'CADENCY': 1, 'CAPACITY': 16, 'GAUGE': 45}],
   
-'gun_shotgun.12': ['espingarda .12',['Arma de fogo para ataques de curta distância, ela usa munição de calibre 16.'],5000,4,3,{'DAMAGE': 5, 'RECHARGE': 4, 'CADENCY': 4, 'CAPACITY': 6, 'GAUGE': 12}],
+'gun_shotgun.12': ['espingarda .12',['Arma de fogo para ataques de curta distância, ela usa munição de calibre 12.'],5000,4,3,{'DAMAGE': 5, 'RECHARGE': 4, 'CADENCY': 4, 'CAPACITY': 6, 'GAUGE': 12}],
 'gun_carbine': ['carabina',['Arma de fogo para ataques de curta distância, ela usa munição de calibre 16.'],5000,4,3,{'DAMAGE': 7, 'RECHARGE': 3, 'CADENCY': 8, 'CAPACITY': 3, 'GAUGE': 16}],
   
-'gun_sniper': ['sniper',['Arma de fogo para ataques de curta distância, ela usa munição de calibre 16.'],6000,5,3,{'DAMAGE': 7, 'RECHARGE': 3, 'CADENCY': 2, 'CAPACITY': 3, 'GAUGE': 16}],
+'gun_sniper': ['sniper',['Arma de fogo para ataques de curta distância,','ela usa munição de calibre 16.'],6000,5,3,{'DAMAGE': 7, 'RECHARGE': 3, 'CADENCY': 2, 'CAPACITY': 3, 'GAUGE': 16}],
 'gun_shotgun': ['escopeta',['Arma de fogo para ataques de curta distância, ela usa munição de calibre 16.'],4000,4,3,{'DAMAGE': 7, 'RECHARGE': 3, 'CADENCY': 2, 'CAPACITY': 3, 'GAUGE': 16}],
   
 'gun_assault_riffle': ['fuzil de assalto',['Arma de fogo para ataques de curta distância, ela usa munição de calibre 16.'],4000,5,3,{'DAMAGE': 7, 'RECHARGE': 3, 'CADENCY': 2, 'CAPACITY': 3, 'GAUGE': 16}],
@@ -539,7 +570,12 @@ ITEMS = {
 'craft_fuel': ['combustível','',0,1,1],
 'craft_cloth': ['pano','',0,1,1],
 'craft_powder': ['pólvora','',0,1,1],
-   
+
+#BLESSINGS (name,description,price,volume,weight,dice)
+'bless_salt': ['benção de sal','Lhe abençoa com uma sorte de 20.',0,1,3,20],
+'bless_mercury': ['benção de mercúrio','Lhe abençoa com uma sorte de 40.',0,1,3,40],
+'bless_sulfur': ['benção de enxofre','Lhe abençoa com uma sorte de 60.',0,1,3,60],
+
 #TREASURES (name,description,price,volume,weight,type)
 'treasure_vase': ['vaso marajoara',['Um antigo vaso indígena feita da cerâmica do marajó.'],2000,3,3,0],
  
@@ -553,44 +589,6 @@ ITEMS = {
 'jewel_quartz': ['quartzo',['Essa jóia deve custar uma fortuna!'],2000,1,3,0],
 'mysterious': ['???',['Você não faz idéia do que é isso.'],0,1,1,0]
 }
- 
-'''INVENTORY = [
-[[['_','0000','_','_'],['phone','360100','_','_'],['wallet','00005000000300','credit_card','id_card0'],['locksmith1','02020000','key_bedroom','key_vehicle'],['_','0000','_','_']],
-[['amulet1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['clth_jacket1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['ammo.38','0000','_','_'],['_','0000','_','_']],
-[['clth_shirt1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['bag1','0000','_','_'],['gun_revolver.38','0006','aim1','acc_cartridge'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
- 
-[[['head_glasses1','0000','_','_'],['food_peanut_candy','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['clth_jacket3','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
- 
-[[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
- 
-[[['amulet4','0000','_','_'],['repellent1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['amulet5','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['food_coxinha','1103','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['charger','000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['bag1','0000','_','_'],['gun_revolver.38','0006','aim3','acc_gunbutt'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
- 
-[[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
- 
-[[['amulet7','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['amulet6','0000','_','_'],['condiment_ketchup','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['amulet2','0000','_','_'],['_','0000','_','_'],['pill_vitality','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['amulet3','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-[['bag1','0000','_','_'],['gun_revolver.38','0006','aim2','acc_bandolier'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-]'''
  
 STORAGE = [['jewel_ruby','0000','_','_'],['drink_whiskey','1503','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],
 ['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],

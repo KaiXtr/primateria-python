@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.3.0" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="56" height="56" tilewidth="30" tileheight="30" infinite="0" nextlayerid="13" nextobjectid="66">
+<map version="1.2" tiledversion="1.3.0" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="56" height="56" tilewidth="30" tileheight="30" infinite="0" nextlayerid="13" nextobjectid="67">
  <properties>
   <property name="ENEMIES" value="madladcat-peacockpigeon-"/>
   <property name="INTERIOR" value="0"/>
@@ -398,7 +398,7 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="7" name="NPC" visible="0">
+ <objectgroup id="7" name="NPC">
   <object id="19" name="npc_0" type="0" x="697.697" y="7.75767">
    <properties>
     <property name="DIRECTION" value="3"/>
@@ -456,6 +456,13 @@
     <property name="INDEX" value="000000"/>
     <property name="MOVE" value="nodeon"/>
     <property name="WHO" value="BUS WAITER"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="66" name="npc_8" type="0" x="774" y="684">
+   <properties>
+    <property name="INDEX" value="000000"/>
+    <property name="WHO" value="REWARD"/>
    </properties>
    <point/>
   </object>

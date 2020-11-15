@@ -58,7 +58,17 @@ class Debug:
 			elif self.cmd.startswith('chapter'):
 				resources.CHAPTER = int(self.cmd[8:])
 			elif self.cmd.startswith('money'):
-				resources.MONEY = int(self.cmd[6:])
+				src = None
+				for i in resources.PARTY[resources.FORMATION]:
+					src = self.inv.find(i,'credit_card')
+					if src == None:
+						src = self.inv.find(i,'wallet')
+						if src != None:
+							src[1] = int(self.cmd[6:])
+							break
+					else:
+						src[1] = int(self.cmd[6:])
+						break
 			elif self.cmd.startswith('atm'):
 				resources.ATM = int(self.cmd[4:])
 			elif self.cmd.startswith('credit'):
@@ -272,7 +282,6 @@ class Inventory:
 
 		self.scr = [pygame.Surface((380,220)), pygame.Surface((760,600), pygame.SRCALPHA)]
 		self.itmov = ''
-		self.money = False
 		self.scroll = 50
 		self.strgscroll = 50
 		self.shake = 0
@@ -290,7 +299,6 @@ class Inventory:
 				for y in i:
 					for x in y:
 						if x[0] == item and fnd == None: fnd = x
-
 		return fnd
 
 	def add(self, where, item, prp='0000'):
@@ -303,8 +311,8 @@ class Inventory:
 					if i != 0 and x[0] == '_' and trigg == False:
 						vi = prp
 						if item.startswith('food'):
-							dd = resources.DATE[0] + int(resources.ITEMS[item][6][0:2])
-							mm = resources.DATE[1] + int(resources.ITEMS[item][6][2:4])
+							dd = resources.DATE[0] + int(database.ITEMS[item][6][0:2])
+							mm = resources.DATE[1] + int(database.ITEMS[item][6][2:4])
 							if dd > 30: dd -= 30; mm += 1
 							if mm > 12: dd += 1; mm -= 12
 							if dd < 10: dd = '0' + str(dd)
@@ -342,7 +350,6 @@ class Inventory:
 					i += 1
 			j += 1
 			i = 0
-
 		if lopt == 4: trigg = True
 		elif opt == 0: trigg = True
 		if resources.INVENTORY[where][4][0][0] == '_': trigg = True
@@ -387,7 +394,7 @@ class Inventory:
 						if opt == optx and lopt == opty and mn == mnc:
 							if tp == 0: pygame.draw.rect(self.scr[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(x + (200 * mnc) - self.scroll,y,30,30))
 							if tp == 1: pygame.draw.rect(self.scr[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(x,y + (210 * mnc) - self.scroll,30,30))
-							dscr = resources.INVENTORY[resources.PARTY[resources.FORMATION][mn]][lopt][opt][0]
+							dscr = resources.INVENTORY[resources.PARTY[resources.FORMATION][mn]][lopt][opt]
 						else:
 							if tp == 0: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(x + (200 * mnc) - self.scroll,y,30,30))
 							if tp == 1: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(x,y + (210 * mnc) - self.scroll,30,30))
@@ -397,7 +404,6 @@ class Inventory:
 							if optx > 0 and opty < 4:
 								vlm += database.ITEMS[i[0]][3]
 								wei += database.ITEMS[i[0]][4]
-
 					x += 32
 					optx += 1
 				x = 10
@@ -456,7 +462,7 @@ class Inventory:
 
 				if opt == optx and lopt == opty:
 					pygame.draw.rect(self.scr[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(x, y - self.strgscroll,30,30))
-					dscr = j[0]
+					dscr = j
 				else: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(x, y - self.strgscroll,30,30))
 				if j[0] != '_':
 					self.scr[0].blit(pygame.image.load('Sprites/Items/it_' + j[0] + '.png'), (x, y - self.strgscroll))
@@ -486,22 +492,25 @@ class Inventory:
 				srf.fill((0, 0, 0))
 				self.scr[0].blit(srf, (25 + (mn * 200) + ox - self.scroll,40 + lox))
 				self.scr[0].blit(self.itbor, (20 + (mn * 200) + ox - self.scroll + self.shake,35 + lox))
-				if self.money == True:
+				'''if self.money == True:
 					self.scr[0].blit(self.mnbor, (-35 + (mn * 200) + ox - self.scroll + self.shake,35 + lox))
 					pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(-30 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,50,30))
-					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(resources.MONEY), True, (255, 255, 255)), ((-25 + (mn * 200) + ox - self.scroll + self.shake) * 2,(45 + lox) * 2))
-
-				if ex == 1: pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(25 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
+					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(resources.MONEY), True, (255, 255, 255)), ((-25 + (mn * 200) + ox - self.scroll + self.shake) * 2,(45 + lox) * 2))'''
+				if ex == 1:
+					pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(25 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
+					dscr = [self.itmov[ex],resources.INVENTORY[resources.PARTY[resources.FORMATION][mn]][lopt][opt][1][0:4]]
 				else: pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(25 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
-				if ex == 2: pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(55 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
+				if ex == 2:
+					pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(55 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
+					dscr = [self.itmov[ex],resources.INVENTORY[resources.PARTY[resources.FORMATION][mn]][lopt][opt][1][4:8]]
 				else: pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(55 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
-				if ex == 3: pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(85 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
+				if ex == 3:
+					pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(85 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
+					dscr = ['_','0000']
 				else: pygame.draw.rect(self.scr[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(85 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
 				if self.itmov[1] != '_': self.scr[0].blit(pygame.image.load('Sprites/Items/it_' + self.itmov[1] + '.png'), (25 + (mn * 200) + ox - self.scroll + self.shake,40 + lox))
 				if self.itmov[2] != '_': self.scr[0].blit(pygame.image.load('Sprites/Items/it_' + self.itmov[2] + '.png'), (55 + (mn * 200) + ox - self.scroll + self.shake,40 + lox))
 				self.scr[0].blit(pygame.image.load('Sprites/e_run.png'), (85 + (mn * 200) + ox - self.scroll + self.shake,40 + lox))
-				if ex < 3: dscr = self.itmov[ex]
-				else: dscr = '_'
 		
 		#ARROWS
 		if self.arrdir == False:
@@ -521,9 +530,22 @@ class Inventory:
 
 		#ITEM DESCRIPTION
 		pygame.draw.rect(self.wdw, (0, 0, 0), pygame.Rect(10,240,380,50))
-		if dscr != '_':
+		if dscr[0] != '_':
 			y = 0
-			for t in database.ITEMS[dscr][1]:
+			txt = database.ITEMS[dscr[0]][1].copy()
+			if dscr[0].startswith('gun'):
+				if len(txt) == 1: txt.append('ammo: ' + str(dscr[1]) + '/' + str(database.ITEMS[dscr[0]][5]['CAPACITY']))
+				elif len(txt) == 2: txt[1] += ' - ammo: ' + str(dscr[1] + '/' + str(database.ITEMS[dscr[0]][5]['CAPACITY']))
+			if dscr[0].startswith('wallet'):
+				if len(txt) == 1: txt.append('$' + str(dscr[1][0:6]))
+				elif len(txt) == 2: txt[1] += ' - $' + str(dscr[1][0:6])
+			if dscr[0].startswith('credit_card'):
+				if len(txt) == 1: txt.append('$' + str(dscr[1]))
+				elif len(txt) == 2: txt[1] += ' - $' + str(dscr[1])
+			if dscr[0].startswith('bottle'):
+				if len(txt) == 1: txt.append(str(dscr[1]) + 'ml/' + str(database.ITEMS[dscr[0]][5]) + 'ml')
+				elif len(txt) == 2: txt[1] += ' - ' + str(dscr[1]) + 'ml/' + str(database.ITEMS[dscr[0]][5]) + 'ml'
+			for t in txt:
 				self.scr[1].blit(self.fnt['CALIBRI'].render(t, True, (255, 255, 255)), (20, 480 + y))
 				y += 30
 
@@ -542,11 +564,20 @@ class Shop:
 			for y in range(25):
 				self.wdw.blit(pygame.image.load('Sprites/border_' + str(resources.BORDER) + '.png'), (x * 10, y * 10))
 		self.scr = [pygame.Surface((380,230))]
+		self.inv = Inventory()
 		
 	def products(self, opt, lopt, lst):
 		self.scr[0].fill((10,10,10))
-
-		self.scr[0].blit(self.fnt['CALIBRI'].render('$' + str(resources.MONEY), True, (255, 255, 255)), (20, 10))
+		mny = 0
+		for i in resources.PARTY[resources.FORMATION]:
+			src = self.inv.find(i,'credit_card')
+			if src == None:
+				src = self.inv.find(i,'wallet')
+				if src != None:
+					mny += int(src[1][0:6])
+			else:
+				mny += int(src[1])
+		self.scr[0].blit(self.fnt['CALIBRI'].render('$' + str(mny), True, (255, 255, 255)), (20, 10))
 
 		y = 0
 		for i in lst:
@@ -575,7 +606,15 @@ class Shop:
 
 	def buy(self, opt, lopt, lst):
 		self.scr[0].fill((10,10,10))
-
+		mny = 0
+		for i in resources.PARTY[resources.FORMATION]:
+			src = self.inv.find(i,'credit_card')
+			if src == None:
+				src = self.inv.find(i,'wallet')
+				if src != None:
+					mny += int(src[1][0:6])
+			else:
+				mny += int(src[1])
 		pygame.draw.line(self.scr, (255, 255, 255), (5,15),(395,15),2)
 		pygame.draw.line(self.scr, (255, 255, 255), (300,15),(300,230),2)
 		pygame.draw.line(self.scr, (255, 255, 255), (300,160),(395,160),2)
@@ -591,11 +630,11 @@ class Shop:
 				cost += database.ITEMS[i][2]
 				y += 1
 
-		self.scr[0].blit(self.fnt['CALIBRI'].render('valor: ' + str(resources.MONEY), True, (255, 255, 255)), (305, 165))
+		self.scr[0].blit(self.fnt['CALIBRI'].render('valor: ' + str(mny), True, (255, 255, 255)), (305, 165))
 		self.scr[0].blit(self.fnt['CALIBRI'].render('total: ' + str(cost), True, (255, 255, 255)), (305, 185))
-		if resources.MONEY - cost > 0: pcol = (0,255,0)
+		if mny - cost > 0: pcol = (0,255,0)
 		else: pcol = (255,0,0)
-		self.scr[0].blit(self.fnt['CALIBRI'].render('troco: ' + str(resources.MONEY - cost), True, pcol), (305, 205))
+		self.scr[0].blit(self.fnt['CALIBRI'].render('troco: ' + str(mny - cost), True, pcol), (305, 205))
 		self.scr[0].blit(self.fnt['CALIBRI'].render('atendente: ', True, (255, 255, 255)), (10, 230))
 		self.scr[0].blit(self.fnt['CALIBRI'].render('hora: ' + str(resources.TIME[0]) + ': ' + str(resources.TIME[1]), True, (255, 255, 255)), (200, 230))
 		self.scr[0].blit(self.fnt['CALIBRI'].render('data: ' + str(resources.DATE[0]) + '/ ' + str(resources.DATE[1]), True, (255, 255, 255)), (300, 230))
@@ -615,8 +654,16 @@ class Shop:
 
 	def mercator(self, opt, lopt, lst, prm):
 		self.scr[0].fill((10,10,10))
-
-		self.scr[0].blit(self.fnt['CALIBRI'].render('$' + str(resources.MONEY), True, (255, 255, 255)), (20, 10))
+		mny = 0
+		for i in resources.PARTY[resources.FORMATION]:
+			src = self.inv.find(i,'credit_card')
+			if src == None:
+				src = self.inv.find(i,'wallet')
+				if src != None:
+					mny += int(src[1][0:6])
+			else:
+				mny += int(src[1])
+		self.scr[0].blit(self.fnt['CALIBRI'].render('$' + str(mny), True, (255, 255, 255)), (20, 10))
 
 		if opt == 0: self.scr[0].blit(self.fnt['CALIBRI'].render(database.SHOP[8], True, (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2])), (20, 30))
 		else: self.scr[0].blit(self.fnt['CALIBRI'].render(database.SHOP[8], True, (255,255,255)), (20, 30))
@@ -670,7 +717,15 @@ class Shop:
 
 	def bank(self, opt, lopt, mn, ext):
 		self.scr[0].fill((234,234,234))
-
+		mny = 0
+		for i in resources.PARTY[resources.FORMATION]:
+			src = self.inv.find(i,'credit_card')
+			if src == None:
+				src = self.inv.find(i,'wallet')
+				if src != None:
+					mny += int(src[1][0:6])
+			else:
+				mny += int(src[1])
 		if mn == 3:
 			if lopt == 0:
 				pygame.draw.rect(self.scr, (94, 137, 255), pygame.Rect(5,120,200,30))
@@ -702,7 +757,7 @@ class Shop:
 
 			self.scr[0].blit(self.fnt['TITLE'].render(str(resources.ATM), True, (0,0,0)), (120, 90))
 			self.scr[0].blit(self.fnt['TITLE'].render(str(ext[0]) + str(ext[1]) + str(ext[2]) + str(ext[3]) + str(ext[4]) + str(ext[5]), True, (0,0,0)), (120, 120))
-			self.scr[0].blit(self.fnt['TITLE'].render(str(resources.MONEY), True, (0,0,0)), (120, 150))
+			self.scr[0].blit(self.fnt['TITLE'].render(str(mny), True, (0,0,0)), (120, 150))
 
 		self.wdw.blit(self.scr, (10,10))
 		return self.wdw
@@ -869,9 +924,9 @@ class Phone:
 			if flt > 0: self.scr[1].blit(self.fnt['CALIBRI'].render(i[0], True, (0, 0, 0)), (20, (76 + y - self.scroll) * 2))
 			else:
 				if opt == y/51:
-					if mnu == 1: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 48,74 + y - self.scroll,24,24))
+					if mnu == 1: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 52,74 + y - self.scroll,24,24))
 					self.scr[0].blit(pygame.image.load('Sprites/tc_9.png'), (sz - 50, 76 + y - self.scroll))
-					if mnu == 2: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 26,74 + y - self.scroll,24,24))
+					if mnu == 2: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 30,74 + y - self.scroll,24,24))
 					self.scr[0].blit(pygame.image.load('Sprites/tc_8.png'), (sz - 28, 76 + y - self.scroll))
 					if mnu == 3: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(8,74 + y - self.scroll,24,24))
 					if mnu == 4: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(30,74 + y - self.scroll,24,24))
@@ -904,13 +959,13 @@ class Phone:
 			pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(dvd3,45,dvd3,20))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[24], True, (0, 0, 0)), ((dvd3 * 2) + 20, 94))
 		else:
-			pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(0,45,dvd3,20))
+			pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(dvd3,45,dvd3,20))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[24], True, (255, 255, 255)), ((dvd3 * 2) + 20, 94))
 		if flt == 2:
 			pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(dvd3 * 2,45,dvd3,20))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[25], True, (0, 0, 0)), ((dvd3 * 4) + 20, 94))
 		else:
-			pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(0,45,dvd3,20))
+			pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(dvd3 * 2,45,dvd3,20))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[25], True, (255, 255, 255)), ((dvd3 * 4) + 20, 94))
 
 		pygame.draw.rect(self.scr[1], (15, 255, 0), pygame.Rect(0,0,sz * 2,80))
