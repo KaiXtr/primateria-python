@@ -507,7 +507,8 @@ ITEMS = {
  
 #TRASH (name,description,price,volume,weight,damage,duration)
 'trash_packing': ['embalagem',['Um papel que não serve pra absolutamente nada','a menos que seja uma esponja amarela.'],8,1,1,10,'0100'],
-'trash_bottle': ['garrafa de vidro',['Um item meio perigoso de se levar','nas suas costas,','sabe-se lá o que pode fazer com isso'],8,1,1,10,'0100'],
+'trash_bottle': ['garrafa de vidro',['Um item meio perigoso de se levar','nas suas costas,','sabe-se lá o que pode fazer com isso'],8,2,1,10,'0100'],
+'trash_pizza': ['caixa de pizza',['Uma caixa que um dia tinha uma coisa','muito gostosa dentro.'],8,2,1,10,'0100'],
    
 #KEY ITEMS (name,description,price,volume,weight)
 'key_bedroom': ['chave do quarto',['Se perder vai ficar sem caminha.'],10,1,1],
@@ -603,7 +604,7 @@ CHESTS = {
 }
 
 PRODUCTS = [
-[['drink_beer','drink_whisky'],0,0],
+[['drink_beer','drink_whiskey'],0,0],
 [['vest1','repellent1','food_coxinha','pill_vitality','melee_knife','amulet1','aim1'],1,10],
 [['grenade','pepper_spray','gun_revolver.38'],1,2],
 [['melee_fishmonger','portable_charger','headphone'],4,0]
@@ -1006,7 +1007,10 @@ def load_dialogs(r=False):
 	 
 	#PLACES
 	'DEPOSIT': [['Olá!','Me chamou?',1,],['Se precisar de qualquer coisa,','é só chamar!',1,(24,'n',('px300','py0'),0)]],
-	'PIZZA DELIVERY': [['Aqui está.',1,(1,'food_pizza_mussarella',20,0),(24,'n',('px300','py0'),0)]],
+	'PIZZA DELIVERY MUSSARELLA': [['Aqui está.',1,(1,'food_pizza_mussarella',20,0),(24,'n',('px300','py0'),0)]],
+	'PIZZA DELIVERY SHAGGY': [['Aqui está.',1,(1,'food_pizza_shaggy',20,0),(24,'n',('px300','py0'),0)]],
+	'PIZZA DELIVERY CHICKEN': [['Aqui está.',1,(1,'food_pizza_chicken',20,0),(24,'n',('px300','py0'),0)]],
+	'PIZZA DELIVERY 4CHEESE': [['Aqui está.',1,(1,'food_pizza_4cheese',20,0),(24,'n',('px300','py0'),0)]],
 	'REWARD':[['Ei! Você não tem sangue nenhum!','Volte quando tiver pego alguma coisa!',1],['Só isso?','Vou dar sua recompensa, mas poderia ter se esforçado mais',1],['Você conseguiu bastante sangue','Aqui está sua recompensa',1],['Uau! isso é muito sangue!','Aqui está sua recompensa pelo seu trabalho duro!',1]],
 	'MERCATOR': [['Olá cliente!','Interessado em alguns produtos?',1],['Foi mal cara, mas sem grana, sem acordo.',1],['Espera um pouco cara!','Você tá sem espaço!',1,'Não quer dar para outra pessoa?',1]],
 	'CASHIER INGRID': [['Os produtos estão nas pratileiras','é só você ir pegar e trazer aqui',1,0,'O quê? você quer que eu vá buscar pra você?!',1],['Você não tem dinheiro?',1,'Sério?',1],['Você tá cheio de coisas...','Não sei se posso deixar levar tudo isso.',1]],
@@ -1238,8 +1242,11 @@ def load_dialogs(r=False):
 	    
 	'987690021': [['Paulo']],
 	  
-	'953478809': [[dt + ', em que posso ajudar?',(10,['uma pizza grande','já estamos á caminho',1,(17,'deliver',600,{'TYPE': 2, 'INDEX': '001003', 'WHO': 'PIZZA DELIVERY'})],
-		['uma pizza média','já estamos á caminho',1,(17,'deliver',600,{'TYPE': 2, 'INDEX': '001003', 'WHO': 'PIZZA DELIVERY'})])]],
+	'953478809': [[dt + ', em que posso ajudar?',(10,
+		['uma pizza de mussarela','já estamos á caminho',1,(17,'deliver',600,{'TYPE': 2, 'INDEX': '001003', 'WHO': 'PIZZA DELIVERY MUSSARELLA'})],
+		['uma pizza de calabresa','já estamos á caminho',1,(17,'deliver',600,{'TYPE': 2, 'INDEX': '001003', 'WHO': 'PIZZA DELIVERY SHAGGY'})],
+		['uma pizza de 4 queijos','já estamos á caminho',1,(17,'deliver',600,{'TYPE': 2, 'INDEX': '001003', 'WHO': 'PIZZA DELIVERY 4CHEESE'})],
+		['uma pizza de frango','já estamos á caminho',1,(17,'deliver',600,{'TYPE': 2, 'INDEX': '001003', 'WHO': 'PIZZA DELIVERY CHICKEN'})])]],
 	  
 	'909236521': [[dt + ', correios']],
 	  

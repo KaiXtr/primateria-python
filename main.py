@@ -923,7 +923,6 @@ class Game:
 										self.dlg = []
 										btls[1] = '000'
 								else: self.dialog(database.DIALOGS['REWARD'][0].copy(),rect)
-
 					#MARKET CASHIER
 					elif i['TYPE'] == 2:
 						if i['WHO'].startswith('DRITHR'):
@@ -947,7 +946,6 @@ class Game:
 							self.lopt = 0
 							self.opt = 0
 							self.mnu = 2
-
 					#DEPOSIT ITEMS
 					elif i['TYPE'] == 4:
 						self.dialog(database.DIALOGS['DEPOSIT'][0],rect)
@@ -958,7 +956,6 @@ class Game:
 						self.lopt = 1
 						self.mnu = 0
 						self.exvar = 0
-
 					elif i['TYPE'] == 5:
 						#ATM MACHINE
 						if i['INDEX'] == 0:
@@ -1027,7 +1024,7 @@ class Game:
 						self.shp = True
 						self.lopt = 0
 						self.opt = 0
-						self.mnu = i['WHO']
+						self.mnu = 2
 		else: i['TALKING'] = False
 
 	def vehicle(self, i):
@@ -1412,13 +1409,13 @@ class Game:
 								self.shp = False
 								self.lopt = 0
 							else:
-								if scr != None and int(scr[1]) >= database.ITEMS[self.products[self.lopt]][2]:
+								if src != None and int(src[1]) >= database.ITEMS[self.products[self.lopt]][2]:
 									if self.inv.space(resources.PARTY[resources.FORMATION][0]) == False:
 										self.dialog(database.DIALOGS['MERCATOR'][2])
 									elif self.confirmation() == 1:
 										self.inv.add(resources.PARTY[resources.FORMATION][0],self.products[self.lopt])
 										self.ch_sfx.play(resources.SOUND['BUY'])
-										scr[1] = str(int(scr[1]) - database.ITEMS[self.products[self.lopt]][2] - int(database.ITEMS[self.products[self.lopt]][2]/self.promo))
+										src[1] = str(int(src[1]) - database.ITEMS[self.products[self.lopt]][2] - int(database.ITEMS[self.products[self.lopt]][2]/self.promo))
 								else:
 									self.ch_sfx.play(resources.SOUND['ERROR'])
 									self.dialog(database.DIALOGS['MERCATOR'][1])
@@ -1427,8 +1424,8 @@ class Game:
 								self.ch_sfx.play(resources.SOUND['MENU_BACK'])
 								self.shp = False
 								self.lopt = 0
-							elif self.confirmation() == 1 and scr != None:
-								scr[1] = str(int(scr[1]) + int(database.ITEMS[resources.INVENTORY[self.basket[self.lopt][0]][self.basket[self.lopt][1]][self.basket[self.lopt][2]][0]][2]/2))
+							elif self.confirmation() == 1 and src != None:
+								src[1] = str(int(src[1]) + int(database.ITEMS[resources.INVENTORY[self.basket[self.lopt][0]][self.basket[self.lopt][1]][self.basket[self.lopt][2]][0]][2]/2))
 								resources.INVENTORY[self.basket[self.lopt][0]][self.basket[self.lopt][1]][self.basket[self.lopt][2]] = ['_','0000','_','_']
 								del self.basket[self.lopt]
 								self.ch_sfx.play(resources.SOUND['SELL'])
@@ -3053,13 +3050,9 @@ class Game:
 					for n in self.npcs:
 						if n['N'] > ind: ind = n['N']
 					ind += 1
-					if len(txt[tid]) > 5: t = txt[tid][4]
-					else: t = 0
-					obj = {'N': ind, 'RECT': pygame.Rect(txt[tid][1][0], txt[tid][1][1], 0, 0), 'TYPE': t, 'INDEX': txt[tid][2], 'WHO': txt[tid][3],
+					self.npcs.append({'N': ind, 'RECT': pygame.Rect(txt[tid][1][0], txt[tid][1][1], 0, 0), 'TYPE': txt[tid][4], 'INDEX': txt[tid][2], 'WHO': txt[tid][3],
 					'GIF': 0.0,'BLINK': 100,'HEAD': 'BLANKD_' + txt[tid][2][0:3] + txt[tid][2][5],'SPRITE': 'STANDD_' + txt[tid][2][3:6],'MOVE': 'fixed','DIRECTION': 3,'SPEED': 0,
-					'JUMP': 0,'GRAVITY': -5,'TIME': 20,'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','TALKING': False,'SWIM': None,'HOLD': None,'PAUSE': 0}
-					print(obj)
-					self.npcs.append(obj)
+					'JUMP': 0,'GRAVITY': -5,'TIME': 20,'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','TALKING': False,'SWIM': None,'HOLD': None,'PAUSE': 0})
 					self.objects.append([2,ind,txt[tid][1][1]])
 				#CENSORSHIP
 				elif txt[tid][0] == 31:
@@ -4697,7 +4690,9 @@ class Game:
 				lst = []
 				if self.opt == 0: lst = self.products
 				else: lst = self.basket
-				self.display[0].blit(self.shpmnu.mercator(self.opt, self.lopt, lst, self.promo), (100,60))
+				ssrf = self.shpmnu.mercator(self.opt, self.lopt, lst, self.promo)
+				self.display[0].blit(ssrf[0], (100,60))
+				self.display[1].blit(ssrf[1], (220,140))
 			if self.mnu == 3 or self.mnu == 11 or self.mnu == 12:
 				self.display[0].blit(self.shpmnu.bank(self.opt, self.lopt, self.mnu, self.extract), (100,60))
 			lyr2 = True
