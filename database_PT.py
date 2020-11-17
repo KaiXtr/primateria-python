@@ -1246,14 +1246,14 @@ def load_dialogs(r=False):
 	'923778988': [['Alô?',1,(16,0,[rs.CHARACTERS[0]['NAME'] + '! a quanto tempo cara!',1]),'Precisando de ajuda em','carregar algumas coisas?',1,'Não tem problema, o pai tá aí','pra resolver já já!',1,
 	(17,'deliver',600,{'TYPE': 4, 'INDEX': '001003', 'WHO': 'DEPOSIT'})]],
 	  
-	'969696969': [['Olá ' + prps + ' cliente, em que posso ajudar?','você está a procura de meus serviços?','chegarei em instantes',1,[17,'mercador',0,3]]],
+	'969696969': [['Olá ' + prps + ' cliente, em que posso ajudar?','você está a procura de meus serviços?','chegarei em instantes',1,(17,'delivery',600,{'TYPE': 3, 'INDEX': '001003', 'WHO': 'MERCATOR'})]],
 	  
-	'977904623': [['Hey!','Você está bem?','Onde você tá?','O que tá acontecendo?','Você se machucou?',[10,['Eu tô bem','Mesmo?',1,'Ufa...',1],['Fique calmo','Não consigo me acalmar',1]],'Eu estava preocupado','com você',1,
+	'977904623': [['Hey!','Você está bem?','Onde você tá?','O que tá acontecendo?','Você se machucou?',(10,['Eu tô bem','Mesmo?',1,'Ufa...',1],['Fique calmo','Não consigo me acalmar',1]),'Eu estava preocupado','com você',1,
 	'mas graças a','Deus você está bem',1,'Aquela mulher chamando','vocês aos prantos me','deixou assustado',1,'Você deve estar','cansada depois de','tudo o que passou',1,'Engraçado, não é?',1,'Você mal saiu','dessa coisa de mercenária',
-	'e já tá na ativa','novamente',1,'Mas assim...',1,'...',[10,['Pode falar','não...','é que...',1,'Não quero que a gente','se afaste de novo',1,'Não agora que tá','tudo dando muito certo',1,'Não precisa ser','que nem seu amigo','mercenário',1,
+	'e já tá na ativa','novamente',1,'Mas assim...',1,'...',(10,['Pode falar','não...','é que...',1,'Não quero que a gente','se afaste de novo',1,'Não agora que tá','tudo dando muito certo',1,'Não precisa ser','que nem seu amigo','mercenário',1,
 	'ah é, esqueci','de te contar',1,'Eu fiquei sabendo','dele e tudo isso','sobre aquela garota',1,'bem problemático',1,'Não...',1,'Esquece eu só','falei besteira',1,'Só quero que','você não seja','ausente como eu','fui com você',1,'entende?',1,
-	[10,['Sim','Ainda bem que','entendeu',1],['Não','Esquece isso',1]]],
-	['Eu já ligo de volta','Tudo bem','Você deve estar','muito ocupada agora',1]]
+	(10,['Sim','Ainda bem que','entendeu',1],['Não','Esquece isso',1])],
+	['Eu já ligo de volta','Tudo bem','Você deve estar','muito ocupada agora',1])
 	,'A gente se fala mais','em casa, então',1,'te amo, ok?',1]],
 	  
 	'923578103': [['Sofia']],
@@ -1307,7 +1307,7 @@ HINTS = {
 'MENUS': [6,'inventário',7,'celular'],
 'NPC_DIALOG': [4,'conversar'],
 'VEHICLE_USE': [4,'montar'],
-'VEHICLE_CONTROLS': [2,'esquerda',3,'direita',4,'acelerar',1,'freiar',0,'desmontar'],
+'VEHICLE_CONTROLS': [2,'esquerda',3,'direita',5,'acelerar',1,'freiar',0,'desmontar'],
 'INVENTORY_ITEMS': [4,'usar',5,'segurar'],
 'INVENTORY_HOLD': [4,'juntar',5,'colocar'],
 'INVENTORY_ACCESORIES': [5,'tirar'],

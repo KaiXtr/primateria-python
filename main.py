@@ -1019,10 +1019,10 @@ class Game:
 										j += 1
 								x = 0
 								j = 0
-						if resources.DATE[3] == database.PRODUCTS[int(i['INDEX'])][1]:
-							self.promo = database.PRODUCTS[int(i['INDEX'])][2]
+						if resources.DATE[3] == database.PRODUCTS[0][1]:
+							self.promo = database.PRODUCTS[0][2]
 						self.products = []
-						for p in database.PRODUCTS[int(i['INDEX'])][0]:
+						for p in database.PRODUCTS[0][0]:
 							self.products.append(p)
 						self.shp = True
 						self.lopt = 0
@@ -2891,7 +2891,7 @@ class Game:
 							txt.insert(tid + 1, j)
 				#DELIVERY
 				elif txt[tid][0] == 17:
-					self.waitlst.append([txt[tid][1],self.waitime + txt[tid][2],txt[tid][3]])
+					self.waitlst.append(['delivery',self.waitime + txt[tid][2],txt[tid][3]])
 				#CHANGE PARTY
 				elif txt[tid][0] == 18:
 					ap = []
@@ -3053,11 +3053,13 @@ class Game:
 					for n in self.npcs:
 						if n['N'] > ind: ind = n['N']
 					ind += 1
-					if len(txt[tid]) > 4: t = txt[tid][4]
+					if len(txt[tid]) > 5: t = txt[tid][4]
 					else: t = 0
-					self.npcs.append({'N': ind, 'RECT': pygame.Rect(txt[tid][1][0], txt[tid][1][1], 0, 0), 'TYPE': t, 'INDEX': txt[tid][2], 'WHO': txt[tid][3],
+					obj = {'N': ind, 'RECT': pygame.Rect(txt[tid][1][0], txt[tid][1][1], 0, 0), 'TYPE': t, 'INDEX': txt[tid][2], 'WHO': txt[tid][3],
 					'GIF': 0.0,'BLINK': 100,'HEAD': 'BLANKD_' + txt[tid][2][0:3] + txt[tid][2][5],'SPRITE': 'STANDD_' + txt[tid][2][3:6],'MOVE': 'fixed','DIRECTION': 3,'SPEED': 0,
-					'JUMP': 0,'GRAVITY': -5,'TIME': 20,'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','TALKING': False,'SWIM': None,'HOLD': None,'PAUSE': 0})
+					'JUMP': 0,'GRAVITY': -5,'TIME': 20,'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','TALKING': False,'SWIM': None,'HOLD': None,'PAUSE': 0}
+					print(obj)
+					self.npcs.append(obj)
 					self.objects.append([2,ind,txt[tid][1][1]])
 				#CENSORSHIP
 				elif txt[tid][0] == 31:
@@ -3181,7 +3183,6 @@ class Game:
 			elif self.turn == -6: self.ch_ton.play(resources.SOUND['BATTLE_FOE'])
 			else: self.ch_ton.play(resources.SOUND['BATTLE_BOSS'])
 			if self.driving > 0: self.obstacles = True
-
 			#ZOOM TRANSITION
 			if self.turn != -6:
 				acc = 0
@@ -4133,7 +4134,8 @@ class Game:
 
 	def draw(self):
 		for i in self.display: i.fill((0,0,0,0))
-		if self.dlgfa < 500 or self.turn < 0: self.hpctrl = []
+		if self.battle == True and self.turn < 0: self.hpctrl = []
+		elif self.dlgfa < 500: self.hpctrl = []
 		else: self.hpctrl = database.HINTS['MENUS']
 		lyr2 = False
 		#TILEMATION
@@ -4908,7 +4910,7 @@ class Game:
 					elif ky[i] == pygame.K_DOWN: out = 'Ê'
 					elif ky[i] == pygame.K_RIGHT: out = 'Ë'
 					else: out = pygame.key.name(ky[i]).upper()
-					hpsz += self.fnt['CONTROLKEYS'].size(out)[0]
+					hpsz += self.fnt['CONTROLKEYS'].size(out)[0] + 20
 					self.display[0].blit(self.fnt['CONTROLKEYS'].render(out, True, (250, 250, 250)), (self.displayzw - 20 - math.floor(hpsz/2), self.displayzh - 20))
 		#CAMERA X
 		if (self.map.width * self.map.tilewidth) > self.displayzw:
@@ -4985,7 +4987,8 @@ class Game:
 			pygame.display.update(pygame.Rect(1120,720,30,30))
 
 	def crash(self):
-		if self.classrun == 1:
+		again = False
+		while again == False:
 			for event in pygame.event.get():
 				#EXIT
 				if event.type == pygame.QUIT:
@@ -5003,7 +5006,7 @@ class Game:
 					self.FPS = int(event.w/20)
 				#SKIP
 				if event.type == pygame.KEYDOWN:
-					self.classrun = 3
+					again = True
 			self.screen.fill((0,0,0))
 
 			et, ev, eb = sys.exc_info()
@@ -5025,7 +5028,6 @@ class Game:
 		if self.nmenu.show == False:
 			self.events()
 		self.draw()
-
 		#WAITIME
 		for i in range(len(self.waitlst)):
 			if self.waitlst[i][1] < self.waitime:
@@ -5033,14 +5035,18 @@ class Game:
 				break
 		for i in self.waitlst:
 			if i[1] == self.waitime:
+				#SUNNY WEATHER
 				if i[0] == 'sun':
 					resources.WEATHER = 0
 					self.waitlst.append(['rain',self.waitime + 3600])
+				#RAINY WEATHER
 				elif i[0] == 'rain':
 					resources.WEATHER = 1
 					self.waitlst.append(['sun',self.waitime + 3600])
+				#REPELLENT EFFECT
 				elif i[0].startswith('repellent'):
 					resources.CHARACTERS[int(i[0][9])]['HEALTH'] = 0
+				#CALLING
 				elif i[0].startswith('cal'):
 					self.ch_ton.play(resources.SOUND['CALLING'],-1)
 					self.ch_rng.play(resources.SOUND['RINGTONE_' + str(self.phn.pbg)],-1)
@@ -5048,19 +5054,22 @@ class Game:
 					if self.phone > 0: self.phone = 17
 					self.nb = i[0][3:]
 					self.waitlst.append(['cutcal',1200])
+				#CUTTING CALL
 				elif i[0].startswith('cutcal'):
 					if self.nb != '':
 						self.ch_ton.stop()
 						self.ch_rng.stop()
 						self.nb = ''
 						if self.phone == 17: self.phone = 1
-				elif i[0] == 'deliver':
-					self.dialog([(30,pygame.Rect(self.player[0]['RECT'].x - 430,self.player[0]['RECT'].y,0,0),i[2]['INDEX'],i[2]['WHO'],i[2]['TYPE']),
-						(24,'n',(self.player[0]['RECT'].x - 30,self.player[0]['RECT'].y),3)])
+				#DELIVERY
+				elif i[0] == 'delivery':
+					if self.dlgfa > 0:
+						self.dialog([(30,pygame.Rect(self.player[0]['RECT'].x - 430,self.player[0]['RECT'].y,0,0),i[2]['INDEX'],i[2]['WHO'],i[2]['TYPE']),
+							(24,'n',(self.player[0]['RECT'].x - 30,self.player[0]['RECT'].y),3)])
+				#TIME WARNING
 				elif i[0].startswith('advice'):
 					if self.dlgfa > 0:
 						self.dialog(database.DIALOGS['ADVICE'])
-
 		#FOOD WASTE
 		for b in resources.INVENTORY:
 			for j in b:
@@ -5069,7 +5078,6 @@ class Game:
 						if int(i[1][2:4]) <= resources.DATE[1]:
 							if int(i[1][0:2]) <= resources.DATE[0]:
 								i[0] += '_wasted'
-
 		#SECONDS
 		self.waitime += 1
 		if self.sleepin == False:
@@ -5087,7 +5095,6 @@ class Game:
 			if self.phone > 0:
 				if resources.CHAPTER > 0: resources.BATTERY -= 2.5
 				elif resources.SCENE > 0: resources.BATTERY -= 2.5
-
 		#BATTERY
 		if resources.BATTERY < 1.0:
 			if self.radonoff == True:
@@ -5095,12 +5102,10 @@ class Game:
 				self.ch_ton.stop()
 				pygame.mixer.music.stop()
 			resources.BATTERY = 1.0
-
 		#MINUTES
 		if resources.TIME[2] >= 60:
 			resources.TIME[1] += 1
 			resources.TIME[2] = 0
-
 		#HOURS
 		if resources.TIME[1] >= 60:
 			resources.TIME[0] += 1
@@ -5115,20 +5120,17 @@ class Game:
 				else: resources.CHARACTERS[p]['SLEEP'] -= 1
 
 			if resources.TIME[0] in [6,18]: self.rendermap(self.room)
-
 		#DAYS
 		if resources.TIME[0] >= 24:
 			resources.DATE[0] += 1
 			resources.DATE[3] += 1
 			resources.TIME[0] = 0
-
 		#WEEKS
 		if resources.DATE[3] > 7:
 			resources.DATE[3] = 1
 			resources.DATE[4] += 1
 		if resources.DATE[4] > 8:
 			resources.DATE[4] = 1
-
 		#MONTHS
 		if resources.DATE[1] in [1,3,5,7,8,10,12]:	
 			if resources.DATE[0] > 31:
@@ -5142,12 +5144,10 @@ class Game:
 			if resources.DATE[0] > 28:
 				resources.DATE[1] += 1
 				resources.DATE[0] = 1
-
 		#YEARS
 		if resources.DATE[1] > 12:
 			resources.DATE[2] += 1
 			resources.DATE[1] = 1
-
 		#GAMETIME
 		resources.GAMETIME += self.glock.get_rawtime()
 
