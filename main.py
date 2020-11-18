@@ -875,8 +875,9 @@ class Game:
 						self.player[0]['PAUSE'] = 1
 						act = True
 				if act == True:
-					#NPC DIALOG
+					i['FOLLOW'] = None
 					i['TALKING'] = True
+					#NPC DIALOG
 					if i['TYPE'] in [0,None] or isinstance(i['TYPE'],str):
 						if self.dlgfa > 0:
 							i['SPEED'] = 0
@@ -888,7 +889,6 @@ class Game:
 							if i['DIRECTION'] == 6: i['HEAD'] = 'TALKLU_' + i['INDEX'][0:3] + i['INDEX'][5]
 							if i['DIRECTION'] == 7: i['HEAD'] = 'TALKU_' + i['INDEX'][0:3] + i['INDEX'][5]
 							if i['DIRECTION'] == 8: i['HEAD'] = 'TALKRU_' + i['INDEX'][0:3] + i['INDEX'][5]
-
 							#DIALOG
 							if i['WHO'] != 'REWARD':
 								if isinstance(i['WHO'], int): self.dialog(database.DIALOGS['NPC_' + str(i['WHO'])][resources.DLGSAV[i['WHO']]].copy(),rect)
@@ -905,7 +905,6 @@ class Game:
 									if int(btls[1]) > 150: self.dialog(database.DIALOGS['REWARD'][3].copy(),rect)
 									elif int(btls[1]) > 90: self.dialog(database.DIALOGS['REWARD'][2].copy(),rect)
 									elif int(btls[1]) > 0: self.dialog(database.DIALOGS['REWARD'][1].copy(),rect)
-
 									if self.notx == 0:
 										src = None
 										for i in resources.PARTY[resources.FORMATION]:
@@ -997,25 +996,19 @@ class Game:
 							while resources.GAS < self.vehicles[self.driving - 1]['CAPACITY']:
 								resources.GAS += 1
 								self.run()
-
 					#PRODUCTS AND MERCATOR
 					elif i['TYPE'] != None:
 						if i['TYPE'] == 3:
 							self.dialog(database.DIALOGS['MERCATOR'][0],rect)
 							self.basket = []
-							j = 0
-							x = 0
-							for p in range(len(resources.INVENTORY)):
-								if p in resources.PARTY[resources.FORMATION]:
-									for t in resources.INVENTORY[p]:
-										for k in t:
-											if k[0] != '_' and database.ITEMS[resources.INVENTORY[p][j][x][0]][2] != 0:
-												self.basket.append([p,j,x])
-											x += 1
-										x = 0
-										j += 1
-								x = 0
-								j = 0
+							p = 0
+							for u in resources.PARTY[resources.FORMATION]:
+								self.basket.append([])
+								for y in range(len(resources.INVENTORY[u])):
+									for x in range(len(resources.INVENTORY[u][y])):
+										if resources.INVENTORY[u][y][x][0] != '_' and database.ITEMS[resources.INVENTORY[u][y][x][0]][2] != 0:
+											self.basket[p].append([y,x])
+								p += 1
 						if resources.DATE[3] == database.PRODUCTS[0][1]:
 							self.promo = database.PRODUCTS[0][2]
 						self.products = []
@@ -1415,7 +1408,10 @@ class Game:
 									elif self.confirmation() == 1:
 										self.inv.add(resources.PARTY[resources.FORMATION][0],self.products[self.lopt])
 										self.ch_sfx.play(resources.SOUND['BUY'])
-										src[1] = str(int(src[1]) - database.ITEMS[self.products[self.lopt]][2] - int(database.ITEMS[self.products[self.lopt]][2]/self.promo))
+										if self.promo > 0:
+											src[1] = str(int(src[1]) - (database.ITEMS[self.products[self.lopt]][2] - int(database.ITEMS[self.products[self.lopt]][2]/self.promo)))
+										else:
+											src[1] = str(int(src[1]) - database.ITEMS[self.products[self.lopt]][2])
 								else:
 									self.ch_sfx.play(resources.SOUND['ERROR'])
 									self.dialog(database.DIALOGS['MERCATOR'][1])
@@ -1435,11 +1431,8 @@ class Game:
 						if self.lopt < 0: self.lopt = len(self.products)
 						if self.lopt > len(self.products): self.lopt = 0
 					else:
-						ln = 1
-						for i in self.basket:
-							if i[0] == self.opt - 1: ln += 1
-						if self.lopt < 0: self.lopt = ln
-						if self.lopt > ln: self.lopt = 0
+						if self.lopt < 0: self.lopt = len(self.basket[self.opt - 1])
+						if self.lopt > len(self.basket[self.opt - 1]): self.lopt = 0
 				#BANK
 				if self.mnu == 11 or self.mnu == 12:
 					if self.pressed[resources.ACT[0]]:
@@ -1480,7 +1473,6 @@ class Game:
 						if self.mnu == 12:
 							resources.ATM += int(str(self.extract[0]) + str(self.extract[1]) + str(self.extract[2]) + str(self.extract[3]) + str(self.extract[4]) + str(self.extract[5]))
 							resources.MONEY -= int(str(self.extract[0]) + str(self.extract[1]) + str(self.extract[2]) + str(self.extract[3]) + str(self.extract[4]) + str(self.extract[5]))'''
-
 				if self.mnu == 3:
 					if self.pressed[resources.ACT[0]]:
 						if self.lopt == 0:
@@ -3116,15 +3108,14 @@ class Game:
 		brd.fill((resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]))
 		for x in range(20):
 			for y in range(10):
-				brd.blit(pygame.image.load('Sprites/border.png'), (x * 10, y * 10))
-		wdw = pygame.Surface((190,90))
-
+				brd.blit(pygame.image.load('Sprites/border_' + str(resources.BORDER) + '.png'), (x * 10, y * 10))
+		pygame.draw.rect(brd, (0,0,0), pygame.Rect(10,10,180,80))
+		txt = pygame.Surface((380,180))
 		while yesno == 0:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
 					sys.exit()
-
 				self.pressed = pygame.key.get_pressed()
 				if self.pressed[resources.LEFT[0]]: self.ch_sfx.play(resources.SOUND['MENU_HOR']); opt = 1
 				if self.pressed[resources.RIGHT[0]]: self.ch_sfx.play(resources.SOUND['MENU_VER']); opt = 2
@@ -3133,20 +3124,18 @@ class Game:
 					if yesno == 1: self.ch_sfx.play(resources.SOUND['MENU_GO'])
 					if yesno == 2: self.ch_sfx.play(resources.SOUND['MENU_BACK'])
 					opt = 0
-
-			wdw.fill((0,0,0))
-			wdw.blit(self.fnt['MONOTYPE'].render(database.MENU[85], True, (255, 255, 255)), (45, 10))
-			if opt == 1: wdw.blit(self.fnt['MONOTYPE'].render(database.MENU[83], True, (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2])), (40, 50))
-			else: wdw.blit(self.fnt['MONOTYPE'].render(database.MENU[83], True, (255, 255, 255)), (40, 50))
-			if opt == 2: wdw.blit(self.fnt['MONOTYPE'].render(database.MENU[84], True, (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2])), (110, 50))
-			else: wdw.blit(self.fnt['MONOTYPE'].render(database.MENU[84], True, (255, 255, 255)), (110, 50))
+			txt.fill((0,0,0))
+			txt.blit(self.fnt['DEFAULT'].render(database.MENU[85], True, (255, 255, 255)), (45, 10))
+			if opt == 1: txt.blit(self.fnt['DEFAULT'].render(database.MENU[83], True, (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2])), (40, 50))
+			else: txt.blit(self.fnt['DEFAULT'].render(database.MENU[83], True, (255, 255, 255)), (40, 50))
+			if opt == 2: txt.blit(self.fnt['DEFAULT'].render(database.MENU[84], True, (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2])), (110, 50))
+			else: txt.blit(self.fnt['DEFAULT'].render(database.MENU[84], True, (255, 255, 255)), (110, 50))
 
 			self.display[0].blit(brd,(195,145))
-			self.display[0].blit(wdw,(200,150))
+			self.display[1].blit(txt,(400,300))
 			self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)), (self.displayx, self.displayy))
-			pygame.display.update()
-			pygame.display.flip()
-			pygame.time.Clock().tick(self.FPS)
+			pygame.display.update(400,300,380,180)
+			self.glock.tick(self.FPS)
 
 		return yesno
 
@@ -3395,11 +3384,9 @@ class Game:
 			self.btime = 100
 			self.mnu = 3
 			count = 0
-
 			#MERCENARIES
 			for i in self.mrc:
 				pass
-
 			#FREAKS
 			for i in self.foe:
 				if i['HP'] > 0 and i['FIGHTING'] == True and i['HEALTH'] != 1 and len(self.fig) > 0:
@@ -3620,7 +3607,6 @@ class Game:
 					self.dialog([i['NAME'] + ' virou de costas',1])
 					i['SPRITE'] = pygame.image.load('Sprites/frk_' + (i['FILE']) + '_stand.png')
 					i['HEALTH'] = 7
-
 			if self.turn > -1:
 				self.turn =  0
 				self.mnu = 1
@@ -3772,7 +3758,7 @@ class Game:
 		lgy = 1
 		inf = 0
 		wt = 0
-
+		#SHAKE SCREEN
 		if tar == None:
 			while ex != 0:
 				self.screen.fill((255, 0, 0))
@@ -3789,7 +3775,7 @@ class Game:
 			self.displayx = 0
 			self.displayy = 0
 			self.run()
-
+		#DAMAGE INFORMATION
 		else:
 			self.dmginfo = pygame.Surface((9 + (len(dmg) * 17),40), pygame.SRCALPHA, 32)
 			self.dmginfo.convert_alpha()
@@ -4689,7 +4675,7 @@ class Game:
 			if self.mnu == 2:
 				lst = []
 				if self.opt == 0: lst = self.products
-				else: lst = self.basket
+				else: lst = self.basket[self.opt - 1]
 				ssrf = self.shpmnu.mercator(self.opt, self.lopt, lst, self.promo)
 				self.display[0].blit(ssrf[0], (100,60))
 				self.display[1].blit(ssrf[1], (220,140))

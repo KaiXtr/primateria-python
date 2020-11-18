@@ -567,7 +567,7 @@ class Shop:
 		self.inv = Inventory()
 		
 	def products(self, opt, lopt, lst):
-		self.scr[0].fill((10,10,10))
+		for i in self.scr: i.fill((0,0,0,0))
 		mny = 0
 		for i in resources.PARTY[resources.FORMATION]:
 			src = self.inv.find(i,'credit_card')
@@ -605,7 +605,7 @@ class Shop:
 		return self.wdw
 
 	def buy(self, opt, lopt, lst):
-		self.scr[0].fill((10,10,10))
+		for i in self.scr: i.fill((0,0,0,0))
 		mny = 0
 		for i in resources.PARTY[resources.FORMATION]:
 			src = self.inv.find(i,'credit_card')
@@ -653,7 +653,7 @@ class Shop:
 		return self.wdw
 
 	def mercator(self, opt, lopt, lst, prm):
-		for i in self.scr: i.fill((10,10,10))
+		for i in self.scr: i.fill((0,0,0,0))
 		mny = 0
 		for i in resources.PARTY[resources.FORMATION]:
 			src = self.inv.find(i,'credit_card')
@@ -663,54 +663,56 @@ class Shop:
 					mny += int(src[1][0:6])
 			else:
 				mny += int(src[1])
+		#OPTIONS
 		self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(mny), True, (255, 255, 255)), (20, 20))
-
 		if opt == 0: self.scr[1].blit(self.fnt['CALIBRI'].render(database.SHOP[8], True, (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2])), (20, 60))
 		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.SHOP[8], True, (255,255,255)), (20, 60))
 		x = 1
 		for i in resources.PARTY[resources.FORMATION]:
-			if opt == x: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[i]['NAME'], True, (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2])), (20 + (x * 60), 60))
-			else: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[i]['NAME'], True, (255,255,255)), (20 + (x * 60), 60))
+			if opt == x: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[i]['NAME'], True, (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2])), (40 + (x * 120), 60))
+			else: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[i]['NAME'], True, (255,255,255)), (40 + (x * 120), 60))
 			x += 1
-
 		y = 0
 		for i in lst:
+			#MERCATOR PRODUCTS
 			if opt == 0:
 				if prm > 0:
 					prc = database.ITEMS[i][2] - int(database.ITEMS[i][2]/prm)
 				else: prc = database.ITEMS[i][2]
 				if lopt == y:
-					pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(15,50 + (y * 15),370,15))
-					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(prc) + ' - ' + database.ITEMS[i][0], True, (0, 0, 0)), (20, (50 + (y * 15)) * 2))
+					pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,50 + (y * 15),370,15))
+					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(prc) + ' - ' + database.ITEMS[i][0], True, (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2])), (20, (50 + (y * 15)) * 2))
 				else:
 					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(prc) + ' - ' + database.ITEMS[i][0], True, (255, 255, 255)), (20, (50 + (y * 15)) * 2))
 				if prm > 0:
 					pygame.draw.rect(self.scr[0], (255, 170, 0), pygame.Rect(350,50 + (y * 15),30,20))
 					self.scr[1].blit(self.fnt['DATETIME'].render(str(prm) + '%', True, (255, 255, 255)), (350, (50 + (y * 15)) * 2))
 				y += 1
-			elif i[0] == resources.PARTY[resources.FORMATION][opt - 1]:
+			#SELLING PARTY ITEMS
+			else:
+				itm = resources.INVENTORY[resources.PARTY[resources.FORMATION][opt - 1]][i[0]][i[1]][0]
 				if lopt == y:
-					pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(15,50 + (y * 15),370,15))
-					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(int(database.ITEMS[resources.INVENTORY[i[0]][i[1]][i[2]][0]][2]/2)) + ' - ' + database.ITEMS[resources.INVENTORY[i[0]][i[1]][i[2]][0]][0], True, (0, 0, 0)), (20, (50 + (y * 15)) * 2))
+					pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,50 + (y * 15),370,15))
+					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(int(database.ITEMS[itm][2]/2)) + ' - ' + database.ITEMS[itm][0], True, (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2])), (20, (50 + (y * 15)) * 2))
 				else:
-					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(int(database.ITEMS[resources.INVENTORY[i[0]][i[1]][i[2]][0]][2]/2)) + ' - ' + database.ITEMS[resources.INVENTORY[i[0]][i[1]][i[2]][0]][0], True, (255, 255, 255)), (20, (50 + (y * 15)) * 2))
+					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(int(database.ITEMS[itm][2]/2)) + ' - ' + database.ITEMS[itm][0], True, (255, 255, 255)), (20, (50 + (y * 15)) * 2))
 				y += 1
-
+		#ITEMS DESCRIPTIONS
 		if lopt != len(lst):
 			l = 0
 			if opt == 0:
 				for j in database.ITEMS[lst[lopt]][1]:
-					self.scr[1].blit(self.fnt['CALIBRI'].render(j, True, (255, 255, 255)), (20,(200 + (l * 15)) * 2))
+					self.scr[1].blit(self.fnt['CALIBRI'].render(j, True, (255, 255, 255)), (20,(190 + (l * 15)) * 2))
 					l += 1
 			else:
-				for t in database.ITEMS[resources.INVENTORY[lst[lopt][0]][lst[lopt][1]][lst[lopt][2]][0]][1]:
-					self.scr[1].blit(self.fnt['CALIBRI'].render(t, True, (255, 255, 255)), (20,(200 + (l * 15)) * 2))
+				for t in database.ITEMS[resources.INVENTORY[resources.PARTY[resources.FORMATION][opt - 1]][lst[lopt][0]][lst[lopt][1]][0]][1]:
+					self.scr[1].blit(self.fnt['CALIBRI'].render(t, True, (255, 255, 255)), (20,(190 + (l * 15)) * 2))
 					l += 1
-
+		#EXIT SHOP
 		if lopt == y:
-			pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(15,50 + (y * 15),370,15))
-			self.scr[1].blit(self.fnt['CALIBRI'].render(database.SHOP[1], True, (0, 0, 0)), (20, 50 + (y * 15)))
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.SHOP[1], True, (255, 255, 255)), (20, 50 + (y * 15)))
+			pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,50 + (y * 15),370,15))
+			self.scr[1].blit(self.fnt['CALIBRI'].render(database.SHOP[1], True, (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2])), (20, (50 + (y * 15)) * 2))
+		else: self.scr[1].blit(self.fnt['CALIBRI'].render(database.SHOP[1], True, (255, 255, 255)), (20, (50 + (y * 15)) * 2))
 
 		self.wdw.blit(self.scr[0], (10,10))
 		return [self.wdw, self.scr[1]]
@@ -904,7 +906,6 @@ class Phone:
 		if flt == 0: em = resources.PARTY
 		if flt == 1: em = resources.CONTACTS
 		if flt == 2: em = resources.CALLHIST
-
 		if opt > 2:
 			if self.scroll < (opt - 2) * 51:
 				self.scroll += 5.1
@@ -914,7 +915,6 @@ class Phone:
 		elif opt == 0:
 			if self.scroll > 0:
 				self.scroll -= 5.1
-
 		for i in self.scr: i.fill((10,10,10,0))
 		y = 0
 		for i in em:
@@ -942,7 +942,7 @@ class Phone:
 		if flt == 0:
 			if opt != y/51: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,66 + y - self.scroll,sz,50))
 			else: pygame.draw.rect(self.scr[0], (15, 255, 0), pygame.Rect(0,66 + y - self.scroll,sz,50))
-			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[31], True, (0, 0, 0)), (120, (86 + y - self.scroll) * 2))
+			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[31], True, (0, 0, 0)), (170, (83 + y - self.scroll) * 2))
 		if y == 0 and flt == 1:
 			self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[16], True, (255, 255, 255)), (100, 280))
 		dvd3 = math.floor(sz/3)
