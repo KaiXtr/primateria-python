@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.3.0" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="56" height="56" tilewidth="30" tileheight="30" infinite="0" nextlayerid="13" nextobjectid="68">
+<map version="1.2" tiledversion="1.3.0" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="56" height="56" tilewidth="30" tileheight="30" infinite="0" nextlayerid="13" nextobjectid="70">
  <properties>
   <property name="ENEMIES" value="madladcat-peacockpigeon-"/>
   <property name="INTERIOR" value="0"/>
@@ -188,7 +188,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="11" name="SIGNS" visible="0">
+ <objectgroup id="11" name="SIGNS">
   <object id="29" name="text_0" type="INN" x="482.5" y="600.5" width="35" height="19">
    <properties>
     <property name="ICON" value="rest"/>
@@ -230,6 +230,12 @@
     <property name="ICON" value="fuel"/>
    </properties>
    <text wrap="1">GAS</text>
+  </object>
+  <object id="69" name="text_7" type="BATHROOM" x="368.5" y="678.5" width="35" height="19">
+   <properties>
+    <property name="ICON" value="rest"/>
+   </properties>
+   <text wrap="1" halign="center">posd</text>
   </object>
  </objectgroup>
  <objectgroup id="12" name="NODES">
@@ -374,7 +380,14 @@
     <property name="PY" type="int" value="838"/>
    </properties>
   </object>
-  <object id="27" name="portal_0" type="0" x="486.667" y="630.333" width="24" height="40">
+  <object id="27" name="portal_3" type="0" x="373.667" y="721.333" width="24" height="40">
+   <properties>
+    <property name="MAP" value="bathroom"/>
+    <property name="PX" type="int" value="100"/>
+    <property name="PY" type="int" value="217"/>
+   </properties>
+  </object>
+  <object id="68" name="portal_0" type="0" x="485" y="625" width="24" height="40">
    <properties>
     <property name="MAP" value="emeraldbuilding_1"/>
     <property name="PX" type="int" value="100"/>
