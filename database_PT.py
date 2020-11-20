@@ -4,7 +4,7 @@ import resources as rs
 import os
 
 NAMES = ['Sidney','Barreto','Jane','Oliveira','Renan','Pinheiro','Diego','Donovan','Bianca','Pacheco','Lúcia','Figueiredo',
-'Maicon','Neves','Iago','Dantas','Vinícius','Tavares','João','Pedro Lima','Sofia','Torres','Paulo','Sousa','Pietra','Amaral']
+'Maicon','Neves','Iago','Dantas','Vinícius','Tavares','João','Pedro Lima','Sofia','Torres','Paulo','Sousa','Pietra','Mendonça']
 
 CITIES = ['Itatiaia','Volta Redonda','Passa Quarto','Taubaté','Campos do Jordão','São Lourenço','Varginha','Juiz de Fora','Seropédica','Petrópolis']
 
@@ -27,7 +27,7 @@ CHAPTERS = [
 'Não no momento, com as pesquisas eu consegui','extrair informações importantes das amostras','mas nada que realmente fosse uma descoberta.','','Se permitir, quero que minha equipe forense colete',
 'as amostras.','','Ah...não tem problema não...pode pegar.','','Também não conhecia nenhum dos criminosos?','','Não...eu não sou dessa região...','Achava que a serra era um lugar bem tranquilo...',
 'Mas parece que existe violência em todo lugar','','Para quê você veio para','Campos do Jordão?','','Vim pesquisar as anomalias','','Eu também, eu vim pelo mesmo motivo','',
-'Agora não, ' + rs.CHARACTERS[4]['NAME'] + '.','','Quero que me conte os detalhes da pesquisa mais tarde','','Sim, Sr. Dalibor.','','Seu nome é...','',rs.CHARACTERS[1]['NAME'] + '.','',
+'Agora não, ' + rs.CHARACTERS[4]['NAME'] + '.','','Quero que me conte os detalhes da pesquisa mais tarde','','Sim, Sr. Dalibor.','','Seu nome é...','',rs.CHARACTERS[0]['NAME'] + '.','',
 'Isso, me conte sua versão dos fatos.']],
  
 ['Não se meta com a gangue', 'capítulo III', ['']],
@@ -126,134 +126,149 @@ FREAKS = {
 'AGILITY': 4,'HP': 6,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Camuflar',['O réptil se camufla no ambiente,','aumentando sua AGILIDADE.'],2,3],['Língua',['O réptil usa sua língua como','chicote para atacar o oponente.'],-3,1],
 ['Estalo',['O réptil se estala, criando','um campo de força elétrico.'],-13,1]],'BLOOD': 10,'ITEM': ['food_camarão',50]},
    
-'peacockpigeon': {'NAME': 'Pombo Pavão','INFO': ['Um pombo urbano com uma mutação que o fez desenvolver penas de pavão com olhos reais nas suas pontas. Relativamente ágil, mas fraco.'],'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'flying',
+'peacockpigeon': {'NAME': 'Pombo Pavão','INFO': ['Um pombo urbano com uma mutação que','o fez desenvolver penas de pavão com','olhos reais nas suas pontas.','Relativamente ágil, mas fraco.'],'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'flying',
 'AGILITY': 3,'HP': 10,'RESISTANCE': 1,'PATH': 'horizontal','HABILITIES': [['Defecar',['A ave defeca no oponente, infectando-o.'],5,6,20,1],['Hipnose',['A ave hipnotiza o oponente com os olhos das penas de pavão, diminuindo sua AGILIDADE.'],-2,3,20,1],
 ['Bicar',['A ave bica o oponente.'],-4,1,50,1],['Gritar',['A ave grita, com a possibilidade de outra anomalia entrar na batalha.'],['madladcat','peacockpigeon'],7,10,1]],'BLOOD': 20,'ITEM': ['food_peanut_candy',30],'SONG': 'URBAN_PLAGUE'},
 
-'sickletoucan': {'NAME': 'Tucano Foice','INFO': ['Um estranho pássaro com um bico em formato de foice.'],'HEIGHT': '0,53','HABITAT': 'jungle','TYPE': 'flying',
-'AGILITY': 4,'HP': 6,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Camuflar',['O réptil se camufla no ambiente,','aumentando sua AGILIDADE.'],2,3],['Língua',['O réptil usa sua língua como','chicote para atacar o oponente.'],-3,1],
-['Estalo',['O réptil se estala, criando','um campo de força elétrico.'],-13,1]],'BLOOD': 10,'ITEM': None},
+'sickletoucan': {'NAME': 'Tucano Foice','INFO': ['Um estranho pássaro com um bico','em formato de foice.'],'HEIGHT': '0,53','HABITAT': 'jungle','TYPE': 'flying',
+'AGILITY': 4,'HP': 6,'RESISTANCE': 0,'PATH': 'stealth','HABILITIES': [['Ceifar',['A ave utiliza o seu','bico de foice para','atacar seu oponente.'],-20,1],['Perfurar',['A ave utiliza seu','bico para furar seu','oponente.'],-15,1],
+['Voar',['A ave voa em volta','do oponente, tonteando-o','e deixando com NÁUSEA.'],9,6]],'BLOOD': 10,'ITEM': None},
 
-'bunchofeyes': {'NAME': 'Cacho de Olhos','INFO': ['Vários olhos diferentes agrupados que possuem poderes hipnóticos. PS: NÃO É GUARANÁ, NÃO FAÇA SUCO.'],'HEIGHT': '0,30','HABITAT': 'jungle','TYPE': 'plant',
-'AGILITY': 2,'HP': 20,'RESISTANCE': 1,'PATH': 'stay','HABILITIES':[['Encarar',['Os olhos começam a encarar o oponente, amedrontando-o e fazendo seu ATAQUE abaixar.'],-1,2],['Atirar',['Um dos olhos se lança no oponente.'],-3,1],
-['Plantar',['Um olho se planta no chão com a possibilidade de germinar um novo cacho.'],0,7],['Explodir',['Todos os olhos se soltam num ataque fulminante.'],-7,1]]},
+'bunchofeyes': {'NAME': 'Cacho de Olhos','INFO': ['Vários olhos diferentes agrupados','que possuem poderes hipnóticos. PS: NÃO É GUARANÁ, NÃO FAÇA SUCO.'],'HEIGHT': '0,30','HABITAT': 'jungle','TYPE': 'psychic',
+'AGILITY': 2,'HP': 20,'RESISTANCE': 1,'PATH': 'stay','HABILITIES':[['Encarar',['Os olhos começam a encarar','o oponente, amedrontando-o e','fazendo seu ATAQUE abaixar.'],-1,2],['Atirar',['Um dos olhos se lança no oponente.'],-3,1],
+['Plantar',['Um olho se planta no',' chão com a possibilidade','de germinar um novo cacho.'],['bunchofeyes'],7],['Explodir',['Todos os olhos se','soltam num ataque fulminante.'],-7,1]],'BLOOD': 10,'ITEM': None},
 
-'bodybuilderfrog': {'NAME': 'Perereca Mil Grau','INFO': ['Um anfíbio que saiu da metamorfose antes da hora e ao mesmo tempo que manteve a cauda, desenvolveu braços fortes.'],'HEIGHT': '0,70','HABITAT': 'jungle','TYPE': 'aquatic',
-'AGILITY': 2,'HP': 20,'RESISTANCE': 1,'PATH': 'follow','HABILITIES':[['Língua',['O anfíbio usa sua língua para chicotear o oponente.'],-5,1],['Porrada',['O anfíbio usa seus braços musculosos para bater no oponente.'],-8,1],
-['Veneno',['O anfíbio libera toxinas nas bolsas das suas costas para infectar o oponente.'],1,4],['Salto',['O anfíbio pula pelo ambiente e aumenta sua AGILIDADE.'],2,3]]},
+'bodybuilderfrog': {'NAME': 'Perereca Mil Grau','INFO': ['Um anfíbio que saiu da metamorfose','antes da hora e ao mesmo tempo que','manteve a cauda, desenvolveu braços fortes.'],'HEIGHT': '0,70','HABITAT': 'jungle','TYPE': 'aquatic',
+'AGILITY': 2,'HP': 20,'RESISTANCE': 1,'PATH': 'stay','HABILITIES':[['Língua',['O anfíbio usa sua língua','para chicotear o oponente.'],-5,1],['Porrada',['O anfíbio usa seus','braços musculosos para','bater no oponente.'],-8,1],
+['Veneno',['O anfíbio libera toxinas','nas bolsas das suas','costas para infectar','o oponente.'],1,4],['Salto',['O anfíbio pula pelo',' ambiente e aumenta','sua AGILIDADE.'],2,3]],'BLOOD': 10,'ITEM': None},
 
-'prettyfish': {'NAME': 'Peixe Galã','INFO': ['Um peixe que abre a boca acima dos limites de sua mandíbula e da biologia, pelo menos ele é admirável.'],'HEIGHT': '1,20','HABITAT': 'swamp','TYPE': 'aquatic',
-'AGILITY': 5,'HP': 25,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Aumentar','O peixe aumenta o tamanho da sua face e volta ao normal, assustando o oponente e abaixando seu ATAQUE',-2,2],
-['Saltar','O peixe salta na água e chicoteia o oponente com sua cauda',-7,1],['Morder','O peixe morde o oponente com seus dentes limpos e branquinhos.',-9,1],
-['Brilhar','O peixe reflete a luz do sol cegando o oponente.',2,4]]},
-
-'gospelant': {'NAME': 'Formiga Gospel','INFO': ['Um peixe que abre a boca acima dos limites de sua mandíbula e da biologia, pelo menos ele é admirável.'],'HEIGHT': '1,20','HABITAT': 'swamp','TYPE': 'aquatic',
-'AGILITY': 5,'HP': 25,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Aumentar','O peixe aumenta o tamanho da sua face e volta ao normal, assustando o oponente e abaixando seu ATAQUE',-2,2],
-['Saltar','O peixe salta na água e chicoteia o oponente com sua cauda',-7,1],['Morder','O peixe morde o oponente com seus dentes limpos e branquinhos.',-9,1],
-['Brilhar','O peixe reflete a luz do sol cegando o oponente.',2,4]]},
+'gospelant': {'NAME': 'Formiga Gospel','INFO': ['Um pequeno inseto insignificante cuja crença','no divino demonstra uma','anormalidade entre os artrópodes.'],'HEIGHT': '0,1','HABITAT': 'jungle','TYPE': 'arthropod',
+'AGILITY': 5,'HP': 25,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Rezar',['O inseto pede','ao seu advesário para','que não o ataque.'],0,0],['Perdoar',['O inseto perdoa','seu oponente por','atacá-lo.'],0,0],
+['Meteoro divino',['O inseto invoca um','grande meteoro para','aniquilar seu oponente.'],-30,10],['Louvar',['De alguma maneira, o','inseto canta hinos','deixando seu oponente','com SONO.'],8,6]],'BLOOD': 10,'ITEM': None},
 
 #SEASIDE
-'armedcrab': {'NAME': 'Carangueijo Armado','INFO': ['Um carangueijo que aprendeu a','utilizar uma arma branca.'],'HEIGHT': '0,18','HABITAT': 'urban','TYPE': 'rough',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'armedcrab': {'NAME': 'Carangueijo Armado','INFO': ['Um carangueijo que aprendeu a','utilizar uma arma branca.'],'HEIGHT': '0,18','HABITAT': 'seaside','TYPE': 'arthropod',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [['Facada',['O crustáceo utiliza','sua arma branca para','perfurar seu oponente.'],-15,1],
+['Pinçar',['O crustáceo utiliza','suas garras para','atacar seu oponente.'],-15,1]],'BLOOD': 10,'ITEM': None},
 
-'hipocampus': {'NAME': 'Hipocampo','INFO': ['Um Hipocampo com o','formato de um hipocampo.'],'HEIGHT': '2,30','HABITAT': 'mangue','TYPE': 'aquatic',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'hipocampus': {'NAME': 'Hipocampo','INFO': ['Um Hipocampo com o','formato de um hipocampo.'],'HEIGHT': '2,30','HABITAT': 'seaside','TYPE': 'aquatic',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [['Aminésia',['O elemento utiliza','seus poderes psíquicos','para deixar seu','oponente com CEGUEIRA.'],12,6],['Ciclone',['O elemento cavalga','na água para produzir','um tornado marinho.'],-30,1],
+['Coice',['O elemento usa sua','cauda como chicote para','atacar seu oponente.'],-10,1],['Cabeçada',['O elemento vai na','direção de seu oponente','para atacá-lo.'],-10,1]],'BLOOD': 10,'ITEM': None},
 
 #SIERRA
 
-#FARM
-'cattle': {'NAME': 'Gado','INFO': ['Ele vai acabar','com sua raça.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None,'SONG': 'EGG_RAP'},
+#CERRADO
+'cattle': {'NAME': 'Gado','INFO': ['Um boi com chifres incrivelmente','enormes, lendas folclóricas contam que','elas são originárias de traições.'],'HEIGHT': '1,70','HABITAT': 'cerrado','TYPE': 'mammal',
+'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Chifrar',['O bovino utiliza seus','enormes chifres para','atacar seu oponente'],-5,1,100,1],['Berrante',['O bovino utiliza seus','próprios chifres para','chamar outros gados.'],['cattle','cow'],7]],
+'BLOOD': 10,'ITEM': None,'SONG': 'CATTLE_KING'},
 
-'cow': {'NAME': 'Vaca','INFO': ['Ele vai acabar','com sua raça.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None,'SONG': 'EGG_RAP'},
+'cow': {'NAME': 'Vaca','INFO': ['Um mamífero bovino fêmea','que por muitas vezes é comparada','a pessoas indevidas.'],'HEIGHT': '1,70','HABITAT': 'cerrado','TYPE': 'mammal',
+'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Chifrar',['O bovino utiliza seus','enormes chifres para','atacar seu oponente'],-5,1,100,1],['Leite',['O bovino utiliza suas','mamas para espirrar','leite no opontente.'],-10,1]],
+'BLOOD': 10,'ITEM': None,'SONG': 'CATTLE_KING'},
 
-'lilanteater': {'NAME': 'Tamanduá Cotoco','INFO': ['Ele vai acabar','com sua raça.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None,'SONG': 'EGG_RAP'},
+'lilanteater': {'NAME': 'Tamanduá Cotoco','INFO': ['Apesar do tamanho, pode ser','bastante violento e perigoso.'],'HEIGHT': '0,80','HABITAT': 'cerrado','TYPE': 'mammal',
+'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Arranhar',['O mamífero utiliza','suas garras para arranhar','seu oponente.'],-10,1,100,1],['Língua',['O mamífero utiliza sua','enorme língua para chicotear','seu oponente.'],-15,1]],
+'BLOOD': 10,'ITEM': None},
 
-'pennanteater': {'NAME': 'Tamanduá Bandeirante','INFO': ['Ele vai acabar','com sua raça.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None,'SONG': 'EGG_RAP'},
+'pennanteater': {'NAME': 'Tamanduá Bandeirante','INFO': ['Grande e imponente como um urso,','carrega pelo cerrado a bandeira','da floresta.'],'HEIGHT': '1,20','HABITAT': 'cerrado','TYPE': 'mammal',
+'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Arranhar',['O mamífero utiliza','suas garras para arranhar','seu oponente.'],-10,1,100,1],['Língua',['O mamífero utiliza sua','enorme língua para chicotear','seu oponente.'],-15,1]],
+'BLOOD': 10,'ITEM': None},
 
-'cupinzal': {'NAME': 'Cupinzal','INFO': ['Ele vai acabar','com sua raça.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None,'SONG': 'EGG_RAP'},
+'militanteater': {'NAME': 'Tamanduá Militante','INFO': ['Carrega a bandeira da militância socialista','por onde anda.'],'HEIGHT': '1,20','HABITAT': 'cerrado','TYPE': 'mammal',
+'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Arranhar',['O mamífero utiliza','suas garras para arranhar','seu oponente.'],-10,1,100,1],['Língua',['O mamífero utiliza sua','enorme língua para chicotear','seu oponente.'],-15,1]],
+'BLOOD': 10,'ITEM': None},
 
-'tutuarmadillo': {'NAME': 'Tatu de Tutu','INFO': ['Ele vai acabar','com sua raça.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None,'SONG': 'EGG_RAP'},
+'cupinzal': {'NAME': 'Cupinzal','INFO': ['Uma aldeia de cupins bem','desenvolvida e organizada','em sociedade.'],'HEIGHT': '1,40','HABITAT': 'cerrado','TYPE': 'inorganic',
+'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None},
 
-'prettywolf': {'NAME': 'Loba Chique','INFO': ['Ele vai acabar','com sua raça.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None,'SONG': 'EGG_RAP'},
+'cupintropole': {'NAME': 'Cupintrópole','INFO': ['Uma cidade bem estruturada','nos moldes da civilização moderna...','...com cupins.'],'HEIGHT': '1,40','HABITAT': 'cerrado','TYPE': 'inorganic',
+'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Canhões',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None},
+
+'tutuarmadillo': {'NAME': 'Tatu de Tutu','INFO': ['Um Tatu Bola com estilo e','talento para o balê.'],'HEIGHT': '0,70','HABITAT': 'cerrado','TYPE': 'mammal',
+'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None},
+
+'prettywolf': {'NAME': 'Loba Chique','INFO': ['A rainha do cerrado, corre','com seus pelos cor de fogo','e salto alto.'],'HEIGHT': '1,50','HABITAT': 'cerrado','TYPE': 'mammal',
+'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None},
 
 #PANTANAL
-'hammerbird': {'NAME': 'Pássaro Martelo','INFO': ['Um búfalo que nadou tanto','que ganhou uma cauda de sereia.','Seria um tipo de Hipocampo?'],'HEIGHT': '2,30','HABITAT': 'mangue','TYPE': 'aquatic',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'prettyfish': {'NAME': 'Peixe Galã','INFO': ['Um peixe que abre a boca',' acima dos limites de','sua mandíbula e da biologia, pelo menos','ele é admirável.'],'HEIGHT': '1,20','HABITAT': 'swamp','TYPE': 'aquatic',
+'AGILITY': 5,'HP': 25,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Aumentar',['O peixe aumenta o tamanho da sua face e volta ao normal, assustando o oponente e abaixando seu ATAQUE'],-2,2],
+['Saltar',['O peixe salta na água e chicoteia o oponente com sua cauda'],-7,1],['Morder',['O peixe morde o oponente com seus dentes limpos e branquinhos.'],-9,1],
+['Brilhar',['O peixe reflete a luz do sol cegando o oponente.'],2,4]],'BLOOD': 10,'ITEM': None},
 
-'flamencoflamingo': {'NAME': 'Flamingo Flamenguista','INFO': ['Uma ave com a peculiaridade de ter a anomalia FLAMENGO.'],'HEIGHT': '1,20','HABITAT': 'mangue','TYPE': 'flying',
-'AGILITY': 7,'HP': 33,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Bolada','A ave chuta uma bola na face do oponente.',-13,1],['Dibre','Lamentamos o erro de ortografia de Sidney, a ave dribla o oponente fazendo sua AGILIDADE aumentar.',3,2],
-['Rasteira','A ave ataca o oponente se jogando no chão e derrubando-o.',-10,1],['Gabigol','A ave recruta o profissional jogador de futebol GABIGOL, ganhando a batalha imediatamente.',-50,1]],'SONG': 'ONCE_YOU_BECOME_FOREVER_YOU_ARE'},
+'hammerbird': {'NAME': 'Pássaro Martelo','INFO': ['Companheiro do Tucano Foice, usa seu','inusitado bico para martelar','frutos e grãos.'],'HEIGHT': '0,50','HABITAT': 'pantanal','TYPE': 'flying',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
+
+'flamencoflamingo': {'NAME': 'Flamingo Flamenguista','INFO': ['Uma ave com a peculiaridade de ter a anomalia FLAMENGO.'],'HEIGHT': '1,20','HABITAT': 'pantanal','TYPE': 'flying',
+'AGILITY': 7,'HP': 33,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Bolada',['A ave chuta uma bola na face do oponente.'],-13,1],['Dibre',['Lamentamos o erro de ortografia, a ave dribla o oponente fazendo sua AGILIDADE aumentar.'],3,2],
+['Rasteira',['A ave ataca o oponente se jogando no chão e derrubando-o.'],-10,1],['Gabigol',['A ave recruta o profissional jogador de futebol GABIGOL, ganhando a batalha imediatamente.'],-50,1]],'BLOOD': 10,'ITEM': None,'SONG': 'ONCE_YOU_BECOME_FOREVER_YOU_ARE'},
 
 #MANGUEZAL
-'spidermangue': {'NAME': 'Mangue Aranha','INFO': ['Uma árvore peculiar que possui','pernas no lugar de raízes.'],'HEIGHT': '2,30','HABITAT': 'mangue','TYPE': 'plant',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'spidermangue': {'NAME': 'Mangue Aranha','INFO': ['Uma árvore peculiar que possui','pernas no lugar de raízes.'],'HEIGHT': '2,30','HABITAT': 'manguezal','TYPE': 'plant',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
   
-'crabman': {'NAME': 'Homem Carangueijo','INFO': ['Um carangueijo gigante que lembra','uma música do Chico Science.'],'HEIGHT': '2,30','HABITAT': 'mangue','TYPE': 'rough',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'crabman': {'NAME': 'Homem Carangueijo','INFO': ['Um carangueijo gigante que lembra','uma música do Chico Science.'],'HEIGHT': '2,30','HABITAT': 'manguezal','TYPE': 'arthropod',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
+
+'communismbird': {'NAME': 'Carcará Comunista','INFO': ['O cruzamento de duas espécies','de pássaros resultou em uma','ave de rapina majestosa.'],'HEIGHT': '1,30','HABITAT': 'manguezal','TYPE': 'flying',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
 #CAVE
-'bat': {'NAME': 'Morcego','INFO': ['Uma árvore peculiar que possui','pernas no lugar de raízes.'],'HEIGHT': '2,30','HABITAT': 'mangue','TYPE': 'plant',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'bat': {'NAME': 'Morcego','INFO': ['Uma árvore peculiar que possui','pernas no lugar de raízes.'],'HEIGHT': '2,30','HABITAT': 'cave','TYPE': 'flying',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
-'phlegm': {'NAME': 'Catarro','INFO': ['Uma árvore peculiar que possui','pernas no lugar de raízes.'],'HEIGHT': '2,30','HABITAT': 'mangue','TYPE': 'plant',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'phlegm': {'NAME': 'Catarro','INFO': ['Uma estranha substância viva','pegajosa e muito nojenta.'],'HEIGHT': '2,30','HABITAT': 'cave','TYPE': 'inorganic',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
 #AQUATIC
 'cattlefish': {'NAME': 'Peixe Gado','INFO': ['Um búfalo que nadou tanto','que ganhou uma cauda de sereia.','Seria um tipo de Hipocampo?'],'HEIGHT': '2,30','HABITAT': 'mangue','TYPE': 'aquatic',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
 'belledoplhine': {'NAME': 'Belle Dolphine','INFO': ['Fruto de uma relação entre uma E-Girl e o Boto.'],'HEIGHT': '2,10','HABITAT': 'jungle','TYPE': 'aquatic',
-'AGILITY': 7,'HP': 42,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Ahegao','O mamífero tenta sensualizar o oponente simulando um ato sexual, mas faz o efeito contrário abaixando seu ATAQUE',-3,2],['Água de banho','O mamífero oferece água de banho para o oponente, este o ingere e obtém HERPES.',2,4],
-['Nadar','O mamífero nada no ambiente para recuperar sua VITALIDADE.',10,1],['Canto submarino','O mamífero entoa uma canção para chamar uma anomalia para a batalha.',1,5]]},
+'AGILITY': 7,'HP': 42,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Ahegao',['O mamífero tenta sensualizar o oponente simulando um ato sexual, mas faz o efeito contrário abaixando seu ATAQUE'],-3,2],['Água de banho',['O mamífero oferece água de banho para o oponente, este o ingere e obtém HERPES.'],2,4],
+['Nadar',['O mamífero nada no ambiente para recuperar sua VITALIDADE.'],10,1],['Canto submarino',['O mamífero entoa uma canção para chamar uma anomalia para a batalha.'],1,5]],'BLOOD': 10,'ITEM': None},
 
-#CITY
+#URBAN
 'emohipster': {'NAME': 'Emo Hipster','INFO': ['A DDA ainda não sabe se esse ser é uma anomalia ou apenas um cara estranho que chegou e parece não achar lugar no corpo que Deus encarnou.'],'HEIGHT': '1,60','HABITAT': 'urban','TYPE': 'humanoid',
 'AGILITY': 4,'HP': 20,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Cantar',['O esquisito começa a cantar uma música dos los hermanos com uma guitarra.'],1,4],['Guitarrada',['O esquisito usa sua guitarra para atacar o oponente.'],-10,1],
-['Óculos sem lente',['O esquisito põe óculos sem lente para confundir o oponente, abaixando sua AGILIDADE.'],-1,3],['Franja',['O esquisito balança sua franja, aumentando seu ATAQUE.'],2,2]],'SONG': 'EMOS_HERMANOS'},
+['Óculos sem lente',['O esquisito põe óculos sem lente para confundir o oponente, abaixando sua AGILIDADE.'],-1,3],['Franja',['O esquisito balança sua franja, aumentando seu ATAQUE.'],2,2]],'BLOOD': 10,'ITEM': None,'SONG': 'EMOS_HERMANOS'},
 
-'giantear': {'NAME': 'Orelhão','INFO': ['Um fungo que realmente existe,','e quis trabalhar pra telefônica.'],'HEIGHT': '1,30','HABITAT': 'urban','TYPE': 'boss',
+'giantear': {'NAME': 'Orelhão','INFO': ['Um fungo que realmente existe,','e quis trabalhar pra telefônica.'],'HEIGHT': '2,10','HABITAT': 'urban','TYPE': 'inorganic',
 'AGILITY': 3,'HP': 25,'RESISTANCE': 0,'PATH': 'follow','HABILITIES': [['Soar',['O elemento vibra seus tímpanos,','abaixando a RESISTÊNCIA do oponente.'],-5,4],['Fichas',['O elemento arremessa fichas','do seu cofrinho.'],-10,1],
-['Trote',['O elemento te passa um trote,','enganando o oponente e abaixando','sua FORÇA'],1,6],['Ligação',['O elemento faz uma ligação,','chamando outra anomalia.'],2,6]]},
+['Trote',['O elemento te passa um trote,','enganando o oponente e abaixando','sua FORÇA'],1,6],['Ligação',['O elemento faz uma ligação,','chamando outra anomalia.'],2,6]],'BLOOD': 10,'ITEM': None},
  
-'greenchicken': {'NAME': 'Galinha Verde','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'greenchicken': {'NAME': 'Galinha Verde','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '0,60','HABITAT': 'urban','TYPE': 'flying',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
-'blindchicken': {'NAME': 'Galo Cego','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'blindchicken': {'NAME': 'Galo Cego','INFO': ['Uma ave com deficiência visual,','mas bom humor e problemas','com bebida.'],'HEIGHT': '0,60','HABITAT': 'urban','TYPE': 'flying',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
  
-'yellowdocs': {'NAME': 'Médicos de amarelo','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'yellowdocs': {'NAME': 'Médicos de amarelo','INFO': ['Embora seu papel seja de','ajudar a populaçã, onde eles','aparecem há morte.'],'HEIGHT': '1,70','HABITAT': 'urban','TYPE': 'humanoid',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 0,'ITEM': None},
  
-'zombie': {'NAME': 'Zumbis','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'zombie': {'NAME': 'Zumbis','INFO': ['Não são de fato mortos-vivos,','mas sua terrível saúde lembra um.'],'HEIGHT': '1,60','HABITAT': 'urban','TYPE': 'humanoid',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
  
-'humanfeet': {'NAME': 'Pé de moleque','INFO': ['É um doce de amendoim delicioso muito comum em festas juninas...não pera. É um membro que se separou do corpo humano e agora consegue viver por conta própria, não confundir com mãozinha da Família Adams.'],'HEIGHT': '0,80','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Pisar','O membro pisa no oponente com toda sua força.',-10,1],['Chutar','O membro chuta o oponente, mesmo perdendo seu equilíbrio.',-12,1],
-['Cura','O membro se cura utilizando uma técnica que não entendemos devido ás limitações de seu corpo.',10,1],['Agachar','O membro concentra a energia dos seus pés e aumenta seu ATAQUE.',5,2]]},
+'humanfeet': {'NAME': 'Pé de moleque','INFO': ['É um doce de amendoim delicioso','muito comum em festas juninas...não pera.','É um membro que se separou do','corpo humano e agora','consegue viver por conta própria,',' não confundir com mãozinha','da Família Adams.'],'HEIGHT': '0,80','HABITAT': 'urban','TYPE': 'inorganic',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Pisar',['O membro pisa no oponente com toda sua força.'],-10,1],['Chutar',['O membro chuta o oponente, mesmo perdendo seu equilíbrio.'],-12,1],
+['Cura',['O membro se cura utilizando uma técnica que não entendemos devido ás limitações de seu corpo.'],10,1],['Agachar',['O membro concentra a energia dos seus pés e aumenta seu ATAQUE.'],5,2]],'BLOOD': 10,'ITEM': ['food_pedemoleque']},
  
-'captaincatfish': {'NAME': 'Cabeça de Bagre!!','INFO': ['Um homem com cabeça de bagre','e com péssima compreensão de ritmo.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'humanoid',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'captaincatfish': {'NAME': 'Cabeça de Bagre!!','INFO': ['Um homem com cabeça de bagre','e com péssima compreensão de ritmo.'],'HEIGHT': '1,90','HABITAT': 'urban','TYPE': 'humanoid',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
   
-'primateman': {'NAME': 'Homem Primata','INFO': ['Um humano que sabe','dançar muito bem.'],'HEIGHT': '2,30','HABITAT': 'mangue','TYPE': 'rough',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'primateman': {'NAME': 'Homem Primata','INFO': ['Um humano que sabe','dançar muito bem.'],'HEIGHT': '2,00','HABITAT': 'urban','TYPE': 'humanoid',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
   
-'drynwetman': {'NAME': 'Homem Seco e Molhado','INFO': ['Um homem que possui a anomalia de','estar seco e molhado ao mesmo tempo.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'humanoid',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'drynwetman': {'NAME': 'Homem Seco e Molhado','INFO': ['Um homem que possui a anomalia de','estar seco e molhado ao mesmo tempo.'],'HEIGHT': '1,80','HABITAT': 'urban','TYPE': 'humanoid',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
 #SEWERS
-'crodile': {'NAME': 'Jaré','INFO': ['Um réptil que, graças á uma sílaba a menos em seu nome, perdeu dois de seus membros. Não muito ágil, mas causa muito dano.'],'HEIGHT': '1,90','HABITAT': 'swamp','TYPE': 'reptile',
+'crodile': {'NAME': 'Jaré','INFO': ['Um réptil que, graças á','uma sílaba a menos em','seu nome, perdeu dois de','seus membros.','Não muito ágil, mas causa muito dano.'],'HEIGHT': '1,90','HABITAT': 'swamp','TYPE': 'reptile',
 'AGILITY': 2,'HP': 13,'RESISTANCE': 1,'PATH': 'stay','HABILITIES': [['Morder',['O réptil morde seu oponente'],-6,1],['Esperar',['O réptil aumenta seu ATAQUE.'],1,2],['Bote',['O réptil ataca com uma mordida em avanço.'],-5,1],
-['Esconder',['O réptil se esconde no ambiente, aumentando sua AGILIDADE.'],1,3]],'BLOOD': 1},
+['Esconder',['O réptil se esconde no ambiente, aumentando sua AGILIDADE.'],1,3]],'BLOOD': 10,'ITEM': None},
 
-'dorime': {'NAME': 'Dorime','INFO': ['Um ratinho santo que','e divino.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'mammal',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': []},
+'dorime': {'NAME': 'Dorime','INFO': ['Um ratinho santo e divino.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'mammal',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
   
 #MISCELANEOUS
 'eggrapper1': {'NAME': 'MC Ovinho','INFO': ['Ele vai acabar','com sua raça.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
@@ -262,173 +277,171 @@ FREAKS = {
 'eggrapper2': {'NAME': 'Ovinho Caipira','INFO': ['Ele vai acabar','com sua raça.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
 'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None,'SONG': 'EGG_RAP'},
 
-'bigeye': {'NAME': 'Zoiudo','INFO': ['Um carangueijo que aprendeu a','utilizar uma arma branca.'],'HEIGHT': '0,18','HABITAT': 'urban','TYPE': 'rough',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'bigeye': {'NAME': 'Zoiudo','INFO': ['Tira os zóio, tira os zóio,','vê se me erra.'],'HEIGHT': '3,00','HABITAT': 'urban','TYPE': 'psychic',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
-'cigaruto': {'NAME': 'Xaruto','INFO': ['Estranhamente lembra um personagem de um anime que não é tão bom quanto Evangelion.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'boss',
-'AGILITY': 20,'HP': 20,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Fumaça ninja','O elemento solta uma fumaça com mais de 100.000 substâncias tóxicas incluindo nicotina e enxofre, envenenando o oponente.',-3,1],['Chama ninja','O elemento sopra uma labareda ardente, incendiando o oponente.',-2,1],
-['Xaringan','O elemento usa uma espécime de energia oculta para aumentar seu ATAQUE.',-3,1],['Vaporizar','O elemento se transforma num cigarro eletrônico, relaxando e diminuindo sua AGILIDADE.',-3,1]],'BLOOD': 100,'ITEM': None,'SONG': 'CIGARUTO'},
+'cigaruto': {'NAME': 'Xaruto','INFO': ['Estranhamente lembra um personagem de um anime que não é tão bom quanto Evangelion.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
+'AGILITY': 20,'HP': 20,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Fumaça ninja',['O elemento solta uma fumaça com mais de 100.000 substâncias tóxicas incluindo nicotina e enxofre, envenenando o oponente.'],-3,1],['Chama ninja',['O elemento sopra uma labareda ardente, incendiando o oponente.'],-2,1],
+['Xaringan',['O elemento usa uma espécime de energia oculta para aumentar seu ATAQUE.'],-3,1],['Vaporizar',['O elemento se transforma num cigarro eletrônico, relaxando e diminuindo sua AGILIDADE.'],-3,1]],'BLOOD': 100,'ITEM': None,'SONG': 'CIGARUTO'},
  
 'elkeys': {'NAME': 'Chaves','INFO': ['Um molho de chaves','que ninguém tem paciência.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': []},
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None,'SONG': 'EL_KEYS'},
 
 'mayanman': {'NAME': 'Tim Maia','INFO': ['Um mesoamericano com ótima.','afinação vocal.'],'HEIGHT': '1,80','HABITAT': 'jungle','TYPE': 'humanoid',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': []},
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
-'ancap': {'NAME': 'Anarcocapitalismo','INFO': ['Vamos mesmo tirar sarro de uma ideologia','política utópica? Sim, vamos.'],'HEIGHT': '0,50','HABITAT': 'urban','TYPE': 'inorganic',
+'ancap': {'NAME': 'Anarcocapitalismo','INFO': ['Vamos mesmo tirar sarro de uma ideologia','política utópica? Sim, vamos.'],'HEIGHT': '0,00','HABITAT': 'urban','TYPE': 'inorganic',
 'AGILITY': 3,'HP': 12,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Diálogo',['O elemento tenta lhe convencer.'],-5,1,100,1]],'BLOOD': 10,'ITEM': None,'SONG': 'UNBELIEVEBLE_PEOPLE'},
 
-'hotman': {'NAME': 'Cremado Cremoso','INFO': ['Um homem que sofreu uma combustão espontânea mas continua vivo graças á mutação.'],'HEIGHT': '1,70','HABITAT': 'urban','TYPE': 'humanoid',
+'hotman': {'NAME': 'Cremado Cremoso','INFO': ['Um homem que sofreu uma',' combustão espontânea,','mas continua vivo graças á mutação.'],'HEIGHT': '1,70','HABITAT': 'urban','TYPE': 'humanoid',
 'AGILITY': 5,'HP': 18,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Bater',['O indivíduo bate no oponente.'],-5,1],['Cinzas',['O indivíduo joga cinzas no oponente, abaixando sua AGILIDADE.'],-3,3],
-['Dançar',['O indivíduo começa a rebolar e mostrar seu charme.'],0,8],['Infectar',['O indivíduo entra dentro do oponente através das cinzas, diminuindo seu ATAQUE.'],-3,2]]},
+['Dançar',['O indivíduo começa a rebolar e mostrar seu charme.'],0,8],['Infectar',['O indivíduo entra dentro do oponente através das cinzas, diminuindo seu ATAQUE.'],-3,2]],'BLOOD': 10,'ITEM': None},
    
 'spontaneouscombustion': {'NAME': 'Combustão Espontânea','INFO': ['Uma homem normal que teve o azar','de ter essa anomalia, e agora','vive como uma tocha humana.'],'HEIGHT': '1,70','HABITAT': 'urban','TYPE': 'humanoid',
 'AGILITY': 5,'HP': 30,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [['Bater',['O indivíduo bate no oponente.'],-8,1],['Labareda',['O indivíduo sopra uma labareda no','oponente, fazendo ele se queimar.'],3,4],
-['Queimadura',['O indivíduo se ilumina tanto que','o oponente perde a visão.'],9,6],['Bolas de Fogo',['O indivíduo arremessa bolas','de fogo que vão te atolar.'],-14,1]]},
+['Queimadura',['O indivíduo se ilumina tanto que','o oponente perde a visão.'],9,6],['Bolas de Fogo',['O indivíduo arremessa bolas','de fogo que vão te atolar.'],-14,1]],'BLOOD': 10,'ITEM': None},
      
-'crucifiedbiscuit': {'NAME': 'Biscoito Crucificado','INFO': ['Esse ser humano não está em um estado muito bacana...É um biscoito de gengibre possuído preso num crucifixo, parece até coisa de algum filme B!'],'HEIGHT': '0,30','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 8,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Chantily','O possuído jorra chantily venenoso no oponente.',1,4],['Gargalhar','O possuído ri de uma maneira terrorífica, diminuindo o ATAQUE do oponente.',-2,2],
-['Bater','O possuído usa seu crucifixo para atacar o oponente.',-8,1],['Perfurar','O possuído perfura o corpo do oponente usando o crucifixo',-10,1]]},
+'crucifiedbiscuit': {'NAME': 'Biscoito Crucificado','INFO': ['Esse ser humano não está','em um estado muito bacana...','É um biscoito de gengibre','possuído preso num crucifixo,','parece até coisa de',' algum filme B!'],'HEIGHT': '0,30','HABITAT': 'urban','TYPE': 'inorganic',
+'AGILITY': 8,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Chantily',['O possuído jorra chantily venenoso no oponente.'],1,4],['Gargalhar',['O possuído ri de uma maneira terrorífica, diminuindo o ATAQUE do oponente.'],-2,2],
+['Bater',['O possuído usa seu crucifixo para atacar o oponente.'],-8,1],['Perfurar',['O possuído perfura o corpo do oponente usando o crucifixo'],-10,1]],'BLOOD': 10,'ITEM': None},
   
 'ppap': {'NAME': 'Caneta Azul', 'INFO': ['É um objeto possuído por um fantasma','e agora tem o poder de atormentar as pessoas','com uma música irritante.'],'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
 'AGILITY': 8,'HP': 15,'RESISTANCE': 0,'PATH': 'follow','HABILITIES': [['Rabiscar',['O elemento se move contra o oponente','e o rabisca o rosto.'],-8,1],['Cantar',['O elemento atormenta o oponente','através de uma canção pertubadora.'],6,4],
-['Explodir',['O elemento se estoura, espalhando','tinta na cara do oponente.'],-20,1]],'SONG': 'ppap'},
+['Explodir',['O elemento se estoura, espalhando','tinta na cara do oponente.'],-20,1]],'BLOOD': 10,'ITEM': None,'SONG': 'ppap'},
 
-'crush': {'NAME': 'Crush','INFO': ['Não conseguimos coletar muitos','dados dessa anomalia, só sabemos','que é a mais forte nunca derrotada.'],'HEIGHT': '1,60','HABITAT': 'urban','TYPE': 'humanoid',
-'AGILITY': 99,'HP': 9999999,'RESISTANCE': 99,'PATH': 'follow','HABILITIES': [['Iludir',['A anomalia usa as palavras','como lanças e ataca o','coração do oponente.'],-99999,1]]},
+'crush': {'NAME': 'Crush','INFO': ['Não conseguimos coletar muitos','dados dessa anomalia, só sabemos','que é a mais forte e','nunca foi sequer derrotada.'],'HEIGHT': '1,60','HABITAT': 'urban','TYPE': 'humanoid',
+'AGILITY': 99,'HP': 9999999,'RESISTANCE': 99,'PATH': 'follow','HABILITIES': [['Iludir',['A anomalia usa as palavras','como lanças e ataca o','coração do oponente.'],-99999,1]],'BLOOD': 10,'ITEM': None},
  
 'mecanicmonkey': {'NAME': 'Macaco','INFO': ['Um macaco mecânico portando','um macaco.'],'HEIGHT': '1,80','HABITAT': 'jungle','TYPE': 'mammal',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': []},
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None,'SONG': 'MONKEY_MAN'},
 
-'roundsquare': {'NAME': 'Quadrado Redondo','INFO': ['Um macaco mecânico portando','um macaco.'],'HEIGHT': '1,80','HABITAT': 'jungle','TYPE': 'mammal',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': []},
+'roundsquare': {'NAME': 'Quadrado Redondo','INFO': ['Uma obra da geometria não-euclidiana','que só poderia ser imaginada','em teorias matemáticas.'],'HEIGHT': '2,00','HABITAT': 'urban','TYPE': 'psychic',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
-'steroids': {'NAME': 'Asteróides','INFO': ['Um macaco mecânico portando','um macaco.'],'HEIGHT': '1,80','HABITAT': 'jungle','TYPE': 'mammal',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': []},
+'steroids': {'NAME': 'Asteróides','INFO': ['Uma pedra espacial que faz','crossfit e usa whey protein.','O antidoping é sua maior fraqueza.'],'HEIGHT': '1,80','HABITAT': 'urban','TYPE': 'inorganic',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
-'hakunapotato': {'NAME': 'Hakuna Batata','INFO': ['Um macaco mecânico portando','um macaco.'],'HEIGHT': '1,80','HABITAT': 'jungle','TYPE': 'mammal',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': []},
+'hakunapotato': {'NAME': 'Hakuna Batata','INFO': ['Uma dupla inseparável de','tubérculos.'],'HEIGHT': '0,30','HABITAT': 'jungle','TYPE': 'inorganic',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
  
 'wingedcan': {'NAME': 'Lata Alada','INFO': ['Uma lata de energético que tenta ser irada e tem o único atributo que prometeu dar á quem o consumisse. É literalmente uma piada.'],'HEIGHT': '0,15','HABITAT': 'urban','TYPE': 'inorganic',
 'AGILITY': 10,'HP': 5,'RESISTANCE': 1,'PATH': 'stay','HABILITIES': [['Voar',['Aumenta sua agilidade'],1,3],['Energizar',['Aumenta seu dano de arremesso'],2,2],['Ressaca',['A lata se auto destrói'],0,1],
-['Arremessar',['A lata se joga no oponente, se machucando junto.'],-1,1]]},
+['Arremessar',['A lata se joga no oponente, se machucando junto.'],-1,1]],'BLOOD': 10,'ITEM': None},
  
 'teresacristinabust': {'NAME': 'Busto de Teresa Cristina','INFO': ['Um busto muito pesado e cheio,','de ódio no seu coração.'],'HEIGHT': '0,80','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['O elemento se joga contra o oponente.'],-10,1],['Esmagar',['O elemento cai em cima','da cabeça do oponente.'],-20,1],['Voar',['O elemento voa ao derredor','do oponente'],0,8]]},
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['O elemento se joga contra o oponente.'],-10,1],['Esmagar',['O elemento cai em cima','da cabeça do oponente.'],-20,1],
+['Voar',['O elemento voa ao derredor','do oponente'],0,8]],'BLOOD': 10,'ITEM': None},
    
-'tarsila': {'NAME': 'Tarsila','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'tarsila': {'NAME': 'Tarsila','INFO': ['Um auto retrato da pintora','Tarsila do Amaral, te encarando',' pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['A pintura se joga contra o oponente, machucando a si no processo.'],-10,1]],'BLOOD': 10,'ITEM': None},
  
-'fausthanos': {'NAME': 'Fausthanos','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'fausthanos': {'NAME': 'Fausthanos','INFO': ['Este extraterrestre costumava ser','um grande líder militar de um','planeta distante, mas decidiu','largar tudo para virar','apresentador de programa','de auditório.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'humanoid',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['A pintura se joga contra o oponente, machucando a si no processo.'],-10,1]],'BLOOD': 10,'ITEM': None},
  
-'angryduck': {'NAME': 'Pato da Braba','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'angryduck': {'NAME': 'Pato da Braba','INFO': ['Um patinho com óculos escuros,','estilo e bom gosto musical.'],'HEIGHT': '0,60','HABITAT': 'urban','TYPE': 'flying',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['A pintura se joga contra o oponente, machucando a si no processo.'],-10,1]],'BLOOD': 10,'ITEM': None},
  
-'racketfly': {'NAME': 'Mosca de Raquete','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'racketfly': {'NAME': 'Mosca de Raquete','INFO': ['Certamente matar uma mosca é difícil,','mas nunca imaginou que ela iria','se vingar, né?'],'HEIGHT': '0,01','HABITAT': 'urban','TYPE': 'arthropod',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]],'BLOOD': 10,'ITEM': None},
  
-'conicaltoilet': {'NAME': 'Vaso Cônico','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'conicaltoilet': {'NAME': 'Vaso Cônico','INFO': ['Um vaso sanitário que','infelizmente não cumpre seu','papel higiênico.'],'HEIGHT': '0,80','HABITAT': 'urban','TYPE': 'inorganic',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['A pintura se joga contra o oponente, machucando a si no processo.'],-10,1]],'BLOOD': 10,'ITEM': None},
  
-'edmoto': {'NAME': 'Ed Moto','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'edmoto': {'NAME': 'Ed Moto','INFO': ['Um famoso cantor que largou','sua carreira artística para','se tornar uma motocicleta,','livre a andar pelas rodovias.'],'HEIGHT': '1,20','HABITAT': 'urban','TYPE': 'inorganic',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['A pintura se joga contra o oponente, machucando a si no processo.'],-10,1]],'BLOOD': 10,'ITEM': None},
  
-'siamesecat': {'NAME': 'Gato Siamês','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'siamesecat': {'NAME': 'Gato Siamês','INFO': ['Gatos gêmeos siameses, eles','sempre estão ao seu lado.','Esse gato tem algo que','não consigo explicar.'],'HEIGHT': '0,80','HABITAT': 'urban','TYPE': 'mammal',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['A pintura se joga contra o oponente, machucando a si no processo.'],-10,1]],'BLOOD': 10,'ITEM': None},
  
-'obamium': {'NAME': 'Obamium','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'obamium': {'NAME': 'Obamium','INFO': ['Graças á muita pesquisa científica','da FIOCRUZ, os brasileiros','foram os primeiros em todo o','mundo a sintetizar este','precioso material.'],'HEIGHT': '0,50','HABITAT': 'urban','TYPE': 'psychic',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['A pintura se joga contra o oponente, machucando a si no processo.'],-10,1]],'BLOOD': 10,'ITEM': None},
  
-'flatearth': {'NAME': 'Terra Plana','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'flatearth': {'NAME': 'Terra Plana','INFO': ['Algo tão estúpido que','classificamos como uma','anomalia científica.'],'HEIGHT': '0','HABITAT': 'urban','TYPE': 'inorganic',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['A pintura se joga contra o oponente, machucando a si no processo.'],-10,1]],'BLOOD': 10,'ITEM': None},
  
-'pisadeira': {'NAME': 'Pisadeira','INFO': ['Um auto retrato da pintora Tarsila do Amaral, te encarando pronta pra acabar com sua raça.','Óleo sobre tela.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'inorganic',
-'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar','A pintura se joga contra o oponente, machucando a si no processo.',-10,1]]},
+'pisadeira': {'NAME': 'Pisadeira','INFO': ['Esta mulher descabelada e','aterrorizante aparece nas','camas de várias pessoas','apenas para matá-los','pisando em suas barrigas.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'humanoid',
+'AGILITY': 5,'HP': 30,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Atacar',['A pintura se joga contra o oponente, machucando a si no processo.'],-10,1]],'BLOOD': 10,'ITEM': None},
  
 #CHEFES
-'bluebulldog': {'NAME': 'Bulldogue Azul','INFO': ['Um feto dentro de uma bolha numa cesariana com poderes psíquicos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
-'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Escudo','O feto reforça a resistência da bolha.',1,6],['Cordão Umbilical','O feto drena a energia de sua hospedeira e recupera sua VITALIDADE.',10,1],
-['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]]},
+'bluebulldog': {'NAME': 'Bulldogue Azul','INFO': ['Tudo o que sabemos sobre esta anomalia','é que se trata de um canino','de cor azulada.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 100,'ITEM': None},
 
-'samaumaant': {'NAME': 'Formiga Samaúma','INFO': ['Um feto dentro de uma bolha numa cesariana com poderes psíquicos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
-'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Escudo','O feto reforça a resistência da bolha.',1,6],['Cordão Umbilical','O feto drena a energia de sua hospedeira e recupera sua VITALIDADE.',10,1],
-['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]]},
+'samaumaant': {'NAME': 'Formiga Samaúma','INFO': ['Este artrópode gigante','tem a força proporcional á','uma formiga comum, ou seja,','pode carregar x vezes','o seu próprio peso.'],'HEIGHT': '1,30','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 100,'ITEM': None},
 
-'guaranawolf': {'NAME': 'Lobo Guaraná','INFO': ['Um feto dentro de uma bolha numa cesariana com poderes psíquicos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
-'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Escudo','O feto reforça a resistência da bolha.',1,6],['Cordão Umbilical','O feto drena a energia de sua hospedeira e recupera sua VITALIDADE.',10,1],
-['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]]},
+'guaranawolf': {'NAME': 'Lobo Guaraná','INFO': ['Um lobo que escapou','de seu habitat natural e','andou tomando muito guaraná.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 100,'ITEM': ['drink_guarana']},
 
 'araraucaria': {'NAME': 'Araraucária','INFO': ['Uma árvore animal que possui penas coloridas no lugar de folhas.'],'HEIGHT': '10,2','HABITAT': 'jungle','TYPE':'boss',
-'AGILITY': 3,'HP': 60,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [['Algazarra',['Barulhos estranhos saem das folhas do vegetal, diminuindo o ATAQUE do oponente.'],-1,2],['Fruta',['O vegetal deixa cair uma fruta de um dos galhos.'],-6,1],['Regeneração',['O vegetal drena recursos de suas raízes e recupera 10 HP.'],10,1]]},
+'AGILITY': 3,'HP': 60,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [['Algazarra',['Barulhos estranhos saem das folhas do vegetal, diminuindo o ATAQUE do oponente.'],-1,2],['Fruta',['O vegetal deixa cair uma fruta de um dos galhos.'],-6,1],['Regeneração',['O vegetal drena recursos de suas raízes e recupera 10 HP.'],10,1]],'BLOOD': 100,'ITEM': None},
  
-'saltgolem': {'NAME': 'Cesariana','INFO': ['Um feto dentro de uma bolha numa cesariana com poderes psíquicos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
-'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Escudo','O feto reforça a resistência da bolha.',1,6],['Cordão Umbilical','O feto drena a energia de sua hospedeira e recupera sua VITALIDADE.',10,1],
-['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]]},
+'saltgolem': {'NAME': 'Golem do Sal','INFO': ['Nada se sabe sobre esta','anomalia.'],'HEIGHT': '3,00','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
-'papamouse': {'NAME': 'Rato Papa','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'papamouse': {'NAME': 'Rato Papa','INFO': ['O imponente e religioso','líder da seita de ratinhos.'],'HEIGHT': '0,40','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
-'lucyintheskywithdiamonds': {'NAME': 'Lúcia no céu de diamantes','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'lucyintheskywithdiamonds': {'NAME': 'Lúcia no céu de diamantes','INFO': ['A policial se transformou em','uma mulher com olhos de caleidoscópio.'],'HEIGHT': '1,80','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None,'SONG': 'SHINE_ON_LUCY_IN_THE_SKY'},
 
-'mrkite': {'NAME': 'Mr. Kite','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'mrkite': {'NAME': 'Mr. Kite','INFO': ['Um misterioso mágico e','empresário que frequentava o','Edifício Esmeralda.'],'HEIGHT': '1,50','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None,'SONG': 'MR_KITE'},
 
-'possessedpietra': {'NAME': 'Pietra Possessa','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'possessedpietra': {'NAME': 'Pietra Possessa','INFO': ['Essa abominável aberração um dia','foi o amor da vida','de alguém.'],'HEIGHT': '1,70','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
 'caesarean': {'NAME': 'Cesariana','INFO': ['Um feto dentro de uma bolha numa cesariana com poderes psíquicos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
 'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Escudo','O feto reforça a resistência da bolha.',1,6],['Cordão Umbilical','O feto drena a energia de sua hospedeira e recupera sua VITALIDADE.',10,1],
-['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]]},
+['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]],'BLOOD': 10,'ITEM': None},
 
-'drtin': {'NAME': 'Cesariana','INFO': ['Um feto dentro de uma bolha numa cesariana com poderes psíquicos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
-'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Escudo','O feto reforça a resistência da bolha.',1,6],['Cordão Umbilical','O feto drena a energia de sua hospedeira e recupera sua VITALIDADE.',10,1],
-['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]]},
+'drtin': {'NAME': 'Dr. Estanho','INFO': ['Este misterioso cientista é','o responsável pelo surgimento','das quimeras.'],'HEIGHT': '1,60','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None,'SONG': 'DR_TIN'},
 
-'mret': {'NAME': 'Tio Etê','INFO': ['Um feto dentro de uma bolha numa cesariana com poderes psíquicos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
-'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Escudo','O feto reforça a resistência da bolha.',1,6],['Cordão Umbilical','O feto drena a energia de sua hospedeira e recupera sua VITALIDADE.',10,1],
-['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]]},
+'mret': {'NAME': 'Tio Etê','INFO': ['Todos esperavam que ele','fosse um sábio extraterrestre','que ensinasse o segredo','da vida, mas na verdade','é apenas um cara enrolado','em papel higiênico.'],'HEIGHT': '1,60','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 0,'ITEM': None,'SONG': 'BE_NOT_AFRAID'},
 
-'ciborgchicken': {'NAME': 'Galo Ciborgue do SENAI','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'ciborgchicken': {'NAME': 'Galo Ciborgue do SENAI','INFO': ['Rinha de galo foi uma coisa','levada muito á sério','por um engenheiro mecatrônico.'],'HEIGHT': '0,60','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
 
-'poltergeist': {'NAME': 'Poltergeist','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'poltergeist': {'NAME': 'Poltergeist','INFO': ['Não é uma criatura, mas','uma manifestação sobrenatural','que pode ser mais perigosa','do que qualquer monstro.'],'HEIGHT': '???','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None,'SONG': 'HERE_COMES_THE_DEATH'},
 
-'saltdragon': {'NAME': 'Dragão de Sal','INFO': ['Uma ave com a terrível','anomalia INTEGRALISMO.'],'HEIGHT': '2,30','HABITAT': 'urban','TYPE': 'flying',
-'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': []},
+'saltdragon': {'NAME': 'Dragão de Sal','INFO': ['É um dragão.','Um dragão de verdade.'],'HEIGHT': '+100,00','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 5,'HP': 50,'RESISTANCE': 3,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None,'SONG': 'QUINTESSENCE I'},
 
 #MERCENARIES
-'thuga': {'NAME': 'Bandido A','HABITAT': 'urban','TYPE': 'mercenary','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay','HABILITIES': [['Atirar','',-8,1,90],['Granada','',-20,1,10]]},
+'thuga': {'NAME': 'Bandido A','HABITAT': 'urban','TYPE': 'mercenary','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay',
+'HABILITIES': [['Atirar','',-8,1,90],['Granada','',-20,1,10]],'BLOOD': 0,'ITEM': None},
 
-'vinicius': {'NAME': 'Vinícius','HABITAT': 'urban','TYPE': 'mercenary','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay','HABILITIES': [['Atirar','',-8,1,90],['Granada','',-20,1,10]]},
+'vinicius': {'NAME': 'Vinícius','HABITAT': 'urban','TYPE': 'mercenary','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay',
+'HABILITIES': [['Atirar','',-8,1,90],['Granada','',-20,1,10]],'BLOOD': 0,'ITEM': None},
 
-'pietra': {'NAME': 'Pietra','HABITAT': 'urban','TYPE': 'mercenary','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay','HABILITIES': [['Atirar','',-8,1,90],['Granada','',-20,1,10]]},
+'pietra': {'NAME': 'Pietra','HABITAT': 'urban','TYPE': 'mercenary','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay',
+'HABILITIES': [['Atirar','',-8,1,90],['Granada','',-20,1,10]],'BLOOD': 0,'ITEM': None},
 
-'thirdchar': {'NAME': rs.CHARACTERS[2]['NAME'],'HABITAT': 'urban','TYPE': 'mercenary','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay','HABILITIES': [['Atirar','',-8,1,90],['Granada','',-20,1,10]]},
+'thirdchar': {'NAME': rs.CHARACTERS[2]['NAME'],'HABITAT': 'urban','TYPE': 'mercenary','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay',
+'HABILITIES': [['Atirar','',-8,1,90],['Granada','',-20,1,10]],'BLOOD': 0,'ITEM': None},
  
 #OTHER
-'target': {'NAME': 'Alvo','HABITAT': 'urban','TYPE': 'inorganic','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay','HABILITIES': [['Fazer nada',0,6]]},
+'target': {'NAME': 'Alvo','HABITAT': 'urban','TYPE': 'inorganic','AGILITY': 2,'HP': 30,'RESISTANCE': 2,'PATH': 'stay',
+'HABILITIES': [['Fazer nada',[],0,6]],'BLOOD': 0,'ITEM': None},
 
 #SECRET
 'torpedosquid': {'NAME': 'Lula Torpedo','INFO': ['Um molusco que antige seus oponentes como um torpedo. Apesar de enorme, forte e resistente, se locomove muito devagar.'],'HEIGHT': '2,10','HABITAT': 'sea','TYPE': 'boss',
 'AGILITY': 1,'HP': 50,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Tentáculos','O molusco usa seus tentáculos para atacar seu oponente.',-5,1],['Jato de tinta','O molusco atira um jato de tinta que impossibilita o oponente de atacar.',-5,3],
-['Camuflagem','O molusco se disfarça no ambiente, aumentando sua AGILIDADE.',2,3],['Torpedo','O molusco acerta o oponente com um ataque explosivo que acerta todos á volta, super efetivo.',-15,1]]},
+['Camuflagem',['O molusco se disfarça no ambiente, aumentando sua AGILIDADE.'],2,3],['Torpedo',['O molusco acerta o oponente com um ataque explosivo que acerta todos á volta, super efetivo.'],-15,1]],'BLOOD': 10,'ITEM': None},
 
 'abaporu': {'NAME': 'Abaporu','INFO': ['Uma pintura modernista que criou vida própria e por sinal é canibal.'],'HEIGHT': '2,20','HABITAT': 'urban','TYPE': 'boss',
 'AGILITY': 7,'HP': 75,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Pisar','A pintura pisa no oponente esmagando-o.',-13,1],['Fúria','A pintura grita furiosamente aumentando seu ATAQUE.',3,2],
-['Proteger','A pintura reforça sua proteção de acrílico sobre a tela',1,6],['Reforço','A pintura chama outra pintura para ajudar na batalha.',1,5]]},
+['Proteger','A pintura reforça sua proteção de acrílico sobre a tela',1,6],['Reforço','A pintura chama outra pintura para ajudar na batalha.',1,5]],'BLOOD': 10,'ITEM': None},
 
-'tsunamifreezer': {'NAME': 'Geladeira Tsunami','INFO': ['Um feto dentro de uma bolha numa cesariana com poderes psíquicos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
-'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Escudo','O feto reforça a resistência da bolha.',1,6],['Cordão Umbilical','O feto drena a energia de sua hospedeira e recupera sua VITALIDADE.',10,1],
-['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]]},
+'tsunamifreezer': {'NAME': 'Geladeira Tsunami','INFO': ['Essa grande invenção da humanidade','tem a capacidade de reproduzir','ondas sonoras em volumes','extremamente altos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Tsunami',['O elemento emite ondas','sonoras tão altas que','empurram o advesário.'],-30,1],['Ritmo cruel',['O elemento reproduz um','ritmo tão agitado que','tonteia seu advesário,','deixando-o com NÁUSEA.'],5,5]],
+'BLOOD': 10,'ITEM': None},
 
-'polishcow': {'NAME': 'Vaca Polonesa','INFO': ['Um feto dentro de uma bolha numa cesariana com poderes psíquicos.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
-'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [['Escudo','O feto reforça a resistência da bolha.',1,6],['Cordão Umbilical','O feto drena a energia de sua hospedeira e recupera sua VITALIDADE.',10,1],
-['Grito molecular','O feto grita em um nível estratosféricamente alto, agitando as moléculas de seus oponentes.',-15,1],['Líquido Uterino','O feto arremesa o líquido uterino da bolha nos oponentes, confundindo-os e dando NÁUSEA.',2,4]]},
- 
-}
+'polishcow': {'NAME': 'Vaca Polonesa','INFO': ['Um bovino que irá lhe','ensinar uma importante lição','sobre narcóticos em uma língua','que você não conhece.'],'HEIGHT': '1,00','HABITAT': 'urban','TYPE': 'boss',
+'AGILITY': 2,'HP': 10,'RESISTANCE': 1,'PATH': 'follow','HABILITIES': [],'BLOOD': 10,'ITEM': None},
+ }
  
 ARMY = [[],[],[],[],[]]
 for i in range(40): ARMY[0].append('madladcat')
@@ -440,9 +453,9 @@ ITEMS = {
 'bag3': ['mochila',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 20 - Peso: 15'],5000,20,15],
 'bag4': ['mochila de viagem',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 30 - Peso: 20'],7500,30,20],
 'bag5': ['mochilão',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 30 - Peso: 25'],10000,30,25],
-'bottle100': ['frasco de sulfúrio 100ml',['Feita especialmente para guardar sangue verde.','Capacidade de 10 inimigos'],200,1,1,100],
-'bottle250': ['pote de sulfúrio 250ml',['Feita especialmente para guardar sangue verde.','Capacidade de 25 inimigos'],200,1,1,250],
-'bottle500': ['garrafa de sulfúrio 500ml',['Feita especialmente para guardar sangue verde.','Capacidade de 500 inimigos'],200,1,1,500],
+'bottle100': ['frasco de sulfúrio 100ml',['Feita especialmente para guardar sangue verde.'],200,1,1,100],
+'bottle250': ['pote de sulfúrio 250ml',['Feita especialmente para guardar sangue verde.'],200,1,1,250],
+'bottle500': ['garrafa de sulfúrio 500ml',['Feita especialmente para guardar sangue verde.'],200,1,1,500],
 'wallet': ['carteira',['Use para guardar seu dinheiro e coisas pequenos.','JAMAIS PERCA ISSO!'],50,1,1],
    
 #CUSTOM CLOTHES (name,description,price,volume,weight,armor,[costume])
@@ -605,27 +618,27 @@ ITEMS = {
 'drug_adrenaline': ['adrenalina',['Remédio utilizado para reviver uma pessoa inconsciente.'],60,2,1,0],
 
 #CONDIMENTS (name,description,price,volume,weight,type,duration)
-'condiment_ketchup': ['ketchup',['Condimento muito usado em salgados.'],5,1,1,6,'0100'],
-'condiment_sugar': ['açúcar',['Condimento muito usado em doces.'],5,1,1,6,'0100'],
-'condiment_salt': ['sal',['Condimento muito usado em refeições.'],5,1,1,6,'0100'],
-'condiment_pepper': ['pimenta',['Condimento muito usado em refeições.'],5,1,1,6,'0100'],
-'condiment_oregano': ['orégano',['Condimento muito usado em salgados.'],5,1,1,6,'0100'],
-'condiment_shoyu': ['shoyu',['Condimento muito usado em refeições.'],5,1,1,6,'0100'],
+'condiment_ketchup': ['ketchup',['Condimento muito usado em salgados.'],5,1,1,0,'0100'],
+'condiment_sugar': ['açúcar',['Condimento muito usado em doces.'],5,1,1,1,'0100'],
+'condiment_salt': ['sal',['Condimento muito usado em refeições.'],5,1,1,2,'0100'],
+'condiment_pepper': ['pimenta',['Condimento muito usado em refeições.'],5,1,2,6,'0100'],
+'condiment_oregano': ['orégano',['Condimento muito usado em salgados.'],5,1,0,6,'0100'],
+'condiment_shoyu': ['shoyu',['Condimento muito usado em refeições.'],5,1,2,6,'0100'],
 
 #DRINK (name,description,price,volume,weight,health,duration)
-'drink_water': ['água',['O básico pra te manter de pé','no calor e no cansaço, BEBA ÁGUA.'],8,2,1,10,'0100'],
-'drink_juice_orange': ['suco de laranja',['Saudável e nutritivo, o Jailson aprova.'],8,3,1,10,'0100'],
-'drink_juice_passion_fruit': ['suco de maracujá',['Saudável e nutritivo, acalma a alma e o espírito.'],8,3,1,10,'0100'],
-'drink_coffee': ['café',['Bebida que aumenta a sua energia.'],8,3,1,10,'0100'],
-'drink_chocolate': ['chocolate quente',['Vai bem com biscoitos'],8,3,1,10,'0100'],
-'drink_milk': ['leite',['Vai bem no café.'],8,3,1,10,'0100'],
+'drink_water': ['água',['O básico pra te manter de pé','no calor e no cansaço. BEBA ÁGUA!'],8,2,1,10,'0100'],
+'drink_juice_orange': ['suco de laranja',['Saudável e nutritivo, o Jailson aprova.'],8,3,1,12,'0100'],
+'drink_juice_passion_fruit': ['suco de maracujá',['Saudável e nutritivo, acalma a alma e o espírito.'],8,3,1,12,'0100'],
+'drink_coffee': ['café',['Bebida que aumenta a sua energia.'],8,3,1,8,'0100'],
+'drink_chocolate': ['chocolate quente',['Vai bem com biscoitos'],8,3,1,6,'0100'],
+'drink_milk': ['leite',['Vai bem no café.'],8,3,1,6,'0100'],
 'drink_coffeenmilk': ['café com leite',['Bebida preferida do criador','do jogo, foi muito útil.'],8,3,1,10,'0100'],
 'drink_energy': ['energético',['Bebida que acelera o metabolismo','e aumenta a energia.'],8,3,1,10,'0100'],
-'drink_cola': ['refri',['A bomba calórica que a gente gosta.'],8,3,1,10,'0100'],
-'drink_guarana': ['guaraná',['Um suquinho barato e muito açúcarado','mas é bom, não confundir com cachos de olhos.'],8,3,1,10,'0100'],
-'drink_beer': ['álcool',['Bebida alcóolica para aumentar a energia','Pelo amor de deus COM MODERAÇÃO.'],8,2,1,10,'0100'],
-'drink_whiskey': ['uísque',['Bebida alcóolica para aumentar a energia','Pelo amor de deus COM MODERAÇÃO.'],8,2,1,10,'0100'],
-'drink_yogurt': ['iogurte',['Delicioso e saudável.'],8,3,1,10,'0100'],
+'drink_cola': ['refri',['A bomba calórica que a gente gosta.'],8,3,1,5,'0100'],
+'drink_guarana': ['guaraná',['Um suquinho barato e muito açúcarado','mas é bom, não confundir com cachos de olhos.'],8,3,1,5,'0100'],
+'drink_beer': ['cerveja',['Bebida alcóolica para aumentar a energia','Pelo amor de deus COM MODERAÇÃO.'],8,2,1,8,'0100'],
+'drink_whiskey': ['uísque',['Bebida alcóolica para aumentar a energia','Pelo amor de deus COM MODERAÇÃO.'],8,2,1,8,'0100'],
+'drink_yogurt': ['iogurte',['Delicioso e saudável.'],8,3,1,8,'0100'],
  
 #FOOD (name,description,price,volume,weight,health,duration)
 'food_orange': ['laranja',['Fruta fácil de se achar','num pomar.'],3,1,1,2,'0100'],
@@ -741,6 +754,10 @@ ITEMS = {
 'jewel_quartz': ['quartzo',['Essa jóia deve custar uma fortuna!'],2000,1,3,0],
 'mysterious': ['???',['Você não faz idéia do que é isso.'],0,1,1,0]
 }
+
+CRAFTINGS = [
+['drink_milk','drink_coffee','drink_coffeenmilk']
+]
  
 STORAGE = [['jewel_ruby','0000','_','_'],['drink_whiskey','1503','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],
 ['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],
@@ -1155,6 +1172,8 @@ def load_dialogs(r=False):
 	 
 	'HOTMAN': [(10,['Cê tá bem mano?','Claro que não né?? Estou queimando feito palha nessa desgraça!'],['Vaza ou meto chumbo','Eu não tenho medo de você'],['A gente não quer nada contigo',
 	'Mas eu quero','Preciso de sangue!!'])],
+	
+	'EDMOTO': [(10,['ED MOTA??','Não!','Meu nome não é mais Ed Mota!',1,'De agora em diante...',1,'Meu nome será...',1,'ED MOTA!',1],[])],
 	 
 	#PLACES
 	'DEPOSIT': [['Olá!','Me chamou?',1],['Se precisar de qualquer coisa,','é só chamar!',1,(24,'n',('px300','py0'),0)]],
@@ -1289,7 +1308,7 @@ def load_dialogs(r=False):
 	['Melhor a gente olhar','Ok...','...mas vamos devagar.']),(27,500),0,'ai meu deus.',1,'AI',1,'MEU','DEUS',1,0,'Fica calma ' + rs.CHARACTERS[1]['NAME'] + '.','Tá tudo bem...',0,
 	'COMO ASSIM TUDO BEM!?','A GENTE ATROPELOU UM BULLDOGUE ' + NAMES[0] + '!!',(31,'PUTA QUE PARIU!','MISERICÓRDIA!!'),1,(27,20),'A gente não pode deixar isso aqui!',1,'Que que a gente faz?!',1],
 	[(27,300),'Me desculpe bem.',1,'Não havia nada que','possamos fazer.',1,(27,300),0,'Iago...',1,'O que é isso?',1,(27,200),0,'Mais um...',1,'Bul...','...dogue?',1,0,'Não...','É....','Não pode ser....',1,(27,200),
-	'CORRE IAGO!!',0,'COMO É?',0,(31,'CORRE BUCETA','NÃO PARA'),'ELE TÁ VINDO!!',0,'ISSO É LOUCURA!',0,'AAAAAHHH!!!',0,'AHHHHHH!!!',(13,'CERBERUS')]],
+	'CORRE IAGO!!',0,'COMO É?',0,(31,'CORRE BUCETA','NÃO PARA'),'ELE TÁ VINDO!!',0,'ISSO É LOUCURA!',0,'AAAAAHHH!!!',0,'AHHHHHH!!!',(13,'bluebulldog')]],
 	    
 	#SANGUE VERDE
 	'CH2PIETRA': [[0,'Olá?',1,(27,100),'Eu tô apertada sabe?',1,0,'j-já vou sair!',1,0,'Eu espero...',(27,100),'Finalmente...',1,0,'...',1,0,'...você tá bem?',1,0,'não.',1,(27,20),'ah...desculpa...',1,0,'Você não tem culpa de nada','Por que você tá chorando?',1,0,

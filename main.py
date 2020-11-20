@@ -1327,7 +1327,10 @@ class Game:
 					if self.pressed[resources.ACT[0]]:
 						#WEAPONS
 						if self.equip[self.turn] < 4:
-							if int(resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][1]) > 0:
+							if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0].startswith('melee'):
+								self.ch_sfx.play(resources.SOUND['MELEE'])
+								self.mnu = 2
+							elif self.barpp[self.turn][self.equip[self.turn]] > 0 and resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn]][0].startswith('gun'):
 								self.ch_sfx.play(resources.SOUND['GUN_TRIGGER'])
 								self.mnu = 2
 							else:
@@ -4187,25 +4190,27 @@ class Game:
 						self.display[0].blit(pygame.image.load('Sprites/hl_' + str(resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['HEALTH']) + '.png'), (i['RECT'].x - self.cam.x + 10 + resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['SHK'],i['RECT'].y - self.cam.y - 40))
 					#TILE COLISION
 					if i['STEP'] > 0: i['STEP'] -= 1
-					elif i['STEP'] == 0 and resources.MAP > 0:
-						if i['SPEED'] > 0: i['STEP'] = math.floor(12/i['SPEED'])
-						for tl in range(2):
-							for t in self.tilrect[tl]:
-								if self.colide(i['RECT'],t[1]) and i['SPEED'] > 0 and self.dlgfa > 0 and i['PAUSE'] == 0:
-									if self.driving == 0:
-										if t[0].startswith('JUMP') and i['DIRECTION'] == int(t[0][4]) and i['GRAVITY'] == -5:
-											i['GRAVITY'] = 4.5
-											i['STEP'] = 0
-											self.ch_sfx.play(resources.SOUND['FALL'])
-										elif t[0] != 'WALL' and t[0] != 'NONE'  and t[0].startswith('JUMP') == False and i['JUMP'] == 0:
-											self.ch_stp.stop()
+					for tl in range(2):
+						for t in self.tilrect[tl]:
+							if self.colide(i['RECT'],t[1]) and i['SPEED'] > 0 and self.dlgfa > 0 and i['PAUSE'] == 0:
+								if self.driving == 0:
+									if t[0].startswith('JUMP') and i['DIRECTION'] == int(t[0][4]) and i['GRAVITY'] == -5:
+										i['GRAVITY'] = 4.5
+										i['STEP'] = 0
+										self.ch_sfx.play(resources.SOUND['FALL'])
+									elif t[0] != 'WALL' and t[0] != 'NONE'  and t[0].startswith('JUMP') == False and i['JUMP'] == 0:
+										if i['STEP'] == 0 and resources.MAP > 0:
+											#self.ch_stp.stop()
 											self.ch_stp.play(resources.SOUND['STEP_' + t[0]])
-											if t[0] == 'WATER':
-												if i['SWIM'] == None: i['SWIM'] = 0.0
-											else: i['SWIM'] = None
-									elif t[0] != 'WALL' and t[0].startswith('JUMP') == False and i['JUMP'] == 0:
+											if i['SPEED'] > 0: i['STEP'] = math.floor(12/i['SPEED'])
+										if t[0] == 'WATER':
+											if i['SWIM'] == None: i['SWIM'] = 0.0
+										else: i['SWIM'] = None
+								elif t[0] != 'WALL' and t[0].startswith('JUMP') == False and i['JUMP'] == 0:
+									if i['STEP'] == 0 and resources.MAP > 0:
 										self.ch_stp.stop()
 										self.ch_stp.play(resources.SOUND['STEP_VEHICLE'])
+										if i['SPEED'] > 0: i['STEP'] = math.floor(12/i['SPEED'])
 					y[2] = i['RECT'].y
 			#ENEMIES
 			if y[0] == 1:

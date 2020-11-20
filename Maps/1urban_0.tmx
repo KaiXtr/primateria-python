@@ -438,7 +438,7 @@
   <object id="20" name="npc_3" type="0" x="795" y="850">
    <properties>
     <property name="INDEX" value="000000"/>
-    <property name="WHO" value="INFORMED MAN"/>
+    <property name="WHO" value="REWARD"/>
    </properties>
    <point/>
   </object>
