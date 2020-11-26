@@ -213,7 +213,7 @@
    </properties>
    <text wrap="1">MARKET</text>
   </object>
-  <object id="54" name="text_4" type="HOSPITAL" x="991.5" y="1110.5" width="57" height="19">
+  <object id="54" name="text_4" type="HOSPITAL" x="991.5" y="1110.5" width="81" height="19">
    <properties>
     <property name="ICON" value="hosp"/>
    </properties>
@@ -438,7 +438,7 @@
   <object id="20" name="npc_3" type="0" x="795" y="850">
    <properties>
     <property name="INDEX" value="000000"/>
-    <property name="WHO" value="REWARD"/>
+    <property name="WHO" value="INFORMED MAN"/>
    </properties>
    <point/>
   </object>

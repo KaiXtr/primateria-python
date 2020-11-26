@@ -459,7 +459,7 @@ def new_data(add=False):
       
     com.execute("DROP TABLE IF EXISTS bestiary" + str(ID))
     com.execute("CREATE TABLE bestiary" + str(ID) + " (idx text,id text,date text,seen int)")
-    for i in database.FREAKS: com.execute("INSERT INTO bestiary" + str(ID) + " VALUES('','','',0)")
+    for i in database.FREAKS.items(): com.execute("INSERT INTO bestiary" + str(ID) + " VALUES('" + i[0] + "','xxxxxx','000000',0)")
       
     com.execute("DROP TABLE IF EXISTS achievements" + str(ID))
     com.execute("CREATE TABLE achievements" + str(ID) + " (idx integer,got integer,date text)")
@@ -587,6 +587,8 @@ def load_data():
     res = com.fetchall()
     PARTY = []
     for i in res: PARTY.append([i[1],i[2],i[3]])
+    print(PARTY)
+    PARTY = [[1,5,4]]
     com.execute("SELECT * FROM contacts" + str(ID))
     res = com.fetchall()
     CONTACTS = []
@@ -616,6 +618,8 @@ def load_data():
     BESTIARY = []
     for i in res:
         BESTIARY.append({'N': i[0],'ID': i[1],'DATE': i[2],'SEEN': i[3]})
+    for i in BESTIARY:
+        print(i)
     com.execute("SELECT * FROM achievements"+ str(ID))
     res = com.fetchall()
     for i in res:
@@ -674,38 +678,37 @@ def save_data():
     if DATE[2] < 10: yy = '0' + str(DATE[2])
     else: yy = str(DATE[2])
     dt = dd + mm + yy + str(DATE[3]) + str(DATE[4])
- 
+    #SAVE GLOBAL GAME DATA
     com.execute("""UPDATE data SET gt = :gt,fr = :fr,map = :map,x = :x,y = :y,time = :tm,date = :dt,weather = :weather,chapter = :chapter,scene = :scene,morality = :morality,atm = :atm,money =:money,credit = :credit,battery = :battery,gas = :gas,\
         taskpin = :taskpin,minimap = :minimap WHERE id = :id""",
     {'id': ID,'gt': GAMETIME,'fr': FORMATION,'map': MAP,'x': PX,'y': PY,'tm': ts,'dt': dt,'weather': WEATHER,'chapter': CHAPTER,'scene': SCENE,'morality': MORALITY,'atm': ATM,'money': MONEY,'credit': CREDIT,'battery': BATTERY,'gas': GAS,
     'taskpin': int(TASKPIN),'minimap': int(MINIMAP)})
     tbl.commit()
- 
+    #SAVE CHARACTERS DATA
     for i in range(len(CHARACTERS)):
         com.execute("UPDATE characters" + str(ID) + " SET name = :name, lastname = :lastname,gender = :gender,level = :level WHERE n = :n",
             {'n': i,'name': CHARACTERS[i]['NAME'],'lastname': CHARACTERS[i]['LASTNAME'],'gender': CHARACTERS[i]['GENDER'],'level': CHARACTERS[i]['LEVEL']})
         tbl.commit()
-
+    #SAVE DIALOGS DATA
     for i in DLGSAV:
         com.execute("""UPDATE dlgsav""" + str(ID) + """ SET vl = :vl WHERE who = :who""",{'who': i,'vl': DLGSAV[i]})
         tbl.commit()
-
+    #SAVE TACTICAL DATA
     for i in range(len(TACTICAL)):
         try: com.execute("""UPDATE tactical""" + str(ID) + """ SET p1 = :p1, p2 = :p2, p3 = :p3, p4 = :p4 WHERE n = :n""",{'n': i, 'p1': TACTICAL[i][0], 'p2': TACTICAL[i][1], 'p3': TACTICAL[i][2], 'p4': TACTICAL[i][3]})
         except: com.execute("INSERT INTO tactical" + str(ID) + " VALUES(:n,:p1,:p2,:p3,:p4)",{'n': i,'p1': TACTICAL[i][0],'p2': TACTICAL[i][1],'p3': TACTICAL[i][2],'p4': TACTICAL[i][3]})
         tbl.commit()
-
+    #SAVB BESTIARY DATA
     for i in BESTIARY:
         com.execute("""UPDATE bestiary""" + str(ID) + """ SET id = :id, date = :date, seen = :seen WHERE idx = :idx""",{'idx': i['N'],'id': i['ID'],'date': i['DATE'],'seen': i['SEEN']})
         tbl.commit()
-    
+    #SAVE INVENTORY DATA
     for u in range(6):
         for x in range(5):
             for y in range(5):
                 com.execute("UPDATE inventory" + str(ID) + " SET item = :item, properties = :properties, acc1 = :acc1, acc2 = :acc2 WHERE position = :position",
                     {'item': INVENTORY[u][x][y][0],'position': str(u) + str(x) + str(y),'properties': INVENTORY[u][x][y][1], 'acc1': INVENTORY[u][x][y][2],'acc2': INVENTORY[u][x][y][3]})
-                tbl.commit() 
-
+                tbl.commit()
     '''for i in STORAGE:
         com.execute("""UPDATE storage""" + str(ID) + """ SET id = :id, date = :date, seen = :seen WHERE idx = :idx""",{'idx': i['N'],'id': i['ID'],'date': i['DATE'],'seen': i['SEEN']})
         tbl.commit()''' 

@@ -126,7 +126,7 @@ FREAKS = {
 'AGILITY': 4,'HP': 6,'RESISTANCE': 0,'PATH': 'stay','HABILITIES': [['Camuflar',['O réptil se camufla no ambiente,','aumentando sua AGILIDADE.'],2,3],['Língua',['O réptil usa sua língua como','chicote para atacar o oponente.'],-3,1],
 ['Estalo',['O réptil se estala, criando','um campo de força elétrico.'],-13,1]],'BLOOD': 10,'ITEM': ['food_camarão',50]},
    
-'peacockpigeon': {'NAME': 'Pombo Pavão','INFO': ['Um pombo urbano com uma mutação que','o fez desenvolver penas de pavão com','olhos reais nas suas pontas.','Relativamente ágil, mas fraco.'],'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'flying',
+'peacockpigeon': {'NAME': 'Pombo Pavão','INFO': ['Um pombo urbano com uma mutação que','o fez desenvolver penas de pavão com','olhos reais nas suas pontas.','Relativamente ágil, mas fraco.'],'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'mercenary',
 'AGILITY': 3,'HP': 10,'RESISTANCE': 1,'PATH': 'horizontal','HABILITIES': [['Defecar',['A ave defeca no oponente, infectando-o.'],5,6,20,1],['Hipnose',['A ave hipnotiza o oponente com os olhos das penas de pavão, diminuindo sua AGILIDADE.'],-2,3,20,1],
 ['Bicar',['A ave bica o oponente.'],-4,1,50,1],['Gritar',['A ave grita, com a possibilidade de outra anomalia entrar na batalha.'],['madladcat','peacockpigeon'],7,10,1]],'BLOOD': 20,'ITEM': ['food_peanut_candy',30],'SONG': 'URBAN_PLAGUE'},
 
@@ -555,8 +555,8 @@ ITEMS = {
 'umbrella_portable': ['guarda-chuva portátil',['Não pegue resfriado meu filho!','Cabe na mochila!'],800,3,1],
    
 #MELEE WEAPONS (name,description,price,volume,weight,{damage})
-'melee_broom': ['vassoura',['Não foi feita para se armar, muito menos','para caçar ou voar, mas funciona.',10,5,2,{'DAMAGE': 2}]],
-'melee_frying_pan': ['frigideira',['Se não tiver o que usar, ela quebra um galho','e ainda frita um ovo legal.',30,3,2,{'DAMAGE': 4}]],
+'melee_broom': ['vassoura',['Não foi feita para se armar, muito menos','para caçar ou voar, mas funciona.'],10,5,2,{'DAMAGE': 2}],
+'melee_frying_pan': ['frigideira',['Se não tiver o que usar, ela quebra um galho','e ainda frita um ovo legal.'],30,3,2,{'DAMAGE': 4}],
 'melee_bottle': ['garrafa de vidro',['Depois de um drink moderado','é excelente para tacar na cabeça de um nazi.'],10,3,3,{'DAMAGE': 6}],
 'melee_bar': ['barra de ferro',['Dá na telha pra descer','o cacete em alguém.'],4,3,3,{'DAMAGE': 8}],
 'melee_knife': ['faca',['Útil para ataques corpo-a-corpo, pode ser tão letal','quanto uma arma de fogo.'],300,2,1,{'DAMAGE': 10}],
@@ -1153,12 +1153,12 @@ def load_dialogs(r=False):
 
 	#ENEMIES
 	'BATTLEDIALOG': [
-	[(10,['Motivar',(20,2,2)],['Ameaçar',(23,None)])],
-	[(10,['Motivar',(20,2,2)],['Ameaçar',(23,None)])],
-	[(10,['Motivar',(20,2,2)],['Ameaçar',(23,None)])],
-	[(10,['Motivar',(20,2,2)],['Ameaçar',(23,None)])],
-	[(10,['Motivar',(20,2,2)],['Ameaçar',(23,None)])],
-	[(10,['Motivar',(20,2,2)],['Ameaçar',(23,None)])],
+	[(10,['Motivar',(20,2,2)],['Ameaçar',(19,2,2)],['Negociar',(23,None)])],
+	[(10,['Motivar',(20,2,2)],['Ameaçar',(19,2,2)],['Negociar',(23,None)])],
+	[(10,['Motivar',(20,2,2)],['Ameaçar',(19,2,2)],['Negociar',(23,None)])],
+	[(10,['Motivar',(20,2,2)],['Ameaçar',(19,2,2)],['Negociar',(23,None)])],
+	[(10,['Motivar',(20,2,2)],['Ameaçar',(19,2,2)],['Negociar',(23,None)])],
+	[(10,['Motivar',(20,2,2)],['Ameaçar',(19,2,2)],['Negociar',(23,None)])],
 	],
 
 	'IRRATIONAL': ['A anomalia não entende nada do que você tá falando',1],
@@ -1556,7 +1556,7 @@ BATTLE = [' aparece no caminho!',' encurrala você!',' é emboscado!',
 'vitória!','perfeito!','derrota...','acertos: ','dano total: ','vitalidade perdida: ','bônus de tempo: ',' de experiência',
 ' foi promovido para o nível ',
 ' tentou fugir','...mas falhou','...e consegue!',
-' vai ',' usa ',' perdeu ',' ganhou ',' de ATAQUE',' de AGIIDADE',' de FORÇA','de RESISTÊNCIA',
+' vai ',' usa ',' perdeu ',' ganhou ',' de ATAQUE',' de AGILIDADE',' de FORÇA','de RESISTÊNCIA',
 ' está com resfriado',' está com febre',' está desidratado',' está com náusea',' não consegue se mexer!',' está inconsciente...',' foi atacado por um parasita',
 ' está queimando!',' foi envenenado!',' está com hemorragia!',
 ' foi quebrado...',
