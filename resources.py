@@ -20,6 +20,7 @@ RANGE_COSTUME = 2
 RANGE_SKIN = 10
 RANGE_RADIO = 10
 RANGE_BORDER = 7
+RANGE_CURSOR = 6
 
 FILES = []
 ID = 0
@@ -29,8 +30,8 @@ CHAPTER = 0
 MAP = 1
 PX = 0
 PY = 0
-TIME = [0,0,0]
-DATE = [0,0,0,1,1]
+TIME = [0,0,0] #hour-minute-second
+DATE = [0,0,0,1,1] #day-month-year-week-moon
 WEATHER = 0
 CHAPTER = 0
 SCENE = 0
@@ -46,12 +47,14 @@ ACT = [pygame.K_g,pygame.K_KP0]
 RUN = [pygame.K_h,pygame.K_KP_ENTER]
 PHONE = [pygame.K_BACKSPACE,pygame.K_KP_MULTIPLY]
 BAG = [pygame.K_RETURN,pygame.K_KP_MINUS]
+MOUSE = True
 SPEED = 2
 COLOR = [255,10,10]
 BORDER = 0
 CENSORSHIP = True
 HINT = True
 HELP = True
+CURSOR = 0
 
 PARTY = [[0,4,3]]
 FORMATION = 0
@@ -587,8 +590,6 @@ def load_data():
     res = com.fetchall()
     PARTY = []
     for i in res: PARTY.append([i[1],i[2],i[3]])
-    print(PARTY)
-    PARTY = [[1,5,4]]
     com.execute("SELECT * FROM contacts" + str(ID))
     res = com.fetchall()
     CONTACTS = []
@@ -618,8 +619,6 @@ def load_data():
     BESTIARY = []
     for i in res:
         BESTIARY.append({'N': i[0],'ID': i[1],'DATE': i[2],'SEEN': i[3]})
-    for i in BESTIARY:
-        print(i)
     com.execute("SELECT * FROM achievements"+ str(ID))
     res = com.fetchall()
     for i in res:

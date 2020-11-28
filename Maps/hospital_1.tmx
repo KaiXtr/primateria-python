@@ -75,7 +75,7 @@
 </data>
  </layer>
  <objectgroup id="10" name="PORTAL">
-  <object id="27" name="portal_0" x="300" y="433.333" width="48" height="40">
+  <object id="27" name="portal_0" type="0" x="300" y="433.333" width="48" height="40">
    <properties>
     <property name="MAP" value="1urban_0"/>
     <property name="PX" type="int" value="569"/>

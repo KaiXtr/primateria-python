@@ -115,7 +115,13 @@ electric
 20 - veneno escorpiônico (perde HP)
 21 - hemorragia (perde HP e não tem cura)
 '''
-      
+
+FTYPES = {'mammal': 'mamífero', 'flying': 'alado', 'reptile': 'réptil','plant': 'vegetal', 'aquatic': 'aquático',
+'psychic': 'psíquico', 'humanoid': 'humanóide', 'inorganic': 'inorgânico'}
+
+FHABITATS = {'jungle': 'floresta', 'seaside': 'litoral', 'sierra': 'serra', 'cerrado': 'cerrado', 'pantanal': 'pantanal',
+'manguezal': 'manguezal', 'cave': 'subterrâneo', 'urban': 'urbano'}
+
 FREAKS = {
 #JUNGLE
 'madladcat': {'NAME': 'Gato Atacado','INFO': ['É um felino sobrenatural que','flutua como um fantasma.','Pequeno e ágil, porém bem frágil.'],'HEIGHT': '0,80','HABITAT': 'jungle','TYPE': 'mammal',
@@ -1110,6 +1116,7 @@ else: dt = 'Boa noite'
 29 - outro local
 30 - adicionar npc
 31 - censura
+32 - easter egg
 '''
  
 DIALOGS = {}
@@ -1446,7 +1453,7 @@ def load_dialogs(r=False):
 	'978543322': [['Oi, em que posso ajudar?','Ah...eu já parei de fazer isso há muitos anos','Tchau']],
 
 	#EASTER EGGS
-	'TWNN CLOCK': [['Você tem a hora certa?',1,(15,'TWNN',0),(27,400),0,'Não.',1]],
+	'TWNN CLOCK': [['Você tem a hora certa?',1,(15,'TWNN',0),(27,300,'TWNN'),0,'Não.',1]],
 	'KONAMI GUY': [['Hey, sabe o que acontece se você apertar cima, cima, baixo, baixo, esquerda, direita, esquerda, direita, B, A e START?','Merda nenhuma!']],
 	'MATT KAI': [['EU AMO PINK FLOYD','EU AMO PINK FLOYD','EU AMO PINK FLOYD',1,0,'Esse é o criador do jogo?',1,0,'Ele mesmo',1,0,'Sem nexo',1,0,'Mó fita',1]],
 
@@ -1572,11 +1579,13 @@ MENU = ['mapa','chamadas','correios','notícias','rádio','câmera','bestiário'
 'equipamento 1','equipamento 2','equipamento 3','equipamento 4','dialogar','defender','fugir','nova história',
 'idioma','sfx','música','mover cima','mover baixo','mover esquerda','mover direita','ato','celular','inventário','velocidade','cor R','cor G','cor B','salvar',
 'escolha um botão','volume','peso','Nome','Sobrenome','Tudo certo?','Sim','Não','Tem certeza?','correr','borda','gameplay','áudio','controles','muito lento','lento','médio','rápido','muito rápido',
-'censura','tutoriais','dicas']
+'censura','tutoriais','dicas','mouse','jogador 1','jogador 2','jogador 3','habilitar','ícone','sensibilidade']
   
 SHOP = ['comprar','sair','nada aqui','banco: $','dinheiro: $','sacar','depositar','cancelar','Mercador','vender']
 
 HOLIDAYS = [(1,1,'Feliz ano novo!'),(3,8,'Feliz dia da mulher!'),(3,15,'É aniversário do autor!'),(4,7,'Feliz páscoa!'),(4,22,'Feliz dia da terra!'),(10,31,'Feliz Halloween!'),(12,25,'Feliz natal!')]
+
+RADIOEE = [['MNOM','0609','0000'],['DJNEL','0402','0020'],['MC1','1702','0300'],['MC2','1806','0300'],['MC3','2012','0300'],['MC4','2512','0736']]
 
 ABOUT = ['MUTATION PURGE','Matt Kai (2020)','Source code por Matt Kai','Feito em Python','Twitter','GitHub','GNU General Public License']
   
