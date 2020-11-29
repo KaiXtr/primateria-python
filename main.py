@@ -587,17 +587,19 @@ class Game:
 		self.tutorial = {'TEXT': [], 'OUTPUT': [], 'FADE': 0, 'TIME': 0, 'WAIT': 0, 'NEXT': '','GO': 0}
 		self.cityname = ''
 
-		#MAP VARIABLES
+		#PLAYER
 		self.player = []
-		for i in range(1): self.player.append({'RECT': pygame.Rect(resources.PX,resources.PY,20,20),'SPEED': 0,'JUMP': 0,'GRAVITY': -5,'STEP': 10,'SWIM': None,
-		'HEAD': 'BLANKD_' + resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['HAIR'] + resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['SKIN'],
-		'SPRITE': 'STANDD_' + resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['COSTUME'] + resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['SKIN'],
-		'GIF': 0.0,'BLINK': 100,'DIRECTION': 3, 'PAUSE': 0,'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','GRID': [0,0],'PLAYING': False,'NODES': [],'HOLD': None})
+		for i in range(2): self.player.append({'RECT': pygame.Rect(resources.PX + (i * 30),resources.PY,20,20),'SPEED': 0,'JUMP': 0,'GRAVITY': -5,'STEP': 10,'SWIM': None,
+		'HEAD': 'BLANKD_' + resources.CHARACTERS[resources.PARTY[resources.FORMATION][i]]['HAIR'] + resources.CHARACTERS[resources.PARTY[resources.FORMATION][i]]['SKIN'],
+		'SPRITE': 'STANDD_' + resources.CHARACTERS[resources.PARTY[resources.FORMATION][i]]['COSTUME'] + resources.CHARACTERS[resources.PARTY[resources.FORMATION][i]]['SKIN'],
+		'GIF': 0.0,'BLINK': 100,'DIRECTION': 3, 'PAUSE': 0,'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','GRID': [0,0],'PLAYING': True,'NODES': [],'HOLD': None})
 		self.player[0]['PLAYING'] = True
 		self.objects = []
 		self.tilrect = []
 		self.tilhide = False
 		self.tilalpha = 0
+
+		#MAP VARIABLES
 		self.en = []
 		self.foe = []
 		self.fig = []
@@ -798,6 +800,8 @@ class Game:
 							self.turn = -6
 							break
 					self.notx = 0
+					if self.phone > 0: self.turn = -2
+					if self.inventory > 0: self.turn = -2
 					if self.turn != -6: self.turn = -self.facing(i,self.player[0])
 					self.fight()
 
@@ -1371,15 +1375,20 @@ class Game:
 			if self.battle == True and self.phone == 0 and self.dlgfa > 0:
 				self.pressed = pygame.key.get_pressed()
 				if self.turn == len(resources.PARTY[resources.FORMATION]): self.fight()
+				else:
+					if self.turn == 0: tp = 0
+					elif self.turn >= len(self.player): tp = 0
+					elif self.player[self.turn]['PLAYING'] == True: tp = self.turn
+					else: tp = 0
 				#CHOOSING WEAPON
 				if self.mnu == 1:
-					if self.pressed[resources.LEFT[0]]: self.equip[self.turn] -=1; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
-					if self.pressed[resources.RIGHT[0]]: self.equip[self.turn] +=1; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+					if self.pressed[resources.LEFT[tp]]: self.equip[self.turn] -=1; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+					if self.pressed[resources.RIGHT[tp]]: self.equip[self.turn] +=1; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
 				
 					if self.equip[self.turn] < 0: self.equip[self.turn] = 7
 					if self.equip[self.turn] > 7: self.equip[self.turn] = 0
 
-					if self.pressed[resources.ACT[0]]:
+					if self.pressed[resources.ACT[tp]]:
 						#WEAPONS
 						if self.equip[self.turn] < 4:
 							if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0].startswith('melee'):
@@ -1415,9 +1424,9 @@ class Game:
 				#USING WEAPON
 				elif self.mnu == 2:
 					if self.equip[self.turn] == 4:
-						if self.pressed[resources.LEFT[0]]: self.opt -= 1; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
-						if self.pressed[resources.RIGHT[0]]: self.opt += 1; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
-					if self.pressed[resources.ACT[0]]:
+						if self.pressed[resources.LEFT[tp]]: self.opt -= 1; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+						if self.pressed[resources.RIGHT[tp]]: self.opt += 1; self.ch_sfx.play(resources.SOUND['MENU_HOR'])
+					if self.pressed[resources.ACT[tp]]:
 						#SHOT OR HIT
 						if self.equip[self.turn] < 4:
 							self.fight()
@@ -1442,7 +1451,7 @@ class Game:
 								self.turn += 1
 							for i in self.equip: i = 4
 					#CANCEL MOVE
-					if self.pressed[resources.RUN[0]]:
+					if self.pressed[resources.RUN[tp]]:
 						self.ch_sfx.play(resources.SOUND['MISS'])
 						self.mnu = 1
 					if self.opt < 0: self.opt = len(resources.TACTICAL) - 1
@@ -2577,44 +2586,44 @@ class Game:
 					if i['JUMP'] == 0:
 						if resources.MAP > 0:
 							if self.pressed[resources.RUN[p]]:
-								if len(self.player) > 1 and self.player[0]['SPEED'] < 6:
-									self.player[0]['NODES'].append({'RECT': self.player[0]['RECT'],'DIRECTION': self.player[0]['DIRECTION'],'SPEED': self.player[0]['SPEED']})
+								if len(self.player) > 1 and self.player[p]['SPEED'] < 6:
+									self.player[0]['NODES'].append({'RECT': self.player[p]['RECT'],'DIRECTION': self.player[p]['DIRECTION'],'SPEED': self.player[p]['SPEED']})
 								if i['SWIM'] == None: i['SPEED'] = 6
 								else: i['SPEED'] = 3
 							else:
-								if len(self.player) > 1 and self.player[0]['SPEED'] > 3:
-									self.player[0]['NODES'].append({'RECT': self.player[0]['RECT'],'DIRECTION': self.player[0]['DIRECTION'],'SPEED': self.player[0]['SPEED']})
+								if len(self.player) > 1 and self.player[p]['SPEED'] > 3:
+									self.player[0]['NODES'].append({'RECT': self.player[p]['RECT'],'DIRECTION': self.player[p]['DIRECTION'],'SPEED': self.player[p]['SPEED']})
 								if i['SWIM'] == None: i['SPEED'] = 3
 								else: i['SPEED'] = 1
 						else: i['SPEED'] = 1
-
+						#MOVE UP
 						if self.pressed[resources.UP[p]]:
 							if self.pressed[resources.LEFT[p]]: i['DIRECTION'] = 6
 							elif self.pressed[resources.RIGHT[p]]: i['DIRECTION'] = 8
 							else: i['DIRECTION'] = 7
 							if len(self.player) > 1:
-								self.player[0]['NODES'].append({'RECT': self.player[0]['RECT'],'DIRECTION': self.player[0]['DIRECTION'],'SPEED': self.player[0]['SPEED']})
-
+								self.player[0]['NODES'].append({'RECT': self.player[p]['RECT'],'DIRECTION': self.player[p]['DIRECTION'],'SPEED': self.player[p]['SPEED']})
+						#MOVE DOWN
 						elif self.pressed[resources.DOWN[p]]:
 							if self.pressed[resources.LEFT[p]]: i['DIRECTION'] = 4
 							elif self.pressed[resources.RIGHT[p]]: i['DIRECTION'] = 2
 							else: i['DIRECTION'] = 3
 							if len(self.player) > 1:
-								self.player[0]['NODES'].append({'RECT': self.player[0]['RECT'],'DIRECTION': self.player[0]['DIRECTION'],'SPEED': self.player[0]['SPEED']})
-
+								self.player[0]['NODES'].append({'RECT': self.player[p]['RECT'],'DIRECTION': self.player[p]['DIRECTION'],'SPEED': self.player[p]['SPEED']})
+						#MOVE LEFT
 						elif self.pressed[resources.LEFT[p]]:
 							if self.pressed[resources.UP[p]]: i['DIRECTION'] = 6
 							elif self.pressed[resources.DOWN[p]]: i['DIRECTION'] = 4
 							else: i['DIRECTION'] = 5
 							if len(self.player) > 1:
-								self.player[0]['NODES'].append({'RECT': self.player[0]['RECT'],'DIRECTION': self.player[0]['DIRECTION'],'SPEED': self.player[0]['SPEED']})
-
+								self.player[0]['NODES'].append({'RECT': self.player[p]['RECT'],'DIRECTION': self.player[p]['DIRECTION'],'SPEED': self.player[p]['SPEED']})
+						#MOVE RIGHT
 						elif self.pressed[resources.RIGHT[p]]:
 							if self.pressed[resources.UP[p]]: i['DIRECTION'] = 8
 							if self.pressed[resources.DOWN[p]]: i['DIRECTION'] = 2
 							else: i['DIRECTION'] = 1
 							if len(self.player) > 1:
-								self.player[0]['NODES'].append({'RECT': self.player[0]['RECT'],'DIRECTION': self.player[0]['DIRECTION'],'SPEED': self.player[0]['SPEED']})
+								self.player[0]['NODES'].append({'RECT': self.player[p]['RECT'],'DIRECTION': self.player[p]['DIRECTION'],'SPEED': self.player[p]['SPEED']})
 
 						else: i['SPEED'] = 0
 				#DRIVING OPTIONS
@@ -2645,6 +2654,7 @@ class Game:
 						del self.player[0]['NODES'][0]
 						break
 				else: i['SPEED'] = 0
+			#FOLLOW
 			if i['FOLLOW'] != None:
 				if i['FOLLOW'] != (None,None):
 					i['SPEED'] = 3
@@ -2680,8 +2690,8 @@ class Game:
 					i['SPEED'] = 0
 			#MOVING CHARACTER
 			if self.colide(i, self.tilrect) == False:
-				wh = resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['HAIR'] + resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['SKIN']
-				cl = resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['COSTUME'] + resources.CHARACTERS[resources.PARTY[resources.FORMATION][0]]['SKIN']
+				wh = resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['HAIR'] + resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['SKIN']
+				cl = resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['COSTUME'] + resources.CHARACTERS[resources.PARTY[resources.FORMATION][p]]['SKIN']
 				hed = ''
 				spr = ''
 				if i['JUMP'] > 0: spr = 'JUMP'
@@ -2725,13 +2735,13 @@ class Game:
 
 			if resources.GAS < 1.0: i['DIRECTION'] = 0
 			if i['SPEED'] < 0: i['SPEED'] = 0
+			p += 1
 		#DIALOG SPEED
 		if self.dlgfa == 0:
 			self.pressed = pygame.key.get_pressed()
 			self.dlgspd = resources.SPEED
 			for i in resources.ACT:
 				if self.pressed[i]: self.dlgspd = 1
-		p += 1
 
 	def dialog(self, tx, wh=0):
 		self.dlg = []
@@ -3419,22 +3429,7 @@ class Game:
 						chk = self.foe[0]['NAME']
 						i['SEEN'] = 1
 			if chk == None and len(self.mrc) > 0: chk = self.mrc[0]['NAME']
-			#DIALOG
-			'''if self.turn == -1:
-				if chk != None: self.dialog([chk + database.BATTLE[0],1])
-				self.turn = 0
-			if self.turn == -2:
-				if chk != None: self.dialog([chk + database.BATTLE[1],1])
-				self.turn = len(self.fig)
-			if self.turn == -3:
-				if chk != None: self.dialog([chk + database.BATTLE[2],1])
-				self.turn = 0
-			if self.turn == -4:
-				self.dialog([database.BATTLE[44],1])
-				self.turn = 0
-			if self.turn == -5:
-				if chk != None: self.dialog([chk + database.BATTLE[0],1])
-				self.turn = 0'''
+			#AMBUSH
 			if self.turn == -2: self.turn = len(self.fig)
 			else: self.turn = 0
 			self.mnu = 1
@@ -4677,20 +4672,20 @@ class Game:
 			pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,0,self.displayzw,self.winbar))
 			pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,self.displayzh,self.displayzw,-self.winbar))
 			#ENEMIES COUNT
-			if self.winbar == 100 and self.turn != -4:
+			if self.winbar <= 100 and self.turn != -4:
 				ce = 0
 				if len(self.mrc) == 0:
 					for i in self.foe:
 						if i['HP'] > 0: ce += 1
-					self.display[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.foe)), True, (255,255,255)), (500, 30))
+					self.display[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.foe)), True, (255,255,255)), (500, -70 + self.winbar))
 				else:
 					for i in self.foe:
 						if i['HP'] > 0: ce += 1
-					self.display[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.foe)), True, (255,255,255)), (500, 15))
+					self.display[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.foe)), True, (255,255,255)), (500, -85 + self.winbar))
 					ce = 0
 					for i in self.mrc:
 						if i['HP'] > 0: ce += 1
-					self.display[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.mrc)), True, (255,255,255)), (500, 50))
+					self.display[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.mrc)), True, (255,255,255)), (500, -50 + self.winbar))
 				#PLAYER BARS
 				p = 0
 				low = False
@@ -4698,22 +4693,22 @@ class Game:
 					#NAME
 					ctr = resources.PARTY[resources.FORMATION][p]
 					if p == self.turn:
-						pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(p * 120,0,120,100))
-						self.display[0].blit(self.fnt['MININFO'].render(resources.CHARACTERS[ctr]['NAME'].lower(), True, (0,0,0)), (10 + p * 120, 10))
+						pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(p * 120, self.winbar - 100,120,100))
+						self.display[0].blit(self.fnt['MININFO'].render(resources.CHARACTERS[ctr]['NAME'].lower(), True, (0,0,0)), (10 + p * 120, -90 + self.winbar))
 					else: 
-						self.display[0].blit(self.fnt['MININFO'].render(resources.CHARACTERS[ctr]['NAME'].lower(), True, (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2])), (10 + p * 120, 10))
+						self.display[0].blit(self.fnt['MININFO'].render(resources.CHARACTERS[ctr]['NAME'].lower(), True, (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2])), (10 + p * 120, -90 + self.winbar))
 					#VITALITY GRAY
-					pygame.draw.rect(self.display[0], (10, 10, 10), pygame.Rect(10 + p * 120,40,100,20))
+					pygame.draw.rect(self.display[0], (10, 10, 10), pygame.Rect(10 + p * 120, -60 + self.winbar,100,20))
 					if resources.CHARACTERS[ctr]['HP'] > 0:
 						minush = int(98/(resources.CHARACTERS[ctr]['VITALITY'][resources.CHARACTERS[ctr]['LEVEL']]/resources.CHARACTERS[ctr]['HP']))
 					else: minush = 0
 					if self.barhp[p] > minush:
 						self.ch_sfx.play(resources.SOUND['HP_LOSS'])
 						self.barhp[p] -= 1
-					pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(11 + p * 120,41,98,18))
+					pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(11 + p * 120, -59 + self.winbar,98,18))
 					if low == True:
 						if self.ch_ton.get_busy() == False: self.ch_ton.play(resources.SOUND['HP_LOW'])
-					if self.barhp[p] > 0: pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(11 + p * 120,41,self.barhp[p],18))
+					if self.barhp[p] > 0: pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(11 + p * 120, -59 + self.winbar,self.barhp[p],18))
 					#LIFE BAR
 					if self.equip[p] == 6 and self.turn > p: hpcol = (100, 100, 100)
 					elif resources.CHARACTERS[ctr]['HP'] > resources.CHARACTERS[ctr]['VITALITY'][resources.CHARACTERS[ctr]['LEVEL']]/5: hpcol = (0, 255, 0)
@@ -4722,10 +4717,10 @@ class Game:
 						low = True
 					else: hpcol = (255, 0, 0)
 					if resources.CHARACTERS[ctr]['HP'] > 0:
-						pygame.draw.rect(self.display[0], hpcol, pygame.Rect(11 + p * 120,41,int(98/(resources.CHARACTERS[ctr]['VITALITY'][resources.CHARACTERS[ctr]['LEVEL']]/resources.CHARACTERS[ctr]['HP'])),18))
+						pygame.draw.rect(self.display[0], hpcol, pygame.Rect(11 + p * 120, -59 + self.winbar,int(98/(resources.CHARACTERS[ctr]['VITALITY'][resources.CHARACTERS[ctr]['LEVEL']]/resources.CHARACTERS[ctr]['HP'])),18))
 					#CONDITION ICON
 					if resources.CHARACTERS[ctr]['HEALTH'] > 1:
-						self.display[0].blit(pygame.image.load('Sprites/hl_' + str(resources.CHARACTERS[ctr]['HEALTH']) + '.png'), (14 + p * 120, 44))
+						self.display[0].blit(pygame.image.load('Sprites/hl_' + str(resources.CHARACTERS[ctr]['HEALTH']) + '.png'), (14 + p * 120, -56 + self.winbar))
 					#AMMO BAR
 					if self.equip[p] < 4:
 						if int(resources.INVENTORY[ctr][4][self.equip[p] + 1][1]) > 0:
@@ -4734,15 +4729,15 @@ class Game:
 						else: minush = 0
 						if self.barpp[p][self.equip[p]] > minush:
 							self.barpp[p][self.equip[p]] -= 1
-						pygame.draw.rect(self.display[0], (10, 10, 10), pygame.Rect(10 + p * 120,70,100,20))
-						pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(11 + p * 120,71,98,18))
+						pygame.draw.rect(self.display[0], (10, 10, 10), pygame.Rect(10 + p * 120, -30 + self.winbar,100,20))
+						pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(11 + p * 120, -29 + self.winbar,98,18))
 						if self.barpp[p][self.equip[p]] > 0:
-							pygame.draw.rect(self.display[0], (0, 100, 255), pygame.Rect(11 + p * 120,71,self.barpp[p][self.equip[p]],18))
+							pygame.draw.rect(self.display[0], (0, 100, 255), pygame.Rect(11 + p * 120, -29 + self.winbar,self.barpp[p][self.equip[p]],18))
 					p += 1
 				if self.turn < len(resources.PARTY[resources.FORMATION]) and self.turn >= 0:
 					#TIME BAR:
 					if self.btime > 0:
-						pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(0,302,int(600/(100/self.btime)),10))
+						pygame.draw.rect(self.display[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(0,402 - self.winbar,int(600/(100/self.btime)),10))
 					if ce > 0 and self.mnu < 3 and self.turn < len(self.fig): self.btime -= 0.5
 					if self.btime == 0:
 						self.turn = len(self.fig)
@@ -4756,29 +4751,29 @@ class Game:
 							else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(118 + x * 35,338,32,32))
 							pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(120 + x * 35,340,28,28))
 							if resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][x + 1][0] != '_':
-								self.display[0].blit(pygame.image.load('Sprites/Items/it_' + resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][x + 1][0] + '.png'), (120 + x * 35, 340))
+								self.display[0].blit(pygame.image.load('Sprites/Items/it_' + resources.INVENTORY[resources.PARTY[resources.FORMATION][self.turn]][4][x + 1][0] + '.png'), (120 + x * 35, 440 - self.winbar))
 							x += 1
 						if self.equip[self.turn] == 4:
-							pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(304,338,30,30))
+							pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(304,438 - self.winbar,30,30))
 							self.hpctrl = database.HINTS['BATTLE_TACTICS']
-						else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(304,338,30,30))
-						self.display[0].blit(pygame.image.load('Sprites/e_tactical.png'), (304, 338))
+						else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(304,438 - self.winbar,30,30))
+						self.display[0].blit(pygame.image.load('Sprites/e_tactical.png'), (304, 438 - self.winbar))
 						if self.equip[self.turn] == 5:
-							pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(339,338,30,30))
+							pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(339,438 - self.winbar,30,30))
 							self.hpctrl = database.HINTS['BATTLE_DIALOG']
-						else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(339,338,30,30))
-						self.display[0].blit(pygame.image.load('Sprites/e_talk.png'), (339, 338))
+						else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(339,438 - self.winbar,30,30))
+						self.display[0].blit(pygame.image.load('Sprites/e_talk.png'), (339, 438 - self.winbar))
 						if self.equip[self.turn] == 6:
-							pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(374,338,30,30))
+							pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(374,438 - self.winbar,30,30))
 							self.hpctrl = database.HINTS['BATTLE_GUARD']
-						else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(374,338,30,30))
-						self.display[0].blit(pygame.image.load('Sprites/e_guard.png'), (374, 338))
+						else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(374,438 - self.winbar,30,30))
+						self.display[0].blit(pygame.image.load('Sprites/e_guard.png'), (374, 438 - self.winbar))
 						if self.equip[self.turn] == 7:
-							pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(409,338,30,30))
+							pygame.draw.rect(self.display[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(409,438 - self.winbar,30,30))
 							self.hpctrl = database.HINTS['BATTLE_RUN']
-						else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(409,338,30,30))
-						self.display[0].blit(pygame.image.load('Sprites/e_run.png'), (409, 338))
-						self.display[0].blit(pygame.image.load('Sprites/e_invphn.png'), (442, 338))
+						else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(409,438 - self.winbar,30,30))
+						self.display[0].blit(pygame.image.load('Sprites/e_run.png'), (409, 438 - self.winbar))
+						self.display[0].blit(pygame.image.load('Sprites/e_invphn.png'), (442, 438 - self.winbar))
 					#AIM BAR
 					elif self.mnu == 2:
 						if self.equip[self.turn] < 4:
@@ -4949,9 +4944,11 @@ class Game:
 				elif self.phone == 15: srf = self.phn.settings(self.lopt, self.mnu, self.opt); self.hpctrl = database.HINTS['PHONE_SETTINGS']
 				elif self.phone == 16: srf = self.phn.info(self.lopt); self.hpctrl = database.HINTS['PHONE_ABOUT']
 				elif self.phone == 17 and self.nb != '': srf = self.phn.call(self.opt, self.nb); self.hpctrl = database.HINTS['PHONE_CALLING']
-				self.display[0].blit(srf[0], (pps,88))
-				self.display[1].blit(srf[1], (pps * 2,176))
-			lyr2 = True
+			else: self.phn.photo(self.bbg, self.foe, pps); self.hpctrl = database.HINTS['PHONE_PHOTO']
+			self.display[0].blit(srf[0], (pps,88))
+			self.display[1].blit(srf[1], (pps * 2,176))
+			if self.rectdebug == True:
+				for i in self.phn.optrects: pygame.draw.rect(self.display[1], (255,0,0), i)
 		elif self.phofa == 360:
 			self.display[0].blit(pygame.image.load('Backgrounds/battery_low.png'), (pps + 60, 510 - self.phofa))
 			if self.battle == True: pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(pps,430 - self.phofa,180,250))
@@ -5130,7 +5127,12 @@ class Game:
 		#CAMERA X
 		if (self.map.width * self.map.tilewidth) > self.displayzw:
 			if self.portalgo == {}:
-				if self.speakin == 0: self.cam.x += int((self.player[0]['RECT'].x  - self.cam.x - self.displayzw/2)/15)
+				#PLAYERS CAMERA
+				if self.speakin == 0:
+					camx = 0
+					for i in self.player: camx += i['RECT'].x
+					self.cam.x += int(((camx/len(self.player))  - self.cam.x - self.displayzw/2)/15)
+				#DIALOG CAMERA
 				else: self.cam.x += int((self.speakin.x  - self.cam.x - self.displayzw/2)/15)
 			if self.cam.x < 0: self.cam.x = 0
 			if self.cam.x > (self.map.width * self.map.tilewidth) - self.displayzw: self.cam.x = (self.map.width * self.map.tilewidth) - self.displayzw
@@ -5138,7 +5140,12 @@ class Game:
 		#CAMERA Y
 		if (self.map.height * self.map.tileheight) > self.displayzh:
 			if self.portalgo == {}:
-				if self.speakin == 0: self.cam.y += int((self.player[0]['RECT'].y  - self.cam.y - self.displayzh/2)/15)
+				#PLAYERS CAMERA
+				if self.speakin == 0:
+					camy = 0
+					for i in self.player: camy += i['RECT'].y
+					self.cam.y += int(((camy/len(self.player))  - self.cam.y - self.displayzh/2)/15)
+				#DIALOG CAMERA
 				else: self.cam.y += int((self.speakin.y  - self.cam.y - self.displayzh/2)/15)
 			if self.cam.y < 0: self.cam.y = 0
 			if self.cam.y > (self.map.height * self.map.tileheight) - self.displayzh: self.cam.y = (self.map.height * self.map.tileheight) - self.displayzh

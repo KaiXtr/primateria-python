@@ -824,7 +824,7 @@ class Phone:
 				img = pygame.image.load('Sprites/ph_' + imgs[x + (y * 3)] + '.png')
 				if opt == x and lopt == y: self.scr[0].blit(pygame.transform.scale(img, (50, 50)), (pdd - 3 + (dvd3 * x), 2 + (60 * y) - self.scroll))
 				else: self.scr[0].blit(img, (pdd + (dvd3 * x), 5 + (60 * y) - self.scroll))
-				self.optrects.append(pygame.Rect(pdd - 303 - math.floor(self.scr[1].get_width()/4) + (dvd3 * x), 90 + (60 * y) - self.scroll, img.get_width(), img.get_height()))
+				self.optrects.append(pygame.Rect(math.floor((pdd - 303 - math.floor(self.scr[1].get_width()/4) + (dvd3 * x))/2), math.floor((90 + (60 * y) - self.scroll)/2), img.get_width(), img.get_height()))
 
 		return self.scr
 
@@ -1598,5 +1598,16 @@ class Phone:
 		else: self.scr[0].blit(pygame.image.load('Sprites/cl_ys.png'), (30, 190))
 		if opt == 1: self.scr[0].blit(pygame.transform.scale(pygame.image.load('Sprites/cl_no.png'), (40, 40)), (sz - 55, 185))
 		else: self.scr[0].blit(pygame.image.load('Sprites/cl_no.png'), (sz - 50, 190))
+
+		return self.scr
+
+	def photo(self, bg, foes, xpos):
+		sz = self.scr[0].get_width() #button width
+		self.scroll = 0
+		for i in self.scr: i.fill((0,0,0,0))
+
+		self.scr[0].blit(pygame.image.load(bg), (-xpos, -88))
+		for i in foes:
+			self.scr[0].blit(i['SPRITE'], (-xpos + i['MASK'], -88 + i['MASK']))
 
 		return self.scr

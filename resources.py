@@ -496,7 +496,7 @@ def load_data():
     SFX = com.fetchall()[ID][0]
     com.execute("SELECT msc FROM settings")
     MSC = com.fetchall()[ID][0]
-    com.execute("SELECT up FROM settings")
+    '''com.execute("SELECT up FROM settings")
     UP[0] = int(com.fetchall()[ID][0])
     if UP[0] == 'W': UP[0] = pygame.K_w
     com.execute("SELECT down FROM settings")
@@ -518,7 +518,17 @@ def load_data():
     PHONE[0] = int(com.fetchall()[ID][0])
     if PHONE[0] == 'BACKSPACE': PHONE[0] = pygame.K_BACKSPACE
     com.execute("SELECT inventory FROM settings")
-    BAG[0] = int(com.fetchall()[ID][0])
+    BAG[0] = int(com.fetchall()[ID][0])'''
+
+    UP = [pygame.K_w,pygame.K_UP]
+    DOWN = [pygame.K_s,pygame.K_DOWN]
+    LEFT = [pygame.K_a,pygame.K_LEFT]
+    RIGHT = [pygame.K_d,pygame.K_RIGHT]
+    ACT = [pygame.K_g,pygame.K_LCTRL]
+    RUN = [pygame.K_h,pygame.K_SPACE]
+    PHONE = [pygame.K_BACKSPACE,pygame.K_BACKSPACE]
+    BAG = [pygame.K_RETURN,pygame.K_RETURN]
+
     com.execute("SELECT speed FROM settings")
     SPEED = com.fetchall()[ID][0]
     com.execute("SELECT color1 FROM settings")
@@ -590,6 +600,9 @@ def load_data():
     res = com.fetchall()
     PARTY = []
     for i in res: PARTY.append([i[1],i[2],i[3]])
+    print(PARTY)
+    print(FORMATION)
+    PARTY = [[1,2,0],[1,3,4]]
     com.execute("SELECT * FROM contacts" + str(ID))
     res = com.fetchall()
     CONTACTS = []
