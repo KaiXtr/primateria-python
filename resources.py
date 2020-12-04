@@ -77,160 +77,117 @@ TASKPIN = False
 MINIMAP = False
 
 CHARACTERS = [
-{'NAME': 'Sidney','LASTNAME': 'Barreto','GENDER': 'male','ID': '0064','BLOOD': 'A+','CIVIL': 'solteiro','CLASS': 'gunslinger',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 0,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Sidney','LASTNAME': 'Barreto','GENDER': 'male','ID': '0064','BLOOD': 'A+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'mercenary',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,70,0,10,30,0,0,0,0,10,60,0],
 'HAIR': '001', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '5', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_coxinha','drink_whisky'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [10,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100],
-'AGILITY': [0,0.25,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,1,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [20,22,22,25,25,26,28,30,30,32,33,35],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'psychic','FLAW': 'alcoholic'},
   
-{'NAME': 'Jane', 'LASTNAME': 'Oliveira','GENDER': 'female','ID': '0094','BLOOD': 'O-','CIVIL': 'casada','CLASS': 'rifler',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Jane', 'LASTNAME': 'Oliveira','GENDER': 'female','ID': '0094','BLOOD': 'O-','CIVIL': 'casada','SIGN': 1,'CLASS': 'mercenary',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,80,0,0,0,0,0,0],
 'HAIR': '011', 'ACCESORIES': 'head_glasses', 'COSTUME': '01', 'SKIN': '4', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_chesse_bread','food_coffee'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [20,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [1,0.25,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,1,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [10,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'reptile','FLAW': 'myopia'},
   
-{'NAME': 'Renan', 'LASTNAME': 'Pinheiro','GENDER': 'male','ID': '0100','BLOOD': 'A-','CIVIL': 'solteiro','CLASS': 'thief',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Renan', 'LASTNAME': 'Pinheiro','GENDER': 'male','ID': '0100','BLOOD': 'A-','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'thief',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,0,50,0,0,0,70,0],
 'HAIR': '021', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '6', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_cola','food_cake_carrot'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [20,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [2,0.25,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,1,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [10,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'mammal','FLAW': 'asthma'},
  
-{'NAME': 'Diego', 'LASTNAME': 'Donovan','GENDER': 'male','ID': '0024','BLOOD': 'A-','CIVIL': 'solteiro','CLASS': 'gunslinger',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Diego', 'LASTNAME': 'Donovan','GENDER': 'male','ID': '0024','BLOOD': 'A-','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'mercenary',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [80,0,0,0,0,0,0,0,0,70,0,0,0,0],
 'HAIR': '031', 'ACCESORIES': 'head_glasses', 'COSTUME': '00', 'SKIN': '8', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_burguer','food_cola'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [10,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [2,0.25,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,2,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [40,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'plant','FLAW': 'lactose intolerant'},
   
-{'NAME': 'Bianca', 'LASTNAME': 'Pacheco','GENDER': 'female','ID': '0120','BLOOD': 'O+','CIVIL': 'casada','CLASS': 'doctor',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Bianca', 'LASTNAME': 'Pacheco','GENDER': 'female','ID': '0120','BLOOD': 'O+','CIVIL': 'casada','SIGN': 1,'CLASS': 'mercenary',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,70,0,0,0],
 'HAIR': '041', 'ACCESORIES': 'head_glasses', 'COSTUME': '01', 'SKIN': '9', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_sushi','food_juice_orange'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [30,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [0,0.25,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0.25,2,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [10,12,12,15,15,16,18,20,20,22,23,25],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'spirit','FLAW': 'myopia'},
  
-{'NAME': 'Lúcia', 'LASTNAME': 'Figueiredo','GENDER': 'female','ID': '0013','BLOOD': 'O+','CIVIL': 'viúva','CLASS': 'sniper',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Lúcia', 'LASTNAME': 'Figueiredo','GENDER': 'female','ID': '0013','BLOOD': 'O+','CIVIL': 'viúva','SIGN': 1,'CLASS': 'cop',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,0,50,0,0],
 'HAIR': '051', 'ACCESORIES': None, 'COSTUME': '01', 'SKIN': '1', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [30,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [0,0,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,0,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [20,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'inorganic','FLAW': 'cigarette addict'},
 
-{'NAME': 'Maicon', 'LASTNAME': 'Neves','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','CLASS': 'sniper',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Maicon', 'LASTNAME': 'Neves','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'hunter',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,
 'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [30,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [0,0,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,0,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [20,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Iago', 'LASTNAME': 'Dantas','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'comprometido','CLASS': 'sniper',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Iago', 'LASTNAME': 'Dantas','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'comprometido','SIGN': 1,'CLASS': 'mercenary',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [40,0,0,0,0,0,0,0,0,0,0,0,0,0],
 'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [30,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [0,0,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,0,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [20,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Vinicíus', 'LASTNAME': 'Tavares','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','CLASS': 'sniper',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Vinicíus', 'LASTNAME': 'Tavares','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'thief',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,60,0,0,0,0,0,0,0,0,0,0,0],
 'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [30,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [0,0,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,0,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [20,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'João', 'LASTNAME': 'Pedro Lima','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','CLASS': 'sniper',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'João', 'LASTNAME': 'Pedro Lima','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'mercenary',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,60,0,0,0,0,0,0,0,0,0,0],
 'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [30,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [0,0,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,0,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [20,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Sofia', 'LASTNAME': 'Torres','GENDER': 'female','ID': '0013','BLOOD': 'O+','CIVIL': 'casada','CLASS': 'sniper',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Sofia', 'LASTNAME': 'Torres','GENDER': 'female','ID': '0013','BLOOD': 'O+','CIVIL': 'casada','SIGN': 1,'CLASS': 'mercenary',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,70,0,0,0,0,0,0,0,0,0],
 'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [30,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [0,0,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,0,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [20,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Paulo', 'LASTNAME': 'Sousa','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'casado','CLASS': 'sniper',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Paulo', 'LASTNAME': 'Sousa','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'casado','SIGN': 1,'CLASS': 'cop',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,70,0,0,0,0,0,0,0,0],
 'HAIR': '000', 'ACCESORIES': None,'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [30,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [0,0,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,0,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [20,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0},
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Pietra', 'LASTNAME': 'Amaral','GENDER': 'female','ID': '0013','BLOOD': 'O+','CIVIL': 'comprometida','CLASS': 'sniper',
-'LEVEL': 0,'SKILL': 0,'HP': 0,'BARHP': 10,'XP': 0,'MAXXP': 100,'HEALTH': 0, 'DMGTIM': 100, 'SHK': 0,
+{'NAME': 'Pietra', 'LASTNAME': 'Amaral','GENDER': 'female','ID': '0013','BLOOD': 'O+','CIVIL': 'comprometida','SIGN': 1,'CLASS': 'thief',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [80,0,80,0,0,0,0,0,0,0,0,0,0,0],
 'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
-'STRENGHT': [0,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'ATTACK': [30,5,5,5,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,9],
-'AGILITY': [0,0,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'RESISTANCE': [0,0,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'VITALITY': [20,12,12,15,15,16,18,20,20,22,23,25],
-'NEXTLEVEL': [100,150,200,300,300,350,450,500,600],
-'CARISM': 0, 'INTIMIDATION': 0, 'STAMINA': 0, 'ATLETISM': 0, 'FURTIVITY': 0, 'CRAFTING': 0, 'FORCE': 0, 'MEDICINE': 0, 'IMUNITY': 0, 'COORDENATION': 0}
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'psychic','FLAW': 'alcoholic'},
+
+{'NAME': 'Hermes', 'LASTNAME': 'Paracelso','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'viúvo','SIGN': 1,'CLASS': 'alchemist',
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'FAVFOOD': ['food_juice_orange','food_fish'],
+'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
+'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
+'FEAR': 'psychic','FLAW': 'alcoholic'}
 ]
 
 DLGSAV = {}
@@ -361,46 +318,22 @@ def new_data(add=False):
             i[2] = 0
             i[3] = ''
 
-        INVENTORY = [
-        [[['_','0000','_','_'],['phone','360100','_','_'],['wallet','00005000000300','credit_card','id_card0'],['locksmith1','02020000','key_bedroom','key_vehicle'],['_','0000','_','_']],
-        [['amulet1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['clth_jacket2','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['ammo.38_copper','0000','_','_'],['_','0000','_','_']],
-        [['clth_shirt2','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['bag1','0000','_','_'],['gun_revolver.38','0006','aim1','acc_cartridge'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-         
-        [[['_','0000','_','_'],['_','0000','_','_'],['_','360100','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-         
-        [[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-         
-        [[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-         
-        [[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-         
-        [[['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']],
-        [['bag1','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_'],['_','0000','_','_']]],
-        ]
+        INVENTORY = []
+        for u in range(6):
+            INVENTORY.append([])
+            for y in range(5):
+                INVENTORY[u].append([])
+                for x in range(5):
+                    INVENTORY[u][y].append(['_','0000','_','0000','_','0000'])
+
+        '''INVENTORY[0] = [[['_','0000','_','0000','_','0000'],['phone','0360','_','0000','_','0000'],['wallet','0050','credit_card','0200','id_card0','0000'],['locksmith1','0000','key_bedroom','0202','key_vehicle','0000'],['_','0000','_','0000','_','0000']],
+        [['amulet1','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','0000','_','0000','_'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
+        [['clth_jacket2','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['ammo.38_copper','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
+        [['clth_shirt2','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
+        [['bag1','0000','_','0000','_','0000'],['gun_revolver.38','0006','aim1','0000','acc_cartridge','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']]]'''
      
-        STORAGE = [['jewel_ruby','0000','_','_'],['drink_whiskey','1503','_','_']]
-        for i in range(23): STORAGE.append(['_','0000','_','_'])
+        STORAGE = [['jewel_ruby','0000','_','0000','_','0000'],['drink_whiskey','1503','_','0000','_','0000']]
+        for i in range(23): STORAGE.append(['_','0000','_','0000','_','0000'])
       
     try:
         com.execute("CREATE TABLE settings (id integer,lang text,sfx integer,msc integer,up text,down text,left text,right text,act text,run text,phone text,inventory text,speed integer,color1 integer,color2 integer,color3 integer,border integer,\
@@ -468,16 +401,16 @@ def new_data(add=False):
     com.execute("CREATE TABLE achievements" + str(ID) + " (idx integer,got integer,date text)")
       
     com.execute("DROP TABLE IF EXISTS inventory" + str(ID))
-    com.execute("CREATE TABLE inventory" + str(ID) + " (item text,position text,properties text,acc1 text,acc2 text)")
+    com.execute("CREATE TABLE inventory" + str(ID) + " (item text,position text,properties text,acc1 text,acp1 text,acc2 text,acp2 text)")
     for u in range(6):
         for x in range(5):
             for y in range(5):
-                com.execute("INSERT INTO inventory" + str(ID) + " VALUES('_','" + str(u) + str(x) + str(y) + "','0000','_','_')")
+                com.execute("INSERT INTO inventory" + str(ID) + " VALUES('_','" + str(u) + str(x) + str(y) + "','0000','_','0000','_','0000')")
     tbl.commit()
  
     com.execute("DROP TABLE IF EXISTS storage" + str(ID))
-    com.execute("CREATE TABLE storage" + str(ID) + " (it text,ip text,ic1 text,ic2 text)")
-    for i in range(25): com.execute("INSERT INTO storage" + str(ID) + " VALUES('_','0000','_','_')")
+    com.execute("CREATE TABLE storage" + str(ID) + " (it text,ip text,ic1 text,ip1 text,ic2 text,ip2 text)")
+    for i in range(25): com.execute("INSERT INTO storage" + str(ID) + " VALUES('_','0000','_','0000','_','0000')")
      
     com.close()
     tbl.close()
@@ -651,21 +584,12 @@ def load_data():
             for y in range(5):
                 for i in res:
                     if int(i[1][0]) == u and int(i[1][1]) == x and int(i[1][2]) == y:
-                        INVENTORY[u][x].append([i[0],i[2],i[3],i[4]])
+                        INVENTORY[u][x].append([i[0],i[2],i[3],i[4],i[5],i[6]])
     com.execute("SELECT * FROM storage"+ str(ID))
     res = com.fetchall()
     STORAGE = []
     for i in res:
-        STORAGE.append([i[0],i[1],i[2],i[3]])
-    '''itm = 1
-    for i in range(len(res)):
-        INVENTORY[i][0] = res[i][0]
-        for y in range(len(INVENTORY[i])):
-            if y != 0:
-                for x in range(len(INVENTORY[i][y])):
-                    INVENTORY[i][y][x] = res[i][itm]
-                    itm += 1
-        itm = 1'''
+        STORAGE.append([i[0],i[1],i[2],i[3],i[4],i[5]])
       
     com.close()
     tbl.close()
@@ -718,8 +642,8 @@ def save_data():
     for u in range(6):
         for x in range(5):
             for y in range(5):
-                com.execute("UPDATE inventory" + str(ID) + " SET item = :item, properties = :properties, acc1 = :acc1, acc2 = :acc2 WHERE position = :position",
-                    {'item': INVENTORY[u][x][y][0],'position': str(u) + str(x) + str(y),'properties': INVENTORY[u][x][y][1], 'acc1': INVENTORY[u][x][y][2],'acc2': INVENTORY[u][x][y][3]})
+                com.execute("UPDATE inventory" + str(ID) + " SET item = :item, properties = :properties, acc1 = :acc1, acp1 = :acp1, acc2 = :acc2, acp2 = :acp2 WHERE position = :position",
+                    {'item': INVENTORY[u][x][y][0],'position': str(u) + str(x) + str(y),'properties': INVENTORY[u][x][y][1],'acc1': INVENTORY[u][x][y][2],'acp1': INVENTORY[u][x][y][3],'acc2': INVENTORY[u][x][y][4],'acp2': INVENTORY[u][x][y][5]})
                 tbl.commit()
     '''for i in STORAGE:
         com.execute("""UPDATE storage""" + str(ID) + """ SET id = :id, date = :date, seen = :seen WHERE idx = :idx""",{'idx': i['N'],'id': i['ID'],'date': i['DATE'],'seen': i['SEEN']})

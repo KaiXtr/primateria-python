@@ -374,6 +374,7 @@ class Inventory:
 
 		#INVENTORY FOR EACH ONE IN THE PARTY
 		for n in resources.PARTY[resources.FORMATION]:
+			self.scr[0].blit(pygame.image.load('Sprites/who_' + str(n) + '.png'), (10 + (200 * mnc) - self.scroll, 25))
 			self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[n]['NAME'], True, (255, 255, 255)), ((10 + (200 * mnc) - self.scroll) * 2, 25))
 			for j in range(len(resources.INVENTORY[n])):
 				if opty == 4: y += 5

@@ -475,7 +475,7 @@
   <object id="66" name="npc_8" type="0" x="774" y="684">
    <properties>
     <property name="INDEX" value="000000"/>
-    <property name="WHO" value="REWARD"/>
+    <property name="WHO" value="CH5RENAN"/>
    </properties>
    <point/>
   </object>
