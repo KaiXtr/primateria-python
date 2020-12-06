@@ -35,7 +35,6 @@ DATE = [0,0,0,1,1] #day-month-year-week-moon
 WEATHER = 0
 CHAPTER = 0
 SCENE = 0
-MORALITY = 0
 
 SFX = 1.0
 MSC = 1.0
@@ -66,11 +65,7 @@ TACTICAL = []
 BESTIARY = []
 INVENTORY = []
 STORAGE = []
-     
-ATM = 0
-MONEY = 0
-CREDIT = 10
-BATTERY = 360
+
 GAS = 100.0
 
 TASKPIN = False
@@ -78,112 +73,112 @@ MINIMAP = False
 
 CHARACTERS = [
 {'NAME': 'Sidney','LASTNAME': 'Barreto','GENDER': 'male','ID': '0064','BLOOD': 'A+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'mercenary',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,70,0,10,30,0,0,0,0,10,60,0],
-'HAIR': '001', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '5', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,70,0,10,30,0,0,0,0,10,60,0],
+'HAIR': '001', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '5', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_coxinha','drink_whisky'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'psychic','FLAW': 'alcoholic'},
   
 {'NAME': 'Jane', 'LASTNAME': 'Oliveira','GENDER': 'female','ID': '0094','BLOOD': 'O-','CIVIL': 'casada','SIGN': 1,'CLASS': 'mercenary',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,80,0,0,0,0,0,0],
-'HAIR': '011', 'ACCESORIES': 'head_glasses', 'COSTUME': '01', 'SKIN': '4', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,0,0,0,0,80,0,0,0,0,0,0],
+'HAIR': '011', 'ACCESORIES': 'head_glasses', 'COSTUME': '01', 'SKIN': '4', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_chesse_bread','food_coffee'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'reptile','FLAW': 'myopia'},
   
 {'NAME': 'Renan', 'LASTNAME': 'Pinheiro','GENDER': 'male','ID': '0100','BLOOD': 'A-','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'thief',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,0,50,0,0,0,70,0],
-'HAIR': '021', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '6', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,0,0,0,0,0,50,0,0,0,70,0],
+'HAIR': '021', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '6', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_cola','food_cake_carrot'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'mammal','FLAW': 'asthma'},
  
 {'NAME': 'Diego', 'LASTNAME': 'Donovan','GENDER': 'male','ID': '0024','BLOOD': 'A-','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'mercenary',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [80,0,0,0,0,0,0,0,0,70,0,0,0,0],
-'HAIR': '031', 'ACCESORIES': 'head_glasses', 'COSTUME': '00', 'SKIN': '8', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [80,0,0,0,0,0,0,0,0,70,0,0,0,0],
+'HAIR': '031', 'ACCESORIES': 'head_glasses', 'COSTUME': '00', 'SKIN': '8', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_burguer','food_cola'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'plant','FLAW': 'lactose intolerant'},
   
 {'NAME': 'Bianca', 'LASTNAME': 'Pacheco','GENDER': 'female','ID': '0120','BLOOD': 'O+','CIVIL': 'casada','SIGN': 1,'CLASS': 'mercenary',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,70,0,0,0],
-'HAIR': '041', 'ACCESORIES': 'head_glasses', 'COSTUME': '01', 'SKIN': '9', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,70,0,0,0],
+'HAIR': '041', 'ACCESORIES': 'head_glasses', 'COSTUME': '01', 'SKIN': '9', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_sushi','food_juice_orange'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'spirit','FLAW': 'myopia'},
  
 {'NAME': 'Lúcia', 'LASTNAME': 'Figueiredo','GENDER': 'female','ID': '0013','BLOOD': 'O+','CIVIL': 'viúva','SIGN': 1,'CLASS': 'cop',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,0,50,0,0],
-'HAIR': '051', 'ACCESORIES': None, 'COSTUME': '01', 'SKIN': '1', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,0,50,0,0],
+'HAIR': '051', 'ACCESORIES': None, 'COSTUME': '01', 'SKIN': '1', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'inorganic','FLAW': 'cigarette addict'},
 
 {'NAME': 'Maicon', 'LASTNAME': 'Neves','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'hunter',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,
-'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'psychic','FLAW': 'alcoholic'},
 
 {'NAME': 'Iago', 'LASTNAME': 'Dantas','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'comprometido','SIGN': 1,'CLASS': 'mercenary',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [40,0,0,0,0,0,0,0,0,0,0,0,0,0],
-'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [40,0,0,0,0,0,0,0,0,0,0,0,0,0],
+'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'psychic','FLAW': 'alcoholic'},
 
 {'NAME': 'Vinicíus', 'LASTNAME': 'Tavares','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'thief',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,60,0,0,0,0,0,0,0,0,0,0,0],
-'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,60,0,0,0,0,0,0,0,0,0,0,0],
+'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'psychic','FLAW': 'alcoholic'},
 
 {'NAME': 'João', 'LASTNAME': 'Pedro Lima','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'mercenary',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,60,0,0,0,0,0,0,0,0,0,0],
-'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,60,0,0,0,0,0,0,0,0,0,0],
+'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'psychic','FLAW': 'alcoholic'},
 
 {'NAME': 'Sofia', 'LASTNAME': 'Torres','GENDER': 'female','ID': '0013','BLOOD': 'O+','CIVIL': 'casada','SIGN': 1,'CLASS': 'mercenary',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,70,0,0,0,0,0,0,0,0,0],
-'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,0,70,0,0,0,0,0,0,0,0,0],
+'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'psychic','FLAW': 'alcoholic'},
 
 {'NAME': 'Paulo', 'LASTNAME': 'Sousa','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'casado','SIGN': 1,'CLASS': 'cop',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,70,0,0,0,0,0,0,0,0],
-'HAIR': '000', 'ACCESORIES': None,'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,0,0,70,0,0,0,0,0,0,0,0],
+'HAIR': '000', 'ACCESORIES': None,'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'psychic','FLAW': 'alcoholic'},
 
 {'NAME': 'Pietra', 'LASTNAME': 'Amaral','GENDER': 'female','ID': '0013','BLOOD': 'O+','CIVIL': 'comprometida','SIGN': 1,'CLASS': 'thief',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [80,0,80,0,0,0,0,0,0,0,0,0,0,0],
-'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [80,0,80,0,0,0,0,0,0,0,0,0,0,0],
+'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
 'FEAR': 'psychic','FLAW': 'alcoholic'},
 
 {'NAME': 'Hermes', 'LASTNAME': 'Paracelso','GENDER': 'male','ID': '0013','BLOOD': 'O+','CIVIL': 'viúvo','SIGN': 1,'CLASS': 'alchemist',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 1000,
+'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,'RELATIONS': [0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+'HAIR': '000', 'ACCESORIES': None, 'COSTUME': '00', 'SKIN': '0', 'HUNGER': 720, 'THIRST': 360, 'SLEEP': 10000,
 'FAVFOOD': ['food_juice_orange','food_fish'],
 'CARISM': 0,'INTIMIDATION': 0,'PERSUASION': 0,'ANIMALS': 0,'SPIRITS': 0,'STAMINA': 0,'ATLETISM': 0, 'ACROBATICS': 0,'FURTIVITY': 0,'PERCEPTION': 0,
 'MEDICINE': 0,'IMUNITY': 0,'INFANTRY': 0,'INVESTIGATION': 0,'CRAFTING': 0,'COORDENATION': 0,'EXPLOSIVES': 0,'CULINARY': 0,
@@ -259,7 +254,7 @@ def recent_data(m,opt=0):
 
 def new_data(add=False):
     global ID, LANG, SFX, MSC, UP, DOWN, LEFT, RIGHT, ACT, RUN, PHONE, BAG, SPEED, COLOR, INVENTORY, WEATHER, BORDER, CHARACTERS, TASKPIN, MINIMAP, SCENE, CENSORSHIP, HINT, HELP,\
-    FORMATION, MAP, PX, PY, TIME, DATE, CHAPTER, MORALITY, ATM, MONEY, CREDIT, BATTERY, GAS, GAMETIME, PARTY, CONTACTS, CALLHIST, INBOX, TASKS, TACTICAL, BESTIARY, ACHIEVEMENTS
+    FORMATION, MAP, PX, PY, TIME, DATE, CHAPTER, GAS, GAMETIME, PARTY, CONTACTS, CALLHIST, INBOX, TASKS, TACTICAL, BESTIARY, ACHIEVEMENTS
  
     tbl = sqlite3.connect('userdata.db')
     com = tbl.cursor()
@@ -291,14 +286,9 @@ def new_data(add=False):
         WEATHER = 1
         CHAPTER = 0
         SCENE = 0
-        MORALITY = 0
         GAMETIME = 0
         FORMATION = 0
-          
-        ATM = 200
-        MONEY = 50
-        CREDIT = 0
-        BATTERY = 360
+        
         GAS = 100.0
          
         for i in range(6):
@@ -306,7 +296,7 @@ def new_data(add=False):
             CHARACTERS[i]['LASTNAME'] = ''
             CHARACTERS[i]['LEVEL'] = 0
      
-        PARTY = [[1,2]]
+        PARTY = [[1,2,0]]
         CONTACTS = [['Maicon','923778988'],['Mercador','969696969'],['Pizza Delivery','953478809']]
         CALLHIST = []
         INBOX = []
@@ -326,11 +316,13 @@ def new_data(add=False):
                 for x in range(5):
                     INVENTORY[u][y].append(['_','0000','_','0000','_','0000'])
 
-        '''INVENTORY[0] = [[['_','0000','_','0000','_','0000'],['phone','0360','_','0000','_','0000'],['wallet','0050','credit_card','0200','id_card0','0000'],['locksmith1','0000','key_bedroom','0202','key_vehicle','0000'],['_','0000','_','0000','_','0000']],
-        [['amulet1','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','0000','_','0000','_'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
-        [['clth_jacket2','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['ammo.38_copper','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
-        [['clth_shirt2','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
-        [['bag1','0000','_','0000','_','0000'],['gun_revolver.38','0006','aim1','0000','acc_cartridge','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']]]'''
+        INVENTORY[1] = [
+        [['amulet1','0000','_','0000','_','0000'],['phone','3600','sim_card','0003','_','0000'],['bottle100','0000','_','0000','_','0000'],['credit_card','0100','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
+        [['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
+        [['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
+        [['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']],
+        [['bag1','0000','_','0000','_','0000'],['gun_UZI.22','0010','ammo.22_silver','0000','_','0000'],['melee_bar','0010','_','0000','_','0000'],['_','0000','_','0000','_','0000'],['_','0000','_','0000','_','0000']]
+        ]
      
         STORAGE = [['jewel_ruby','0000','_','0000','_','0000'],['drink_whiskey','1503','_','0000','_','0000']]
         for i in range(23): STORAGE.append(['_','0000','_','0000','_','0000'])
@@ -338,7 +330,7 @@ def new_data(add=False):
     try:
         com.execute("CREATE TABLE settings (id integer,lang text,sfx integer,msc integer,up text,down text,left text,right text,act text,run text,phone text,inventory text,speed integer,color1 integer,color2 integer,color3 integer,border integer,\
             censor integer,hint integer,help integer)")
-        com.execute("CREATE TABLE data (id integer,gt integer,fr integer,map integer,x integer,y integer,time text,date text,weather integer,chapter integer,scene integer,morality integer,atm integer,money integer,credit integer,battery integer,\
+        com.execute("CREATE TABLE data (id integer,gt integer,fr integer,map integer,x integer,y integer,time text,date text,weather integer,chapter integer,scene integer,\
             gas integer,taskpin integer,minimap integer)")
     except: pass
       
@@ -351,23 +343,14 @@ def new_data(add=False):
         com.execute("DELETE FROM data WHERE id=" + str(ID))
      
     com.execute("INSERT INTO settings VALUES (" + str(ID) + ",'PT',0.8,0.6,'W','S','A','D','G','H','BACKSPACE','RETURN',2,255,255,255,0,1,1,1)")
-    com.execute("INSERT INTO data VALUES (" + str(ID) + ",0,0,1,0,0,'0830','2512200711',0,0,0,0,0,0,255,10,10,0,0)")
+    com.execute("INSERT INTO data VALUES (" + str(ID) + ",0,0,1,0,0,'0830','2512200711',0,0,0,10,0,0)")
       
     com.execute("DROP TABLE IF EXISTS characters" + str(ID))
-    com.execute("CREATE TABLE characters" + str(ID) + " (n integer,name text,lastname text,gender text,level integer,xp integer)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(0,'','','male',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(1,'','','female',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(2,'','','male',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(3,'','','female',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(4,'','','male',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(5,'','','female',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(5,'','','male',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(5,'','','male',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(5,'','','male',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(5,'','','male',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(5,'','','female',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(5,'','','male',0,0)")
-    com.execute("INSERT INTO characters" + str(ID) + " VALUES(5,'','','female',0,0)")
+    com.execute("CREATE TABLE characters" + str(ID) + " (n integer,name text,lastname text,level integer,hp integer,xp integer,health integer,morality integer,"+
+        "hunger integer,thirst integer,sleep integer,carism integer,intimidation integer,persuasion integer,animals integer,spirits integer,"+
+        "stamina integer,atletism integer,acrobatics integer,furtivity integer,perception integer,medicine integer,imunity integer,"+
+        "infantry integer,investigation integer,crafting integer,coordenation integer,explosives integer,culinary integer)")
+    for i in range(len(CHARACTERS)): com.execute("INSERT INTO characters" + str(ID) + " VALUES(" + str(i) + ",'','',0,0,0,0,0,100,100,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)")
     tbl.commit()
       
     database.load_dialogs(True)
@@ -394,7 +377,7 @@ def new_data(add=False):
     com.execute("CREATE TABLE tactical" + str(ID) + " (n integer,pl1 integer,pl2 integer,pl3 integer,pl4 integer)")
       
     com.execute("DROP TABLE IF EXISTS bestiary" + str(ID))
-    com.execute("CREATE TABLE bestiary" + str(ID) + " (idx text,id text,date text,seen int)")
+    com.execute("CREATE TABLE bestiary" + str(ID) + " (name text,id text,date text,seen int)")
     for i in database.FREAKS.items(): com.execute("INSERT INTO bestiary" + str(ID) + " VALUES('" + i[0] + "','xxxxxx','000000',0)")
       
     com.execute("DROP TABLE IF EXISTS achievements" + str(ID))
@@ -417,7 +400,7 @@ def new_data(add=False):
 
 def load_data():
     global ID, LANG, SFX, MSC, UP, DOWN, LEFT, RIGHT, ACT, RUN, PHONE, BAG, SPEED, COLOR, WEATHER, BORDER, TASKPIN, MINIMAP, SCENE, CENSORSHIP, HINT, HELP,\
-    FORMATION, MAP, PX, PY, TIME, DATE, CHAPTER, MORALITY, ATM, MONEY, CREDIT, BATTERY, GAS, GAMETIME, PARTY, CONTACTS, CALLHIST, INBOX, TASKS, TACTICAL, BESTIARY, INVENTORY
+    FORMATION, MAP, PX, PY, TIME, DATE, CHAPTER, GAS, GAMETIME, PARTY, CONTACTS, CALLHIST, INBOX, TASKS, TACTICAL, BESTIARY, INVENTORY
       
     tbl = sqlite3.connect('userdata.db')
     com = tbl.cursor()
@@ -501,16 +484,6 @@ def load_data():
     CHAPTER = com.fetchall()[ID][0]
     com.execute("SELECT scene FROM data")
     SCENE = com.fetchall()[ID][0]
-    com.execute("SELECT morality FROM data")
-    MORALITY = com.fetchall()[ID][0]
-    com.execute("SELECT atm FROM data")
-    ATM = com.fetchall()[ID][0]
-    com.execute("SELECT money FROM data")
-    MONEY = com.fetchall()[ID][0]
-    com.execute("SELECT credit FROM data")
-    CREDIT = com.fetchall()[ID][0]
-    com.execute("SELECT battery FROM data")
-    BATTERY = com.fetchall()[ID][0]
     com.execute("SELECT gas FROM data")
     GAS = com.fetchall()[ID][0]
     com.execute("SELECT taskpin FROM data")
@@ -523,9 +496,32 @@ def load_data():
     for i in range(len(CHARACTERS)):
         CHARACTERS[i]['NAME'] = res[i][1]
         CHARACTERS[i]['LASTNAME'] = res[i][2]
-        CHARACTERS[i]['GENDER'] = res[i][3]
-        CHARACTERS[i]['LEVEL'] = res[i][4]
+        CHARACTERS[i]['LEVEL'] = res[i][3]
+        CHARACTERS[i]['HP'] = res[i][4]
         CHARACTERS[i]['XP'] = res[i][5]
+        CHARACTERS[i]['HEALTH'] = res[i][6]
+        CHARACTERS[i]['MORALITY'] = res[i][7]
+        CHARACTERS[i]['HUNGER'] = res[i][8]
+        CHARACTERS[i]['THIRST'] = res[i][9]
+        CHARACTERS[i]['SLEEP'] = res[i][10]
+        CHARACTERS[i]['CARISM'] = res[i][11]
+        CHARACTERS[i]['INTIMIDATION'] = res[i][12]
+        CHARACTERS[i]['PERSUASION'] = res[i][13]
+        CHARACTERS[i]['ANIMALS'] = res[i][14]
+        CHARACTERS[i]['SPIRITS'] = res[i][15]
+        CHARACTERS[i]['STAMINA'] = res[i][16]
+        CHARACTERS[i]['ATLETISM'] = res[i][17]
+        CHARACTERS[i]['ACROBATICS'] = res[i][18]
+        CHARACTERS[i]['FURTIVITY'] = res[i][19]
+        CHARACTERS[i]['PERCEPTION'] = res[i][20]
+        CHARACTERS[i]['MEDICINE'] = res[i][21]
+        CHARACTERS[i]['IMUNITY'] = res[i][22]
+        CHARACTERS[i]['INFANTRY'] = res[i][23]
+        CHARACTERS[i]['INVESTIGATION'] = res[i][24]
+        CHARACTERS[i]['CRAFTING'] = res[i][25]
+        CHARACTERS[i]['COORDENATION'] = res[i][26]
+        CHARACTERS[i]['EXPLOSIVES'] = res[i][27]
+        CHARACTERS[i]['CULINARY'] = res[i][28]
     com.execute("SELECT * FROM dlgsav" + str(ID))
     res = com.fetchall()
     for i in res: DLGSAV[i[0]] = i[1]
@@ -533,9 +529,6 @@ def load_data():
     res = com.fetchall()
     PARTY = []
     for i in res: PARTY.append([i[1],i[2],i[3]])
-    print(PARTY)
-    print(FORMATION)
-    PARTY = [[1,2,0],[1,3,4]]
     com.execute("SELECT * FROM contacts" + str(ID))
     res = com.fetchall()
     CONTACTS = []
@@ -590,13 +583,12 @@ def load_data():
     STORAGE = []
     for i in res:
         STORAGE.append([i[0],i[1],i[2],i[3],i[4],i[5]])
-      
     com.close()
     tbl.close()
     database.load_dialogs()
 
 def save_data():
-    global ID, MAP, PX, PY, TIME, DATE, WEATHER, CHAPTER, MORALITY, ATM, MONEY, CREDIT, BATTERY, GAS, GAMETIME, FORMATION, CHARACTERS, TASKPIN, MINIMAP, DLGSAV, SCENE, BESTIARY
+    global ID, MAP, PX, PY, TIME, DATE, WEATHER, CHAPTER, GAS, GAMETIME, FORMATION, CHARACTERS, TASKPIN, MINIMAP, DLGSAV, SCENE, BESTIARY
  
     tbl = sqlite3.connect('userdata.db')
     com = tbl.cursor()
@@ -615,39 +607,46 @@ def save_data():
     else: yy = str(DATE[2])
     dt = dd + mm + yy + str(DATE[3]) + str(DATE[4])
     #SAVE GLOBAL GAME DATA
-    com.execute("""UPDATE data SET gt = :gt,fr = :fr,map = :map,x = :x,y = :y,time = :tm,date = :dt,weather = :weather,chapter = :chapter,scene = :scene,morality = :morality,atm = :atm,money =:money,credit = :credit,battery = :battery,gas = :gas,\
-        taskpin = :taskpin,minimap = :minimap WHERE id = :id""",
-    {'id': ID,'gt': GAMETIME,'fr': FORMATION,'map': MAP,'x': PX,'y': PY,'tm': ts,'dt': dt,'weather': WEATHER,'chapter': CHAPTER,'scene': SCENE,'morality': MORALITY,'atm': ATM,'money': MONEY,'credit': CREDIT,'battery': BATTERY,'gas': GAS,
-    'taskpin': int(TASKPIN),'minimap': int(MINIMAP)})
+    com.execute("""UPDATE data SET gt = {},fr = {},map = {},x = {},y = {},time = {},date = {},weather = {},chapter = {},scene = {},gas = {},\
+        taskpin = {},minimap = {} WHERE id = {}""".format(GAMETIME,FORMATION,MAP,PX,PY,ts,dt,WEATHER,CHAPTER,SCENE,GAS,int(TASKPIN),int(MINIMAP),ID))
     tbl.commit()
     #SAVE CHARACTERS DATA
-    for i in range(len(CHARACTERS)):
-        com.execute("UPDATE characters" + str(ID) + " SET name = :name, lastname = :lastname,gender = :gender,level = :level WHERE n = :n",
-            {'n': i,'name': CHARACTERS[i]['NAME'],'lastname': CHARACTERS[i]['LASTNAME'],'gender': CHARACTERS[i]['GENDER'],'level': CHARACTERS[i]['LEVEL']})
+    p = 0
+    for i in CHARACTERS:
+        com.execute("""UPDATE characters{} SET name = '{}',lastname = '{}',level = {},hp = {},xp = {},health = {},morality = {},hunger = {},thirst = {},sleep = {},\
+            carism = {},intimidation = {},persuasion = {},animals = {},spirits = {},stamina = {},atletism = {},acrobatics = {},furtivity = {},perception = {},\
+            medicine = {},imunity = {},infantry = {},investigation = {},crafting = {},coordenation = {},explosives = {},culinary = {} WHERE n = {}""".format(ID,i['NAME'],i['LASTNAME'],i['LEVEL'],\
+                i['HP'],i['XP'],i['HEALTH'],i['MORALITY'],i['HUNGER'],i['THIRST'],i['SLEEP'],i['CARISM'],i['INTIMIDATION'],i['PERSUASION'],\
+                i['SPIRITS'],i['ANIMALS'],i['STAMINA'],i['ATLETISM'],i['ACROBATICS'],i['FURTIVITY'],i['PERCEPTION'],i['MEDICINE'],i['IMUNITY'],\
+                i['INFANTRY'],i['INVESTIGATION'],i['CRAFTING'],i['COORDENATION'],i['EXPLOSIVES'],i['CULINARY'],p))
         tbl.commit()
+        p += 1
     #SAVE DIALOGS DATA
     for i in DLGSAV:
-        com.execute("""UPDATE dlgsav""" + str(ID) + """ SET vl = :vl WHERE who = :who""",{'who': i,'vl': DLGSAV[i]})
+        com.execute("""UPDATE dlgsav{} SET vl = {} WHERE who = '{}'""".format(ID,DLGSAV[i],i))
         tbl.commit()
     #SAVE TACTICAL DATA
     for i in range(len(TACTICAL)):
-        try: com.execute("""UPDATE tactical""" + str(ID) + """ SET p1 = :p1, p2 = :p2, p3 = :p3, p4 = :p4 WHERE n = :n""",{'n': i, 'p1': TACTICAL[i][0], 'p2': TACTICAL[i][1], 'p3': TACTICAL[i][2], 'p4': TACTICAL[i][3]})
+        try: com.execute("""UPDATE tactical{} SET p1 = {},p2 = {},p3 = {},p4 = {} WHERE n = {}""".format(ID,TACTICAL[i][0],TACTICAL[i][1],TACTICAL[i][2],TACTICAL[i][3],i))
         except: com.execute("INSERT INTO tactical" + str(ID) + " VALUES(:n,:p1,:p2,:p3,:p4)",{'n': i,'p1': TACTICAL[i][0],'p2': TACTICAL[i][1],'p3': TACTICAL[i][2],'p4': TACTICAL[i][3]})
         tbl.commit()
     #SAVB BESTIARY DATA
     for i in BESTIARY:
-        com.execute("""UPDATE bestiary""" + str(ID) + """ SET id = :id, date = :date, seen = :seen WHERE idx = :idx""",{'idx': i['N'],'id': i['ID'],'date': i['DATE'],'seen': i['SEEN']})
+        com.execute("""UPDATE bestiary{} SET id = '{}',date = '{}',seen = {} WHERE name = '{}'""".format(ID,i['ID'],i['DATE'],i['SEEN'],i['N']))
         tbl.commit()
     #SAVE INVENTORY DATA
     for u in range(6):
         for x in range(5):
             for y in range(5):
-                com.execute("UPDATE inventory" + str(ID) + " SET item = :item, properties = :properties, acc1 = :acc1, acp1 = :acp1, acc2 = :acc2, acp2 = :acp2 WHERE position = :position",
-                    {'item': INVENTORY[u][x][y][0],'position': str(u) + str(x) + str(y),'properties': INVENTORY[u][x][y][1],'acc1': INVENTORY[u][x][y][2],'acp1': INVENTORY[u][x][y][3],'acc2': INVENTORY[u][x][y][4],'acp2': INVENTORY[u][x][y][5]})
+                com.execute("UPDATE inventory{} SET item = '{}',properties = '{}',acc1 = '{}',acp1 = '{}',acc2 = '{}',acp2 = '{}' WHERE position = '{}'".format(ID,\
+                    INVENTORY[u][x][y][0],INVENTORY[u][x][y][1],INVENTORY[u][x][y][2],INVENTORY[u][x][y][3],INVENTORY[u][x][y][4],INVENTORY[u][x][y][5],str(u) + str(x) + str(y)))
                 tbl.commit()
-    '''for i in STORAGE:
-        com.execute("""UPDATE storage""" + str(ID) + """ SET id = :id, date = :date, seen = :seen WHERE idx = :idx""",{'idx': i['N'],'id': i['ID'],'date': i['DATE'],'seen': i['SEEN']})
-        tbl.commit()''' 
+    #SAVE STORAGE DATA
+    com.execute("DROP TABLE IF EXISTS storage" + str(ID))
+    com.execute("CREATE TABLE storage" + str(ID) + " (it text,ip text,ic1 text,ip1 text,ic2 text,ip2 text)")
+    for i in STORAGE:
+        com.execute("INSERT INTO storage" + str(ID) + " VALUES('" + i[0] + "','" + i[1] + "','" + i[2] + "','" + i[3] + "','" + i[4] + "','" + i[5] + "')")
+        tbl.commit()
  
     com.close()
     tbl.close()

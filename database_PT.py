@@ -167,7 +167,7 @@ FREAKS = {
 'AGILITY': 4,'HP': 6,'RESISTANCE': 0,'STRENGHT': 2,'PATH': 'stay','DODGE': 'walk','HABILITIES': [['Camuflar',['O réptil se camufla no ambiente,','aumentando sua AGILIDADE.'],2,3],['Língua',['O réptil usa sua língua como','chicote para atacar o oponente.'],-3,1],
 ['Estalo',['O réptil se estala, criando','um campo de força elétrico.'],-13,1]],'WEAKNESS': 'EARTH','BLOOD': 10,'ITEM': ['food_camarão',50]},
    
-'peacockpigeon': {'NAME': 'Pombo Pavão','INFO': ['Um pombo urbano com uma mutação que','o fez desenvolver penas de pavão com','olhos reais nas suas pontas.'],'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'mercenary',
+'peacockpigeon': {'NAME': 'Pombo Pavão','INFO': ['Um pombo urbano com uma mutação que','o fez desenvolver penas de pavão com','olhos reais nas suas pontas.'],'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'flying',
 'AGILITY': 3,'HP': 10,'RESISTANCE': 1,'STRENGHT': 2,'PATH': 'horizontal','DODGE': 'walk','HABILITIES': [['Defecar',['A ave defeca no oponente, infectando-o.'],5,6,20,1],['Hipnose',['A ave hipnotiza o oponente com os olhos das penas de pavão, diminuindo sua AGILIDADE.'],-2,3,20,1],
 ['Bicar',['A ave bica o oponente.'],-4,1,50,1],['Gritar',['A ave grita, com a possibilidade de outra anomalia entrar na batalha.'],['madladcat','peacockpigeon'],7,10,1]],'WEAKNESS': 'IRON','BLOOD': 20,'ITEM': ['food_peanut_candy',30],'SONG': 'URBAN_PLAGUE'},
 
@@ -690,9 +690,8 @@ ITEMS = {
 'serum_antiscorpionic': ['soro antiescorpiônico',['Antídoto para combater veneno de escorpiões.'],40,2,1,0],
 'serum_antivenom': ['soro antiofídico',['Antídoto para combater veneno de cobras.'],40,2,1,0],
 'serum_antiarachnid': ['soro antiaracnídico',['Antídoto para combater veneno de aranhas.'],40,2,1,0],
-   
+ 
 'drug_adrenaline': ['adrenalina',['Remédio utilizado para reviver uma pessoa inconsciente.'],60,2,1,0],
-
 'cigar': ['maço de cigarro',['Use isso pra arregaçar seu sistema respiratório.'],10,2,1,0],
 
 #CONDIMENTS (name,description,price,volume,weight,type,duration)
@@ -707,56 +706,56 @@ ITEMS = {
 'condiment_oregan': ['orégano',['Condimento muito usado em salgados.'],5,1,0,6,'0100'],
 'condiment_shoyu': ['shoyu',['Condimento muito usado em refeições.'],5,1,2,6,'0100'],
 
-#DRINK (name,description,price,volume,weight,health,duration)
-'drink_water': ['água',['O básico pra te manter de pé','no calor e no cansaço. BEBA ÁGUA!'],8,2,1,10,'0100'],
-'drink_water_gas': ['água com gás',['Certas pessoas preferem beber água','desse jeito.'],8,2,1,10,'0100'],
-'drink_juice_orange': ['suco de laranja',['Saudável e nutritivo, o Jailson aprova.'],8,3,1,12,'0100'],
-'drink_juice_passion_fruit': ['suco de maracujá',['Saudável e nutritivo, acalma a alma e o espírito.'],8,3,1,12,'0100'],
-'drink_coffee': ['café',['Bebida que aumenta a sua energia.'],8,3,1,8,'0100'],
-'drink_chocolate': ['chocolate quente',['Vai bem com biscoitos'],8,3,1,6,'0100'],
-'drink_milk': ['leite',['Vai bem no café.'],8,3,1,6,'0100'],
-'drink_coffeenmilk': ['café com leite',['Bebida preferida do criador','do jogo, foi muito útil.'],8,3,1,10,'0100'],
-'drink_energy': ['energético',['Bebida que acelera o metabolismo','e aumenta a energia.'],8,3,1,10,'0100'],
-'drink_cola': ['refri',['A bomba calórica que a gente gosta.'],8,3,1,5,'0100'],
-'drink_guarana': ['guaraná',['Um suquinho barato e muito açúcarado','mas é bom, não confundir com cachos de olhos.'],8,3,1,5,'0100'],
-'drink_beer': ['cerveja',['Bebida alcóolica para aumentar a energia','Pelo amor de deus COM MODERAÇÃO.'],8,2,1,8,'0100'],
-'drink_whiskey': ['uísque',['Bebida alcóolica para aumentar a energia','Pelo amor de deus COM MODERAÇÃO.'],8,2,1,8,'0100'],
-'drink_yogurt': ['iogurte',['Delicioso e saudável.'],8,3,1,8,'0100'],
+#DRINK (name,description,price,volume,weight,health,thirst,duration)
+'drink_water': ['água',['O básico pra te manter de pé','no calor e no cansaço. BEBA ÁGUA!'],8,2,1,10,10,'0100'],
+'drink_water_gas': ['água com gás',['Certas pessoas preferem beber água','desse jeito.'],8,2,1,10,10,'0100'],
+'drink_juice_orange': ['suco de laranja',['Saudável e nutritivo, o Jailson aprova.'],8,3,1,12,10,'0100'],
+'drink_juice_passion_fruit': ['suco de maracujá',['Saudável e nutritivo, acalma a alma e o espírito.'],8,3,1,12,10,'0100'],
+'drink_coffee': ['café',['Bebida que aumenta a sua energia.'],8,3,1,8,10,'0100'],
+'drink_chocolate': ['chocolate quente',['Vai bem com biscoitos'],8,3,1,6,10,'0100'],
+'drink_milk': ['leite',['Vai bem no café.'],8,3,1,6,10,'0100'],
+'drink_coffeenmilk': ['café com leite',['Bebida preferida do criador','do jogo, foi muito útil.'],8,3,1,10,10,'0100'],
+'drink_energy': ['energético',['Bebida que acelera o metabolismo','e aumenta a energia.'],8,3,1,10,10,'0100'],
+'drink_cola': ['refri',['A bomba calórica que a gente gosta.'],8,3,1,5,10,'0100'],
+'drink_guarana': ['guaraná',['Um suquinho barato e muito açúcarado','mas é bom, não confundir com cachos de olhos.'],8,3,1,5,10,'0100'],
+'drink_beer': ['cerveja',['Bebida alcóolica para aumentar a energia','Pelo amor de deus COM MODERAÇÃO.'],8,2,1,8,10,'0100'],
+'drink_whiskey': ['uísque',['Bebida alcóolica para aumentar a energia','Pelo amor de deus COM MODERAÇÃO.'],8,2,1,8,10,'0100'],
+'drink_yogurt': ['iogurte',['Delicioso e saudável.'],8,3,1,8,10,'0100'],
  
-#FOOD (name,description,price,volume,weight,health,duration)
-'food_orange': ['laranja',['Fruta fácil de se achar','num pomar.'],3,1,1,2,'0100'],
-'food_fish': ['pirarucu',['Peixe de água doce.'],3,1,1,2,'0100'],
-'food_bread': ['pão',['O alimento matinal de cada dia.'],15,2,2,30,'0300'],
-'food_pedemoleque': ['pé de moleque',['Doce de amendoim, fácil de encontrar em padarias.'],1,1,1,2,'0100'],
-'food_peanut_candy': ['paçoca',['Doce de amendoim, fácil de encontrar em padarias.'],1,1,1,2,'0100'],
-'food_coconut_candy': ['cocada',['Doce de côco, fácil de encontrar em padadias.'],1,1,1,2,'0100'],
-'food_coxinha': ['coxinha',['Salgado feito com massa frita e recheada com frango, fácil de','encontrar em lanchonetes.'],5,2,1,8,'0100'],
-'food_pastry': ['pastel',['Salgado feito com massa frita e recheado com queijo.'],3,2,1,5,'0100'],
-'food_puff_pastry': ['pastel folheado',['Salgado feito com várias camadas de massa e queijo.'],6,2,1,12,'0100'],
-'food_brigadeiro': ['brigadeiro',['Doce de chocolate.'],2,1,1,3,'0100'],
-'food_cheese_bread': ['pão de queijo',['Salgado feito com massa de queijo.'],5,1,1,7,'0100'],
-'food_pudding': ['pudim',['Doce feito com leite condensado.'],10,3,1,15,'0300'],
-'food_cake_corn': ['bolo de fubá',['Doce feito com ovos, leite, fubá, manteiga, trigo e fermento.'],12,3,2,18,'0500'],
-'food_cake_carrot': ['bolo de cenoura',['Doce feito com ovos, leite, fubá, manteiga, trigo e fermento.'],12,3,2,18,'0500'],
-'food_cake_chocolate': ['bolo de chocolate',['Doce feito com ovos, leite, fubá, manteiga, trigo e fermento.'],12,3,2,18,'0500'],
-'food_packed_lunch': ['marmita',['Tem muitas coisas diferentes dentro, além de ser bem nutritivo!'],15,3,2,30,'0300'],
-'food_egg': ['ovo',['Ele te deixa forte pra enfrentar qualquer perigo.'],15,2,2,30,'0300'],
-'food_lamen_chicken': ['miojo de galinha',['O macarrão instantâneo','do cara que mora sozinho.'],15,2,2,30,'0300'],
-'food_lamen_meat': ['miojo de carne',['O macarrão instantâneo','do cara que mora sozinho.'],15,2,2,30,'0300'],
-'food_cookie_chocolate': ['bolacha de chocolate',['Biscoito recheado sempre','foi chamado assim.'],15,2,2,30,'0300'],
-'food_cookie_strawberry': ['bolacha de morango',['Biscoito recheado sempre','foi chamado assim.'],15,2,2,30,'0300'],
-'food_snack_onion': ['salgadinho de cebola',['50% do saco é de puro vento.'],15,2,2,30,'0300'],
-'food_snack_cheese': ['salgadinho de queijo',['50% do saco é de puro vento.'],15,2,2,30,'0300'],
-'food_snack_creammycheese': ['salgadinho de requeijão',['50% do saco é de puro vento.'],15,2,2,30,'0300'],
-'food_pizza_mussarella': ['pizza de mussarela',['Quem não gosta de pizza?'],15,2,2,30,'0300'],
-'food_pizza_shaggy': ['pizza de calabresa',['Quem não gosta de pizza?'],15,2,2,30,'0300'],
-'food_pizza_chicken': ['pizza de frango',['Quem não gosta de pizza?'],15,2,2,30,'0300'],
-'food_pizza_4cheese': ['pizza de 4 queijos',['Quem não gosta de pizza?'],15,2,2,30,'0300'],
+#FOOD (name,description,price,volume,weight,health,hunger,duration)
+'food_orange': ['laranja',['Fruta fácil de se achar','num pomar.'],3,1,1,2,10,'0100'],
+'food_fish': ['pirarucu',['Peixe de água doce.'],3,1,1,2,10,'0100'],
+'food_bread': ['pão',['O alimento matinal de cada dia.'],15,2,2,30,10,'0300'],
+'food_pedemoleque': ['pé de moleque',['Doce de amendoim, fácil de encontrar em padarias.'],1,1,1,2,10,'0100'],
+'food_peanut_candy': ['paçoca',['Doce de amendoim, fácil de encontrar em padarias.'],1,1,1,2,10,'0100'],
+'food_coconut_candy': ['cocada',['Doce de côco, fácil de encontrar em padadias.'],1,1,1,2,10,'0100'],
+'food_coxinha': ['coxinha',['Salgado feito com massa frita e recheada com frango, fácil de','encontrar em lanchonetes.'],5,2,1,8,10,'0100'],
+'food_pastry': ['pastel',['Salgado feito com massa frita e recheado com queijo.'],3,2,1,5,10,'0100'],
+'food_puff_pastry': ['pastel folheado',['Salgado feito com várias camadas de massa e queijo.'],6,2,1,12,10,'0100'],
+'food_brigadeiro': ['brigadeiro',['Doce de chocolate.'],2,1,1,3,10,'0100'],
+'food_cheese_bread': ['pão de queijo',['Salgado feito com massa de queijo.'],5,1,1,7,10,'0100'],
+'food_pudding': ['pudim',['Doce feito com leite condensado.'],10,3,1,15,10,'0300'],
+'food_cake_corn': ['bolo de fubá',['Doce feito com ovos, leite, fubá, manteiga, trigo e fermento.'],12,3,2,18,10,'0500'],
+'food_cake_carrot': ['bolo de cenoura',['Doce feito com ovos, leite, fubá, manteiga, trigo e fermento.'],12,3,2,18,10,'0500'],
+'food_cake_chocolate': ['bolo de chocolate',['Doce feito com ovos, leite, fubá, manteiga, trigo e fermento.'],12,3,2,18,10,'0500'],
+'food_packed_lunch': ['marmita',['Tem muitas coisas diferentes dentro, além de ser bem nutritivo!'],15,3,2,30,10,'0300'],
+'food_egg': ['ovo',['Ele te deixa forte pra enfrentar qualquer perigo.'],15,2,2,30,10,'0300'],
+'food_lamen_chicken': ['miojo de galinha',['O macarrão instantâneo','do cara que mora sozinho.'],15,2,2,30,10,'0300'],
+'food_lamen_meat': ['miojo de carne',['O macarrão instantâneo','do cara que mora sozinho.'],15,2,2,30,10,'0300'],
+'food_cookie_chocolate': ['bolacha de chocolate',['Biscoito recheado sempre','foi chamado assim.'],15,2,2,30,10,'0300'],
+'food_cookie_strawberry': ['bolacha de morango',['Biscoito recheado sempre','foi chamado assim.'],15,2,2,30,10,'0300'],
+'food_snack_onion': ['salgadinho de cebola',['50% do saco é de puro vento.'],15,2,2,30,10,'0300'],
+'food_snack_cheese': ['salgadinho de queijo',['50% do saco é de puro vento.'],15,2,2,30,10,'0300'],
+'food_snack_creammycheese': ['salgadinho de requeijão',['50% do saco é de puro vento.'],15,2,2,30,10,'0300'],
+'food_pizza_mussarella': ['pizza de mussarela',['Quem não gosta de pizza?'],15,2,2,30,10,'0300'],
+'food_pizza_shaggy': ['pizza de calabresa',['Quem não gosta de pizza?'],15,2,2,30,10,'0300'],
+'food_pizza_chicken': ['pizza de frango',['Quem não gosta de pizza?'],15,2,2,30,10,'0300'],
+'food_pizza_4cheese': ['pizza de 4 queijos',['Quem não gosta de pizza?'],15,2,2,30,10,'0300'],
  
 #WASTED FOOD (name,description,price,volume,weight,health)
-'food_coxinha_wasted': ['coxinha fria',['Não é mais tão gostosa quanto antes,','mas é comestível.'],2,1,1,4],
-'food_peanut_candy_wasted': ['paçoca esfarelada',['O que antes era um doce maravilhoso','agora são apenas migalhas...'],2,1,1,1],
-'food_egg_wasted': ['ovo podre',['ALGUÉM DESTRUIU O MEU OVO'],15,2,2,30],
+'food_coxinha_wasted': ['coxinha fria',['Não é mais tão gostosa quanto antes,','mas é comestível.'],2,1,1,4,10],
+'food_peanut_candy_wasted': ['paçoca esfarelada',['O que antes era um doce maravilhoso','agora são apenas migalhas...'],2,1,1,1,10],
+'food_egg_wasted': ['ovo podre',['ALGUÉM DESTRUIU O MEU OVO'],15,2,2,30,10],
 
 #INGREDIENTS (name,description,price,volume,weight)
 'ingredient_ectoplasm': ['ectoplasma',['Uma estranha gosma branca, comum em','invocações de espíritos.'],1,1,1,2],
@@ -1164,15 +1163,6 @@ e quando percebe estão fechando os corredores e chamando os seguranças."','']]
 [['FLA x FLU'],'Gustavo Pinhão',['Muito disputado']]
 ]
 ]
- 
-if rs.CHARACTERS[0]['GENDER'] == 'male': gn = 'moço'; prps = 'meu'
-elif rs.CHARACTERS[0]['GENDER'] == 'female': gn = 'moça'; prps = 'minha'
-else: gn = 'moçe'; prps = 'minhe'
- 
-if rs.TIME[0] > 17: dt = 'Boa noite'
-elif rs.TIME[0] > 11: dt = 'Boa tarde'
-elif rs.TIME[0] > 5: dt = 'Bom dia'
-else: dt = 'Boa noite'
 
 '''
 0 - outro falante
@@ -1181,13 +1171,13 @@ else: dt = 'Boa noite'
 3 - fim do capítulo
 
 0 - ganhar dinheiro (quantity)
-1 - ganhar item (item,price,x,properties)
-2 - moralidade
-3 - marcador do mapa
-4 - ligação
-5 - novo email
-6 - nova tarefa (task index)
-7 - contato adicionado
+1 - ganhar item (item,price,dlgsav,properties)
+2 - moralidade (quantity)
+3 - marcador do mapa (x,y)
+4 - ligação (contact index)
+5 - novo email (email index)
+6 - tarefa (task index,item,text)
+7 - contato adicionado (contact index)
 8 - troféu (achievement index)
 9 - subir de rank
 10 - escolha de diálogo ([option,text])
@@ -1220,6 +1210,15 @@ TASKINDEX = []
 def load_dialogs(r=False):
 	global DIALOGS
 	global TASKINDEX
+
+	if rs.CHARACTERS[0]['GENDER'] == 'male': gn = 'moço'; prps = 'meu'
+	elif rs.CHARACTERS[0]['GENDER'] == 'female': gn = 'moça'; prps = 'minha'
+	else: gn = 'moçe'; prps = 'minhe'
+
+	if rs.TIME[0] > 17: dt = 'Boa noite'
+	elif rs.TIME[0] > 11: dt = 'Boa tarde'
+	elif rs.TIME[0] > 5: dt = 'Bom dia'
+	else: dt = 'Boa noite'
 
 	TASKINDEX = [('Falar com a ' + rs.CHARACTERS[5]['NAME'],'2512','1000'),('Procure algo pra beber','0000','0000')]
 
@@ -1304,7 +1303,7 @@ def load_dialogs(r=False):
 	'BUS WAITER': [['Esse ônibus demora mesmo',1,'Pego ele todo dia pra','descer a serra até a capital',1,'São só 4h de viagem!',1,2]],
 	'SQUARE OLD MAN': [['Eu adoro alimentar os pombinhos',1,'ainda mais aqueles que','tem um monte de penas','lindas no rabo',1,(10,['como assim?','elas chegam a hipnotizar...',
 	'eu fico olhando e perco','a noção do tempo.',1],['legal','são adoráveis',1])]],
-	'HOMELESS MAN': [['Pode me dar um trocado','por favor?',1,(10,['...','é sempre assim...',1],['Tudo bem',(0,-1),'Deus te abençoe!',1])]],
+	'HOMELESS MAN': [['Pode me dar um trocado','por favor?',1,(10,['...','é sempre assim...',1,(2,-5)],['Tudo bem',(0,-1),(2,5),'Deus te abençoe!',1])]],
 	'STREET SWEEPER': [['Hey mano',1,'Posso te falar uma coisa?',1,(10,['É claro','Se estiver com lixo nos','bolsos ou na mochila...',1,'por favor...',1,'...jogue na lixeira',1,
 	'Não custa nada',1,'Tem uma em cada esquina da cidade',1,'Fechou?',1],['Agora não...','Tá bom então...',1,'não é como se fosse','te dar uma informação','importante que fosse',
 	'mudar sua vida e seu','jeito de agir',1,'bola pra frente',1])]],

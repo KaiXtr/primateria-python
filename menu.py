@@ -69,12 +69,6 @@ class Debug:
 					else:
 						src[1] = int(self.cmd[6:])
 						break
-			elif self.cmd.startswith('atm'):
-				resources.ATM = int(self.cmd[4:])
-			elif self.cmd.startswith('credit'):
-				resources.CREDIT = int(self.cmd[7:])
-			elif self.cmd.startswith('battery'):
-				resources.BATTERY = int(self.cmd[8:])
 			elif self.cmd.startswith('time'):
 				resources.TIME = [int(self.cmd[5:7]),int(self.cmd[7:9]),int(self.cmd[9:11])]
 			elif self.cmd.startswith('date'):
@@ -279,7 +273,6 @@ class Inventory:
 		for x in range(6):
 			for y in range(4):
 				self.mnbor.blit(pygame.image.load('Sprites/border_' + str(resources.BORDER) + '.png'), (1 + (x * 10),1 + (y * 10)))
-
 		self.scr = [pygame.Surface((380,220)), pygame.Surface((760,600), pygame.SRCALPHA)]
 		self.itmov = ''
 		self.scroll = 50
@@ -287,6 +280,22 @@ class Inventory:
 		self.shake = 0
 		self.arrow = 0
 		self.arrdir = False
+		self.optrects = []
+		x = 10
+		y = 45
+		for u in range(len(resources.PARTY[resources.FORMATION])):
+			self.optrects.append([])
+			for j in range(5):
+				self.optrects[u].append([])
+				if j == 4: y += 5
+				for i in range(5):
+					if i == 1: x += 5
+					self.optrects[u][j].append((pygame.Rect(x + (200 * u),y,30,30),pygame.Rect(x,y + (210 * u),30,30)))
+					x += 32
+				x = 10
+				y += 32
+			x = 10
+			y = 45
 
 	def find(self, where, item):
 		fnd = None
@@ -351,15 +360,13 @@ class Inventory:
 
 	def show(self, opt, lopt, mn, ex, tp):
 		for i in self.scr: i.fill((0,0,0,0))
-		x = 10
-		y = 45
 		optx = 0
 		opty = 0
 		mnc = 0
 		dscr = '_'
 		vlm = 0
 		wei = 0
-
+		#SCROLL
 		if tp == 0:
 			if self.scroll < (mn * 200):
 				self.scroll += 40
@@ -371,65 +378,56 @@ class Inventory:
 			if self.scroll > (mn * 210):
 				self.scroll -= 42
 		if self.scroll < 0: self.scroll = 0
-
 		#INVENTORY FOR EACH ONE IN THE PARTY
 		for n in resources.PARTY[resources.FORMATION]:
-			self.scr[0].blit(pygame.image.load('Sprites/who_' + str(n) + '.png'), (10 + (200 * mnc) - self.scroll, 25))
-			self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[n]['NAME'], True, (255, 255, 255)), ((10 + (200 * mnc) - self.scroll) * 2, 25))
+			self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[n]['NAME'], True, (255, 255, 255)), ((10 + (200 * mnc) - self.scroll) * 2, 15))
+			self.scr[0].blit(pygame.image.load('Sprites/who_' + str(n) + '.png'), (10 + (200 * mnc) - self.scroll, 20))
 			for j in range(len(resources.INVENTORY[n])):
-				if opty == 4: y += 5
-				for i in resources.INVENTORY[n][j]:
-					if optx == 1: x += 5
-
+				for i in range(len(resources.INVENTORY[n][j])):
+					#CHECK BAG
 					trigg = False
 					if optx == 0 or opty == 4: trigg = True
-					elif resources.INVENTORY[mnc][4][0][0] != '_': trigg = True
-
+					elif resources.INVENTORY[n][4][0][0] != '_': trigg = True
 					if trigg == True:
+						#DRAW RECTS
 						if opt == optx and lopt == opty and mn == mnc:
-							if tp == 0: pygame.draw.rect(self.scr[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(x + (200 * mnc) - self.scroll,y,30,30))
-							if tp == 1: pygame.draw.rect(self.scr[0], (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2]), pygame.Rect(x,y + (210 * mnc) - self.scroll,30,30))
+							cl = (resources.COLOR[0],resources.COLOR[1],resources.COLOR[2])
 							dscr = resources.INVENTORY[resources.PARTY[resources.FORMATION][mn]][lopt][opt]
-						else:
-							if tp == 0: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(x + (200 * mnc) - self.scroll,y,30,30))
-							if tp == 1: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(x,y + (210 * mnc) - self.scroll,30,30))
-						if i[0] != '_':
-							if tp == 0: self.scr[0].blit(pygame.image.load('Sprites/Items/it_' + i[0] + '.png'), (x + (200 * mnc) - self.scroll, y))
-							if tp == 1: self.scr[0].blit(pygame.image.load('Sprites/Items/it_' + i[0] + '.png'), (x, y + (210 * mnc) - self.scroll))
+						else: cl = (255,255,255)
+						rct = self.optrects[n][j][i][tp].copy()
+						if tp == 0: rct.x = self.optrects[mnc][j][i][tp].x - self.scroll
+						if tp == 1: rct.y = self.optrects[mnc][j][i][tp].y - self.scroll
+						pygame.draw.rect(self.scr[0],cl,rct)
+						#DRAW SPRITES
+						if resources.INVENTORY[n][j][i][0] != '_':
+							self.scr[0].blit(pygame.image.load('Sprites/Items/it_' + resources.INVENTORY[n][j][i][0] + '.png'), (rct.x,rct.y))
 							if optx > 0 and opty < 4:
-								vlm += database.ITEMS[i[0]][3]
-								wei += database.ITEMS[i[0]][4]
-					x += 32
+								vlm += database.ITEMS[resources.INVENTORY[n][j][i][0]][3]
+								wei += database.ITEMS[resources.INVENTORY[n][j][i][0]][4]
 					optx += 1
-				x = 10
-				y += 32
 				optx = 0
 				opty += 1
-
 			#VOLUME AND WEIGHT
 			if tp == 0:
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[78] + ':', True, (255, 255, 255)), ((65 + 200 * mnc - self.scroll) * 2, 15))
 				pygame.draw.rect(self.scr[0], (100, 100, 100), pygame.Rect(120 + (200 * mnc) - self.scroll,10,50,10))
-				if vlm > 0 and resources.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120 + (200 * mnc) - self.scroll,10,int(50/(database.ITEMS[resources.INVENTORY[mnc][4][0][0]][3]/vlm)),10))
+				if vlm > 0 and resources.INVENTORY[n][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120 + (200 * mnc) - self.scroll,10,int(50/(database.ITEMS[resources.INVENTORY[n][4][0][0]][3]/vlm)),10))
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[79] + ':', True, (255, 255, 255)), ((65 + (200 * mnc) - self.scroll) * 2, 45))
 				pygame.draw.rect(self.scr[0], (100, 100, 100), pygame.Rect(120 + (200 * mnc) - self.scroll,25,50,10))
-				if wei > 0 and resources.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120 + (200 * mnc) - self.scroll,25,int(50/(database.ITEMS[resources.INVENTORY[mnc][4][0][0]][4]/wei)),10))
+				if wei > 0 and resources.INVENTORY[n][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120 + (200 * mnc) - self.scroll,25,int(50/(database.ITEMS[resources.INVENTORY[n][4][0][0]][4]/wei)),10))
 			if tp == 1:
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[78] + ':', True, (255, 255, 255)), (65, (10 + (210 * mnc) - self.scroll) * 2))
 				pygame.draw.rect(self.scr[0], (100, 100, 100), pygame.Rect(120,12 + (210 * mnc) - self.scroll,50,10))
-				if vlm > 0 and resources.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120,12 + (210 * mnc) - self.scroll,int(50/(database.ITEMS[resources.INVENTORY[mnc][4][0][0]][3]/vlm)),10))
+				if vlm > 0 and resources.INVENTORY[n][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120,12 + (210 * mnc) - self.scroll,int(50/(database.ITEMS[resources.INVENTORY[n][4][0][0]][3]/vlm)),10))
 				self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[79] + ':', True, (255, 255, 255)), (65, (25 + (210 * mnc) - self.scroll) * 2))
 				pygame.draw.rect(self.scr[0], (100, 100, 100), pygame.Rect(120,27 + (210 * mnc) - self.scroll,50,10))
-				if wei > 0 and resources.INVENTORY[mnc][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120,27 + (210 * mnc) - self.scroll,int(50/(database.ITEMS[resources.INVENTORY[mnc][4][0][0]][4]/wei)),10))
-
-			x = 10
-			y = 45
+				if wei > 0 and resources.INVENTORY[n][4][0][0] != '_': pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(120,27 + (210 * mnc) - self.scroll,int(50/(database.ITEMS[resources.INVENTORY[n][4][0][0]][4]/wei)),10))
 			vlm = 0
 			wei = 0
 			optx = 0
 			opty = 0
 			mnc += 1
-
+		#STORAGE SCROLL
 		if lopt > 5:
 			if self.strgscroll < (lopt * 32):
 				self.strgscroll += 8
@@ -439,8 +437,7 @@ class Inventory:
 			if self.strgscroll > 0:
 				self.strgscroll -= 40
 		if self.strgscroll < 0: self.strgscroll = 0
-
-		#DEPOSIT ITEMS
+		#STORAGE ITEMS
 		if tp == 1:
 			x = 210
 			y = 45
@@ -463,7 +460,6 @@ class Inventory:
 					self.scr[0].blit(pygame.image.load('Sprites/Items/it_' + j[0] + '.png'), (x, y - self.strgscroll))
 				x += 32
 				optx += 1
-
 		#HOLDING ITEM
 		if self.itmov != '':
 			ox = (opt * 32) 
@@ -471,7 +467,6 @@ class Inventory:
 			if opt > 0: ox += 5
 			if lopt == 4: lox += 5
 			if opt > 4: ox += 34
-
 			#ITEM MOVE
 			if self.itmov[0] != 0:
 				if tp == 0:
@@ -487,10 +482,6 @@ class Inventory:
 				srf.fill((0, 0, 0))
 				self.scr[0].blit(srf, (25 + (mn * 200) + ox - self.scroll,40 + lox))
 				self.scr[0].blit(self.itbor, (20 + (mn * 200) + ox - self.scroll + self.shake,35 + lox))
-				'''if self.money == True:
-					self.scr[0].blit(self.mnbor, (-35 + (mn * 200) + ox - self.scroll + self.shake,35 + lox))
-					pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(-30 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,50,30))
-					self.scr[1].blit(self.fnt['CALIBRI'].render('$' + str(resources.MONEY), True, (255, 255, 255)), ((-25 + (mn * 200) + ox - self.scroll + self.shake) * 2,(45 + lox) * 2))'''
 				if ex == 1:
 					pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(25 + (mn * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
 					dscr = [self.itmov[ex],resources.INVENTORY[resources.PARTY[resources.FORMATION][mn]][lopt][opt][1][0:4]]
@@ -506,7 +497,6 @@ class Inventory:
 				if self.itmov[1] != '_': self.scr[0].blit(pygame.image.load('Sprites/Items/it_' + self.itmov[1] + '.png'), (25 + (mn * 200) + ox - self.scroll + self.shake,40 + lox))
 				if self.itmov[2] != '_': self.scr[0].blit(pygame.image.load('Sprites/Items/it_' + self.itmov[2] + '.png'), (55 + (mn * 200) + ox - self.scroll + self.shake,40 + lox))
 				self.scr[0].blit(pygame.image.load('Sprites/e_run.png'), (85 + (mn * 200) + ox - self.scroll + self.shake,40 + lox))
-		
 		#ARROWS
 		if self.arrdir == False:
 			self.arrow += 1
@@ -522,7 +512,6 @@ class Inventory:
 			if mn < len(resources.PARTY[resources.FORMATION]) - 1: self.scr[0].blit(pygame.image.load('Sprites/arw.png'), (80,208 - self.arrow))
 
 		self.wdw.blit(self.scr[0], (10,10))
-
 		#ITEM DESCRIPTION
 		pygame.draw.rect(self.wdw, (0, 0, 0), pygame.Rect(10,240,380,50))
 		if dscr[0] != '_':
@@ -543,7 +532,7 @@ class Inventory:
 			for t in txt:
 				self.scr[1].blit(self.fnt['CALIBRI'].render(t, True, (255, 255, 255)), (20, 480 + y))
 				y += 30
-
+		#ITEM SHAKE
 		if self.shake > 0: self.shake = -self.shake
 		elif self.shake < 0: self.shake = -self.shake - 1
 
@@ -774,6 +763,14 @@ class Phone:
 		self.scroll = 0
 		self.mp = None
 		self.optrects = []
+		self.credit = 0
+		self.inv = Inventory()
+		self.battery = self.inv.find(resources.PARTY[resources.FORMATION][0],'phone')
+		if self.battery != None:
+			if self.battery[2] == 'sim_card': self.credit = int(self.battery[3])
+			elif self.battery[4] == 'sim_card': self.credit = int(self.battery[5])
+			self.battery = int(self.battery[1])
+		else: self.battery = 0
 
 	def bar(self, sg):
 		self.bsc = [pygame.Surface((self.scr[0].get_width(),18)),pygame.Surface((self.scr[1].get_width(),36), pygame.SRCALPHA)]
@@ -798,8 +795,8 @@ class Phone:
 
 		self.bsc[0].blit(pygame.image.load('Sprites/signal_' + str(sg) + '.png'), ((dvd3 * 3) - 47, 6))
 		self.bsc[0].blit(pygame.image.load('Sprites/battery.png'), ((dvd3 * 3) - 30, 2))
-		if resources.BATTERY > 100.0: pygame.draw.rect(self.bsc[0], (255, 255, 255), pygame.Rect((dvd3 * 3) - 7 - int(18/(360/resources.BATTERY)),5,int(18/(360/resources.BATTERY)),7))
-		elif resources.BATTERY > 1.0: pygame.draw.rect(self.bsc[0], (255, 10, 10), pygame.Rect((dvd3 * 3) - 7 - int(18/(360/resources.BATTERY)),5,int(18/(360/resources.BATTERY)),7))
+		if self.battery > 200: pygame.draw.rect(self.bsc[0], (255, 255, 255), pygame.Rect((dvd3 * 3) - 7 - int(18/(3600/self.battery)),5,int(18/(3600/self.battery)),7))
+		elif self.battery > 0: pygame.draw.rect(self.bsc[0], (255, 10, 10), pygame.Rect((dvd3 * 3) - 7 - int(18/(3600/self.battery)),5,int(18/(3600/self.battery)),7))
 
 		return self.bsc
 
@@ -1272,37 +1269,38 @@ class Phone:
 			else: self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[i]['NAME'], True, (255, 255, 255)), ((16 + x - self.scroll) * 2, 95))
 			x += dvd3
 
+		ch = resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]
 		self.scr[0].blit(pygame.image.load('Sprites/who_' + str(resources.PARTY[resources.FORMATION][opt]) + '.png'), (10, 74))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['NAME'] + ' ' + resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LASTNAME'], True, (255, 255, 255)), (70, 152))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(str(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['ID']), True, (255, 255, 255)), (20, 192))
-		self.scr[0].blit(pygame.image.load('Sprites/gn_' + resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['GENDER'] + '.png'), (70, 96))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['BLOOD'], True, (255, 255, 255)), (100, 192))
+		self.scr[1].blit(self.fnt['CALIBRI'].render(ch['NAME'] + ' ' + resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LASTNAME'], True, (255, 255, 255)), (70, 152))
+		self.scr[1].blit(self.fnt['CALIBRI'].render(str(ch['ID']), True, (255, 255, 255)), (20, 192))
+		self.scr[0].blit(pygame.image.load('Sprites/gn_' + ch['GENDER'] + '.png'), (70, 96))
+		self.scr[1].blit(self.fnt['CALIBRI'].render(ch['BLOOD'], True, (255, 255, 255)), (100, 192))
 
-		self.scr[1].blit(self.fnt['CALIBRI'].render('level ' + str(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']), True, (255, 255, 255)), (20, 230))
+		self.scr[1].blit(self.fnt['CALIBRI'].render('level ' + str(ch['LEVEL']), True, (255, 255, 255)), (20, 230))
 		self.scr[1].blit(self.fnt['CALIBRI'].render('hp:', True, (255, 255, 255)), (20, 260))
 		pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(40,135,100,10))
-		if resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['HP'] > 0:
-			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,135,int(100/(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['VITALITY'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']]/resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['HP'])),10))
+		if ch['HP'] > 0:
+			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,135,int(100/(database.CLASSES[ch['CLASS']]['VITALITY'][ch['LEVEL']]/ch['HP'])),10))
 		self.scr[1].blit(self.fnt['CALIBRI'].render('xp:', True, (255, 255, 255)), (20, 290))
 		pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(40,150,100,10))
-		if resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['XP'] > 0:
-			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,150,int(100/(resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['MAXXP']/resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['XP'])),10))
+		if ch['XP'] > 0:
+			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,150,int(100/(database.NEXTLEVEL[ch['LEVEL']]/ch['XP'])),10))
 		self.scr[1].blit(self.fnt['CALIBRI'].render('st:', True, (255, 255, 255)), (20, 320))
 		pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(40,165,100,10))
-		if resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['STRENGHT'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']] > 0:
-			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,165,int(100/(100/resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['STRENGHT'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']])),10))
+		if database.CLASSES[ch['CLASS']]['STRENGHT'][ch['LEVEL']] > 0:
+			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,165,int(100/(100/database.CLASSES[ch['CLASS']]['STRENGHT'][ch['LEVEL']])),10))
 		self.scr[1].blit(self.fnt['CALIBRI'].render('at:', True, (255, 255, 255)), (20, 350))
 		pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(40,180,100,10))
-		if resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['ATTACK'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']] > 0:
-			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,180,int(100/(100/resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['ATTACK'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']])),10))
+		if database.CLASSES[ch['CLASS']]['ATTACK'][ch['LEVEL']] > 0:
+			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,180,int(100/(100/database.CLASSES[ch['CLASS']]['ATTACK'][ch['LEVEL']])),10))
 		self.scr[1].blit(self.fnt['CALIBRI'].render('ag:', True, (255, 255, 255)), (20, 380))
 		pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(40,195,100,10))
-		if resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['AGILITY'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']] > 0:
-			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,195,int(100/(100/resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['AGILITY'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']])),10))
+		if database.CLASSES[ch['CLASS']]['AGILITY'][ch['LEVEL']] > 0:
+			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,195,int(100/(100/database.CLASSES[ch['CLASS']]['AGILITY'][ch['LEVEL']])),10))
 		self.scr[1].blit(self.fnt['CALIBRI'].render('rs:', True, (255, 255, 255)), (20, 410))
 		pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(40,210,100,10))
-		if resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['RESISTANCE'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']] > 0:
-			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,210,int(100/(100/resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['RESISTANCE'][resources.CHARACTERS[resources.PARTY[resources.FORMATION][opt]]['LEVEL']])),10))
+		if database.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']] > 0:
+			pygame.draw.rect(self.scr[0], (0, 255, 0), pygame.Rect(40,210,int(100/(100/database.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']])),10))
 
 		pygame.draw.rect(self.scr[1], (255, 0, 0), pygame.Rect(0,0,sz * 2,80))
 		self.scr[1].blit(self.fnt['TITLE'].render(database.MENU[8], True, (0, 0, 0)), (10, 10))
@@ -1592,7 +1590,7 @@ class Phone:
 		pygame.draw.rect(self.scr[0], (resources.COLOR[0], resources.COLOR[1], resources.COLOR[2]), pygame.Rect(0,0,sz,90))
 		self.scr[1].blit(self.fnt['CALIBRI'].render(database.NUMBERS[num][0], True, (255, 255, 255)), (100, 20))
 		self.scr[1].blit(self.fnt['CALIBRI'].render(nb, True, (255, 255, 255)), (100, 40))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[32] + str(resources.CREDIT), True, (255, 255, 255)), (100, 80))
+		self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[32] + str(self.credit), True, (255, 255, 255)), (100, 80))
 		self.scr[1].blit(self.fnt['CALIBRI'].render(database.MENU[33], True, (255, 255, 255)), (100, 120))
 
 		if opt == 0: self.scr[0].blit(pygame.transform.scale(pygame.image.load('Sprites/cl_ys.png'), (40, 40)), (25, 185))
