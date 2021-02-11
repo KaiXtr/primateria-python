@@ -1027,26 +1027,25 @@ class Game:
 
 	def enemy(self, i):
 		#DRAW
-		if True:
-			if self.rectdebug == True: pygame.draw.rect(self.display[0], (255,0,0), pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
-			img = pygame.image.load(res.SPRITES_PATH + 'Freaks/frk_' + (i['FILE']) + '_mini.png')
-			
-			if res.TIME[0] < 12:
-				tms = (12 - res.TIME[0]) * 2
-				sxx = i['RECT'].x - self.cam.x - tms + 5
-			else:
-				tms = (res.TIME[0] - 12) * 2
-				sxx = i['RECT'].x - self.cam.x
-			if tms < 5: tms = 5
-			shd = pygame.transform.scale(pygame.transform.rotate(img,90),(tms,7))
-			shd.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
-			shd.set_alpha(100)
-			self.display[0].blit(shd, (sxx, i['RECT'].y - self.cam.y))
-			for b in res.BESTIARY:
-				if b['N'] == i['FILE'] and b['SEEN'] == 0 and i['TYPE'] != 'mercenary':
-					img.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
-			self.display[0].blit(img, (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y))
-			if i['PATH'] == 'notice': self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'notice.png'), (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y - 30))
+		if self.rectdebug == True: pygame.draw.rect(self.display[0], (255,0,0), pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
+		img = pygame.image.load(res.SPRITES_PATH + 'Freaks/frk_' + (i['FILE']) + '_mini.png')
+		
+		if res.TIME[0] < 12:
+			tms = (12 - res.TIME[0]) * 2
+			sxx = i['RECT'].x - self.cam.x - tms + 5
+		else:
+			tms = (res.TIME[0] - 12) * 2
+			sxx = i['RECT'].x - self.cam.x
+		if tms < 5: tms = 5
+		shd = pygame.transform.scale(pygame.transform.rotate(img,90),(tms,7))
+		shd.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
+		shd.set_alpha(100)
+		self.display[0].blit(shd, (sxx, i['RECT'].y - self.cam.y))
+		for b in res.BESTIARY:
+			if b['N'] == i['FILE'] and b['SEEN'] == 0 and i['TYPE'] != 'mercenary':
+				img.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
+		self.display[0].blit(img, (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y))
+		if i['PATH'] == 'notice': self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'notice.png'), (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y - 30))
 		#REPELLENT
 		rplt = False
 		for c in res.PARTY[res.FORMATION]:
@@ -1138,14 +1137,13 @@ class Game:
 
 		#DRAW
 		if self.rectdebug == True: pygame.draw.rect(self.display[0], (255,0,0), pygame.Rect(rect.x - self.cam.x, rect.y - self.cam.y, rect.width, rect.height))
-		if True:
-			if i['TYPE'] not in [1,5] and i['RECT'].width == 0: self.people(i,False)
-			elif i['TYPE'] == 3:
-				img = pygame.image.load(res.SPRITES_PATH + 'mercator.png')
-				self.display[0].blit(img, (rect.x - self.cam.x - math.floor(img.get_rect().width/2) + 10, rect.y - self.cam.y - int(img.get_rect().height/2) - 3))
-			elif i['TYPE'] == 5:
-				self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'obj_' + str(i['INDEX']) + str(i['WHO']) + '.png'), (rect.x - self.cam.x, rect.y - self.cam.y - 10))
-				if self.sleepin == True and i['INDEX'] == 1: self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'char_0_rest.png'), (rect.x - self.cam.x + 5, rect.y - self.cam.y + 5))
+		if i['TYPE'] not in [1,5] and i['RECT'].width == 0: self.people(i,False)
+		elif i['TYPE'] == 3:
+			img = pygame.image.load(res.SPRITES_PATH + 'mercator.png')
+			self.display[0].blit(img, (rect.x - self.cam.x - math.floor(img.get_rect().width/2) + 10, rect.y - self.cam.y - int(img.get_rect().height/2) - 3))
+		elif i['TYPE'] == 5:
+			self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'obj_' + str(i['INDEX']) + str(i['WHO']) + '.png'), (rect.x - self.cam.x, rect.y - self.cam.y - 10))
+			if self.sleepin == True and i['INDEX'] == 1: self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'char_0_rest.png'), (rect.x - self.cam.x + 5, rect.y - self.cam.y + 5))
 		#FOLLOW
 		if i['FOLLOW'] != None and i['FOLLOW'] != (None,None):
 			i['SPEED'] = 3
@@ -2417,6 +2415,10 @@ class Game:
 				elif self.dev.ingame == 6:
 					res.PX = self.player[0]['RECT'].x
 					res.PY = self.player[0]['RECT'].y
+				#PHOTO NOTIFICATION
+				elif self.dev.ingame == 7:
+					pass
+					#self.notification(self.foe[0]['NAME'] + ' registrada',(134, 0, 211))
 			#READING OPTIONS
 			if self.read != None:
 				self.read.inside_events(self.pressed)
@@ -3413,33 +3415,30 @@ class Game:
 						#HIT
 						if dmg <= 0:
 							dmg = 1
-						if True:
-							for p in range(dmg * 2):
-								if i['TYPE'] == 'mercenary': cl = (150, 25, 29)
-								else: cl = (10, 255, 50)
-								self.particles.append({'TYPE': 'blood', 'X': self.aim.x, 'Y': self.aim.y, 'RADIUS': round(random.randint(3,5)), 'DIRECTION': round(random.randint(0,360)),
-									'SPEED': round(random.randint(2,6)), 'COLOR': cl})
-							i['HP'] -= dmg
-							self.hits += 1
-							self.tdmg += dmg
-							if dmg >= wpdmg + 2 - i['RESISTANCE'] + dtb.CLASSES[self.fig[self.turn]['CLASS']]['STRENGHT'][self.fig[self.turn]['LEVEL']]:
-								if i['HP'] <= 0:
-									self.ch_ton.play(res.SOUND['SCREAM_' + i['FILE'].upper()])
-									i['AWAY'] = 1
-									
-								self.ch_sfx.play(res.SOUND['CRITICAL'])
-								self.hitisplay(10, i['MASK'], dtb.BATTLE[3], (200, 0, 0))
-							else:
-								if res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0].startswith('melee'):
-									self.ch_sfx.play(res.SOUND['HIT'])
-								elif res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0].startswith('gun'):
-									self.ch_sfx.play(res.SOUND['GUNSHOT_1'])
-								if res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0].startswith('grenade'):
-									self.ch_sfx.play(res.SOUND['HIT'])
-								self.hitisplay(10, i['MASK'], str(dmg), (200, 0, 0))
-							if i['HEALTH'] != 1 and i['HP'] > 0: i['SPRITE'] = pygame.image.load(res.SPRITES_PATH + 'Freaks/frk_' + (i['FILE']) + '_stand.png')
+						for p in range(dmg * 2):
+							if i['TYPE'] == 'mercenary': cl = (150, 25, 29)
+							else: cl = (10, 255, 50)
+							self.particles.append({'TYPE': 'blood', 'X': self.aim.x, 'Y': self.aim.y, 'RADIUS': round(random.randint(3,5)), 'DIRECTION': round(random.randint(0,360)),
+								'SPEED': round(random.randint(2,6)), 'COLOR': cl})
+						i['HP'] -= dmg
+						self.hits += 1
+						self.tdmg += dmg
+						if dmg >= wpdmg + 2 - i['RESISTANCE'] + dtb.CLASSES[self.fig[self.turn]['CLASS']]['STRENGHT'][self.fig[self.turn]['LEVEL']]:
+							if i['HP'] <= 0:
+								self.ch_ton.play(res.SOUND['SCREAM_' + i['FILE'].upper()])
+								i['AWAY'] = 1
+								
+							self.ch_sfx.play(res.SOUND['CRITICAL'])
+							self.hitisplay(10, i['MASK'], dtb.BATTLE[3], (200, 0, 0))
 						else:
-							self.hitisplay(0, None, dtb.BATTLE[5], (255, 255, 255))
+							if res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0].startswith('melee'):
+								self.ch_sfx.play(res.SOUND['HIT'])
+							elif res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0].startswith('gun'):
+								self.ch_sfx.play(res.SOUND['GUNSHOT_1'])
+							if res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0].startswith('grenade'):
+								self.ch_sfx.play(res.SOUND['HIT'])
+							self.hitisplay(10, i['MASK'], str(dmg), (200, 0, 0))
+						if i['HEALTH'] != 1 and i['HP'] > 0: i['SPRITE'] = pygame.image.load(res.SPRITES_PATH + 'Freaks/frk_' + (i['FILE']) + '_stand.png')
 						#CHECK WIN
 						if i['HP'] <= 0:
 							if dmg >= i['RESISTANCE']: again = True

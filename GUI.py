@@ -981,42 +981,40 @@ class Apps:
 	def inside_events(self,pressed):
 		if self.app == None:
 			if pressed[0][0]: self.opt[1] -=1; self.sfx.play(res.SOUND['MENU_VER'])
-			if True:
-				if True:
-					if pressed[1][0]: self.opt[1] +=1; self.sfx.play(res.SOUND['MENU_VER'])
-					if pressed[2][0]: self.opt[0] -=1; self.sfx.play(res.SOUND['MENU_HOR'])
-					if pressed[3][0]: self.opt[0] +=1; self.sfx.play(res.SOUND['MENU_HOR'])
-					
-					if self.opt[0] < 0: self.opt[0] = 2
-					if self.opt[0] > 2: self.opt[0] = 0
-					if self.opt[1] < 0: self.opt[1] = self.type + 3
-					if self.opt[1] > self.type + 3: self.opt[1] = 0
+			if pressed[1][0]: self.opt[1] +=1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[2][0]: self.opt[0] -=1; self.sfx.play(res.SOUND['MENU_HOR'])
+			if pressed[3][0]: self.opt[0] +=1; self.sfx.play(res.SOUND['MENU_HOR'])
+			
+			if self.opt[0] < 0: self.opt[0] = 2
+			if self.opt[0] > 2: self.opt[0] = 0
+			if self.opt[1] < 0: self.opt[1] = self.type + 3
+			if self.opt[1] > self.type + 3: self.opt[1] = 0
 
-					if pressed[4][0]:
-						self.sfx.play(res.SOUND['MENU_GO'])
-						if self.type == 0:
-							if self.opt == [0,0]: self.app = Contacts(); self.hpctrl = 'PHONE_CONTACTS'
-							if self.opt == [1,0]: self.app = Stats(); self.hpctrl = 'PHONE_STATS'
-							if self.opt == [2,0]: self.app = Tactics(); self.hpctrl = 'PHONE_TACTICS'
-							if self.opt == [0,1]: self.app = Tasks(); self.hpctrl = 'PHONE_TASKS'
-							if self.opt == [1,1]: self.app = Achievements(); self.hpctrl = 'PHONE_ACHIEVEMENTS'
-							if self.opt == [2,1]: self.app = Ranking(); self.hpctrl = 'PHONE_RANK'
-							if self.opt == [0,2]: self.app = Help(); self.hpctrl = 'PHONE_MANUAL'
-							if self.opt == [1,2]: self.app = About(); self.hpctrl = 'PHONE_ABOUT'
-							if self.opt == [2,2]: self.app = Settings(); self.hpctrl = 'PHONE_SETTINGS'
-						if self.type == 1:
-							if self.opt == [0,0]: self.app = Contacts(); self.hpctrl = 'PHONE_CONTACTS'
-							if self.opt == [1,0]: self.app = Email(); self.hpctrl = 'PHONE_EMAIL'
-							if self.opt == [2,0]: self.app = Radio(); self.hpctrl = 'PHONE_RADIO'
-							if self.opt == [0,1]: self.app = Camera(); self.hpctrl = 'PHONE_CAMERA'
-							if self.opt == [1,1]: self.app = Tasks(); self.hpctrl = 'PHONE_TASKS'
-							if self.opt == [2,1]: self.app = Stats(); self.hpctrl = 'PHONE_STATS'
-							if self.opt == [0,2]: self.app = Tactics(); self.hpctrl = 'PHONE_TACTICS'
-							if self.opt == [1,2]: self.app = Achievements(); self.hpctrl = 'PHONE_ACHIEVEMENTS'
-							if self.opt == [2,2]: self.app = Ranking(); self.hpctrl = 'PHONE_RANK'
-							if self.opt == [0,3]: self.app = Help(); self.hpctrl = 'PHONE_MANUAL'
-							if self.opt == [1,3]: self.app = About(); self.hpctrl = 'PHONE_ABOUT'
-							if self.opt == [2,3]: self.app = Settings(); self.hpctrl = 'PHONE_SETTINGS'
+			if pressed[4][0]:
+				self.sfx.play(res.SOUND['MENU_GO'])
+				if self.type == 0:
+					if self.opt == [0,0]: self.app = Contacts(); self.hpctrl = 'PHONE_CONTACTS'
+					if self.opt == [1,0]: self.app = Stats(); self.hpctrl = 'PHONE_STATS'
+					if self.opt == [2,0]: self.app = Tactics(); self.hpctrl = 'PHONE_TACTICS'
+					if self.opt == [0,1]: self.app = Tasks(); self.hpctrl = 'PHONE_TASKS'
+					if self.opt == [1,1]: self.app = Achievements(); self.hpctrl = 'PHONE_ACHIEVEMENTS'
+					if self.opt == [2,1]: self.app = Ranking(); self.hpctrl = 'PHONE_RANK'
+					if self.opt == [0,2]: self.app = Help(); self.hpctrl = 'PHONE_MANUAL'
+					if self.opt == [1,2]: self.app = About(); self.hpctrl = 'PHONE_ABOUT'
+					if self.opt == [2,2]: self.app = Settings(); self.hpctrl = 'PHONE_SETTINGS'
+				if self.type == 1:
+					if self.opt == [0,0]: self.app = Contacts(); self.hpctrl = 'PHONE_CONTACTS'
+					if self.opt == [1,0]: self.app = Email(); self.hpctrl = 'PHONE_EMAIL'
+					if self.opt == [2,0]: self.app = Radio(); self.hpctrl = 'PHONE_RADIO'
+					if self.opt == [0,1]: self.app = Camera(); self.hpctrl = 'PHONE_CAMERA'
+					if self.opt == [1,1]: self.app = Tasks(); self.hpctrl = 'PHONE_TASKS'
+					if self.opt == [2,1]: self.app = Stats(); self.hpctrl = 'PHONE_STATS'
+					if self.opt == [0,2]: self.app = Tactics(); self.hpctrl = 'PHONE_TACTICS'
+					if self.opt == [1,2]: self.app = Achievements(); self.hpctrl = 'PHONE_ACHIEVEMENTS'
+					if self.opt == [2,2]: self.app = Ranking(); self.hpctrl = 'PHONE_RANK'
+					if self.opt == [0,3]: self.app = Help(); self.hpctrl = 'PHONE_MANUAL'
+					if self.opt == [1,3]: self.app = About(); self.hpctrl = 'PHONE_ABOUT'
+					if self.opt == [2,3]: self.app = Settings(); self.hpctrl = 'PHONE_SETTINGS'
 		else:
 			self.app.inside_events(pressed)
 			self.ingame = self.app.ingame
@@ -1100,20 +1098,18 @@ class GPS:
 		
 	def outside_events(self,pressed):
 		if pressed[0][0]: self.xy[1] += 3
-		if True:
-			if True:
-				if pressed[1][0]: self.xy[1] -= 3
-				if pressed[2][0]: self.xy[0] += 3
-				if pressed[3][0]: self.xy[0] -= 3
-				if pressed[4][0]: self.zoom += 5
-				if pressed[5][0]: self.zoom -= 5
+		if pressed[1][0]: self.xy[1] -= 3
+		if pressed[2][0]: self.xy[0] += 3
+		if pressed[3][0]: self.xy[0] -= 3
+		if pressed[4][0]: self.zoom += 5
+		if pressed[5][0]: self.zoom -= 5
 
-				if self.xy[0] < 50: self.xy[0] = 50
-				if self.xy[0] > 200: self.xy[0] = 200
-				if self.xy[1] < 50: self.xy[1] = 50
-				if self.xy[1] > 200: self.xy[1] = 200
-				if self.zoom < 50: self.zoom = 50
-				if self.zoom > 200: self.zoom = 200
+		if self.xy[0] < 50: self.xy[0] = 50
+		if self.xy[0] > 200: self.xy[0] = 200
+		if self.xy[1] < 50: self.xy[1] = 50
+		if self.xy[1] > 200: self.xy[1] = 200
+		if self.zoom < 50: self.zoom = 50
+		if self.zoom > 200: self.zoom = 200
 	
 	def draw(self):
 		sz = self.scr[0].get_width() #button width
@@ -1176,90 +1172,87 @@ class Contacts:
 		self.exvar = 0
 		
 	def inside_events(self,pressed):
-		if True:
-			if True:
-				if True:
-					#SRLECT OPTIONS
-					if pressed[2][0]:
-						self.sfx.play(res.SOUND['MENU_HOR'])
-						if self.mnu == 0: self.opt[0] -= 1; self.opt[1] = 0
-						elif self.mnu < 3: self.mnu = 1
-						else:
-							self.mnu -= 1
-							if self.mnu < 3: self.mnu = 5
+		#SELECT OPTIONS
+		if pressed[2][0]:
+			self.sfx.play(res.SOUND['MENU_HOR'])
+			if self.mnu == 0: self.opt[0] -= 1; self.opt[1] = 0
+			elif self.mnu < 3: self.mnu = 1
+			else:
+				self.mnu -= 1
+				if self.mnu < 3: self.mnu = 5
 
-					if pressed[3][0]:
-						self.sfx.play(res.SOUND['MENU_HOR'])
-						if self.mnu == 0: self.opt[0] += 1; self.opt[1] = 0
-						elif self.mnu < 3: self.mnu = 2
-						else:
-							self.mnu += 1
-							if self.mnu > 5: self.mnu = 3
+		if pressed[3][0]:
+			self.sfx.play(res.SOUND['MENU_HOR'])
+			if self.mnu == 0: self.opt[0] += 1; self.opt[1] = 0
+			elif self.mnu < 3: self.mnu = 2
+			else:
+				self.mnu += 1
+				if self.mnu > 5: self.mnu = 3
 
-					if pressed[0][0]:
-						self.sfx.play(res.SOUND['MENU_VER'])
-						if self.mnu < 3: self.opt[1] -= 1
-						else:
-							self.exvar -= 1
-							if self.exvar < 0: self.exvar = 5
-							res.PARTY[self.opt[1]][self.mnu - 3] = self.exvar
+		if pressed[0][0]:
+			self.sfx.play(res.SOUND['MENU_VER'])
+			if self.mnu < 3: self.opt[1] -= 1
+			else:
+				self.exvar -= 1
+				if self.exvar < 0: self.exvar = 5
+				res.PARTY[self.opt[1]][self.mnu - 3] = self.exvar
 
-					if pressed[1][0]:
-						self.sfx.play(res.SOUND['MENU_VER'])
-						if self.mnu < 3: self.opt[1] += 1
-						else:
-							self.exvar += 1
-							if self.exvar > 5: self.exvar = 0
-							res.PARTY[self.opt[1]][self.mnu - 3] = self.exvar
-					#PARTY SELECT
-					if self.opt[0] == 0:
-						if self.opt[1] < 0: self.opt[1] = len(res.PARTY)
-						if self.opt[1] > len(res.PARTY): self.opt[1] = 0
+		if pressed[1][0]:
+			self.sfx.play(res.SOUND['MENU_VER'])
+			if self.mnu < 3: self.opt[1] += 1
+			else:
+				self.exvar += 1
+				if self.exvar > 5: self.exvar = 0
+				res.PARTY[self.opt[1]][self.mnu - 3] = self.exvar
+		#PARTY SELECT
+		if self.opt[0] == 0:
+			if self.opt[1] < 0: self.opt[1] = len(res.PARTY)
+			if self.opt[1] > len(res.PARTY): self.opt[1] = 0
 
-						if pressed[4][0]:
-							self.sfx.play(res.SOUND['MENU_GO'])
-							if self.opt[1] < len(res.PARTY):
-								if self.mnu == 0:
-									self.mnu = 1
-								elif self.mnu == 1:
-									res.FORMATION = self.opt[1]
-									for i in res.PARTY[res.FORMATION]:
-										res.CHARACTERS[i]['HP'] = dtb.CLASSES[res.CHARACTERS[i]['CLASS']]['RESISTANCE'][res.CHARACTERS[i]['LEVEL']]
-									self.ton.play(res.SOUND['PARTY_CHANGE'])
-									self.mnu = 0
-									self.opt = [0,0]
-								elif self.mnu > 2:
-									res.party_make(self.opt[1])
-									self.mnu = 0
-								elif len(res.PARTY) > 1:
-									del res.PARTY[self.opt[1]]
-									self.mnu = 0 
-							else:
-								res.PARTY.append([0,0,0])
-								self.exvar = 0
-								self.mnu = 3
-					#PHONE SELECT
-					if self.opt[0] == 1:
-						if self.opt[1] < 0: self.opt[1] = len(res.CONTACTS) - 1
-						if self.opt[1] > len(res.CONTACTS) - 1: self.opt[1] = 0
+			if pressed[4][0]:
+				self.sfx.play(res.SOUND['MENU_GO'])
+				if self.opt[1] < len(res.PARTY):
+					if self.mnu == 0:
+						self.mnu = 1
+					elif self.mnu == 1:
+						res.FORMATION = self.opt[1]
+						for i in res.PARTY[res.FORMATION]:
+							res.CHARACTERS[i]['HP'] = dtb.CLASSES[res.CHARACTERS[i]['CLASS']]['RESISTANCE'][res.CHARACTERS[i]['LEVEL']]
+						self.ton.play(res.SOUND['PARTY_CHANGE'])
+						self.mnu = 0
+						self.opt = [0,0]
+					elif self.mnu > 2:
+						res.party_make(self.opt[1])
+						self.mnu = 0
+					elif len(res.PARTY) > 1:
+						del res.PARTY[self.opt[1]]
+						self.mnu = 0 
+				else:
+					res.PARTY.append([0,0,0])
+					self.exvar = 0
+					self.mnu = 3
+		#PHONE SELECT
+		if self.opt[0] == 1:
+			if self.opt[1] < 0: self.opt[1] = len(res.CONTACTS) - 1
+			if self.opt[1] > len(res.CONTACTS) - 1: self.opt[1] = 0
 
-						if pressed[4][0]:
-							if self.mnu == 0:
-								pygame.time.wait(round(random.randint(10,200)))
-								if self.credit > 0:
-									credit = self.inv.find(res.PARTY[res.FORMATION][0],'phone')
-									if credit != None:
-										if credit[2] == 'sim_card': credit[3] = str(int(credit[3]) - 1); self.credit = int(credit[3])
-										elif credit[4] == 'sim_card': credit[5] = str(int(credit[5]) - 1); self.credit = int(credit[5])
-									res.CALLHIST.insert(0,[res.CONTACTS[self.opt[1]][1],False])
-									self.nb = res.CONTACTS[self.opt[1]]
-									if self.nb[1] in ['23778988','69696969','53478809']:
-										self.ingame = 1
-									else: self.ingame = 2
-								else: self.ingame = 3
+			if pressed[4][0]:
+				if self.mnu == 0:
+					pygame.time.wait(round(random.randint(10,200)))
+					if self.credit > 0:
+						credit = self.inv.find(res.PARTY[res.FORMATION][0],'phone')
+						if credit != None:
+							if credit[2] == 'sim_card': credit[3] = str(int(credit[3]) - 1); self.credit = int(credit[3])
+							elif credit[4] == 'sim_card': credit[5] = str(int(credit[5]) - 1); self.credit = int(credit[5])
+						res.CALLHIST.insert(0,[res.CONTACTS[self.opt[1]][1],False])
+						self.nb = res.CONTACTS[self.opt[1]]
+						if self.nb[1] in ['23778988','69696969','53478809']:
+							self.ingame = 1
+						else: self.ingame = 2
+					else: self.ingame = 3
 
-					if self.opt[0] < 0: self.opt[0] = 2
-					if self.opt[0] > 2: self.opt[0] = 0
+		if self.opt[0] < 0: self.opt[0] = 2
+		if self.opt[0] > 2: self.opt[0] = 0
 		
 	def outside_events(self,event):
 		pass
@@ -1347,49 +1340,45 @@ class Email:
 		
 	def inside_events(self,pressed):
 		if res.SIGNAL > 0:
-			if True:
-				if True:
-					if self.mnu == 0:
-						if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-						if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-						if pressed[2][0]: self.opt[0] -= 1; self.opt[1] = 0; self.c
-						sfx.play(res.SOUND['MENU_HOR'])
-						if pressed[3][0]: self.opt[0] += 1; self.opt[1] = 0; self.sfx.play(res.SOUND['MENU_HOR'])
+			if self.mnu == 0:
+				if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+				if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
+				if pressed[2][0]: self.opt[0] -= 1; self.opt[1] = 0; self.c
+				sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: self.opt[0] += 1; self.opt[1] = 0; self.sfx.play(res.SOUND['MENU_HOR'])
 
-					if pressed[4][0] and res.SIGNAL > 0:
-						if self.mnu == 0: self.mnu = 1; self.sfx.play(res.SOUND['MENU_GO'])
-						elif self.mnu > 0:
-							self.sfx.play(res.SOUND['MENU_BACK'])
-							if self.opt[0] == 0: self.phn.e_unread[self.opt[1]][3] = 1
-							if self.opt[0] == 2: res.INBOX[self.opt[1]][3] = 1
-							self.mnu = 0
-					read = 0
-					unrd = 0
-					for i in res.INBOX:
-						if i[3] == 0: unrd += 1
-						if i[3] == 1: read += 1
+			if pressed[4][0] and res.SIGNAL > 0:
+				if self.mnu == 0: self.mnu = 1; self.sfx.play(res.SOUND['MENU_GO'])
+				elif self.mnu > 0:
+					self.sfx.play(res.SOUND['MENU_BACK'])
+					if self.opt[0] == 0: self.phn.e_unread[self.opt[1]][3] = 1
+					if self.opt[0] == 2: res.INBOX[self.opt[1]][3] = 1
+					self.mnu = 0
+			read = 0
+			unrd = 0
+			for i in res.INBOX:
+				if i[3] == 0: unrd += 1
+				if i[3] == 1: read += 1
 
-					if self.opt[0] < 0: self.opt[0] = 2
-					if self.opt[0] > 2: self.opt[0] = 0
-					if self.opt[0] == 0:
-						if self.opt[1] < 0: self.opt[1] = unrd
-						if self.opt[1] > unrd: self.opt[1] = 0
-					if self.opt[0] == 1:
-						if self.opt[1] < 0: self.opt[1] = read
-						if self.opt[1] > read: self.opt[1] = 0
-					if self.opt[0] == 2:
-						if self.opt[1] < 0: self.opt[1] = len(res.INBOX) - 1
-						if self.opt[1] > len(res.INBOX) - 1: self.opt[1] = 0
+			if self.opt[0] < 0: self.opt[0] = 2
+			if self.opt[0] > 2: self.opt[0] = 0
+			if self.opt[0] == 0:
+				if self.opt[1] < 0: self.opt[1] = unrd
+				if self.opt[1] > unrd: self.opt[1] = 0
+			if self.opt[0] == 1:
+				if self.opt[1] < 0: self.opt[1] = read
+				if self.opt[1] > read: self.opt[1] = 0
+			if self.opt[0] == 2:
+				if self.opt[1] < 0: self.opt[1] = len(res.INBOX) - 1
+				if self.opt[1] > len(res.INBOX) - 1: self.opt[1] = 0
 		
 	def outside_events(self,pressed):
 		if self.mnu > 0:
-			if True:
-				if True:
-					if pressed[0][0]: self.mnu -= 2
-					if pressed[1][0]: self.mnu += 2
+			if pressed[0][0]: self.mnu -= 2
+			if pressed[1][0]: self.mnu += 2
 
-					if self.mnu < 1: self.mnu = 1
-					if self.mnu > 1000: self.mnu = 1000
+			if self.mnu < 1: self.mnu = 1
+			if self.mnu > 1000: self.mnu = 1000
 	
 	def draw(self):
 		sz = self.scr[0].get_width() #button width
@@ -1515,29 +1504,25 @@ class News:
 		
 	def inside_events(self,pressed):
 		if res.SIGNAL > 0:
-			if True:
-				if True:
-					if self.mnu == 0:
-						if pressed[0][0]: self.lopt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-						if pressed[1][0]: self.lopt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if self.mnu == 0:
+				if pressed[0][0]: self.lopt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+				if pressed[1][0]: self.lopt += 1; self.sfx.play(res.SOUND['MENU_VER'])
 
-					if pressed[4][0]:
-						self.sfx.play(res.SOUND['MENU_GO'])
-						if self.mnu == 0: self.mnu = 1
-						elif self.mnu > 0: self.mnu = 0
+			if pressed[4][0]:
+				self.sfx.play(res.SOUND['MENU_GO'])
+				if self.mnu == 0: self.mnu = 1
+				elif self.mnu > 0: self.mnu = 0
 
-					if self.lopt < 0: self.lopt = 3
-					if self.lopt > 3: self.lopt = 0
+			if self.lopt < 0: self.lopt = 3
+			if self.lopt > 3: self.lopt = 0
 	
 	def outside_events(self,pressed):
 		if self.mnu > 0:
-			if True:
-				if True:
-					if pressed[0][0]: self.mnu -= 2
-					if pressed[1][0]: self.mnu += 2
+			if pressed[0][0]: self.mnu -= 2
+			if pressed[1][0]: self.mnu += 2
 
-					if self.mnu < 1: self.mnu = 1
-					if self.mnu > 1000: self.mnu = 1000
+			if self.mnu < 1: self.mnu = 1
+			if self.mnu > 1000: self.mnu = 1000
 	
 	def draw(self):
 		sz = self.scr[0].get_width() #button width
@@ -1609,41 +1594,37 @@ class Radio:
 		
 	def inside_events(self,pressed):
 		if res.SIGNAL > 0:
-			if True:
-				if True:
-					if pressed[4][0]:
-						self.onoff = not self.onoff
-						if self.onoff == False:
-							self.sfx.play(res.SOUND['MENU_BACK'])
-							self.noi.stop()
-							pygame.mixer.music.stop()
-						else:
-							self.sfx.play(res.SOUND['MENU_GO'])
-							self.noi.play(res.SOUND['NOISE'],-1)
-							self.song = res.SONGS_PATH + str(math.floor(self.fm/20)) + '/' + res.RADIO[str(math.floor(self.fm/20))][self.msc]
-							pygame.mixer.music.load(self.song)
-							pygame.mixer.music.play()
-					if pressed[7][0]:
-						self.noi.stop()
+			if pressed[4][0]:
+				self.onoff = not self.onoff
+				if self.onoff == False:
+					self.sfx.play(res.SOUND['MENU_BACK'])
+					self.noi.stop()
+					pygame.mixer.music.stop()
+				else:
+					self.sfx.play(res.SOUND['MENU_GO'])
+					self.noi.play(res.SOUND['NOISE'],-1)
+					self.song = res.SONGS_PATH + str(math.floor(self.fm/20)) + '/' + res.RADIO[str(math.floor(self.fm/20))][self.msc]
+					pygame.mixer.music.load(self.song)
+					pygame.mixer.music.play()
+			if pressed[7][0]:
+				self.noi.stop()
 						
 	def outside_events(self,pressed):
 		if pressed[2][0]: self.fm -= 1; self.vm -= 0.05
-		if True:
-			if True:
-				if pressed[3][0]: self.fm += 1; self.vm += 0.05
+		if pressed[3][0]: self.fm += 1; self.vm += 0.05
 
-				if self.fm < 0: self.fm = 180
-				if self.fm > 180: self.fm = 0
-				if self.vm < 0.0: self.vm = 1.0
-				if self.vm > 1.0: self.vm = 0.0
+		if self.fm < 0: self.fm = 180
+		if self.fm > 180: self.fm = 0
+		if self.vm < 0.0: self.vm = 1.0
+		if self.vm > 1.0: self.vm = 0.0
 
-				pygame.mixer.music.set_volume(self.vm)
-				self.noi.set_volume(1 - self.vm)
-				if self.vm == 0.0 and self.onoff == True:
-					if res.RADIO[str(math.floor(self.fm/20))] != []:
-						self.song = res.SONGS_PATH + str(math.floor(self.fm/20)) + '/' + res.RADIO[str(math.floor(self.fm/20))][self.msc]
-						pygame.mixer.music.load(self.song)
-						pygame.mixer.music.play()
+		pygame.mixer.music.set_volume(self.vm)
+		self.noi.set_volume(1 - self.vm)
+		if self.vm == 0.0 and self.onoff == True:
+			if res.RADIO[str(math.floor(self.fm/20))] != []:
+				self.song = res.SONGS_PATH + str(math.floor(self.fm/20)) + '/' + res.RADIO[str(math.floor(self.fm/20))][self.msc]
+				pygame.mixer.music.load(self.song)
+				pygame.mixer.music.play()
 
 	def draw(self):
 		sz = self.scr[0].get_width() #button width
@@ -1684,29 +1665,27 @@ class Camera:
 	
 	def inside_events(self,pressed):
 		if res.SIGNAL > 0:
-			if True:
-				if True:
-					if pressed[0][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-					if pressed[1][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[0][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[1][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
 
-					if self.opt < 0: self.opt = 2
-					if self.opt > 2: self.opt = 0
+			if self.opt < 0: self.opt = 2
+			if self.opt > 2: self.opt = 0
 
-					if pressed[4][0] and res.SIGNAL > 0:
-						self.sfx.play(res.SOUND['FILE_SAVE'])
-						res.ID = self.opt
-						res.CHAPTER = 13
-						self.ingame = 6
-						#SAVE FILE
-						if self.opt < len(res.FILES[0]):
-							res.save_data()
-							res.recent_data(1,self.opt)
-						#NEW FILE
-						else:
-							res.recent_data(3,self.opt)
-							res.new_data(True)
-							res.save_data()
-						res.recent_data(0)
+			if pressed[4][0] and res.SIGNAL > 0:
+				self.sfx.play(res.SOUND['FILE_SAVE'])
+				res.ID = self.opt
+				res.CHAPTER = 13
+				self.ingame = 6
+				#SAVE FILE
+				if self.opt < len(res.FILES[0]):
+					res.save_data()
+					res.recent_data(1,self.opt)
+				#NEW FILE
+				else:
+					res.recent_data(3,self.opt)
+					res.new_data(True)
+					res.save_data()
+				res.recent_data(0)
 	
 	def outside_events(self,pressed):
 		pass
@@ -1765,29 +1744,27 @@ class Bestiary:
 		
 	def inside_events(self,pressed):
 		if res.SIGNAL > 0:
-			if True:
-				if True:
-					if pressed[0][0]: self.lopt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-					if pressed[1][0]: self.lopt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[0][0]: self.lopt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[1][0]: self.lopt += 1; self.sfx.play(res.SOUND['MENU_VER'])
 
-					if pressed[4][0]:
-						if self.mnu == 0: self.mnu = 1; self.sfx.play(res.SOUND['MENU_GO'])
-						elif self.mnu > 0: self.mnu = 0; self.sfx.play(res.SOUND['MENU_BACK'])
+			if pressed[4][0]:
+				if self.mnu == 0: self.mnu = 1; self.sfx.play(res.SOUND['MENU_GO'])
+				elif self.mnu > 0: self.mnu = 0; self.sfx.play(res.SOUND['MENU_BACK'])
 
-					slst = 0
-					for i in res.BESTIARY:
-						if i['SEEN'] > 0: slst += 1
+			slst = 0
+			for i in res.BESTIARY:
+				if i['SEEN'] > 0: slst += 1
 
-					if self.mnu == 0:
-						if self.lopt < 0: self.lopt = slst
-						if self.lopt > slst: self.lopt = 0
+			if self.mnu == 0:
+				if self.lopt < 0: self.lopt = slst
+				if self.lopt > slst: self.lopt = 0
 
-					if self.mnu > 0:
-						if pressed[2][0]: self.mnu = 1; self.sfx.play(res.SOUND['MENU_HOR'])
-						if pressed[3][0]: self.mnu = 2; self.sfx.play(res.SOUND['MENU_HOR'])
+			if self.mnu > 0:
+				if pressed[2][0]: self.mnu = 1; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: self.mnu = 2; self.sfx.play(res.SOUND['MENU_HOR'])
 
-						if self.lopt < 0: self.lopt = 3
-						if self.lopt > 3: self.lopt = 0
+				if self.lopt < 0: self.lopt = 3
+				if self.lopt > 3: self.lopt = 0
 	
 	def outside_events(self,pressed):
 		pass
@@ -1890,18 +1867,15 @@ class Tasks:
 		self.mnu = 0
 		
 	def inside_events(self,pressed):
-		if True:
-			if True:
-				if True:
-					if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-					if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-					if pressed[2][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-					if pressed[3][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[2][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
 
-					if self.opt[0] < 0: self.opt[0] = 2
-					if self.opt[0] > 2: self.opt[0] = 0
-					if self.opt[1] < 0: self.opt[1] = len(res.TASKS) - 1
-					if self.opt[1] > len(res.TASKS) - 1: self.opt[1] = 0
+		if self.opt[0] < 0: self.opt[0] = 2
+		if self.opt[0] > 2: self.opt[0] = 0
+		if self.opt[1] < 0: self.opt[1] = len(res.TASKS) - 1
+		if self.opt[1] > len(res.TASKS) - 1: self.opt[1] = 0
 					
 	def outside_events(self,pressed):
 		pass
@@ -1972,13 +1946,10 @@ class Stats:
 	
 	def inside_events(self,pressed):
 		if pressed[2][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-		if True:
-			if True:
-				if True:
-					if pressed[3][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_HOR'])
 
-					if self.opt < 0: self.opt = len(res.PARTY[res.FORMATION]) - 1
-					if self.opt > len(res.PARTY[res.FORMATION]) - 1: self.opt = 0
+		if self.opt < 0: self.opt = len(res.PARTY[res.FORMATION]) - 1
+		if self.opt > len(res.PARTY[res.FORMATION]) - 1: self.opt = 0
 					
 	def outside_events(self,pressed):
 		pass
@@ -2052,47 +2023,44 @@ class Tactics:
 		
 	def inside_events(self,pressed):
 		#CHOOSING TACTICS
-		if True:
-			if True:
-				if True:
-					if self.mnu == 0:
-						if pressed[4][0]:
-							self.sfx.play(res.SOUND['MENU_GO'])
-							if self.opt[1] == len(res.TACTICAL):
-								res.TACTICAL.append([0,0,0,0])
-							self.mnu = 1
-							self.opt[0] = res.TACTICAL[self.opt[1]][self.mnu - 1]
+		if self.mnu == 0:
+			if pressed[4][0]:
+				self.sfx.play(res.SOUND['MENU_GO'])
+				if self.opt[1] == len(res.TACTICAL):
+					res.TACTICAL.append([0,0,0,0])
+				self.mnu = 1
+				self.opt[0] = res.TACTICAL[self.opt[1]][self.mnu - 1]
 
-						if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-						if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
 
-						if self.opt[1] < 0: self.opt[1] = len(res.TACTICAL)
-						if self.opt[1] > len(res.TACTICAL): self.opt[1] = 0
-					#MANAGING TACTICS
-					elif self.mnu > 0:
-						if pressed[4][0]:
-							self.sfx.play(res.SOUND['MENU_BACK'])
-							if self.mnu < 5:
-								self.mnu = 0
-							else:
-								del res.TACTICAL[self.opt[1]]
-								self.mnu = 0
+			if self.opt[1] < 0: self.opt[1] = len(res.TACTICAL)
+			if self.opt[1] > len(res.TACTICAL): self.opt[1] = 0
+		#MANAGING TACTICS
+		elif self.mnu > 0:
+			if pressed[4][0]:
+				self.sfx.play(res.SOUND['MENU_BACK'])
+				if self.mnu < 5:
+					self.mnu = 0
+				else:
+					del res.TACTICAL[self.opt[1]]
+					self.mnu = 0
 
-						if pressed[0][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-						if pressed[1][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-						if pressed[2][0]: self.mnu -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-						if pressed[3][0]: self.mnu += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+			if pressed[0][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[1][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[2][0]: self.mnu -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
+			if pressed[3][0]: self.mnu += 1; self.sfx.play(res.SOUND['MENU_HOR'])
 
-						if self.mnu > 0:
-							if self.mnu < 1: self.mnu = 5
-							if self.mnu > 5: self.mnu = 1
-							if self.opt[0] < 0: self.opt[0] = 7
-							if self.opt[0] > 7: self.opt[0] = 0
-							
-							if pressed[2][0] or pressed[3][0]:
-								if self.mnu < 5 and len(res.TACTICAL) > 0: self.opt = res.TACTICAL[self.opt[1]][self.mnu - 1]
-							else:
-								if self.mnu < 5 and len(res.TACTICAL) > 0: res.TACTICAL[self.opt[1]][self.mnu - 1] = self.opt[0]
+			if self.mnu > 0:
+				if self.mnu < 1: self.mnu = 5
+				if self.mnu > 5: self.mnu = 1
+				if self.opt[0] < 0: self.opt[0] = 7
+				if self.opt[0] > 7: self.opt[0] = 0
+				
+				if pressed[2][0] or pressed[3][0]:
+					if self.mnu < 5 and len(res.TACTICAL) > 0: self.opt = res.TACTICAL[self.opt[1]][self.mnu - 1]
+				else:
+					if self.mnu < 5 and len(res.TACTICAL) > 0: res.TACTICAL[self.opt[1]][self.mnu - 1] = self.opt[0]
 								
 	def outside_events(self,pressed):
 		pass
@@ -2151,13 +2119,10 @@ class Achievements:
 		
 	def inside_events(self,pressed):
 		if pressed[0][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if True:
-			if True:
-				if True:
-					if pressed[1][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
 
-					if self.opt < 0: self.opt = len(dtb.ACHIEVEMENTS) - 1
-					if self.opt > len(dtb.ACHIEVEMENTS) - 1: self.opt = 0
+		if self.opt < 0: self.opt = len(dtb.ACHIEVEMENTS) - 1
+		if self.opt > len(dtb.ACHIEVEMENTS) - 1: self.opt = 0
 					
 	def outside_events(self,pressed):
 		pass
@@ -2230,28 +2195,23 @@ class Help:
 		
 	def inside_events(self,pressed):
 		if self.mnu == 0:
-			if True:
-				if True:
-					if True:
-						if pressed[0][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-						if pressed[1][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[0][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[1][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
 
-					if pressed[4][0]:
-						if self.mnu == 0: self.mnu = 1; self.sfx.play(res.SOUND['MENU_GO'])
-						elif self.mnu > 0: self.mnu = 0; self.sfx.play(res.SOUND['MENU_BACK'])
+		if pressed[4][0]:
+			if self.mnu == 0: self.mnu = 1; self.sfx.play(res.SOUND['MENU_GO'])
+			elif self.mnu > 0: self.mnu = 0; self.sfx.play(res.SOUND['MENU_BACK'])
 
-					if self.opt < 0: self.lopt = len(dtb.MANUAL) - 1
-					if self.opt > len(dtb.MANUAL) - 1: self.opt = 0
+		if self.opt < 0: self.lopt = len(dtb.MANUAL) - 1
+		if self.opt > len(dtb.MANUAL) - 1: self.opt = 0
 					
 	def outside_events(self,pressed):
 		if self.mnu > 0:
-			if True:
-				if True:
-					if pressed[0][0]: self.mnu -=1
-					if pressed[1][0]: self.mnu +=1
-							
-					if self.mnu < 1: self.mnu = 1
-					if self.mnu > 1000: self.mnu = 1000
+			if pressed[0][0]: self.mnu -=1
+			if pressed[1][0]: self.mnu +=1
+					
+			if self.mnu < 1: self.mnu = 1
+			if self.mnu > 1000: self.mnu = 1000
 	
 	def draw(self):
 		for i in self.scr: i.fill((10,10,10,0))
@@ -2295,208 +2255,203 @@ class Settings:
 		
 	def inside_events(self,pressed):
 		if pressed[0][0]: self.lopt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if True:
-			if True:
-				if True:
-					if pressed[1][0]: self.lopt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.lopt += 1; self.sfx.play(res.SOUND['MENU_VER'])
 
-					if self.mnu == 0:
-						if self.lopt < 0: self.lopt = 3
-						if self.lopt > 3: self.lopt = 0
-					if self.mnu == 1:
-						if self.lopt < 0: self.lopt = 7
-						if self.lopt > 7: self.lopt = 0
-					if self.mnu == 2:
-						if self.lopt < 0: self.lopt = 1
-						if self.lopt > 1: self.lopt = 0
-					if self.mnu == 3:
-						if self.lopt < 0: self.lopt = 7
-						if self.lopt > 7: self.lopt = 0
-					#MAIN SETTINGS
-					if self.mnu == 0:
-						if pressed[4][0]:
-							if self.lopt == 3:
-								self.phn = GUI.Phone()
-								self.inv = GUI.Inventory(False)
-								self.shpmnu = GUI.Shop()
-								res.save_sett()
-								self.sfx.play(res.SOUND['MENU_GO'])
-								self.opt = 1
-								self.lopt = 4
-								self.phone = 1
-								if res.CHAPTER == 0 and res.SCENE == 0:
-									self.ch_ton.play(res.SOUND['CALLING'],-1)
-									self.ch_rng.play(res.SOUND['RINGTONE_' + str(self.phn.pbg)],-1)
-									self.phone = 17
-									self.nb = '977904623'
-							else:
-								self.mnu = self.lopt + 1
-								self.opt = 0
-								self.lopt = 0
-					#GAMEPLAY SETTINGS
-					elif self.mnu == 1:
-						if self.lopt == 0:
-							if pressed[2][0]:
-								res.LANG = 'EN'; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-							if pressed[3][0]:
-								res.LANG = 'PT'; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-						if self.lopt == 1:
-							if pressed[2][0]: res.SPEED += 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-							if pressed[3][0]: res.SPEED -= 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+		if self.mnu == 0:
+			if self.lopt < 0: self.lopt = 3
+			if self.lopt > 3: self.lopt = 0
+		if self.mnu == 1:
+			if self.lopt < 0: self.lopt = 7
+			if self.lopt > 7: self.lopt = 0
+		if self.mnu == 2:
+			if self.lopt < 0: self.lopt = 1
+			if self.lopt > 1: self.lopt = 0
+		if self.mnu == 3:
+			if self.lopt < 0: self.lopt = 7
+			if self.lopt > 7: self.lopt = 0
+		#MAIN SETTINGS
+		if self.mnu == 0:
+			if pressed[4][0]:
+				if self.lopt == 3:
+					self.phn = GUI.Phone()
+					self.inv = GUI.Inventory(False)
+					self.shpmnu = GUI.Shop()
+					res.save_sett()
+					self.sfx.play(res.SOUND['MENU_GO'])
+					self.opt = 1
+					self.lopt = 4
+					self.phone = 1
+					if res.CHAPTER == 0 and res.SCENE == 0:
+						self.ch_ton.play(res.SOUND['CALLING'],-1)
+						self.ch_rng.play(res.SOUND['RINGTONE_' + str(self.phn.pbg)],-1)
+						self.phone = 17
+						self.nb = '977904623'
+				else:
+					self.mnu = self.lopt + 1
+					self.opt = 0
+					self.lopt = 0
+		#GAMEPLAY SETTINGS
+		elif self.mnu == 1:
+			if self.lopt == 0:
+				if pressed[2][0]:
+					res.LANG = 'EN'; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]:
+					res.LANG = 'PT'; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+			if self.lopt == 1:
+				if pressed[2][0]: res.SPEED += 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.SPEED -= 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
 
-							if res.SPEED < 1: res.SPEED = 5
-							if res.SPEED > 5: res.SPEED = 1
-						if self.lopt == 5:
-							if pressed[2][0]: res.BORDER -= 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-							if pressed[3][0]: res.BORDER += 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if res.SPEED < 1: res.SPEED = 5
+				if res.SPEED > 5: res.SPEED = 1
+			if self.lopt == 5:
+				if pressed[2][0]: res.BORDER -= 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.BORDER += 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
 
-							if res.BORDER < 0: res.BORDER = res.RANGE_BORDER
-							if res.BORDER > res.RANGE_BORDER: res.BORDER = 0
-						if self.lopt == 6:
-							if pressed[2][0]: res.CENSORSHIP = False; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-							if pressed[3][0]: res.CENSORSHIP = True; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-						if self.lopt == 7:
-							if pressed[2][0]: res.HINT = False; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-							if pressed[3][0]: res.HINT = True; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-						if self.lopt == 8:
-							if pressed[2][0]: res.HELP = False; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-							if pressed[3][0]: res.HELP = True; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-					#CONTROLS MENU
-					elif self.mnu == 3:
-						if pressed[4][0]:
-							self.mnu = self.lopt + 4
-							self.opt = 0
-							self.lopt = 0
-					#MOUSE SETTINGS
-					elif self.mnu == 4:
-						if self.lopt == 1:
-							if pressed[2][0]: res.CURSOR -= 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-							if pressed[3][0]: res.CURSOR += 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if res.BORDER < 0: res.BORDER = res.RANGE_BORDER
+				if res.BORDER > res.RANGE_BORDER: res.BORDER = 0
+			if self.lopt == 6:
+				if pressed[2][0]: res.CENSORSHIP = False; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.CENSORSHIP = True; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+			if self.lopt == 7:
+				if pressed[2][0]: res.HINT = False; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.HINT = True; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+			if self.lopt == 8:
+				if pressed[2][0]: res.HELP = False; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.HELP = True; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+		#CONTROLS MENU
+		elif self.mnu == 3:
+			if pressed[4][0]:
+				self.mnu = self.lopt + 4
+				self.opt = 0
+				self.lopt = 0
+		#MOUSE SETTINGS
+		elif self.mnu == 4:
+			if self.lopt == 1:
+				if pressed[2][0]: res.CURSOR -= 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.CURSOR += 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
 
-							if res.CURSOR < 0: res.CURSOR = res.RANGE_CURSOR
-							if res.CURSOR > res.RANGE_CURSOR: res.CURSOR = 0
-						if pressed[4][0]:
-							self.mnu = self.lopt + 4
-							self.opt = 0
-							self.lopt = 0
-					#1P SETTINGS
-					elif self.mnu == 5:
-						#UP KEY
-						if self.lopt == 0:
-							if pressed[4][0]:
-								if self.opt == 0: self.opt = 1
-							else:
-								if self.opt == 1:
-									if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.ACT[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
-										dtb.UP = event.key; self.opt = 0
-						#DOWN KEY
-						if self.lopt == 1:
-							if pressed[4][0]:
-								if self.opt == 0: self.opt = 1
-							else:
-								if self.opt == 1:
-									if event.key not in (res.UP[0],res.LEFT[0],res.RIGHT[0],res.ACT[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
-										dtb.DOWN = event.key; self.opt = 0
-						#LEFT KEY
-						if self.lopt == 2:
-							if pressed[4][0]:
-								if self.opt == 0: self.opt = 1
-							else:
-								if self.opt == 1:
-									if event.key not in (res.DOWN[0],res.UP[0],res.RIGHT[0],res.ACT[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
-										dtb.LEFT = event.key; self.opt = 0
-						#RIGHT KEY
-						if self.lopt == 3:
-							if pressed[4][0]:
-								if self.opt == 0: self.opt = 1
-							else:
-								if self.opt == 1:
-									if event.key not in (res.DOWN[0],res.LEFT[0],res.UP[0],res.ACT[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
-										dtb.RIGHT = event.key; self.opt = 0
-						#ACT KEY
-						if self.lopt == 4:
-							if pressed[4][0]:
-								if self.opt == 0: self.opt = 1
-							else:
-								if self.opt == 1:
-									if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.UP[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
-										dtb.ACT = event.key; self.opt = 0
-						#RUN KEY
-						if self.lopt == 5:
-							if pressed[4][0]:
-								if self.opt == 0: self.opt = 1
-							else:
-								if self.opt == 1:
-									if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.UP[0],res.PHONE[0],res.BAG[0],res.ACT[0]):
-										dtb.RUN = event.key; self.opt = 0
-						#PHONE KEY
-						if self.lopt == 6:
-							if pressed[4][0]:
-								if self.opt == 0: self.opt = 1
-							else:
-								if self.opt == 1:
-									if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.ACT[0],res.UP[0],res.BAG[0],res.RUN[0]):
-										dtb.PHONE = event.key; self.opt = 0
-						#INVENTORY KEY
-						if self.lopt == 7:
-							if pressed[4][0]:
-								if self.opt == 0: self.opt = 1
-							else:
-								if self.opt == 1:
-									if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.ACT[0],res.PHONE[0],res.UP[0],res.RUN[0]):
-										dtb.BAG = event.key; self.opt = 0
-					#GO BACK
-					if pressed[5][0]:
-						if self.mnu > 0:
-							self.sfx.play(res.SOUND['MENU_BACK'])
-							self.mnu = 0
+				if res.CURSOR < 0: res.CURSOR = res.RANGE_CURSOR
+				if res.CURSOR > res.RANGE_CURSOR: res.CURSOR = 0
+			if pressed[4][0]:
+				self.mnu = self.lopt + 4
+				self.opt = 0
+				self.lopt = 0
+		#1P SETTINGS
+		elif self.mnu == 5:
+			#UP KEY
+			if self.lopt == 0:
+				if pressed[4][0]:
+					if self.opt == 0: self.opt = 1
+				else:
+					if self.opt == 1:
+						if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.ACT[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
+							dtb.UP = event.key; self.opt = 0
+			#DOWN KEY
+			if self.lopt == 1:
+				if pressed[4][0]:
+					if self.opt == 0: self.opt = 1
+				else:
+					if self.opt == 1:
+						if event.key not in (res.UP[0],res.LEFT[0],res.RIGHT[0],res.ACT[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
+							dtb.DOWN = event.key; self.opt = 0
+			#LEFT KEY
+			if self.lopt == 2:
+				if pressed[4][0]:
+					if self.opt == 0: self.opt = 1
+				else:
+					if self.opt == 1:
+						if event.key not in (res.DOWN[0],res.UP[0],res.RIGHT[0],res.ACT[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
+							dtb.LEFT = event.key; self.opt = 0
+			#RIGHT KEY
+			if self.lopt == 3:
+				if pressed[4][0]:
+					if self.opt == 0: self.opt = 1
+				else:
+					if self.opt == 1:
+						if event.key not in (res.DOWN[0],res.LEFT[0],res.UP[0],res.ACT[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
+							dtb.RIGHT = event.key; self.opt = 0
+			#ACT KEY
+			if self.lopt == 4:
+				if pressed[4][0]:
+					if self.opt == 0: self.opt = 1
+				else:
+					if self.opt == 1:
+						if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.UP[0],res.PHONE[0],res.BAG[0],res.RUN[0]):
+							dtb.ACT = event.key; self.opt = 0
+			#RUN KEY
+			if self.lopt == 5:
+				if pressed[4][0]:
+					if self.opt == 0: self.opt = 1
+				else:
+					if self.opt == 1:
+						if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.UP[0],res.PHONE[0],res.BAG[0],res.ACT[0]):
+							dtb.RUN = event.key; self.opt = 0
+			#PHONE KEY
+			if self.lopt == 6:
+				if pressed[4][0]:
+					if self.opt == 0: self.opt = 1
+				else:
+					if self.opt == 1:
+						if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.ACT[0],res.UP[0],res.BAG[0],res.RUN[0]):
+							dtb.PHONE = event.key; self.opt = 0
+			#INVENTORY KEY
+			if self.lopt == 7:
+				if pressed[4][0]:
+					if self.opt == 0: self.opt = 1
+				else:
+					if self.opt == 1:
+						if event.key not in (res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.ACT[0],res.PHONE[0],res.UP[0],res.RUN[0]):
+							dtb.BAG = event.key; self.opt = 0
+		#GO BACK
+		if pressed[5][0]:
+			if self.mnu > 0:
+				self.sfx.play(res.SOUND['MENU_BACK'])
+				self.mnu = 0
 							
 	def outside_events(self,pressed):
 		#COLORS SETTINGS
-		if True:
-			if True:
-				if self.mnu == 1:
-					if self.lopt == 2:
-						if pressed[2][0]: res.COLOR[0] -= 5; self.sfx.play(res.SOUND['MENU_HOR'])
-						if pressed[3][0]: res.COLOR[0] += 5; self.sfx.play(res.SOUND['MENU_HOR'])
+		if self.mnu == 1:
+			if self.lopt == 2:
+				if pressed[2][0]: res.COLOR[0] -= 5; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.COLOR[0] += 5; self.sfx.play(res.SOUND['MENU_HOR'])
 
-						if res.COLOR[0] < 30: res.COLOR[0] = 242
-						if res.COLOR[0] > 242: res.COLOR[0] = 30
-					if self.lopt == 3:
-						if pressed[2][0]: res.COLOR[1] -= 5; self.sfx.play(res.SOUND['MENU_HOR'])
-						if pressed[3][0]: res.COLOR[1] += 5; self.sfx.play(res.SOUND['MENU_HOR'])
+				if res.COLOR[0] < 30: res.COLOR[0] = 242
+				if res.COLOR[0] > 242: res.COLOR[0] = 30
+			if self.lopt == 3:
+				if pressed[2][0]: res.COLOR[1] -= 5; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.COLOR[1] += 5; self.sfx.play(res.SOUND['MENU_HOR'])
 
-						if res.COLOR[1] < 30: res.COLOR[1] = 242
-						if res.COLOR[1] > 242: res.COLOR[1] = 30
-					if self.lopt == 4:
-						if pressed[2][0]: res.COLOR[2] -= 5; self.sfx.play(res.SOUND['MENU_HOR'])
-						if pressed[3][0]: res.COLOR[2] += 5; self.sfx.play(res.SOUND['MENU_HOR'])
+				if res.COLOR[1] < 30: res.COLOR[1] = 242
+				if res.COLOR[1] > 242: res.COLOR[1] = 30
+			if self.lopt == 4:
+				if pressed[2][0]: res.COLOR[2] -= 5; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.COLOR[2] += 5; self.sfx.play(res.SOUND['MENU_HOR'])
 
-						if res.COLOR[2] < 30: res.COLOR[2] = 242
-						if res.COLOR[2] > 242: res.COLOR[2] = 30
-				#AUDIO SETTINGS
-				if self.mnu == 2:
-					if self.lopt == 0:
-						if pressed[2][0]: res.SFX -= 0.1; self.sfx.play(res.SOUND['MENU_HOR'])
-						if pressed[3][0]: res.SFX += 0.1;  self.sfx.play(res.SOUND['MENU_HOR'])
+				if res.COLOR[2] < 30: res.COLOR[2] = 242
+				if res.COLOR[2] > 242: res.COLOR[2] = 30
+		#AUDIO SETTINGS
+		if self.mnu == 2:
+			if self.lopt == 0:
+				if pressed[2][0]: res.SFX -= 0.1; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.SFX += 0.1;  self.sfx.play(res.SOUND['MENU_HOR'])
 
-						self.sfx.set_volume(res.SFX)
-						self.ch_ton.set_volume(res.SFX)
-						self.ch_stp.set_volume(res.SFX)
-						self.ch_dlg.set_volume(res.SFX)
+				self.sfx.set_volume(res.SFX)
+				self.ch_ton.set_volume(res.SFX)
+				self.ch_stp.set_volume(res.SFX)
+				self.ch_dlg.set_volume(res.SFX)
 
-						if res.SFX < 0.0: res.SFX = 0.0
-						if res.SFX > 1.0: res.SFX = 1.0
-					if self.lopt == 1:
-						if pressed[2][0]: res.MSC -= 0.1; self.ch_msc.play(res.SOUND['MENU_HOR'])
-						if pressed[3][0]: res.MSC += 0.1; self.ch_msc.play(res.SOUND['MENU_HOR'])
+				if res.SFX < 0.0: res.SFX = 0.0
+				if res.SFX > 1.0: res.SFX = 1.0
+			if self.lopt == 1:
+				if pressed[2][0]: res.MSC -= 0.1; self.ch_msc.play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.MSC += 0.1; self.ch_msc.play(res.SOUND['MENU_HOR'])
 
-						self.ch_msc.set_volume(res.MSC)
-						self.ch_rad.set_volume(res.MSC)
-						self.ch_rng.set_volume(res.MSC)
+				self.ch_msc.set_volume(res.MSC)
+				self.ch_rad.set_volume(res.MSC)
+				self.ch_rng.set_volume(res.MSC)
 
-						if res.MSC < 0.0: res.MSC = 0.0
-						if res.MSC > 1.0: res.MSC = 1.0
+				if res.MSC < 0.0: res.MSC = 0.0
+				if res.MSC > 1.0: res.MSC = 1.0
 
 	def draw(self, opt, mnu, trg):
 		for i in self.scr: i.fill((10,10,10,0))
@@ -2650,17 +2605,14 @@ class About:
 		
 	def inside_events(self,pressed):
 		if pressed[0][0] and self.opt == 1: self.opt = 0; self.sfx.play(res.SOUND['MENU_VER'])
-		if True:
-			if True:
-				if True:
-					if pressed[1][0] and self.opt == 0: self.opt = 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[1][0] and self.opt == 0: self.opt = 1; self.sfx.play(res.SOUND['MENU_VER'])
 
-					if pressed[4][0]:
-						self.sfx.play(res.SOUND['MENU_GO'])
-						if self.opt == 0:
-							webbrowser.get('windows-default').open('twitter.com/kaixtr')
-						if self.opt == 1:
-							webbrowser.get('windows-default').open('github.com/kaixtr')
+		if pressed[4][0]:
+			self.sfx.play(res.SOUND['MENU_GO'])
+			if self.opt == 0:
+				webbrowser.get('windows-default').open('twitter.com/kaixtr')
+			if self.opt == 1:
+				webbrowser.get('windows-default').open('github.com/kaixtr')
 							
 	def outside_events(self,pressed):
 		pass
@@ -2709,21 +2661,18 @@ class Call:
 		
 	def inside_events(self,pressed):
 		if pressed[2][0] and self.opt == 1: self.opt = 0; self.sfx.play(res.SOUND['MENU_VER'])
-		if True:
-			if True:
-				if True:
-					if pressed[3][0] and self.opt == 0: self.opt = 1; self.sfx.play(res.SOUND['MENU_VER'])
-					if pressed[4][0]:
-						self.ch_ton.stop()
-						self.ch_rng.stop()
-						if self.opt == 0:
-							self.ingame = 4
-						elif self.opt == 1:
-							self.sfx.play(res.SOUND['MENU_BACK'])
-							self.phone = 1
-						if self.radonoff == True: pygame.mixer.music.unpause()
-						if res.CHAPTER == 0 and res.SCENE == 0:
-							self.ingame = 5
+		if pressed[3][0] and self.opt == 0: self.opt = 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[4][0]:
+			self.ch_ton.stop()
+			self.ch_rng.stop()
+			if self.opt == 0:
+				self.ingame = 4
+			elif self.opt == 1:
+				self.sfx.play(res.SOUND['MENU_BACK'])
+				self.phone = 1
+			if self.radonoff == True: pygame.mixer.music.unpause()
+			if res.CHAPTER == 0 and res.SCENE == 0:
+				self.ingame = 5
 	
 	def outside_events(self,pressed):
 		pass
@@ -2764,23 +2713,20 @@ class Photo:
 		
 	def inside_events(self,pressed):
 		if pressed[4][0]:
-			if True:
-				if True:
-					if True:
-						rsg = False
-						for j in range(len(res.BESTIARY)):
-							if len(self.foe) > 0 and res.BESTIARY[j]['N'] == self.foe[0]['FILE'] and res.BESTIARY[j]['SEEN'] == 1:
-								fid = str(j)
-								if int(fid) < 10: fid = '00' + fid
-								elif int(fid) < 40: fid = '0' + fid
-								res.BESTIARY[j]['ID'] = fid
-								res.BESTIARY[j]['DATE'] = str(res.DATE[0]) + '/' + str(res.DATE[1])
-								res.BESTIARY[j]['SEEN'] = 2
-								rsg = True
-						if rsg == True:
-							self.sfx.play(res.SOUND['CAMERA'])
-							self.mnu = 1
-							#self.notification(self.foe[0]['NAME'] + ' registrada',(134, 0, 211))
+			rsg = False
+			for j in range(len(res.BESTIARY)):
+				if len(self.foe) > 0 and res.BESTIARY[j]['N'] == self.foe[0]['FILE'] and res.BESTIARY[j]['SEEN'] == 1:
+					fid = str(j)
+					if int(fid) < 10: fid = '00' + fid
+					elif int(fid) < 40: fid = '0' + fid
+					res.BESTIARY[j]['ID'] = fid
+					res.BESTIARY[j]['DATE'] = str(res.DATE[0]) + '/' + str(res.DATE[1])
+					res.BESTIARY[j]['SEEN'] = 2
+					rsg = True
+			if rsg == True:
+				self.sfx.play(res.SOUND['CAMERA'])
+				self.ingame = 7
+				self.mnu = 1
 							
 	def outside_events(self,pressed):
 		pass
