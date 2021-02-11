@@ -22,11 +22,6 @@ if res.FILES[3] != []:
 	if res.FILES[3][0] == 'EN': import database_EN as dtb
 else: import database_PT as dtb
 
-pygame.init()
-pygame.display.set_caption(res.GNAME)
-pygame.display.set_icon(pygame.image.load('icon.ico'))
-pygame.mouse.set_visible(False)
-
 class Title:
 	def __init__(self):
 		if platform.system() == 'Windows':
@@ -37,9 +32,15 @@ class Title:
 			sz = pygame.display.Info()
 			self.windoww = sz.current_w
 			self.windowh = sz.current_h
-			res.MOUSE == 2
+			res.MOUSE = 2
 		self.displayzw = int(self.windoww/res.GSCALE)
 		self.displayzh = int(self.windowh/res.GSCALE)
+
+		pygame.init()
+		pygame.display.set_caption(res.GNAME)
+		pygame.display.set_icon(pygame.image.load('icon.ico'))
+		pygame.mouse.set_visible(False)
+
 		self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE | pygame.DOUBLEBUF)
 		self.display = [pygame.Surface((self.displayzw, self.displayzh)),pygame.Surface((self.windoww, self.windowh), pygame.SRCALPHA)]
 		self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', 30),'MINI': pygame.font.SysFont('Calibri', 20), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', 30)}
@@ -171,7 +172,7 @@ class Title:
 				self.windoww = event.w
 				self.windowh = event.h
 				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
-				self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', math.floor(self.windoww/200) * 2)}
+				#self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', math.floor(self.windoww/200) * 2)}
 				self.display[1] = pygame.Surface((self.windoww, self.windowh), pygame.SRCALPHA)
 			#MOUSE
 			if res.MOUSE > 0:
@@ -319,9 +320,17 @@ class Title:
 	
 	def intro(self):
 		for event in pygame.event.get():
+			#EXIT
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
+			#RESIZE
+			if event.type == pygame.VIDEORESIZE:
+				self.windoww = event.w
+				self.windowh = event.h
+				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
+				self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', math.floor(self.windoww/200) * 2)}
+				self.display[1] = pygame.Surface((self.windoww, self.windowh), pygame.SRCALPHA)
 		self.screen.fill((0,0,10))
 		#STARS
 		if len(self.stars) < 10000:
@@ -510,14 +519,14 @@ class Title:
 				self.display[1].blit(self.fnt['DEFAULT'].render(dtb.CHAPTERS[i][1], True, (0,0,0)), ((self.chrects[i].x + 10) * 2, (130 + (i * 51)) * 2))
 			#DELETE FILE
 			if self.lopt == res.FILES[1][res.ID] + 1:
-				if self.flrects[res.FILES[1][res.ID] + 1].width < 250:
-					self.flrects[res.FILES[1][res.ID] + 1].width += 4
-					self.flrects[res.FILES[1][res.ID] + 1].x -= 4
+				if self.chrects[res.FILES[1][res.ID] + 1].width < 250:
+					self.chrects[res.FILES[1][res.ID] + 1].width += 4
+					self.chrects[res.FILES[1][res.ID] + 1].x -= 4
 				col = (255,255,0)
 			else:
-				if self.flrects[res.FILES[1][res.ID] + 1].width > 230:
-					self.flrects[res.FILES[1][res.ID] + 1].width -= 4
-					self.flrects[res.FILES[1][res.ID] + 1].x += 4
+				if self.chrects[res.FILES[1][res.ID] + 1].width > 230:
+					self.chrects[res.FILES[1][res.ID] + 1].width -= 4
+					self.chrects[res.FILES[1][res.ID] + 1].x += 4
 				col = (255,255,255)
 			shd = pygame.Surface((self.chrects[res.FILES[1][res.ID] + 1].width,self.chrects[res.FILES[1][res.ID] + 1].height))
 			shd.set_alpha(100)
@@ -558,8 +567,8 @@ class Title:
 			'''self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[0] + ' ' + res.VERSION + ':' + str(self.glock.get_fps()), True, (240,240,240)), ((-35 + int(self.displayzw/(self.displayzh/self.winbar))), (-35 + self.winbar)))
 			if self.stime > 0:
 				self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[1], True, (240,240,240)), ((self.windoww - 140 - int(self.displayzw/(self.displayzh/self.winbar))), (self.windowh + 35) - self.winbar))'''
-			self.display[1].blit(self.fnt['MINI'].render(dtb.ABOUT[0][:10], True, (240,240,240)), (50,25))
-			self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[0][12:] + ' ' + res.VERSION + ':' + str(self.glock.get_fps()), True, (240,240,240)), (50,50))
+			self.display[1].blit(self.fnt['MINI'].render(dtb.ABOUT[0][:9], True, (240,240,240)), (50,25))
+			self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[0][11:] + ' ' + res.VERSION + ':' + str(self.glock.get_fps()), True, (240,240,240)), (50,50))
 			if self.stime > 0:
 				self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[1], True, (240,240,240)), (self.windoww - 200,self.windowh - 35))
 			#HOLIDAYS
@@ -655,8 +664,9 @@ class Title:
 class Game:
 	def __init__(self):
 		#GAME SETTINGS
-		self.windoww = pygame.display.get_window_size()[0]
-		self.windowh = pygame.display.get_window_size()[1]
+		sz = pygame.display.Info()
+		self.windoww = sz.current_w
+		self.windowh = sz.current_h
 		self.displayzw = int(self.windoww/res.GSCALE)
 		self.displayzh = int(self.windowh/res.GSCALE)
 		self.displayx = 0
@@ -938,7 +948,7 @@ class Game:
 	def pet(self, i):
 		#ANIMATION
 		if self.player[0]['PAUSE'] < 2: i['GIF'] += 0.5
-		if i['GIF'] >= len(res.SPRITES[i['SPRITE']]): i['GIF'] = 0
+		if i['GIF'] >= len(i['SPRITE']): i['GIF'] = 0
 		#DRAW
 		if self.rectdebug == True: pygame.draw.rect(self.display[0], (255,0,0), pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
 			
@@ -999,13 +1009,13 @@ class Game:
 					do = random.randint(0,1)
 					if do == 0:
 						if i['MOVE'] == 'sit':
-							i[i['FILE'] + '_STAND']
+							i['SPRITE'] = [i['FILE'] + '_STAND']
 							i['MOVE'] = 'stand'
 						elif i['MOVE'] == 'stand':
 							i[i['FILE'] + '_SIT']
 							i['MOVE'] = 'sit'
 					elif do == 1:
-						i[i['FILE'] + '_WALK']
+						i['SPRITE'] = [i['FILE'] + '_WALK']
 						i['MOVE'] = 'walk'
 						dl = [1,5]
 						i['DIRECTION'] = dl[random.randint(0,1)]
@@ -1013,13 +1023,13 @@ class Game:
 					do = random.randint(0,1)
 					if do == 0:
 						if i['MOVE'] == 'sit':
-							i[i['FILE'] + '_STAND']
+							i['SPRITE'] = [i['FILE'] + '_STAND']
 							i['MOVE'] = 'stand'
 						elif i['MOVE'] == 'stand':
-							i[i['FILE'] + '_SIT']
+							i['SPRITE'] = [i['FILE'] + '_SIT']
 							i['MOVE'] = 'sit'
 					elif do == 1:
-						i[i['FILE'] + '_WALK']
+						i['SPRITE'] = [i['FILE'] + '_WALK']
 						i['MOVE'] = 'walk'
 						dl = [1,5]
 						i['DIRECTION'] = dl[random.randint(0,1)]
@@ -1640,7 +1650,9 @@ class Game:
 			#KEYBOARD OR MOUSE INPUT
 			if res.MOUSE < 2:
 				ky = pygame.key.get_pressed()
-				self.pressed = [ky[res.UP],ky[res.DOWN],ky[res.LEFT],ky[res.RIGHT],ky[res.ACT],ky[res.RUN],ky[res.BAG],ky[res.PHONE]]
+				self.pressed = []
+				for i in [res.UP,res.DOWN,res.LEFT,res.RIGHT,res.ACT,res.RUN,res.BAG,res.PHONE]:
+					self.pressed.append([ky[i[0]],ky[i[1]]])
 			else:
 				self.pressed = []
 				mp = pygame.mouse.get_pos()
@@ -1650,7 +1662,6 @@ class Game:
 						if event.type == pygame.MOUSEBUTTONDOWN: self.pressed.append([1,0])
 						else: self.pressed.append([0,0])
 					else: self.pressed.append([0,0])
-				
 			#EXIT
 			if event.type == pygame.QUIT:
 				if self.confirmation() == 1:
@@ -2458,7 +2469,9 @@ class Game:
 		#KEYBOARD OR MOUSE INPUT
 		if res.MOUSE < 2:
 			ky = pygame.key.get_pressed()
-			self.pressed = [ky[res.UP],ky[res.DOWN],ky[res.LEFT],ky[res.RIGHT],ky[res.ACT],ky[res.RUN],ky[res.BAG],ky[res.PHONE]]
+			self.pressed = []
+			for i in [res.UP,res.DOWN,res.LEFT,res.RIGHT,res.ACT,res.RUN,res.BAG,res.PHONE]:
+				self.pressed.append([ky[i[0]],ky[i[1]]])
 		else:
 			self.pressed = []
 			mp = pygame.mouse.get_pos()
@@ -4982,7 +4995,7 @@ class Game:
 				y = 0
 				for i in self.dices:
 					pygame.draw.rect(self.display[0],(10,10,10),pygame.Rect(int(self.displayzw/2) - 30,(y * 80) + int(self.displayzh/2) - 30,60,60))
-					self.display[1].blit(self.fnt['DEFAULT'].render(i,True,(200,200,200)),(int(self.windoww/2) - 60,(y * 160) + int(self.windowh/2) - 60))
+					self.display[1].blit(self.fnt['DEFAULT'].render(str(i),True,(200,200,200)),(int(self.windoww/2) - 60,(y * 160) + int(self.windowh/2) - 60))
 					y += 1
 			#GRADIENT
 			for i in range(len(self.grd)):
@@ -5311,10 +5324,11 @@ class Game:
 					hpsz += self.fnt['CONTROLKEYS'].size(out)[0] + 20
 					self.display[0].blit(self.fnt['CONTROLKEYS'].render(out, True, (250, 250, 250)), (self.displayzw - 20 - math.floor(hpsz/2), self.displayzh - 20))
 		#TOUCH BUTTONS
-		for i in self.buttons:
-			b = pygame.Rect(i.x - 3,i.y - 3,i.width + 6,i.height + 6)
-			pygame.draw.rect(self.display[1],(10,10,10,100),b)
-			pygame.draw.rect(self.display[1],(res.COLOR[0],res.COLOR[1],res.COLOR[2],100),i)
+		if res.MOUSE == 2:
+			for i in self.buttons:
+				b = pygame.Rect(i.x - 3,i.y - 3,i.width + 6,i.height + 6)
+				pygame.draw.rect(self.display[1],(10,10,10,100),b)
+				pygame.draw.rect(self.display[1],(res.COLOR[0],res.COLOR[1],res.COLOR[2],100),i)
 		#CAMERA X
 		if (self.map.width * self.map.tilewidth) > self.displayzw:
 			if self.portalgo == {}:

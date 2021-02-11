@@ -3,7 +3,7 @@ import sqlite3
 import pygame
 import os
 
-GNAME = 'Sete Salem: Mutation Purge'
+GNAME = 'Setesalem: Mutation Purge'
 AUTHOR = 'Matt Kai'
 VERSION = '0.0.1'
 DEBUG = True
@@ -680,9 +680,6 @@ def save_data():
 	else: mn = str(TIME[1])
 	ts = hr + mn
 	
-	print(TIME)
-	print(ts)
- 
 	if DATE[0] < 10: dd = '0' + str(DATE[0])
 	else: dd = str(DATE[0])
 	if DATE[1] < 10: mm = '0' + str(DATE[1])
@@ -1081,7 +1078,9 @@ def music(j):
 	global SONGS
 	
 	if j[-3:] == 'wav':
-		SONGS[j[:-4].upper()] = pygame.mixer.Sound(MUSIC_PATH + j)
+		try:
+			SONGS[j[:-4].upper()] = pygame.mixer.Sound(MUSIC_PATH + j)
+		except: pass
 
 def radio(i):
 	global RADIO
