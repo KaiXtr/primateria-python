@@ -198,14 +198,14 @@
    <properties>
     <property name="INDEX" value="003004"/>
     <property name="MOVE" value="horizontal"/>
-    <property name="WHO" value="DDA AGENT 1"/>
+    <property name="WHO" value="AGENT 1"/>
    </properties>
    <point/>
   </object>
   <object id="32" name="npc_3" type="0" x="155" y="343">
    <properties>
     <property name="INDEX" value="004006"/>
-    <property name="WHO" value="DDA AGENT 2"/>
+    <property name="WHO" value="AGENT 2"/>
    </properties>
    <point/>
   </object>

@@ -1,4 +1,5 @@
 from cx_Freeze import *
+import resources
 import sys
 import os
 
@@ -10,24 +11,24 @@ build = {
 }
 
 bdist = {
-	"initial_target_dir": os.path.expanduser('~') + '/The Freak Hunter',
+	"initial_target_dir": os.path.expanduser('~') + '/Primateria',
 	"all_users": False
 }
 
 exe = Executable(
 	script = r"main.py",
 	targetName = "click_here_to_play",
-	shortcutName = "Mutation Purge",
+	shortcutName = resources.GNAME,
 	shortcutDir =  os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop'),
 	icon = "icon.ico",
     base = "Win32GUI",
 )
 
 setup(
-	name = "Mutatoin Purge",
-	version = "0.0.1",
-	description = "Mutation Purge (20XX)",
-	author = "Matt Kai",
+	name = resources.GNAME,
+	version = resources.VERSION,
+	description = resources.GNAME + " (20XX)",
+	author = resources.AUTHOR,
 	executables = [exe],
 	options = {"build_exe": build}
 	)
