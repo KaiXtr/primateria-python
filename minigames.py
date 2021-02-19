@@ -13,7 +13,7 @@ class Game:
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.clock = pygame.time.Clock()
 		self.FPS = 60
-		self.minigame = Simon()
+		self.minigame = Hangman()
 		
 	def run(self):
 		for event in pygame.event.get():

@@ -547,8 +547,7 @@ def load_data():
 	com.execute("SELECT y FROM data")
 	PY = com.fetchall()[ID][0]
 	com.execute("SELECT time FROM data")
-	res = com.fetchall()[ID][0]
-	print(res)
+	res = str(com.fetchall()[ID][0])
 	TIME = [int(res[0:2]),int(res[2:4]),0]
 	com.execute("SELECT date FROM data")
 	res = com.fetchall()[ID][0]
