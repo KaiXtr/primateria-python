@@ -1664,8 +1664,8 @@ class Game:
 					else: self.pressed.append([0,0])
 			#EXIT
 			if event.type == pygame.QUIT:
-				if self.confirmation() == 1:
-					self.classrun = 0
+				#if self.confirmation() == 1:
+				if True:
 					pygame.quit()
 					sys.exit()
 					exit()
