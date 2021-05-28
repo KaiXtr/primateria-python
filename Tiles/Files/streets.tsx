@@ -3,27 +3,27 @@
  <image source="../streets.png" width="390" height="210"/>
  <tile id="0">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="street"/>
   </properties>
  </tile>
  <tile id="1">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="sidewalkH"/>
   </properties>
  </tile>
  <tile id="2">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="sidewalkV"/>
   </properties>
  </tile>
  <tile id="3">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="sidewalk"/>
   </properties>
  </tile>
  <tile id="4">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="sidewalk"/>
   </properties>
  </tile>
  <tile id="5">
@@ -40,79 +40,55 @@
   <properties>
    <property name="TYPE" value="wall"/>
   </properties>
-  <animation>
-   <frame tileid="7" duration="400"/>
-   <frame tileid="20" duration="400"/>
-  </animation>
  </tile>
  <tile id="8">
   <properties>
    <property name="TYPE" value="wall"/>
   </properties>
-  <animation>
-   <frame tileid="8" duration="400"/>
-   <frame tileid="21" duration="400"/>
-  </animation>
  </tile>
  <tile id="9">
   <properties>
    <property name="TYPE" value="wall"/>
   </properties>
-  <animation>
-   <frame tileid="9" duration="400"/>
-   <frame tileid="22" duration="400"/>
-  </animation>
  </tile>
  <tile id="10">
   <properties>
    <property name="TYPE" value="wall"/>
   </properties>
-  <animation>
-   <frame tileid="10" duration="400"/>
-   <frame tileid="23" duration="400"/>
-  </animation>
  </tile>
  <tile id="11">
   <properties>
    <property name="TYPE" value="wall"/>
   </properties>
-  <animation>
-   <frame tileid="11" duration="400"/>
-   <frame tileid="24" duration="400"/>
-  </animation>
  </tile>
  <tile id="12">
   <properties>
    <property name="TYPE" value="wall"/>
   </properties>
-  <animation>
-   <frame tileid="12" duration="400"/>
-   <frame tileid="25" duration="400"/>
-  </animation>
  </tile>
  <tile id="13">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="street1"/>
   </properties>
  </tile>
  <tile id="14">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="street1"/>
   </properties>
  </tile>
  <tile id="15">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="streetV"/>
   </properties>
  </tile>
  <tile id="16">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="sidewalk1"/>
   </properties>
  </tile>
  <tile id="17">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="sidewalk2"/>
   </properties>
  </tile>
  <tile id="18">
@@ -157,27 +133,27 @@
  </tile>
  <tile id="26">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="street2"/>
   </properties>
  </tile>
  <tile id="27">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="street2"/>
   </properties>
  </tile>
  <tile id="28">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="streetH"/>
   </properties>
  </tile>
  <tile id="29">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="sidewalk2"/>
   </properties>
  </tile>
  <tile id="30">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="sidewalk1"/>
   </properties>
  </tile>
  <tile id="31">
@@ -211,17 +187,17 @@
  </tile>
  <tile id="39">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="street1"/>
   </properties>
  </tile>
  <tile id="40">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="street1"/>
   </properties>
  </tile>
  <tile id="41">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="streetV"/>
   </properties>
  </tile>
  <tile id="48">
@@ -246,17 +222,17 @@
  </tile>
  <tile id="52">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="street2"/>
   </properties>
  </tile>
  <tile id="53">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="street2"/>
   </properties>
  </tile>
  <tile id="54">
   <properties>
-   <property name="TYPE" value="stone"/>
+   <property name="TYPE" value="streetH"/>
   </properties>
  </tile>
  <tile id="55">
@@ -286,7 +262,7 @@
  </tile>
  <tile id="61">
   <properties>
-   <property name="TYPE" value="wall"/>
+   <property name="TYPE" value="object"/>
   </properties>
  </tile>
  <tile id="62">
@@ -302,6 +278,16 @@
  <tile id="64">
   <properties>
    <property name="TYPE" value="none"/>
+  </properties>
+ </tile>
+ <tile id="65">
+  <properties>
+   <property name="TYPE" value="street"/>
+  </properties>
+ </tile>
+ <tile id="66">
+  <properties>
+   <property name="TYPE" value="manhole"/>
   </properties>
  </tile>
  <tile id="71">
