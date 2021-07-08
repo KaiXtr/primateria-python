@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.0" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="5" height="5" tilewidth="30" tileheight="30" infinite="0" nextlayerid="14" nextobjectid="77">
+	<properties>
+		<property name="EDIT" type="bool" value="True"/>
+		<property name="INTERIOR" type="int" value="0"/>
+		<property name="CITY" type="int" value="0"/>
+		<property name="HSCROLL" type="int" value="0"/>
+		<property name="VSCROLL" type="int" value="0"/>
+	</properties>
+	<tileset firstgid="36" source="../tiles/files/backgrounds.tsx"/>
+	<tileset firstgid="84" source="../tiles/files/buildings.tsx"/>
+	<tileset firstgid="180" source="../tiles/files/carpets.tsx"/>
+	<tileset firstgid="234" source="../tiles/files/furniture.tsx"/>
+	<tileset firstgid="306" source="../tiles/files/interior.tsx"/>
+	<tileset firstgid="355" source="../tiles/files/nature.tsx"/>
+	<tileset firstgid="436" source="../tiles/files/props.tsx"/>
+	<tileset firstgid="471" source="../tiles/files/rodoviary.tsx"/>
+	<tileset firstgid="535" source="../tiles/files/shop.tsx"/>
+	<tileset firstgid="626" source="../tiles/files/streets.tsx"/>
+	<layer id="1" name="TILE LAYER 1" width="5" height="5">
+<data encoding="csv">
+437,437,437,437,437,
+000,437,437,437,000,
+000,437,437,437,000,
+000,437,437,437,000,
+000,000,000,000,000
+</data>
+	</layer>
+	<layer id="1" name="TILE LAYER 2" width="5" height="5">
+<data encoding="csv">
+000,000,000,000,000,
+000,000,000,000,000,
+000,000,000,000,000,
+000,000,000,000,000,
+000,000,000,000,000
+</data>
+	</layer>
+</map>
