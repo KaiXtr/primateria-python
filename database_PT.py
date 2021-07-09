@@ -927,7 +927,7 @@ FREAKS = {
 'FOOD': None,'WEAKNESS': None,'BLOOD': 0,'ITEM': None,'SONG': None,'SCREAM': None},
 }
 
-ITEMENEMIES = [('drink_guarana','wingedcan',100),('key_bedroom','elkeys',100),('tool_pen','ppap',100),('cigar','cigaruto',100)]
+ITEMENEMIES = {'drink_guarana': ('wingedcan',100),'key_bedroom': ('elkeys',100),'tool_pen': ('ppap',100),'cigar': ('cigaruto',100)}
 
 ITEMS = {
 #BAGS (name,description,price,volume,weight)
@@ -935,14 +935,15 @@ ITEMS = {
 'bag2': ['bolsa',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 10 - Peso: 10'],2500,10,10],
 'bag3': ['mala',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 20 - Peso: 15'],5000,20,15],
 'bag4': ['mochila',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 30 - Peso: 20'],7500,30,20],
-'bag5': ['mochilão',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 30 - Peso: 25'],10000,30,25],
+'bag5': ['mala de rodinhas',['Guarde seus itens nele e leve para qualquer lugar.','Volume: 30 - Peso: 25'],10000,30,25],
 'tube100': ['frasco de sulfúrio 100ml',['Feita especialmente para guardar sangue verde.'],200,1,1,100],
 'tube250': ['pote de sulfúrio 250ml',['Feita especialmente para guardar sangue verde.'],200,1,1,250],
 'tube500': ['garrafa de sulfúrio 500ml',['Feita especialmente para guardar sangue verde.'],200,1,1,500],
 'wallet': ['carteira',['Use para guardar seu dinheiro e coisas pequenos.','JAMAIS PERCA ISSO!'],50,1,1],
+'lock': ['cadeado',['Use para proteger objetos.'],10,1,1],
 'locksmith1': ['chaveiro',['Use para guardar até duas chaves.'],10,1,1],
 'locksmith2': ['chaveiro',['Use para guardar até duas chaves.'],10,1,1],
-'locksmith3': ['chaveiro',['Use para guardar até duas chaves.'],10,1,1,3],
+'locksmith3': ['chaveiro',['Use para guardar até duas chaves.'],10,1,1],
 'locksmith4': ['chaveiro',['Use para guardar até duas chaves.'],10,1,1],
 'locksmith5': ['chaveiro',['Use para guardar até duas chaves.'],10,1,1],
 'locksmith6': ['chaveiro',['Use para guardar até duas chaves.'],10,1,1],
@@ -1290,6 +1291,7 @@ ITEMS = {
 'trash_cup': ['copo descartável',['Quem nunca ficou cortando as tiras','como uma água viva.'],8,1,1],
    
 #KEY ITEMS (name,description,price,volume,weight)
+'key': ['chave',['Use para abrir portas pelo labirinto!.'],10,1,1],
 'key_bedroom': ['chave do quarto',['Se perder vai ficar sem caminha.'],10,1,1],
 'key_chest': ['chave de baú',['Use para abrir um compartimento.'],10,1,1],
 'key_vehicle': ['chave do veículo',['É o que põe o motor pra funcionar.'],10,1,1],
@@ -1316,8 +1318,11 @@ ITEMS = {
 'portable_charger': ['carregador portátil',['Use para carregar seu celular.'],100,1,1],
 'headphone_cheap': ['fone de ouvido barato',['Ao obter um, você consegue escutar o rádio do celular, mas atenção! ele quebra nos momentos mais inesperados.'],20,1,1],
 'headphone_expensive': ['fone de ouvido caro',['Ao obter um, você consegue escutar o rádio do celular.','Bem mais resistente que fones de ouvido baratos.'],60,1,1],
-'simcard': ['cartão SIM',['Insira dentro de um celular para','fazer chamadas e acessar a internet.'],10,1,1],
-'sd_card': ['cartão SD',['Para guardar músicas salvas.'],60,1,1],
+'simcard1': ['cartão SIM IO',['Insira dentro de um celular para','fazer chamadas e acessar a internet.'],10,1,1],
+'simcard2': ['cartão SIM MIMO',['Insira dentro de um celular para','fazer chamadas e acessar a internet.'],10,1,1],
+'simcard3': ['cartão SIM SIM',['Insira dentro de um celular para','fazer chamadas e acessar a internet.'],10,1,1],
+'simcard4': ['cartão SIM FALO',['Insira dentro de um celular para','fazer chamadas e acessar a internet.'],10,1,1],
+'sdcard': ['cartão SD',['Para guardar músicas salvas.'],60,1,1],
 'GPS': ['GPS',['Este dispositivo super tecnológico serve para','apontar sua localização e mostrar o mapa da região.'],200,1,1],
 'camera': ['camera digital',['Serve para tirar fotos e guardar de recordação.'],200,1,1],
 'mp3': ['tocador mp3',['Útil para escutar rádio e música.'],200,1,1],
@@ -1329,7 +1334,7 @@ ITEMS = {
 'batteries': ['pilhas',['A fonte de energia de vários aparelhos eletrônicos.'],10,1,1],
 
 #GAMING (name,description,price,volume,weight,GUI)
-'playing_cards': ['cartas de baralho',['Use para jogar vários jogos de baralho.'],10,1,1,0],
+'playingcards': ['cartas de baralho',['Use para jogar vários jogos de baralho.'],10,1,1,0],
 'dominoes': ['dominó',['Pode usar tanto pra montar castelinhos e trilhas','quanto pra jogar com os amigos.'],10,2,1,0],
 'chess_board': ['tabuleiro de xadrez',['Use para jogar o jogo das pessoas de estratégia.'],50,3,2,0],
 'ouija_board': ['tabuleiro ouija',['Um instrumento sério de contatação espiritual','que virou brinquedo graças ao capitalismo.'],50,3,1,0],
@@ -1395,7 +1400,7 @@ ITEMS = {
 'credit_card1': ['cartão BB',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
 'credit_card2': ['cartão Uati',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
 'credit_card3': ['cartão Faixa',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
-'credit_card4': ['cartão ',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
+'credit_card4': ['cartão Cabresto',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
 
 #TREASURES (name,description,price,volume,weight,type)
 'treasure_vase': ['vaso marajoara',['Um antigo vaso indígena feita da cerâmica do marajó.'],2000,3,3,0],
@@ -1418,6 +1423,7 @@ ITEMS = {
 'bomb_tactical': ['bomba tática',['Só é ativada quando você dá o sinal.'],0,0,0,4],
 
 #POWER UPS (name,description,price,volume,weight,type)
+'letter': ['letra',['Use para fazer seu personagem crescer!'],0,0,0,0],
 'pow_bubble': ['bolha',['Use para mandar seus inimigos para fora do labirinto!'],0,0,0,0],
 'pow_doublebubble': ['bolha dupla',['Se um já é bom, dois é melhor.'],0,0,0,1],
 'pow_triplebubble': ['bolha tripla',['Dois é bom, três é demais.'],0,0,0,2],
@@ -1554,7 +1560,8 @@ RADIONEWS = [
 ]
 
 TASKINDEX = {
-'LVL_00_0': [('Pinte os pisos de vermelho.',None,'-0500'),('Pinte os pisos de laranja.',None,'-0500')],
+'LVL_00_0': [{'TEXT': 'Pinte os pisos de vermelho.','TIME': [-5,0,0],'OBJECTIVE': 'color'},
+{'TEXT': 'Pinte os pisos de laranja.','TIME': '-0500','OBJECTIVE': 'color'}],
 'LVL_05_0': [('Pinte os pisos de verde..',None,'-0500')],
 'LVL_08_1': [('Alcançe 5000 pontos..',None,'-0500')],
 
@@ -1588,7 +1595,7 @@ DIALOG PROTOCOLS IN TUPLE
 3 - insert text (dtalks index/party member/time)
 4 - call (contact index)
 5 - new email (email index)
-6 - new task (task index,item,text)
+6 - task (task index/item,text incomplete,text complete)
 7 - new contact (contact index)
 8 - achievement (achievement index)
 9 - relationship ((from,to),check,[if ttext],[else text])
@@ -1620,7 +1627,7 @@ DTALKS = {'good morning': 'Bom dia','good afternoon': 'Boa tarde','good evening'
 
 DIALOGS = {
 #ADVICES
-'TEST': [['QUERO SEU NOME!',1,(22,0),(3,'CC','<ele anda pelo quarto.>'),'O que vai acontecer em outro dia?',1,(19,[14,35,0],[15,3,2007,1,1])]],
+'TEST': [['Queria jogar cartas...',1,(6,'playingcards',['Você tem algumas?',1],['Que conveniente! Você tem cartas!',1,'Que acha de jogar?',(10,['Por que não?',(12,'minigames.TicTacToe()')],['Não, obrigado'])]),(3,'CC','<ele anda pelo quarto.>'),'O que vai acontecer em outro dia?',1,(19,[14,35,0],[15,3,2007,1,1])]],
 
 'PRODUCTS': [[(12,'products',[('food_peanut_candy',),('locksmith1',),('cage_big',0,0.75)])],[(12,'products',[])]],
 
@@ -2020,20 +2027,11 @@ desculpa...',[2,'990435671',True]]],
 
 #ADVICE
 'ADVICE': ['Desculpe interromper','Mas é uma história muito longa','para se contar.',1,'Não vai querer continuar amanhã?','Nós gravamos tudo o que você falou',1,'E então?',(10,['Tudo bem','Ótimo','rapazes, guardem suas coisas',4],['Espere um pouco','Tá bom então...','vamos prosseguir',1])],
-
-'DEBUG': [(10,['Sair'],['Item','Qual item?',[10,['Sair']]],['Diálogo','Qual diálogo?',[10,['Sair']]],['Batalhar','Qual inimigo?',[10,['Sair']]])],
-'DEBUG': ['',(22,'debug')],
 }
 
-'''res.DLGSAV = {}
+res.DLGSAV = {}
 for i in DIALOGS.items(): res.DLGSAV[i[0]] = 0
-for i in ITEMS.items():
-	DIALOGS['DEBUG'][0][2][2].append([i[1][0],(1,i[0],0)])
-for i in DIALOGS.items():
-	DIALOGS['DEBUG'][0][3][2].append([i[0],(23,i[0],0)])
-for i in FREAKS.items():
-	DIALOGS['DEBUG'][0][4][2].append([i[1]['NAME'],(13,[i[0]])])'''
-
+		
 for i in ITEMS.items():
 	if i[0].startswith('food'):
 		res.DISITEMS[i[0]] = 0

@@ -900,6 +900,7 @@ class Game:
 		if self.dev != None: self.dev.battery = dv[1]
 		self.dvmp = pygame.Rect(0,0,2,2)
 		self.vkb = GUI.Vkeyboard((self.windoww,self.windowh))
+		self.minigame = None
 		self.read = None
 		#score counter, time counter
 		self.counter = [[0,0,0]]
@@ -919,7 +920,7 @@ class Game:
 			self.grd.append(srf)
 		self.dmg = []
 		self.dlg = {'TEXT': [], 'FADE': 500, 'Y': 0, 'CAMERA': 0, 'SPEED': res.SPEED, 'VOICE': 1, 'FONT': 'DEFAULT', 'TYPE': 0}
-		self.notification = {'TEXT': None, 'COLOR': (0,0,0), 'X': 0}
+		self.notification = []
 		self.tutorial = {'TEXT': [], 'OUTPUT': [], 'FADE': 0, 'TIME': 0, 'WAIT': 0, 'NEXT': '','GO': 0}
 		self.chat = ['@kaixtr: Eu gosto disso!','@kanbz: Bem bacana!']
 		self.cityname = ''
@@ -970,7 +971,7 @@ class Game:
 			'GIF': 0.0,'BLINK': 100,'INVFRM': 0,'DMGTIM': 100,'SHK': 0,'DIRECTION': 3,'PAUSE': 0,
 			'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','PLAYING': False,'NODES': [],'HOLD': None})
 			x += 1
-		#self.player[0]['PLAYING'] = True
+		self.player[0]['PLAYING'] = True
 		self.donesprites = {}
 		self.objects = []
 		self.tilrect = []
@@ -993,7 +994,7 @@ class Game:
 			pygame.Rect(self.windoww - 190,40,80,80),pygame.Rect(self.windoww - 100,40,80,80),pygame.Rect(20,40,80,80)]
 		else: self.buttons = []
 		#STUDIO
-		self.editing = True
+		self.editing = False
 		self.paint = ''
 		self.guit = 1
 		self.build = ''
@@ -1003,7 +1004,7 @@ class Game:
 		self.sselect = [0,0,0,0]
 		self.sstore = []
 		#STARTING GAME
-		if res.CHAPTER == 0 and res.SCENE == 0:
+		if res.CHAPTER == 0 and res.SCENE == -3:
 			self.tutorial = {'TEXT': dtb.TUTORIALS['BEGIN'], 'OUTPUT': [], 'FADE': 0, 'TIME': 0, 'WAIT': 300, 'NEXT': '','GO': 0}
 			for j in self.tutorial['TEXT']:
 				if isinstance(j,list):
@@ -1021,11 +1022,7 @@ class Game:
 		else:
 			self.tilrect = [[437,437,437,437,437,0,437,437,437,0,0,437,437,437,0,0,437,437,437,0,0,0,0,0,0],
 							[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
-			self.loadmap('savetest')
-			self.savemap()
-			self.loadmap()
-			self.winbar = 0
-			#self.loadmap(res.MAP)
+			self.loadmap(res.MAP)
 			"""for i in range(30): self.run()
 			self.transiction(300,100,type='hole')
 			for i in range(30): self.run()
@@ -1418,7 +1415,6 @@ class Game:
 							if b['N'] == i['FILE'] and b['SEEN'] == 0 and i['TYPE'] != 'mercenary':
 								self.turn = -6
 								break
-						self.notification['X'] = 0
 						if self.phone > 0: self.turn = -2
 						if self.inv.type > 0: self.turn = -2
 						if self.turn != -6: self.turn = -self.facing(i,self.player[0])
@@ -2059,8 +2055,7 @@ class Game:
 				pygame.Rect(184,self.windowh - 264,80,240),pygame.Rect(self.windoww - 190,self.windowh - 100,80,80),pygame.Rect(self.windoww - 100,self.windowh - 100,80,80),
 				pygame.Rect(self.windoww - 190,40,80,80),pygame.Rect(self.windoww - 100,40,80,80),pygame.Rect(20,40,80,80)]
 			#DEBUG
-			if self.pressed[8][0] and res.DEBUG:
-				self.dialog(dtb.DIALOGS['DEBUG'])
+			if self.pressed[8][0] and res.DEBUG: self.dialog(['',(22,'debug')])
 			#CLICK
 			if res.MOUSE == 1:
 				for i in range(2):
@@ -2295,8 +2290,12 @@ class Game:
 				if abl and self.inv.opt[0] < 4:
 					#USING ITEMS
 					if self.inv.itmov == '' or self.inv.itmov[0] == 0:
+						prb = random.randint(0,100)
+						#RANDOM BATTLE
+						if it[0] in dtb.ITEMENEMIES and prb > 100 - dtb.ITEMENEMIES[it[0]][1]:
+							self.dialog([(13,[dtb.ITEMENEMIES[it[0]][0]])])
 						#FOOD
-						if it[0].startswith('food') and res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] not in [4,10]:
+						elif it[0].startswith('food') and res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] not in [4,10]:
 							if ch['FLAW'] == 'celiac':
 								if it[0] in dtb.GLUTEN_FOOD: good = False
 								else: good = True
@@ -2329,8 +2328,7 @@ class Game:
 							else:
 								it = ['_','0000']
 							res.INVENTORY[res.PARTY[res.FORMATION][self.inv.opt[2]]][self.inv.opt[1]][self.inv.opt[0]] = it
-							self.notification['TEXT'] = 'hp_' + str(hl)
-							self.notification['COLOR'] = (255, 0, 0)
+							self.notification.append({'TEXT': 'hp_' + str(hl), 'COLOR': (255, 0, 0), 'HALIGN': 'left','X': 0})
 						#DRINK
 						elif it[0].startswith('drink') or it[0].startswith('bottle'):
 							if it[0].startswith('drink'): drk = it[0]; amt = int(it[1])
@@ -2362,8 +2360,7 @@ class Game:
 										if dtb.ITEMS[it[0]][8] != None: it = ['trash_' + dtb.ITEMS[drk][8],'0000']
 										else: it = ['_','0000']
 									res.INVENTORY[res.PARTY[res.FORMATION][self.inv.opt[2]]][self.inv.opt[1]][self.inv.opt[0]] = it
-								self.notification['TEXT'] = 'hp_' + str(hl)
-								self.notification['COLOR'] = (255, 0, 0)
+								self.notification.append({'TEXT': 'hp_' + str(hl), 'COLOR': (255, 0, 0), 'HALIGN': 'left','X': 0})
 							else: self.ch_ton.play(res.SOUND['ERROR'])
 						#TOOLS
 						elif it[0].startswith('tool_') and self.battle == False:
@@ -2627,19 +2624,19 @@ class Game:
 				#DEVICES SHORTCUT
 				if self.pressed[7][0]:
 					self.ch_sfx.play(res.SOUND['MENU_GO'])
-					res.SHORTCUT = [res.PARTY[res.FORMATION][self.mnu],self.lopt,self.opt]
+					res.SHORTCUT = [res.PARTY[res.FORMATION][self.inv.opt[2]],self.inv.opt[1],self.inv.opt[0]]
 					dv = self.inv.dev()
 					self.dev = dv[0]
 					if self.dev == 'radio': self.dev = self.rad
 					if self.dev != None: self.dev.battery = dv[1]
-				if self.inv.type == 2 and self.opt > 4: res.STORAGE[self.opt + (self.lopt * 5) - 5] = it
-				elif self.inv.type == 3 and self.opt > 4: res.BASKET[self.opt + (self.lopt * 5) - 5] = it
-				elif self.inv.type == 4 and self.opt > 4: res.WASH[self.opt + (self.lopt * 5) - 5] = it
+				if self.inv.type == 2 and self.inv.opt[0] > 4: res.STORAGE[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
+				elif self.inv.type == 3 and self.inv.opt[0] > 4: res.BASKET[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
+				elif self.inv.type == 4 and self.inv.opt[0] > 4: res.WASH[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
 				elif self.inv.type == 6:
-					if self.opt > 4: res.BASKET[self.opt + (self.lopt * 5) - 5] = it
-					else: res.PRODUCTS[self.opt + (self.lopt * 5) - 5] = it
-				elif self.inv.type == 7 and self.opt > 4: res.PRODUCTS[self.opt + (self.lopt * 5) - 5] = it
-				else: res.INVENTORY[res.PARTY[res.FORMATION][self.mnu]][self.lopt][self.opt] = it
+					if self.inv.opt[0] > 4: res.BASKET[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
+					else: res.PRODUCTS[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
+				elif self.inv.type == 7 and self.inv.opt[0] > 4: res.PRODUCTS[self.opt + (self.lopt * 5) - 5] = it
+				else: res.INVENTORY[res.PARTY[res.FORMATION][self.inv.opt[2]]][self.inv.opt[1]][self.inv.opt[0]] = it
 				if self.inv.itmov != '' and self.inv.itmov[0] == '_':
 					self.inv.itmov = ''
 			#DEVICE OPTIONS
@@ -2704,8 +2701,10 @@ class Game:
 					res.PY = self.player[0]['RECT'].y
 				#PHOTO NOTIFICATION
 				elif self.dev.ingame == 7:
-					self.notification['TEXT'] = self.foe[0]['NAME'] + ' registrada'
-					self.notification['COLOR'] = (134, 0, 211)
+					self.notification.append({'TEXT': self.foe[0]['NAME'] + ' registrada', 'COLOR': (134, 0, 211), 'HALIGN': 'left','X': 0})
+			#MINIGAMES EVENTS
+			if self.minigame != None:
+				self.minigame.events(event)
 			#READING OPTIONS
 			if self.read != None:
 				self.read.inside_events(self.pressed)
@@ -3119,7 +3118,7 @@ class Game:
 						self.displayy += spdacc
 						if self.displayy > self.windowh: self.displayy = 0
 						self.run()
-					if txt[tid] == 3:
+					if txt[tid] == 5:
 						res.CHAPTER += 1
 						res.DATE = dtb.CHAPTERS[res.CHAPTER][3]
 						res.TIME = dtb.CHAPTERS[res.CHAPTER][4]
@@ -3135,12 +3134,12 @@ class Game:
 					self.title.tv = 0
 					self.classrun = 2
 				#DIALOG SETTINGS
-				elif txt[tid][0] == 0 and self.notification['X'] == 0:
+				elif txt[tid][0] == 0:
 					if txt[tid][1] == 0: self.dlg['VOICE'] = txt[tid][2]
 					if txt[tid][1] == 1: self.dlg['TYPE'] = txt[tid][2]
 					if txt[tid][1] == 2: self.dlg['FONT'] = txt[tid][2]
 				#ITEM GET
-				elif txt[tid][0] == 1 and self.notification['X'] == 0:
+				elif txt[tid][0] == 1:
 					if isinstance(txt[tid][1],int):
 						mny = None
 						for it in ['credit_card','wallet']:
@@ -3149,8 +3148,7 @@ class Game:
 							mny[1] += txt[tid][1]
 							res.INVENTORY[mny[0][0]][mny[0][1]][mny[0][2]][mny[0][3]] = str(mny[1])
 							self.ch_sfx.play(res.SOUND['CASH_GET'])
-							self.notification['TEXT'] = 'Adquiriu $' + str(txt[tid][1])
-							self.notification['COLOR'] = (255, 255, 255)
+							self.notification.append({'TEXT': 'Adquiriu $' + str(txt[tid][1]), 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
 					elif txt[tid][1] == 'greenblood':
 						gb = self.inv.find(None,'tube','value')
 						if gb != None:
@@ -3165,8 +3163,7 @@ class Game:
 								if mny!= None:
 									res.INVENTORY[mny[0][0]][mny[0][1]][mny[0][2]][mny[0][3]] = str(mny[1] + gb[1])
 									self.ch_sfx.play(res.SOUND['CASH_GET'])
-									self.notification['TEXT'] = 'Adquiriu $' + str(gb[1])
-									self.notification['COLOR'] = (255, 255, 255)
+									self.notification.append({'TEXT': 'Adquiriu $' + str(gb[1]), 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
 									self.dlg['TEXT'] = []
 									res.INVENTORY[gb[0][0]][gb[0][1]][gb[0][2]][gb[0][3]] = '000'
 								else: self.dialog(dtb.DIALOGS['REWARD'][4].copy(),i['RECT'])
@@ -3190,10 +3187,9 @@ class Game:
 									res.INVENTORY[mny[0][0]][mny[0][1]][mny[0][2]][mny[0][3]] = str(mny[1])
 								self.inv.add(res.PARTY[res.FORMATION][0],txt[tid][1],prp)
 								self.ch_sfx.play(res.SOUND['ITEM_GET'])
-								self.notification['TEXT'] = 'it_' + txt[tid][1]
-								self.notification['COLOR'] = (255, 255, 255)
+								self.notification.append({'TEXT': 'it_' + txt[tid][1], 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
 				#MORALITY
-				elif txt[tid][0] == 2 and self.notification['X'] == 0:
+				elif txt[tid][0] == 2:
 					if txt[tid][3] == 0:
 						res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] += txt[tid][2]
 					else:
@@ -3271,24 +3267,24 @@ class Game:
 						self.phone = 0
 						self.mnu = 0
 				#NEW EMAIL
-				elif txt[tid][0] == 5 and self.notification['X'] == 0:
+				elif txt[tid][0] == 5:
 					self.ch_sfx.play(res.SOUND['NOTIFICATION'])
 					mail = dtb.EMAILS[txt[tid][1]].copy()
 					mail.append(0)
 					res.INBOX.append(mail)
 					res.inbx_save(len(res.INBOX)-1,0)
-					self.notification['TEXT'] = dtb.NOTINFO['EMAIL']
-					self.notification['COLOR'] = (255, 221, 0)
-				#NEW TASK
-				elif txt[tid][0] == 6 and self.notification['X'] == 0:
+					self.notification.append({'TEXT': dtb.NOTINFO['EMAIL'], 'COLOR': (255, 221, 0), 'HALIGN': 'left','X': 0})
+				#TASKS
+				elif txt[tid][0] == 6:
 					self.ch_sfx.play(res.SOUND['NOTIFICATION'])
-					if txt[tid][2] == False:
-						res.TASKS.append([dtb.TASKINDEX[txt[tid][1]], 0])
-						if len(txt[tid]) > 3:
-							res.MARKER.append(txt[tid][3])
-						res.task_save(txt[tid][1],0)
-						self.notification['TEXT'] = dtb.TASKINDEX[txt[tid][1]][0]
-						self.notification['COLOR'] = (255, 123, 0)
+					if txt[tid][1] in dtb.TASKINDEX:
+						res.TASKS.append([txt[tid][1], 0])
+						if 'TIME' in dtb.TASKINDEX[txt[tid][1]][0]:
+							res.TIME = dtb.TASKINDEX[txt[tid][1]][0]['TIME']
+						if 'MARKER' in dtb.TASKINDEX[txt[tid][1]][0]:
+							res.MARKER.append(dtb.TASKINDEX[txt[tid][1]][0]['MARKER'])
+						#res.task_save(txt[tid][1],0)
+						self.notification.append({'TEXT': dtb.TASKINDEX[txt[tid][1]][0]['NAME'], 'COLOR': (255, 123, 0), 'HALIGN': 'left','X': 0})
 					elif self.inv.find(res.PARTY[res.FORMATION][0],txt[tid][1]):
 						self.ch_ton.play(res.SOUND['ITEM_GET'])
 						for j in txt[tid][3][::-1]:
@@ -3297,24 +3293,20 @@ class Game:
 						for j in txt[tid][2][::-1]:
 							txt.insert(tid + 1, j)
 				#NEW CONTACT
-				elif txt[tid][0] == 7 and self.notification['X'] == 0:
+				elif txt[tid][0] == 7:
 					self.ch_sfx.play(res.SOUND['NOTIFICATION'])
 					dtb.CONTACTS.append(dtb.NUMBERS[txt[tid][1]].copy())
 					dtb.call_save(len(dtb.CONTACTS)-1)
-					self.notification['TEXT'] = dtb.NOTINFO['CONTACT']
-					self.notification['COLOR'] = (165, 255, 0)
+					self.notification.append({'TEXT': dtb.NOTINFO['CONTACT'], 'COLOR': (165, 255, 0), 'HALIGN': 'left','X': 0})
 				#ACHIEVEMENT
-				elif txt[tid][0] == 8 and self.notification['X'] == 0:
+				elif txt[tid][0] == 8:
 					self.ch_sfx.play(res.SOUND['ACHIEVEMENT'])
 					dtb.ACHIEVEMENTS[txt[tid][1]][2] = True
-					self.notification['TEXT'] = dtb.ACHIEVEMENTS[txt[tid][1]][0]
-					self.notification['COLOR'] = (255, 191, 0)
+					self.notification.append({'TEXT': dtb.ACHIEVEMENTS[txt[tid][1]][0], 'COLOR': (255, 191, 0), 'HALIGN': 'right','X': 0})
 				#RELATIONS
 				elif txt[tid][0] == 9:
-					if txt[tid][3] == 0:
-						res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] += txt[tid][2]
-					elif txt[tid][3] == 1:
-						res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] -= txt[tid][2]
+					if txt[tid][3] == 0: res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] += txt[tid][2]
+					elif txt[tid][3] == 1: res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] -= txt[tid][2]
 					else:
 						if res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] >= txt[tid][2]:
 							for i in txt[tid][3]:
@@ -3408,6 +3400,10 @@ class Game:
 						self.opt = 0
 						self.lopt = 0
 						self.mnu = 0
+					elif txt[tid][1].startswith('minigames.'):
+						self.transiction(True,100)
+						self.minigame = eval(txt[tid][1])
+						self.transiction(False,0)
 					else:
 						dv = self.inv.dev(txt[tid][1])
 						self.dev = dv[0]
@@ -3535,7 +3531,7 @@ class Game:
 					self.transiction(False,0,10,'fade')
 					self.dlg['TEXT'] = ds
 					self.dlg['TYPE'] = res.DTYPE
-				#INCREASE STATUS
+				#INCREASE/DECREASE STATUS
 				elif txt[tid][0] == 20:
 					if txt[tid][2] < 2:
 						for i in self.foe + self.mrc:
@@ -3600,7 +3596,8 @@ class Game:
 							elif txt[tid][1] == 'debug':
 								cmd = self.vkb.output.split(' ')
 								if cmd[0].lower() == 'help':
-									txt.insert(tid + 1,'mute pacify rectdebug disdbg player character loadmap chapter time date dialog item battle inventory')
+									txt.insert(tid + 1,'mute pacify rectdebug disdbg player character \
+									loadmap chapter time date dialog item battle inventory')
 								if cmd[0].lower() == 'mute':
 									pygame.mixer.stop()
 									pygame.mixer.music.stop()
@@ -3610,36 +3607,44 @@ class Game:
 									self.rectdebug = not self.rectdebug
 								if cmd[0].lower() == 'disdbg':
 									self.disdbg = not self.disdbg
+								if cmd[0].lower() == 'editing':
+									self.editing = not self.editing
+								if cmd[0].lower() == 'python':
+									try: txt.insert(tid + 1,str(eval(self.vkb.output.replace('python ',''))))
+									except Exception as e: txt.insert(tid + 1,str(e))
 								if cmd[0].lower() == 'player':
-									if len(cmd) < 4: self.player[int(cmd[1])][cmd[2].upper()] = cmd[3]
+									if len(cmd) > 3: self.player[int(cmd[1])][cmd[2].upper()] = cmd[3]
 									else: txt.insert(tid + 1,'missing arguments in "player": (index, key, value)')
 								if cmd[0].lower() == 'character':
-									if len(cmd) < 4: res.CHARACTER[int(cmd[1])][cmd[2].upper()] = cmd[3]
+									if len(cmd) > 3: res.CHARACTER[int(cmd[1])][cmd[2].upper()] = cmd[3]
 									else: txt.insert(tid + 1,'missing arguments in "character": (index, key, value)')
 								if cmd[0].lower() == 'loadmap':
-									if len(cmd) < 2: self.loadmap(cmd[1])
+									if len(cmd) > 1: self.loadmap(cmd[1])
 									else: txt.insert(tid + 1,'missing arguments in "loadmap": (file)')
 								if cmd[0].lower() == 'chapter':
-									if len(cmd) < 2: res.CHAPTER = int(cmd[1])
+									if len(cmd) > 1: res.CHAPTER = int(cmd[1])
 									else: txt.insert(tid + 1,'missing arguments in "chapter": (value)')
 								if cmd[0].lower() == 'time':
-									if len(cmd) < 2: res.TIME = [int(cmd[1]),int(cmd[2]),0]
+									if len(cmd) > 2: res.TIME = [int(cmd[1]),int(cmd[2]),0]
 									else: txt.insert(tid + 1,'missing arguments in "time": (hour,minute)')
 								if cmd[0].lower() == 'date':
-									if len(cmd) < 2: res.DATE = [int(cmd[1]),int(cmd[2]),2007,1,1]
+									if len(cmd) > 2: res.DATE = [int(cmd[1]),int(cmd[2]),2007,1,1]
 									else: txt.insert(tid + 1,'missing arguments in "date": (day,month)')
 								if cmd[0].lower() == 'dialog':
-									if len(cmd) < 3: txt.insert(tid + 1,(23,cmd[1].upper(),int(cmd[2])))
+									if len(cmd) > 2: txt.insert(tid + 1,(23,cmd[1].upper(),int(cmd[2])))
 									else: txt.insert(tid + 1,'missing arguments in "dialog": (key, index)')
 								if cmd[0].lower() == 'item':
-									if len(cmd) < 2: txt.insert(tid + 1,(1,cmd[1]))
+									if len(cmd) > 1: txt.insert(tid + 1,(1,cmd[1]))
 									else: txt.insert(tid + 1,'missing arguments in "item": (key)')
 								if cmd[0].lower() == 'battle':
-									if len(cmd) < 2: txt.insert(tid + 1,(13,[cmd[1].lower()]))
+									if len(cmd) > 1: txt.insert(tid + 1,(13,[cmd[1].lower()]))
 									else: txt.insert(tid + 1,'missing arguments in "battle": (key)')
 								if cmd[0].lower() == 'inventory':
-									if len(cmd) < 2: self.inv.type = int(cmd[1])
+									if len(cmd) > 1: self.inv.type = int(cmd[1])
 									else: txt.insert(tid + 1,'missing arguments in "inventory": (value)')
+								if cmd[0].lower() == 'gui':
+									if len(cmd) > 1: txt.insert(tid + 1,(12,cmd[1]))
+									else: txt.insert(tid + 1,'missing arguments in "gui": (class)')
 					if txt[tid][1] in [0,1,2,3,4,5]:
 						res.CHARACTERS[txt[tid][1]]['NAME'] = self.vkb.output
 					if snd != None: self.ch_msc.play(snd,-1)
@@ -4151,8 +4156,7 @@ class Game:
 								if prb > i['ITEM'][1]:
 									self.inv.add(res.PARTY[res.FORMATION][0],i['ITEM'][0])
 									self.ch_sfx.play(res.SOUND['ITEM_GET'])
-									self.notification['TEXT'] = 'it_' + i['ITEM'][0]
-									self.notification['COLOR'] = (255, 255, 255)
+									self.notification.append({'TEXT': 'it_' + i['ITEM'][0], 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
 							if i['AWAY'] == 0:
 								self.ch_ton.play(res.SOUND['SCREAM' + str(dtb.FREAKS[i['FILE']]['SCREAM'])])
 								while i['FADE'] > 0:
@@ -4374,8 +4378,7 @@ class Game:
 									if prb > i['ITEM'][1]:
 										self.inv.add(res.PARTY[res.FORMATION][0],i['ITEM'][0])
 										self.ch_sfx.play(res.SOUND['ITEM_GET'])
-										self.notification['TEXT'] = 'Adquiriu ' + dtb.ITEMS[i['ITEM'][0]][0]
-										self.notification['COLOR'] = (255, 255, 255)
+										self.notification.append({'TEXT': 'it_' + i['ITEM'][0], 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
 								i['FIGHTING'] = False
 						#CHECK DEATH
 						if pl < len(self.fig) and self.fig[pl]['HP'] <= 0:
@@ -4707,8 +4710,8 @@ class Game:
 		tilimg = {}
 		self.tilmap = [[],[],[],[],[],[],[]]
 		self.objects = []
-		#for i in range(len(self.player)):
-		#	self.objects.append(['player',i,self.player[i]['RECT'].y])
+		for i in range(len(self.player)):
+			self.objects.append(['player',i,self.player[i]['RECT'].y])
 		self.donesprites = {}
 		pcam = [0,0]
 		for i in range(len(self.player)):
@@ -4730,6 +4733,8 @@ class Game:
 		self.loadingif = 0
 		self.bbg['X'] = 0
 		for i in self.player: i['NODES'] = []
+		if 'ENEMIES' not in self.map.properties: self.map.properties['ENEMIES'] = ''
+		if 'HABITAT' not in self.map.properties: self.map.properties['HABITAT'] = 'jungle'
 		if 'EDIT' not in self.map.properties: self.map.properties['EDIT'] = False
 		if 'INTERIOR' not in self.map.properties: self.map.properties['INTERIOR'] = 0
 		if 'CITY' not in self.map.properties: self.map.properties['CITY'] = 0
@@ -4763,29 +4768,30 @@ class Game:
 							else: self.tilrect[3].append(['WALL',pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,self.map.tileheight)])
 						#FOUND TILE
 						else:
-							tl = self.map.get_tile_properties_by_gid(gid)
-							if tl != None:
+							t = self.map.get_tile_properties_by_gid(gid)
+							if t != None:
+								#GET TILE TYPE
+								if 'TYPE' not in t: t['TYPE'] = None
+								elif t['TYPE'] == None: t['TYPE'] = 'NONE'
+								else: t['TYPE'] = t['TYPE'].upper()
 								#LOAD TIME IMAGE
-								if gid in tilimg.keys() and tl['TYPE'] != 'TREADMILL':
-									if tl['frames'] != []:
+								if gid in tilimg.keys() and t['TYPE'] != 'TREADMILL':
+									if t['frames'] != []:
 										if len(tilimg[gid]) <= a:
-											if a >= len(tilimg[gid]): frm = tl['frames'][len(tilimg[gid]) - 1]
-											else: frm = tl['frames'][a]
+											if a >= len(tilimg[gid]): frm = t['frames'][len(tilimg[gid]) - 1]
+											else: frm = t['frames'][a]
 											tilimg[gid].append(self.map.get_tile_image_by_gid(frm.gid))
 										image = tilimg[gid][a]
 									else:
 										image = tilimg[gid]
 								else:
-									if tl['frames'] != []:
-										image = self.map.get_tile_image_by_gid(tl['frames'][a].gid)
+									if t['frames'] != []:
+										image = self.map.get_tile_image_by_gid(t['frames'][a].gid)
 										tilimg[gid] = []
 										tilimg[gid].append(image)
 									else:
 										image = self.map.get_tile_image_by_gid(gid)
 										tilimg[gid] = image
-								#GET TILE TYPE
-								try: t = self.map.get_tile_properties(x, y, i); t['TYPE'] = t['TYPE'].upper()
-								except: t = {'TYPE': 'CLOTH'}
 								#SKY
 								if t['TYPE'] == 'SKY':
 									if len(self.tilmap[3]) == 0:
@@ -4802,7 +4808,7 @@ class Game:
 									if res.TIME[0] >= 18: fr = 1
 									elif res.TIME[0] >= 6: fr = 0
 									else: fr = 1
-									if tl['frames'] != []: image = self.map.get_tile_image_by_gid(tl['frames'][fr].gid)
+									if t['frames'] != []: image = self.map.get_tile_image_by_gid(t['frames'][fr].gid)
 									else: image = self.map.get_tile_image_by_gid(gid)
 									self.tilmap[int(t['LAYER'])][a].blit(image, (x * self.map.tilewidth - self.cam.x, y * self.map.tileheight - self.cam.y))
 								#OBJECT TILE
@@ -4816,7 +4822,7 @@ class Game:
 										t['COLOR'] = res.CHAPTER
 									img = []
 									for fi in range(t['COLOR'] + 1):
-										img.append(self.map.get_tile_image_by_gid(tl['frames'][fi].gid))
+										img.append(self.map.get_tile_image_by_gid(t['frames'][fi].gid))
 									t['IMAGE'] = img
 								#ANIMATED TILES
 								elif t['TYPE'] in ['SUNMOON','TREADMILL','PORTAL','SPIKE','JUMP']:
@@ -4826,9 +4832,9 @@ class Game:
 									t['GIF'] =  0
 									t['SFX'] = 100
 									img = []
-									for fi in range(len(tl['frames'])):
-										if t['TYPE'] != 'TREADMILL': frm = self.map.get_tile_image_by_gid(tl['frames'][fi].gid)
-										else: frm = pygame.transform.rotate(self.map.get_tile_image_by_gid(tl['frames'][fi].gid),45 * (int(t['DIRECTION']) - 1))
+									for fi in range(len(t['frames'])):
+										if t['TYPE'] != 'TREADMILL': frm = self.map.get_tile_image_by_gid(t['frames'][fi].gid)
+										else: frm = pygame.transform.rotate(self.map.get_tile_image_by_gid(t['frames'][fi].gid),45 * (int(t['DIRECTION']) - 1))
 										img.append(frm)
 									t['IMAGE'] = img
 								#MOVING
@@ -4849,11 +4855,11 @@ class Game:
 									if i == 0: self.tilrect[i].append([t,trct])
 									#MOVABLE OBJECTS
 									if t['TYPE'] in ['CARRY','HOLD','DESTROY']:
-										if tl['frames'] != []:
+										if t['frames'] != []:
 											trct = pygame.Rect(x * self.map.tilewidth, (y * self.map.tileheight) + self.map.tileheight,self.map.tilewidth,self.map.tileheight)
 											srf = pygame.Surface((self.map.tilewidth,self.map.tileheight * 2), pygame.SRCALPHA)
-											srf.blit(self.map.get_tile_image_by_gid(tl['frames'][1].gid),(0,0))
-											srf.blit(self.map.get_tile_image_by_gid(tl['frames'][0].gid),(0,self.map.tileheight))
+											srf.blit(self.map.get_tile_image_by_gid(t['frames'][1].gid),(0,0))
+											srf.blit(self.map.get_tile_image_by_gid(t['frames'][0].gid),(0,self.map.tileheight))
 										else: srf = image
 										self.objects.append(['move',{'IMAGE': srf,'RECT': trct,'TYPE': t['TYPE'],'DIRECTION': 0,'SPEED': 0,'DESTROY': False},trct.y])
 									#PORTAL
@@ -5026,7 +5032,7 @@ class Game:
 				p['DRIVING'] = vhn + 1
 		#ENEMIES
 		for prp in self.map.properties.items():
-			if prp[0] == 'ENEMIES':
+			if prp[0] == 'ENEMIES' and len(prp[1]) > 0:
 				st = 0
 				en = 0
 				lst = []
@@ -5090,6 +5096,8 @@ class Game:
 				'PROPERTIES': self.map.properties,'TILES': tt,'LAYERS': self.map.layers,
 				}
 				self.shist.append(self.tilmap.copy())
+				self.ihist = 0
+				print(self.shist[self.ihist])
 			#ANIMALS
 			elif prp[0] == 'ANIMALS':
 				st = 0
@@ -5125,7 +5133,7 @@ class Game:
 	def draw(self):
 		for i in self.display: i.fill((0,0,0,0))
 		if self.battle and self.turn < 0: self.hpctrl = []
-		elif self.dlg['FADE'] < 500: self.hpctrl = []
+		elif self.dlg['FADE'] > 0: self.hpctrl = []
 		else: self.hpctrl = dtb.HINTS['MENUS']
 		#TILEMATION
 		if self.player[0]['PAUSE'] < 2: self.tilemation += 0.1
@@ -5143,7 +5151,15 @@ class Game:
 					pos[0] += 1
 					if pos[0] >= self.mapdata['WIDTH']:
 						pos[0] = 0; pos[1] += 1"""
-			self.display[0].blit(self.shist[self.ihist][self.slayer][0],(0,0))#,(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+			for i in self.shist[self.ihist]:
+				for l in i:
+					self.display[0].blit(i[0],(0,0))#,(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+			for y in self.objects:
+				if y[0] == 'npc':
+					for i in self.npcs:
+						if i['N'] == y[1]:
+							pygame.draw.rect(self.display[0],(200,200,0),pygame.Rect(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y,i['RECT'].width,i['RECT'].height))
+				if y[0] == 'portal': pygame.draw.rect(self.display[0],(200,200,0),pygame.Rect(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y,y[1]['RECT'].width,y[1]['RECT'].height))
 			self.display[0].blit(self.inv.bar(1,4,(1,5),'vertical'),(0,0))
 		#TILED MAP
 		elif self.turn != -6:
@@ -5184,13 +5200,13 @@ class Game:
 							i[0]['GIF'] = 0
 						sdist = 60
 						sarea = pygame.Rect(i[1].x - sdist,i[1].y - sdist,sdist * 2,sdist * 2)
-						sx = (self.player[0]['RECT'].x - sarea.x/sdist)
+						"""sx = (self.player[0]['RECT'].x - sarea.x/sdist)
 						if sx > 1.0: sx -= 1.0
-						sx = (self.player[0]['RECT'].y - sarea.y/sdist)
+						sy = (self.player[0]['RECT'].y - sarea.y/sdist)
 						if sy > 1.0: sy -= 1.0
 						i[0]['SFX'] = (sx + sy/2)
 						self.ch_ton.set_volume(i[0]['SFX'] * res.SFX)
-						self.ch_ton.play(res.SOUND['STEP_MOTOR'])
+						self.ch_ton.play(res.SOUND['STEP_MOTOR'])"""
 					if i[0]['TYPE'] == 'MOVING':
 						self.display[0].blit(i[0]['IMAGE'], (i[1].x - self.cam.x, i[1].y - self.cam.y))
 						if i[0]['INOUT'] == False:
@@ -5278,7 +5294,7 @@ class Game:
 								if t != None:
 									if self.rectdebug:
 										if tl == 0: pygame.draw.rect(self.display[0],(255,255,0),pygame.Rect(t[1].x + 2 - self.cam.x,t[1].y + 2 - self.cam.y,t[1].width - 4,t[1].height - 4),3)
-									if self.dlg['FADE'] > 0 and i['PAUSE'] == 0:
+									if i['PAUSE'] == 0:
 										#PROPS COLISION
 										if i['DRIVING'] == None:
 											#TREADMILL
@@ -5440,8 +5456,7 @@ class Game:
 									self.ch_sfx.play(res.SOUND['BUY'])
 									mny[1] -= 10
 									y[1]['TIME'] = 180
-									self.notification['TEXT'] = 'Pedágio -$ 10'
-									self.notification['COLOR'] = (255, 255, 255)
+									self.notification.append({'TEXT': 'Pedágio -$ 10', 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
 								elif self.facing(self.player[0],y[1]['RECT']) == 2:
 									self.player[0]['SPEED'] = 0
 					y[2] = y[1]['RECT'].y
@@ -6141,6 +6156,9 @@ class Game:
 			if self.phofa > 0:
 				pass
 				#self.display[1].blit(img, (imgh - (self.dev.scrpos[0] * scl2),self.phofa - (self.dev.scrpos[1] * scl2)))
+		#MINIGAME
+		if self.minigame != None:
+			self.display[1].blit(self.minigame.draw(), (0,0))
 		#READING
 		if self.read != None:
 			srf = self.read.draw()
@@ -6228,60 +6246,70 @@ class Game:
 		#EASTER EGG
 		if self.cityname == 'TWNN': self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'TWNN.png'), (35,0))
 		#PAUSE MENU
-		if self.title.mnu in [9,10] and self.title.winbar != 0:
+		if self.title.mnu in [9,10] and self.title.winbar > 0:
 			tt = self.title.menu()
 			self.display[0].blit(tt[0],(0,0))
 			self.display[1].blit(tt[1],(0,0))
 		#NOTIFICATIONS
-		if self.notification['TEXT'] != None:
+		for i in range(len(self.notification)):
+			if self.notification[i]['TEXT'] == None:
+				del self.notification[i]
+				i -= 1
+		y = 0
+		for i in self.notification:
 			ch = res.CHARACTERS[res.PARTY[res.FORMATION][0]]
-			self.notification['X'] += 20
-			if self.notification['X'] < 180: xx = self.notification['X']
+			i['X'] += 20
+			if i['X'] < 180: xx = i['X']
 			else: xx = 180
+			if i['HALIGN'] == 'right': xx = self.displayzw - xx
 			#HP BAR
-			if self.notification['TEXT'].startswith('hp_'):
-				pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(-170 + xx,40,160,30))
-				pygame.draw.rect(self.display[0], (res.COLOR[0],res.COLOR[1],res.COLOR[2]), pygame.Rect(-168 + xx,42,156,26))
-				pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(-130 + xx,45,50,20))
-				pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(-130 + xx,45,int(50/(dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]/ch['HP'])),20))
-				pygame.draw.rect(self.display[0], (0,255,0), pygame.Rect(-130 + xx,45,int(50/(dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]/ch['HP'] - int(self.notification['TEXT'][3:]))),20))
-				self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(res.PARTY[res.FORMATION][0]) + '.png'), (-160 + xx,45))
+			if i['TEXT'].startswith('hp_'):
+				pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(-170 + xx,y + 40,160,30))
+				pygame.draw.rect(self.display[0], (res.COLOR[0],res.COLOR[1],res.COLOR[2]), pygame.Rect(-168 + xx,y + 42,156,26))
+				pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(-130 + xx,y + 45,50,20))
+				pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(-130 + xx,y + 45,int(50/(dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]/ch['HP'])),20))
+				pygame.draw.rect(self.display[0], (0,255,0), pygame.Rect(-130 + xx,y + 45,int(50/(dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]/ch['HP'] - int(i['TEXT'][3:]))),20))
+				self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(res.PARTY[res.FORMATION][0]) + '.png'), (-160 + xx,y + 45))
+				y += 40
 			#MORALITY BAR
-			elif self.notification['TEXT'].startswith('ml_'):
-				pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-170 + xx,40,160,30))
-				pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-168 + xx,42,156,26))
+			elif i['TEXT'].startswith('ml_'):
+				pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-170 + xx,y + 40,160,30))
+				pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-168 + xx,y + 42,156,26))
 				if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] > 0:
-					pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(-90 + xx,45,int(70/(10/ch['MORALITY'])),20))
-					pygame.draw.rect(self.display[0], (0,175,0), pygame.Rect(-90 + xx,45,int(70/(10/ch['MORALITY'] - int(self.notification['TEXT'][3:]))),20))
+					pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(-90 + xx,y + 45,int(70/(10/ch['MORALITY'])),20))
+					pygame.draw.rect(self.display[0], (0,175,0), pygame.Rect(-90 + xx,y + 45,int(70/(10/ch['MORALITY'] - int(i['TEXT'][3:]))),20))
 				if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] < 0:
-					pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(-int(70/(10/ch['MORALITY'])) - 160 + xx,45,int(70/(10/ch['MORALITY'])),20))
-					pygame.draw.rect(self.display[0], (175,0,0), pygame.Rect(-int(70/(10/ch['MORALITY'])) - 160 + xx,45,int(70/(10/ch['MORALITY'] - int(self.notification['TEXT'][3:]))),20))
-				pygame.draw.line(self.display[0], (255,255,255), (-90 + xx,42),(-90 + xx,68),2)
+					pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(-int(70/(10/ch['MORALITY'])) - 160 + xx,y + 45,int(70/(10/ch['MORALITY'])),20))
+					pygame.draw.rect(self.display[0], (175,0,0), pygame.Rect(-int(70/(10/ch['MORALITY'])) - 160 + xx,y + 45,int(70/(10/ch['MORALITY'] - int(i['TEXT'][3:]))),20))
+				pygame.draw.line(self.display[0], (255,255,255), (-90 + xx,y + 42),(-90 + xx,y + 68),2)
+				y += 40
 			#ITEM
-			elif self.notification['TEXT'].startswith('it_'):
-				szw = math.floor(self.fnt['DEFAULT'].size(self.notification['TEXT'])[0]/2) + 70
-				szh = math.floor(self.fnt['DEFAULT'].size(self.notification['TEXT'])[1]/2) + 45
-				pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-183 + xx,27,szw,szh))
-				pygame.draw.rect(self.display[0], self.notification['COLOR'], pygame.Rect(-180 + xx,30,szw - 6,szh - 6))
-				img = self.inv.itimg(self.notification['TEXT'][3:])
-				self.display[0].blit(img, (-170 + xx, 40))
-				self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ITEMS[self.notification['TEXT'][3:]][0], True, (0, 0, 0)), ((-140 + xx) * res.GSCALE, 50 * res.GSCALE))
+			elif i['TEXT'].startswith('it_'):
+				szw = math.floor(self.fnt['DEFAULT'].size(i['TEXT'])[0]/2) + 70
+				szh = math.floor(self.fnt['DEFAULT'].size(i['TEXT'])[1]/2) + 45
+				pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-183 + xx,y + 27,szw,szh))
+				pygame.draw.rect(self.display[0], i['COLOR'], pygame.Rect(-180 + xx,y + 30,szw - 6,szh - 6))
+				img = self.inv.itimg(i['TEXT'][3:])
+				self.display[0].blit(img, (-170 + xx, y + 40))
+				self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ITEMS[i['TEXT'][3:]][0], True, (0, 0, 0)), ((-140 + xx) * res.GSCALE, (y + 50) * res.GSCALE))
+				y += szh +10
 			#MESSAGE
 			else:
 				if res.DISLEXIC:
 					txt = ''
-					for t in self.notification['TEXT']:
+					for t in i['TEXT']:
 						txt += t + ' '
-				else: txt = self.notification['TEXT']
+				else: txt = i['TEXT']
 				szw = math.floor(self.fnt['DEFAULT'].size(txt)[0]/2) + 30
 				szh = math.floor(self.fnt['DEFAULT'].size(txt)[1]/2) + 45
-				if self.notification['COLOR'] != (0,0,0): pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-183 + xx,27,szw,szh))
-				else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-183 + xx,27,szw,szh))
-				pygame.draw.rect(self.display[0], self.notification['COLOR'], pygame.Rect(-180 + xx,30,szw - 6,szh - 6))
-				self.display[1].blit(self.fnt['DEFAULT'].render(txt, True, (0, 0, 0)), ((-170 + xx) * res.GSCALE, 45 * res.GSCALE))
-			if self.notification['X'] == 1000:
-				self.notification['TEXT'] = None
-				self.notification['X'] = 0
+				if i['COLOR'] != (0,0,0): pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(-183 + xx,y + 27,szw,szh))
+				else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(-183 + xx,y + 27,szw,szh))
+				pygame.draw.rect(self.display[0], i['COLOR'], pygame.Rect(-180 + xx,y + 30,szw - 6,szh - 6))
+				self.display[1].blit(self.fnt['DEFAULT'].render(txt, True, (0, 0, 0)), ((-170 + xx) * res.GSCALE, (y + 45) * res.GSCALE))
+				y += szh + 10
+			if i['X'] == 1000:
+				i['TEXT'] = None
+				i['X'] = 0
 				xx = 0
 		#TUTORIALS
 		if self.tutorial['OUTPUT'] != []:
@@ -6450,7 +6478,7 @@ class Game:
 				self.display[1].blit(self.fnt['DISDBG'].render(txt, True, (200,200,200)), (10, 10 + (y * 30)))
 				y += 1
 		#CAMERA
-		camfollow = False
+		camfollow = True
 		camspd = int(res.CAMACC * res.GSCALE)
 		recam = [self.cam.x,self.cam.y]
 		if len(self.player) == 0:
@@ -6684,6 +6712,9 @@ class Game:
 						i[2] = None
 		#SECONDS
 		self.waitime += 1
+		if 'TIME' in res.TASKS[0][res.SCENE] and res.TASKS[0][res.SCENE]['TIME'][0] < 0:
+			pom = -1
+		else: pom = 1
 		#BATTERY
 		battery = res.INVENTORY[res.SHORTCUT[0]][res.SHORTCUT[1]][res.SHORTCUT[2]][1]
 		if battery != 'infinite' and self.dev != None:
@@ -6700,7 +6731,7 @@ class Game:
 		for p in self.player:
 			if sleep == False: sleep = p['SLEEP']
 		if sleep == False:
-			res.TIME[2] += 1
+			res.TIME[2] += 1 * pom
 			#BASIC NECESITIES
 			for p in res.PARTY[res.FORMATION]:
 				if res.CHARACTERS[p]['HUNGER'] == 0: pass #res.CHARACTERS[p]['HEALTH'] = 6
@@ -6714,32 +6745,32 @@ class Game:
 				elif res.SCENE > 0: battery -= 1
 		#SLEEP
 		else:
-			res.TIME[1] += 5
+			res.TIME[1] += 5 * pom
 			for p in res.PARTY[res.FORMATION]:
 				if res.CHARACTERS[p]['HP'] < dtb.CLASSES[res.CHARACTERS[p]['CLASS']]['RESISTANCE'][res.CHARACTERS[p]['LEVEL']]:
 					res.CHARACTERS[p]['HP'] += 1
 				if res.CHARACTERS[p]['SLEEP'] < 10000: res.CHARACTERS[p]['SLEEP'] += 50
 		res.INVENTORY[res.SHORTCUT[0]][res.SHORTCUT[1]][res.SHORTCUT[2]][1] = str(battery)
 		#MINUTES
-		if res.TIME[2] >= 60: res.TIME[1] += 1; res.TIME[2] = 0
+		if res.TIME[2] >= 60: res.TIME[1] += 1 * pom; res.TIME[2] = 0
 		#HOURS
 		if res.TIME[1] >= 60:
-			res.TIME[0] += 1; res.TIME[1] = 0
+			res.TIME[0] += 1 * pom; res.TIME[1] = 0
 			if sleep:
 				for u in res.PARTY[res.FORMATION]:
 					if res.CHARACTERS[u]['HEALTH'] in (4,5,9,10,11):
 						res.CHARACTERS[u]['HEALTH'] = 0
 		#DAYS
-		if res.TIME[0] >= 24: res.DATE[0] += 1; res.DATE[3] += 1; res.TIME[0] = 0; res.TEMPERATURE = dtb.CITIES[self.map.properties['CITY']][1][res.DATE[1] - 1]
+		if res.TIME[0] >= 24: res.DATE[0] += 1 * pom; res.DATE[3] += 1 * pom; res.TIME[0] = 0; res.TEMPERATURE = dtb.CITIES[self.map.properties['CITY']][1][res.DATE[1] - 1]
 		#WEEKS
-		if res.DATE[3] > 7: res.DATE[3] = 1; res.DATE[4] += 1
+		if res.DATE[3] > 7: res.DATE[3] = 1; res.DATE[4] += 1 * pom
 		if res.DATE[4] > 8: res.DATE[4] = 1
 		#MONTHS
-		if res.DATE[1] in [1,3,5,7,8,10,12] and res.DATE[0] > 31: res.DATE[1] += 1; res.DATE[0] = 1
-		elif res.DATE[1] in [4,6,9,11] and res.DATE[0] > 30: res.DATE[1] += 1; res.DATE[0] = 1
-		elif res.DATE[1] == 2 and res.DATE[0] > 28: res.DATE[1] += 1; res.DATE[0] = 1
+		if res.DATE[1] in [1,3,5,7,8,10,12] and res.DATE[0] > 31: res.DATE[1] += 1 * pom; res.DATE[0] = 1
+		elif res.DATE[1] in [4,6,9,11] and res.DATE[0] > 30: res.DATE[1] += 1 * pom; res.DATE[0] = 1
+		elif res.DATE[1] == 2 and res.DATE[0] > 28: res.DATE[1] += 1 * pom; res.DATE[0] = 1
 		#YEARS
-		if res.DATE[1] > 12: res.DATE[2] += 1; res.DATE[1] = 1
+		if res.DATE[1] > 12: res.DATE[2] += 1 * pom; res.DATE[1] = 1
 		#GAMETIME
 		res.GAMETIME += self.glock.get_rawtime()
 		#UPDATE

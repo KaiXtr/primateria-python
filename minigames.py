@@ -1052,6 +1052,7 @@ class Sinuca:
 		
 		return self.surface
 
-g = Game()
-while play == True:
-	g.run()
+if play:
+	g = Game()
+	while True:
+		g.run()

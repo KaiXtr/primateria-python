@@ -282,11 +282,12 @@ class Inventory:
 		elif it == 'PDA': dv = Apps(1)
 		elif it == 'mp3': dv = 'radio'
 		else:
-			try: dv = getattr(sys.modules[__name__], it)
+			try: dv = eval(it)
 			except: dv = None
 		if dv != None:
 			bt = int(res.INVENTORY[res.SHORTCUT[0]][res.SHORTCUT[1]][res.SHORTCUT[2]][1])
 		else: bt = 0
+		dv = None
 		
 		return [dv,bt]
 
@@ -393,16 +394,18 @@ class Inventory:
 	def itimg(self,it):
 		img = None
 		if it in self.doneimages: img = self.doneimages[it]
-		elif it.startswith('til'):
+		elif it.startswith('letter'):
+			img = pygame.image.load(res.ITEMS_PATH + it + '_H.png')
+		elif it.startswith('til_'):
 			img = self.tilset[dtb.ITEMS[it][5]]
-		elif it.startswith('clth') or it.startswith('tool_lighter') or it.startswith('bottle'):
+		elif it.startswith('clth_') or it.startswith('tool_lighter') or it.startswith('bottle'):
 			img = pygame.image.load(res.ITEMS_PATH + it[:-1] + '.png')
 			img.fill(res.PALETTES[2][int(it[-1]) - 1],None,pygame.BLEND_RGBA_MULT)
 		elif it.endswith('_wasted'):
 			img = pygame.image.load(res.ITEMS_PATH + it.replace('_wasted','') + '.png')
 			img.fill((50,50,50),None,pygame.BLEND_RGBA_MULT)
 		elif it != '_':
-			if it.startswith('bed'):
+			if it.startswith('bed_'):
 				img = pygame.image.load(res.ITEMS_PATH + 'bed.png')
 				if it.endswith('single'):
 					ad = pygame.image.load(res.ITEMS_PATH + 'wS.png')
@@ -411,7 +414,7 @@ class Inventory:
 				img.blit(ad,(img.get_width() - ad.get_width() - 1, 1))
 			else:
 				nrml = False
-				for i in ['cage','tent']:
+				for i in ['cage_','tent_']:
 					if it.startswith(i):
 						img = pygame.image.load(res.ITEMS_PATH + i + '.png')
 						if it.endswith('big'): ad = pygame.image.load(res.ITEMS_PATH + 'wB.png')
@@ -1143,6 +1146,7 @@ class GPS:
 
 class Contacts:
 	def __init__(self):
+		self.img = pygame.image.load(res.BACKG_PATH + 'phone.png')
 		self.scr = [pygame.Surface((180,232)), pygame.Surface((360,464), pygame.SRCALPHA)]
 		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 30), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
 			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
@@ -1150,6 +1154,9 @@ class Contacts:
 		self.sfx.set_volume(res.SFX)
 		self.ton = pygame.mixer.Channel(1)
 		self.ton.set_volume(res.SFX)
+		self.scrpos = (39,46)
+		self.rqst = True
+		self.hpctrl = 'PHONE_CONTACTS'
 		self.ingame = 0
 		self.scroll = 0
 		self.optrects = []

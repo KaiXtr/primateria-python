@@ -26,7 +26,7 @@ FONTS_PATH = 'fonts/'
 
 #None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip
 CLICK = ['move',None]
-ACTION = ['camera','camera','camera','camera','equip','run','inventory','pause']
+ACTION = ['walk','walk','walk','walk','equip','run','inventory','pause']
 
 SPRITES = {}
 SOUND = {}
@@ -93,7 +93,7 @@ HELP = True
 CURSOR = 0
 TMNU = False
 TTS = False
-CC = True
+CC = False
 DISLEXIC = False
 BTYPE = 2 #1=turns,2=dynamic,3=action
 
@@ -329,13 +329,13 @@ def new_data(add=False):
 		DATE = [25,12,2007,1,1]
 		WEATHER = 0
 		CHAPTER = 6
-		SCENE = 1
+		SCENE = 0
 		GAMETIME = 0
 		FORMATION = 0
 		MAP = dtb.CHAPTERS[CHAPTER][5][0]
 		PX = dtb.CHAPTERS[CHAPTER][5][1]
 		PY = dtb.CHAPTERS[CHAPTER][5][2]
-		MAP = 'buildtest'
+		MAP = 'labyrinth_1'
 		PX = 90
 		PY = 90
 		
@@ -354,7 +354,7 @@ def new_data(add=False):
 		CONTACTS = [['Maicon','923778988'],['Mercador','969696969'],['Pizza Delivery','953478809']]
 		CALLHIST = []
 		INBOX = []
-		TASKS = []
+		TASKS = [['LVL_00_0',0]]
 		TACTICAL = [[1,1,1,1]]
 		for i in dtb.ITEMS.items():
 			if i[0].startswith('food'):
