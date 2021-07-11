@@ -18,8 +18,7 @@ class Game:
 		self.display = pygame.display.set_mode((640, 1280))
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.clock = pygame.time.Clock()
-		self.FPS = 60
-		self.minigame = Mirror()
+		self.minigame = Backgrounds()
 		'''lst = []
 		for root, dirs, files in os.walk('Sprites/Templates'):
 		    for basename in files:
@@ -51,7 +50,7 @@ class Game:
 		self.display.blit(self.minigame.draw(),(0,0))
 		
 		pygame.display.flip()
-		self.clock.tick(self.FPS)
+		self.clock.tick(res.FPS)
 
 class Temp:
 	def __init__(self):
@@ -111,27 +110,39 @@ class Dice:
 		
 		return self.surface
 		
-class Mirror:
+class Backgrounds:
 	def __init__(self):
 		self.surface = pygame.Surface((640,1280))
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.lst = []
 		self.img = 0
-		self.transform = 0
-		self.blink = 0
+		self.transform = 4
+		self.blink = 0.0
 		self.x = 0
 		self.palette = [[(196,206,228),(250,0,0)],[(18,46,85),(0,250,0)]]
 		for t in range(14):
-			#swp = pygame.image.load(res.BACKG_PATH + 'chp_' + str(t) + '1.png')
-			#swp = self.swap(swp,self.palette)
-			img = Image.open(res.BACKG_PATH + 'chp_13.png')
-			img = PIL.ImageOps.invert(img)
-			self.lst.append(pygame.image.fromstring(img.tobytes(), img.size, img.mode))
+			self.lst.append([])
+			for r in range(2):
+				img = Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+				if img.mode == 'RGBA':
+					nw = Image.new("RGB", img.size, (255, 255, 255))
+					nw.paste(img, mask=img.split()[3])
+					nw.save(res.BACKG_PATH + 'chp_' + str(t) + '.png', 'PNG', quality=100)
+					img = Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+				if r: img = PIL.ImageOps.invert(img)
+				img = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
+				sz = img.get_width()
+				srf = pygame.Surface((sz * 2,sz * 2))
+				srf.blit(img, (0,0))
+				srf.blit(pygame.transform.flip(img,True,False), (sz,0))
+				srf.blit(pygame.transform.flip(img,False,True), (0,sz))
+				srf.blit(pygame.transform.flip(img,True,True), (sz,sz))
+				self.lst[t].append(srf)
 		
 	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN:
-			self.transform += 1
-			self.x = -300
+		if res.DEBUG and event.type == pygame.MOUSEBUTTONDOWN:
+			self.img += 1
+			self.x = -400
 			if self.transform > 4: self.transform = 0
 	
 	def palette_swap(srf, old, new):
@@ -154,27 +165,28 @@ class Mirror:
 	def draw(self):
 		self.surface.fill((0,0,0))
 		sz = 400
-		ww = self.lst[self.img].get_width() - sz
-		hh = self.lst[self.img].get_height() - sz
+		bimg = self.lst[self.img][math.floor(self.blink)]
+		ww = bimg.get_width() - sz
+		hh = bimg.get_height() - sz
 		if self.transform == 0:
-			self.surface.blit(self.lst[self.img], (0,0),(ww - self.x,0,sz,sz))
-			self.surface.blit(pygame.transform.flip(self.lst[self.img],True,False), (sz,0),(self.x,0,sz,sz))
+			self.surface.blit(bimg, (0,0),(ww - self.x,0,sz,sz))
+			self.surface.blit(pygame.transform.flip(bimg,True,False), (sz,0),(self.x,0,sz,sz))
 		if self.transform > 0:
 			if self.transform in [1,2]: xx = self.x
 			if self.transform in [3,4]: xx = -self.x
 			if self.transform in [1,3]: yy = self.x
 			if self.transform in [2,4]: yy = -self.x
-			self.surface.blit(self.lst[self.img], (0,0),(ww - xx,hh -yy,sz,sz))
-			self.surface.blit(pygame.transform.flip(self.lst[self.img],True,False), (sz,0),(xx,hh - yy,sz,sz))
-			self.surface.blit(pygame.transform.flip(self.lst[self.img],False,True), (0,sz),(ww - xx,yy,sz,sz))
-			self.surface.blit(pygame.transform.flip(self.lst[self.img],True,True), (sz,sz),(xx,yy,sz,sz))
+			self.surface.blit(bimg, (0,0),(ww - xx,hh - yy,sz,sz))
+			self.surface.blit(pygame.transform.flip(bimg,True,False), (sz,0),(xx,hh - yy,sz,sz))
+			self.surface.blit(pygame.transform.flip(bimg,False,True), (0,sz),(ww - xx,yy,sz,sz))
+			self.surface.blit(pygame.transform.flip(bimg,True,True), (sz,sz),(xx,yy,sz,sz))
 		self.x += 2
-		if self.x > ww:
-			self.x = 0
-			#self.img += 1
-			if self.img > len(self.lst) - 1: self.img = 0
-		self.blink += 1
-		if self.blink > 100: self.blink = 0
+		if self.x > 0:
+			self.x = -ww
+			self.img += 1
+		if self.img > len(self.lst) - 1: self.img = 0
+		self.blink += 0.02
+		if self.blink >= random.randint(1.0,2.0): self.blink = 0.0
 		
 		return self.surface
 		

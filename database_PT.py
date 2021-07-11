@@ -1397,10 +1397,10 @@ ITEMS = {
 'USD': ['dólar americano',['Surgiu em 1992 com o governo de Itamar Franco.'],1.0,0,0],
 'BRL': ['real brasileiro',['Surgiu em 1992 com o governo de Itamar Franco.'],2.0,0,0],
 'EUR': ['euro',['Surgiu em 1992 com o governo de Itamar Franco.'],0.85,0,0],
-'credit_card1': ['cartão BB',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
-'credit_card2': ['cartão Uati',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
-'credit_card3': ['cartão Faixa',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
-'credit_card4': ['cartão Cabresto',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
+'creditcard1': ['cartão BB',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
+'creditcard2': ['cartão Uati',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
+'creditcard3': ['cartão Faixa',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
+'creditcard4': ['cartão Cabresto',['Um item muito necessário na vida de um jovem adulto, use nos caixas de banco, nem imagine em jogar fora!'],0,1,1],
 
 #TREASURES (name,description,price,volume,weight,type)
 'treasure_vase': ['vaso marajoara',['Um antigo vaso indígena feita da cerâmica do marajó.'],2000,3,3,0],

@@ -31,6 +31,25 @@ class Guitools:
 		yy = math.floor(input.y/value[1]) * value[1]
 		return (xx,yy)
 	
+	def gradient(self,size,top,bottom,value=0,direction='vertical'):
+		srf = pygame.Surface(size,pygame.SRCALPHA)
+		if direction == 'vertical':
+			if value == 0: number = size[0]; dv = 1
+			else: number = value; dv = int(size[0]/value)
+			line = (size[0],dv)
+		else:
+			if value == 0: number = size[1]; dv = 1
+			else: number = value; dv = int(size[1]/value)
+			line = (dv,size[0])
+		for i in range(number):
+			ln = pygame.Surface(line,pygame.SRCALPHA)
+			plt = list(top)
+			for p in range(len(plt)):
+				plt[p] += int((bottom[p] - top[p])/number)
+			ln.fill((top[0] - bottom[0],0,0,200))
+			if direction == 'vertical': srf.blit(ln,(0,i * dv))
+			else: srf.blit(ln,(i * dv,0))
+	
 	def get_tiles(self):
 		tlsz = (30,30)
 		tilset = os.listdir(res.TILES_PATH)
@@ -215,6 +234,8 @@ class Inventory:
 		'ALT': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', 10)}
 		self.guitools = Guitools()
 		self.allowlimit = False
+		self.allowtrash = False
+		self.allowbag = False
 		self.sfx = pygame.mixer.Channel(0)
 		self.sfx.set_volume(res.SFX)
 		if srf != False:
@@ -287,7 +308,6 @@ class Inventory:
 		if dv != None:
 			bt = int(res.INVENTORY[res.SHORTCUT[0]][res.SHORTCUT[1]][res.SHORTCUT[2]][1])
 		else: bt = 0
-		dv = None
 		
 		return [dv,bt]
 
@@ -295,6 +315,7 @@ class Inventory:
 		if isinstance(item,list): fnd = []
 		else: fnd = None
 		for i in range(len(res.INVENTORY)):
+			if isinstance(item,str) and fnd != None: break
 			able = True
 			if where != None:
 				if i == where: able = True
@@ -303,9 +324,12 @@ class Inventory:
 			if able == True:
 				yy = 0
 				for y in res.INVENTORY[i]:
+					if isinstance(item,str) and fnd != None: break
 					xx = 0
 					for x in y:
+						if isinstance(item,str) and fnd != None: break
 						for it in range(len(x[::2])):
+							if isinstance(item,str) and fnd != None: break
 							if isinstance(item,str) and fnd == None:
 								if act == 'item' and x[it] == item: fnd = [x[it],x[it + 1]]
 								if act == 'position' and x[it] == item: fnd = (i,yy,xx,it)
@@ -494,7 +518,9 @@ class Inventory:
 						#CHECK BAG
 						trigg = False
 						if optx == 0 or opty == 4: trigg = True
-						elif res.INVENTORY[n][4][0][0] != '_': trigg = True
+						elif self.allowbag:
+							if res.INVENTORY[n][4][0][0] != '_': trigg = True
+						else: trigg = True
 						#DRAW RECTS
 						if self.opt[0] == optx and self.opt[1] == opty and self.opt[2] == mnc:
 							cl = (res.COLOR[0],res.COLOR[1],res.COLOR[2])

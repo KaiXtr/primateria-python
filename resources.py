@@ -8,8 +8,10 @@ AUTHOR = 'Matt Kai'
 DESCRIPTION = 'Setesalém: Mutation Purge (2021)'
 VERSION = 'BETA 0.1'
 YEAR = '2021'
+MAINLANG = 'PT'
 DEBUG = True
 GSCALE = 2 #game ratio ÷ window ratio
+FPS = 30
 
 BACKG_PATH = 'backgrounds/'
 SPRITES_PATH = 'sprites/'
@@ -374,10 +376,10 @@ def new_data(add=False):
 				INVENTORY[u].append([])
 				for x in range(5):
 					INVENTORY[u][y].append(['_','0000'])
-
+		CHARACTERS[1]['HP'] = 10
 		INVENTORY[1] = [
-		[['amulet1','0000'],['phone','3600','sim_card','0003'],['tube100','0050'],['wallet','0100','credit_card','0100','id_card1','0000'],['food_pizza_chicken','9999']],
-		[['vest1','7'],['til_grass','infinite'],['til_color','infinite'],['til_metalbars','infinite'],['_','0000']],
+		[['amulet1','0000'],['phone','3600','sim_card','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
+		[['vest1','7'],['til_grass','infinite'],['til_color','infinite'],['til_metalbars','infinite'],['food_pizza_4cheese','0000']],
 		[['head_glasses1','0000'],['guit_load','0'],['guit_save','0000'],['guit_undo','0000'],['guit_redo','0000']],
 		[['head_hairclip','0000'],['guit_pencil','0000'],['guit_erase','0000'],['guit_dropper','0000'],['_','0000']],
 		[['bag1','0000'],['bomb_regular','3'],['pow_triplebubble','3'],['cigar','0000'],['_','0000']]
@@ -684,50 +686,6 @@ def save_data(t):
 	com.close()
 	tbl.close()
 
-def call_save(c):
-	global ID
-	tbl = sqlite3.connect('userdata.db')
-	com = tbl.cursor()
- 
-	com.execute("INSERT INTO contacts VALUES ({},{})".format(ID,c))
-	tbl.commit()
- 
-	com.close()
-	tbl.close()
-
-def hist_save(n,w):
-	global ID
-	tbl = sqlite3.connect('userdata.db')
-	com = tbl.cursor()
- 
-	com.execute("INSERT INTO callhist VALUES ({},{},{})".format(ID,n,w))
-	tbl.commit()
- 
-	com.close()
-	tbl.close()
-
-def inbx_save(e,r):
-	global ID
-	tbl = sqlite3.connect('userdata.db')
-	com = tbl.cursor()
- 
-	com.execute("INSERT INTO inbox VALUES ({},{},{})".format(ID,e,r))
-	tbl.commit()
- 
-	com.close()
-	tbl.close()
-
-def task_save(t,d):
-	global ID
-	tbl = sqlite3.connect('userdata.db')
-	com = tbl.cursor()
- 
-	com.execute("INSERT INTO tasks VALUES ({},{},{})".format(ID,t,d))
-	tbl.commit()
- 
-	com.close()
-	tbl.close()
-
 def delete_data():
 	global ID
 	tbl = sqlite3.connect('userdata.db')
@@ -747,175 +705,6 @@ def delete_data():
 	com.close()
 	tbl.close()
 
-def color_sprite(typ,p,mov,c,h='',ind=''):
-	if ind == '': pth = TEMP_PATH + typ + '_' + str(p) + str(h) + str(c) + '_' + mov + '.png'
-	else: pth = 'Sprites/Templates/' + typ + '_' + str(p) + str(h) + str(c) + '_' + mov + '_' + str(ind) + '.png'
-
-	if os.path.isfile(pth):
-		try: srf = pygame.image.load(pth)
-		except: print('INVALID IMAGE FILE IN ' + pth)
-	else:
-		if typ == 'head': ex = '0'
-		else: ex = ''
-		if ind == '': srf = pygame.image.load(CHARS_PATH + typ + '_' + str(p) + ex + '0_' + mov + '.png')
-		else: srf = pygame.image.load(CHARS_PATH + typ + '_' + str(p) + ex + '0_' + mov + '_' + str(ind) + '.png')
-
-		for y in range(srf.get_rect().height):
-			for x in range(srf.get_rect().width):
-				#SKIN I
-				if srf.get_at((x,y)) == (0,100,255):
-					if c == 0: srf.set_at((x,y),(63,37,0))
-					if c == 1: srf.set_at((x,y),(153,92,58))
-					if c == 2: srf.set_at((x,y),(206,138,78))
-					if c == 3: srf.set_at((x,y),(226,157,97))
-					if c == 4: srf.set_at((x,y),(234,161,100))
-					if c == 5: srf.set_at((x,y),(234,154,107))
-					if c == 6: srf.set_at((x,y),(235,185,139))
-					if c == 7: srf.set_at((x,y),(247,202,163))
-					if c == 8: srf.set_at((x,y),(255,215,168))
-					if c == 9: srf.set_at((x,y),(255,231,204))
-				#SKIN II
-				if srf.get_at((x,y)) == (0,0,255):
-					if c == 0: srf.set_at((x,y),(40,17,4))
-					if c == 1: srf.set_at((x,y),(130,66,61))
-					if c == 2: srf.set_at((x,y),(181,106,79))
-					if c == 3: srf.set_at((x,y),(224,143,96))
-					if c == 4: srf.set_at((x,y),(216,128,108))
-					if c == 5: srf.set_at((x,y),(224,132,112))
-					if c == 6: srf.set_at((x,y),(236,157,138))
-					if c == 7: srf.set_at((x,y),(224,174,163))
-					if c == 8: srf.set_at((x,y),(234,194,171))
-					if c == 9: srf.set_at((x,y),(226,199,192))
-				#HAIR I
-				if srf.get_at((x,y)) == (51,51,51):
-					if h == 0: srf.set_at((x,y),(76,39,17))
-					if h == 1: srf.set_at((x,y),(114,65,32))
-					if h == 2: srf.set_at((x,y),(165,95,48))
-					if h == 3: srf.set_at((x,y),(255,191,0))
-					if h == 4: srf.set_at((x,y),(119,7,0))
-					if h == 5: srf.set_at((x,y),(255,255,255))
-					if h == 6: srf.set_at((x,y),(63,255,0))
-					if h == 7: srf.set_at((x,y),(84,39,0))
-					if h == 8: srf.set_at((x,y),(255,144,0))
-				#HAIR II
-				if srf.get_at((x,y)) == (33,33,33):
-					if h == 0: srf.set_at((x,y),(40,23,13))
-					if h == 1: srf.set_at((x,y),(86,51,48))
-					if h == 2: srf.set_at((x,y),(127,67,62))
-					if h == 3: srf.set_at((x,y),(216,98,30))
-					if h == 4: srf.set_at((x,y),(86,9,37))
-					if h == 5: srf.set_at((x,y),(198,198,198))
-					if h == 6: srf.set_at((x,y),(44,204,87))
-					if h == 7: srf.set_at((x,y),(63,11,6))
-					if h == 8: srf.set_at((x,y),(206,100,39))
-
-				print([p,h,c])
-				raw_str = pygame.image.tostring(srf, 'RGBA', False)
-				image = Image.frombytes('RGBA', srf.get_size(), raw_str)
-				image.save(pth)
-
-	return srf
-
-def heads(p,w,h):
-	global SPRITES
-	g = 0
-
-	#HEADS
-	if p < 10: pt = '0' + str(p)
-	else: pt = str(p)
-
-	SPRITES['BLANKU_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['BLANKDD_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['BLANKD_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['BLANKLD_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['BLANKL_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['BLANKLU_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['BLANKRD_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['BLANKR_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['BLANKRU_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['TALKU_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['TALKD_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['TALKLD_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['TALKL_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['TALKLU_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['TALKRD_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['TALKR_' + str(pt) + str(h) + str(w)] = []
-	SPRITES['TALKRU_' + str(pt) + str(h) + str(w)] = []
-
-	SPRITES['BLANKU_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'U',w,h))
-	for i in range(2): SPRITES['BLANKDD_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'blankDD',w,h,i))
-	for i in range(2): SPRITES['BLANKD_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'blankD',w,h,i))
-	for i in range(2): SPRITES['BLANKLD_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'blankLD',w,h,i))
-	for i in range(2): SPRITES['BLANKL_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'blankH',w,h,i))
-	SPRITES['BLANKLU_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'HU',w,h))
-	for i in range(2): SPRITES['BLANKRD_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'blankRD',w,h,i))
-	for i in range(2): SPRITES['BLANKR_' + str(pt) + str(h) + str(w)].append(pygame.transform.flip(color_sprite('head',pt,'blankH',w,h,i),True,False))
-	SPRITES['BLANKRU_' + str(pt) + str(h) + str(w)].append(pygame.transform.flip(color_sprite('head',pt,'HU',w,h),True,False))
-	SPRITES['TALKU_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'U',w,h))
-	for i in range(2): SPRITES['TALKD_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'talkD',w,h,i))
-	for i in range(2): SPRITES['TALKLD_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'talkLD',w,h,i))
-	for i in range(2): SPRITES['TALKL_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'talkH',w,h,i))
-	SPRITES['TALKLU_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'HU',w,h))
-	for i in range(2): SPRITES['TALKRD_' + str(pt) + str(h) + str(w)].append(color_sprite('head',pt,'talkRD',w,h,i))
-	for i in range(2): SPRITES['TALKR_' + str(pt) + str(h) + str(w)].append(pygame.transform.flip(color_sprite('head',pt,'talkH',w,h,i),True,False))
-	SPRITES['TALKRU_' + str(pt) + str(h) + str(w)].append(pygame.transform.flip(color_sprite('head',pt,'HU',w,h),True,False))
-
-def bodies(w,t):
-	global SPRITES
-
-	if t < 10: pt = '0' + str(t)
-	else: pt = str(t)
-
-	SPRITES['PHONE_' + str(pt) + str(w)] = [color_sprite('body',pt,'phone',w)]; SPRITES['CALL_' + str(pt) + str(w)] = [color_sprite('body',pt,'call',w)]
-	SPRITES['STANDU_' + str(pt) + str(w)] = []; SPRITES['STANDLU_' + str(pt) + str(w)] = []; SPRITES['STANDL_' + str(pt) + str(w)] = []; SPRITES['STANDLD_' + str(pt) + str(w)] = []
-	SPRITES['STANDD_' + str(pt) + str(w)] = []; SPRITES['STANDRD_' + str(pt) + str(w)] = []; SPRITES['STANDR_' + str(pt) + str(w)] = []; SPRITES['STANDRU_' + str(pt) + str(w)] = []
-	SPRITES['TIREDSTANDU_' + str(pt) + str(w)] = []; SPRITES['TIREDSTANDLU_' + str(pt) + str(w)] = []; SPRITES['TIREDSTANDL_' + str(pt) + str(w)] = []; SPRITES['TIREDSTANDLD_' + str(pt) + str(w)] = []
-	SPRITES['TIREDSTANDD_' + str(pt) + str(w)] = []; SPRITES['TIREDSTANDRD_' + str(pt) + str(w)] = []; SPRITES['TIREDSTANDR_' + str(pt) + str(w)] = []; SPRITES['TIREDSTANDRU_' + str(pt) + str(w)] = []
-	SPRITES['SEATU_' + str(pt) + str(w)] = [color_sprite('body',pt,'seatU',w)]; SPRITES['SEATLU_' + str(pt) + str(w)] = [color_sprite('body',pt,'seatHU',w)]; SPRITES['SEATL_' + str(pt) + str(w)] = [color_sprite('body',pt,'seatH',w)]; SPRITES['SEATHD_' + str(pt) + str(w)] = [color_sprite('body',pt,'seatHD',w)]
-	SPRITES['SEATD_' + str(pt) + str(w)] = [color_sprite('body',pt,'seatD',w)]; SPRITES['SEATRD_' + str(pt) + str(w)] = [pygame.transform.flip(color_sprite('body',pt,'seatHD',w),True,False)]; SPRITES['SEATR_' + str(pt) + str(w)] = [pygame.transform.flip(color_sprite('body',pt,'seatH',w),True,False)]; SPRITES['SEATRU_' + str(pt) + str(w)] = [pygame.transform.flip(color_sprite('body',pt,'seatHU',w),True,False)]
-	SPRITES['DRIVEU_' + str(pt) + str(w)] = [color_sprite('body',pt,'driveU',w)]; SPRITES['DRIVELU_' + str(pt) + str(w)] = [color_sprite('body',pt,'driveHU',w)]; SPRITES['DRIVEL_' + str(pt) + str(w)] = [color_sprite('body',pt,'driveH',w)]; SPRITES['DRIVELD_' + str(pt) + str(w)] = [color_sprite('body',pt,'driveHD',w)]
-	SPRITES['DRIVED_' + str(pt) + str(w)] = [color_sprite('body',pt,'driveD',w)]; SPRITES['DRIVERD_' + str(pt) + str(w)] = [pygame.transform.flip(color_sprite('body',pt,'driveHD',w),True,False)]; SPRITES['DRIVER_' + str(pt) + str(w)] = [pygame.transform.flip(color_sprite('body',pt,'driveH',w),True,False)]; SPRITES['DRIVERU_' + str(pt) + str(w)] = [pygame.transform.flip(color_sprite('body',pt,'driveHU',w),True,False)]
-	SPRITES['JUMPU_' + str(pt) + str(w)] = []; SPRITES['JUMPD_' + str(pt) + str(w)] = []
-	SPRITES['WALKU_' + str(pt) + str(w)] = []; SPRITES['WALKLU_' + str(pt) + str(w)] = []; SPRITES['WALKL_' + str(pt) + str(w)] = []; SPRITES['WALKLD_' + str(pt) + str(w)] = []
-	SPRITES['WALKD_' + str(pt) + str(w)] = []; SPRITES['WALKRD_' + str(pt) + str(w)] = []; SPRITES['WALKR_' + str(pt) + str(w)] = []; SPRITES['WALKRU_' + str(pt) + str(w)] = []
-	SPRITES['RUNU_' + str(pt) + str(w)] = []; SPRITES['RUNLU_' + str(pt) + str(w)] = []; SPRITES['RUNL_' + str(pt) + str(w)] = []; SPRITES['RUNLD_' + str(pt) + str(w)] = []; SPRITES['RUND_' + str(pt) + str(w)] = []
-	SPRITES['RUNRD_' + str(pt) + str(w)] = []; SPRITES['RUNR_' + str(pt) + str(w)] = []; SPRITES['RUNRU_' + str(pt) + str(w)] = []
-
-	for i in range(4): SPRITES['STANDU_' + str(pt) + str(w)].append(color_sprite('body',pt,'standU',w,ind=i))
-	for i in range(4): SPRITES['STANDLU_' + str(pt) + str(w)].append(color_sprite('body',pt,'standHU',w,ind=i))
-	for i in range(4): SPRITES['STANDL_' + str(pt) + str(w)].append(color_sprite('body',pt,'standH',w,ind=i))
-	for i in range(4): SPRITES['STANDLD_' + str(pt) + str(w)].append(color_sprite('body',pt,'standHD',w,ind=i))
-	for i in range(4): SPRITES['STANDD_' + str(pt) + str(w)].append(color_sprite('body',pt,'standD',w,ind=i))
-	for i in range(4): SPRITES['STANDRU_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'standHU',w,ind=i),True,False))
-	for i in range(4): SPRITES['STANDR_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'standH',w,ind=i),True,False))
-	for i in range(4): SPRITES['STANDRD_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'standHD',w,ind=i),True,False))
-	for i in [0,0,1,1]: SPRITES['TIREDSTANDU_' + str(pt) + str(w)].append(color_sprite('body',pt,'tiredstandU',w,ind=i))
-	for i in [0,0,1,1]: SPRITES['TIREDSTANDLU_' + str(pt) + str(w)].append(color_sprite('body',pt,'tiredstandHU',w,ind=i))
-	for i in [0,0,1,1]: SPRITES['TIREDSTANDL_' + str(pt) + str(w)].append(color_sprite('body',pt,'tiredstandH',w,ind=i))
-	for i in [0,0,1,1]: SPRITES['TIREDSTANDLD_' + str(pt) + str(w)].append(color_sprite('body',pt,'tiredstandHD',w,ind=i))
-	for i in [0,0,1,1]: SPRITES['TIREDSTANDD_' + str(pt) + str(w)].append(color_sprite('body',pt,'tiredstandD',w,ind=i))
-	for i in [0,0,1,1]: SPRITES['TIREDSTANDRU_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'standHU',w,ind=i),True,False))
-	for i in [0,0,1,1]: SPRITES['TIREDSTANDR_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'standH',w,ind=i),True,False))
-	for i in [0,0,1,1]: SPRITES['TIREDSTANDRD_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'standHD',w,ind=i),True,False))
-	for i in range(2): SPRITES['JUMPU_' + str(pt) + str(w)].append(color_sprite('body',pt,'jumpU',w,ind=i))
-	for i in range(2): SPRITES['JUMPD_' + str(pt) + str(w)].append(color_sprite('body',pt,'jumpD',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['WALKU_' + str(pt) + str(w)].append(color_sprite('body',pt,'walkU',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['WALKLU_' + str(pt) + str(w)].append(color_sprite('body',pt,'walkHU',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['WALKL_' + str(pt) + str(w)].append(color_sprite('body',pt,'walkH',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['WALKLD_' + str(pt) + str(w)].append(color_sprite('body',pt,'walkHD',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['WALKD_' + str(pt) + str(w)].append(color_sprite('body',pt,'walkD',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['WALKRU_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'walkHU',w,ind=i),True,False))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['WALKR_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'walkH',w,ind=i),True,False))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['WALKRD_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'walkHD',w,ind=i),True,False))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['RUNU_' + str(pt) + str(w)].append(color_sprite('body',pt,'runU',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['RUNLU_' + str(pt) + str(w)].append(color_sprite('body',pt,'runHU',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['RUNL_' + str(pt) + str(w)].append(color_sprite('body',pt,'runH',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['RUNLD_' + str(pt) + str(w)].append(color_sprite('body',pt,'runHD',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['RUND_' + str(pt) + str(w)].append(color_sprite('body',pt,'runD',w,ind=i))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['RUNRU_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'runHU',w,ind=i),True,False))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['RUNR_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'runH',w,ind=i),True,False))
-	for i in [0,1,2,1,0,3,4,3]: SPRITES['RUNRD_' + str(pt) + str(w)].append(pygame.transform.flip(color_sprite('body',pt,'runHD',w,ind=i),True,False))
-	
 def spr():
 	global SPRITES
 	
@@ -997,8 +786,6 @@ def battlesprites():
 
 def sfx(j):
 	global SOUND
-
-	pygame.mixer.init()
 	if j.endswith('.wav'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
 
 recent_data(0)
