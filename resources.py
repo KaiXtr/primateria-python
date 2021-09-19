@@ -50,6 +50,7 @@ PALETTES = [
 #SHIRT COLOR
 [(200,10,10),(200,100,10),(200,200,10),(10,200,10),(10,200,100),(10,10,200),(200,10,200)]
 ]
+RANGE_BUMP = 27
 RANGE_HAIR = 8
 RANGE_FACE = 6
 RANGE_COSTUME = 2
@@ -376,7 +377,6 @@ def new_data(add=False):
 				INVENTORY[u].append([])
 				for x in range(5):
 					INVENTORY[u][y].append(['_','0000'])
-		CHARACTERS[1]['HP'] = 10
 		INVENTORY[1] = [
 		[['amulet1','0000'],['phone','3600','sim_card','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
 		[['vest1','7'],['til_grass','infinite'],['til_color','infinite'],['til_metalbars','infinite'],['food_pizza_4cheese','0000']],

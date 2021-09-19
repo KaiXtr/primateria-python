@@ -95,7 +95,7 @@ class Title:
 		self.stars = []
 		sfxpath = os.listdir(res.SFX_PATH[:-1])
 		self.fload = res.RANGE_RADIO + len(sfxpath) + 3 + (13 * 2)
-
+		self.bump = pygame.image.load(res.BACKG_PATH + 'bump_' + str(random.randint(0,res.RANGE_BUMP)) + '.png')
 		for i in res.FILES[0]:
 			if res.FILES[1][i] == 0:
 				del res.FILES[0][i]
@@ -776,15 +776,15 @@ class Title:
 	def run(self):
 		if self.mnu < 3 and self.mnu != -1: self.load += 1
 		#SPLASH
-		if self.mnu == -1:
+		'''if self.mnu == -1:
 			self.events()
 			self.screen.fill((0,0,0))
 			srf = pygame.image.load('splash.png')
 			sz = srf.get_rect()
 			self.screen.blit(srf, (int(self.windoww/2) - int(sz.width/2),int(self.windowh/2) - int(sz.height/2)))
-			pygame.display.flip()
+			pygame.display.flip()'''
 		#LOGO
-		elif self.mnu < 2:
+		if self.mnu < 2:
 			self.events()
 			self.screen.fill((0,0,0))
 			#AUTHOR LOGO
@@ -811,7 +811,7 @@ class Title:
 					self.mnu = 2
 			#DRAW
 			srf = pygame.Surface((600,400))
-			if self.mnu == 0: srf.blit(pygame.image.load(res.BACKG_PATH + 'mattkai.png'), (0, 0))
+			if self.mnu == 0: srf.blit(self.bump, (0, 0))
 			if self.mnu == 1: srf.blit(pygame.image.load(res.BACKG_PATH + 'source.png'), (0, 0))
 			srf.set_alpha(self.logoalpha)
 			self.screen.blit(srf, (int(self.windoww/2) - 300,int(self.windowh/2) - 200))
@@ -969,8 +969,6 @@ class Game:
 			'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','PLAYING': False,'NODES': [],'HOLD': None})
 			x += 1
 		self.player[0]['PLAYING'] = True
-		self.actqueue.append({'RECT': self.player[0]['RECT'],'SPEED': 1,'ACT': 0,'BAR': 0,
-							'CHARACTER': res.PARTY[res.FORMATION][0],'ITEM': (0,4)})
 		self.donesprites = {}
 		self.objects = []
 		self.tilrect = []
@@ -2307,8 +2305,9 @@ class Game:
 						if it[0] in dtb.ITEMENEMIES and prb > 100 - dtb.ITEMENEMIES[it[0]][1]:
 							self.dialog([(13,[dtb.ITEMENEMIES[it[0]][0]])])
 						#FOOD
-						elif it[0].startswith('food_'):# and res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] not in [4,10]:
-							self.actqueue.append({'RECT': self.player[0]['RECT'].copy(),'SPEED': 5,'ACT': 0,'BAR': 0,
+						elif it[0].startswith('food_'):
+							#if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] not in [4,10]:
+							self.actqueue.append({'RECT': self.player[0]['RECT'],'SPEED': 5,'ACT': 0,'BAR': 0,
 							'CHARACTER': res.PARTY[res.FORMATION][self.inv.opt[2]],'ITEM': (self.inv.opt[1],self.inv.opt[0])})
 							self.soundplay('MENU_GO')
 						#DRINK
@@ -3168,9 +3167,6 @@ class Game:
 								self.inv.add(res.PARTY[res.FORMATION][0],txt[tid][1],prp)
 								self.ch_sfx.play(res.SOUND['ITEM_GET'])
 								self.notification.append({'TEXT': dtb.ITEMS[txt[tid][1]][0], 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': -180,'IMAGE': pygame.image.load(res.ITEMS_PATH + txt[tid][1] + '.png')})
-								self.notification.append({'TEXT': 'testando', 'COLOR': (255, 10, 255), 'HALIGN': 'left','X': -100})
-								self.notification.append({'TEXT': 'TROFÉU', 'COLOR': (255, 255, 10), 'HALIGN': 'right','X': self.displayzw + 100})
-								self.notification.append({'TEXT': 'GO!', 'COLOR': (255, 10, 10), 'HALIGN': 'right','X': self.displayzw,'BLIMIT': 20,'BLINK': 0})
 				#MORALITY
 				elif txt[tid][0] == 2:
 					if txt[tid][3] == 0:
@@ -6452,16 +6448,17 @@ class Game:
 		#DISDEBUG
 		if self.disdbg:
 			prs = ''
-			mix = ''
+			mix = 0
 			osinfo = os.uname()
 			for i in range(len(self.pressed)): prs += str(self.pressed[i][0]) + ','
-			for i in range(len(self.channels)): mix += str(self.channels[i][1]) + ','
+			for i in range(len(self.channels)):
+				if self.channels[i][1]: mix += 1
 			dinfo = ['DEVICE WIDTH: ' + str(self.windoww) + ' | DEVICE HEIGHT: ' + str(self.windowh) + ' | ',
 			'GAME WIDTH: ' + str(self.displayzw) + ' | GAME HEIGHT: ' + str(self.displayzh) + ' | FPS: ' + str(int(self.glock.get_time())) + ' | ',
 			'CAMERA X: ' + str(self.cam.x) + ' | CAMERA Y: ' + str(self.cam.y) + ' | ',
 			'SYSTEM: ' + osinfo.sysname + ' | NODE: ' + osinfo.nodename + ' | RELEASE: ' + osinfo.release + ' | VERSION: ' + osinfo.version + ' | ',
 			'MACHINE: ' + osinfo.machine,
-			'PRESSED: [' + prs[0:-1] + '] + | MIXER: [' + mix[0:-1] + '] | ',
+			'PRESSED: [' + prs[0:-1] + '] + | MIXER: ' + str(mix) + ' | ',
 			'TIME: ' + str(res.TIME[0]) + ':' + str(res.TIME[1]) + ':' + str(res.TIME[2]) + ' | DATE: ' + str(res.DATE[0]) + '/' + str(res.DATE[1]) + '/' + str(res.DATE[2]) + ' | ',
 			'INVENTORY: ' + str(self.inv.type) + ' | PAUSE: ' + str(self.title.mnu)]
 			y = 0
@@ -6518,19 +6515,19 @@ class Game:
 			srf.set_alpha(100)
 			self.screen.blit(srf, (self.displayx - 20, self.displayy))
 			self.screen.blit(srf, (self.displayx + 10, self.displayy))
-			srf = pygame.transform.scale(self.display[1], (self.windoww, self.windowh))
+			srf = self.display[1]
 			srf.set_alpha(100)
 			self.screen.blit(srf, (self.displayx - 20, self.displayy))
 			self.screen.blit(srf, (self.displayx + 10, self.displayy))
 		else:
 			if self.displayx > self.displayzw * 0.25:
 				self.screen.blit(pygame.transform.scale(self.display[0], (self.displayzw * res.GSCALE, self.displayzh * res.GSCALE)), (self.displayx - int(self.displayzw * res.GSCALE * 1.25), self.displayy))
-				self.screen.blit(pygame.transform.scale(self.display[1], (self.windoww, self.windowh)), (self.displayx - int(self.displayzw * res.GSCALE * 1.25), self.displayy))
+				self.screen.blit(self.display[1], (self.displayx - int(self.displayzw * res.GSCALE * 1.25), self.displayy))
 			if self.displayy > self.displayzh * 0.25:
 				self.screen.blit(pygame.transform.scale(self.display[0], (self.displayzw * res.GSCALE, self.displayzh * res.GSCALE)), (self.displayx, self.displayy - int(self.displayzh * res.GSCALE * 1.25)))
-				self.screen.blit(pygame.transform.scale(self.display[1], (self.windoww, self.windowh)), (self.displayx, self.displayy - int(self.displayzh * res.GSCALE * 1.25)))
+				self.screen.blit(self.display[1], (self.displayx, self.displayy - int(self.displayzh * res.GSCALE * 1.25)))
 			self.screen.blit(pygame.transform.scale(self.display[0], (self.displayzw * res.GSCALE, self.displayzh * res.GSCALE)), (self.displayx, self.displayy))
-			self.screen.blit(pygame.transform.scale(self.display[1], (self.windoww, self.windowh)), (self.displayx, self.displayy))
+			self.screen.blit(self.display[1], (self.displayx, self.displayy))
 		#MOUSE
 		if res.MOUSE == 1:
 			self.screen.blit(pygame.image.load(res.SPRITES_PATH + 'cursor_' + str(res.CURSOR) + '.png'),(self.click.x,self.click.y))
