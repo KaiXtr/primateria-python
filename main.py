@@ -5332,7 +5332,7 @@ class Game:
 					for i in self.vehicles:
 						if i['N'] == y[1] and self.colide(i['RECT'],cm): self.vehicle(i); y[2] = i['RECT'].y
 				#PORTALS
-				elif y[0] == 'portal' and self.colide(i['RECT'],cm): self.portal(y[1]); y[2] = y[1]['RECT'].y
+				elif y[0] == 'portal' and self.colide(y[1]['RECT'],cm): self.portal(y[1]); y[2] = y[1]['RECT'].y
 				#SIGNS
 				elif y[0] == 'sign':
 					if self.colide(y[1]['RECT'],cm) and self.turn != -6:
