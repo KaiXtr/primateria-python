@@ -33,8 +33,9 @@ class Guitools:
 	
 	def gradient(self,size,top,bottom,value=0,direction='vertical'):
 		srf = pygame.Surface(size,pygame.SRCALPHA)
+		srf.fill(top)
 		if direction == 'vertical':
-			if value == 0: number = size[0]; dv = 1
+			if value == 0: number = size[1]; dv = 1
 			else: number = value; dv = int(size[0]/value)
 			line = (size[0],dv)
 		else:
@@ -43,12 +44,10 @@ class Guitools:
 			line = (dv,size[0])
 		for i in range(number):
 			ln = pygame.Surface(line,pygame.SRCALPHA)
-			plt = list(top)
-			for p in range(len(plt)):
-				plt[p] += int((bottom[p] - top[p])/number)
-			ln.fill((top[0] - bottom[0],0,0,200))
+			ln.fill(tuple([abs(math.floor((top[x] + bottom[x])/(number/(i + 1))) - bottom[x]) for x in range(3)]))
 			if direction == 'vertical': srf.blit(ln,(0,i * dv))
 			else: srf.blit(ln,(i * dv,0))
+		return srf
 	
 	def get_tiles(self):
 		tlsz = (30,30)

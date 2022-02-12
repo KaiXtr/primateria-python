@@ -1560,11 +1560,13 @@ RADIONEWS = [
 ]
 
 TASKINDEX = {
+#HIKO LABYRINTH
 'LVL_00_0': [{'TEXT': 'Pinte os pisos de vermelho.','TIME': [-5,0,0],'OBJECTIVE': 'color'},
 {'TEXT': 'Pinte os pisos de laranja.','TIME': '-0500','OBJECTIVE': 'color'}],
 'LVL_05_0': [('Pinte os pisos de verde..',None,'-0500')],
 'LVL_08_1': [('Alcançe 5000 pontos..',None,'-0500')],
 
+#CAMPAIGN MISSIONS
 'CH01': [('Falar com a ',(23,5),'2512','1000'),
 ('Procure algo pra beber','0000','0000')],
 'CH10': [('Faça as compras no mercadinho','0000','0000',['1urban_0',30,30,1]),
@@ -1576,7 +1578,11 @@ TASKINDEX = {
 ('Procure um lugar para ficar','0000','0000')],
 'CH81': [('Chame uma ambulância','0000','0000')],
 
+#SIDE QUESTS
 'SQ001': [('Dar dominó',None,None)],
+
+#TOWER DEFENSE WAVES
+'TDW': [('Primeira onda','0000','0000'),('Segunda onda','0000','0000')],
 }
 
 '''
@@ -2192,7 +2198,18 @@ DISCLAIMER = ['Esta é uma obra de ficção,','e quaisquer semelhanças com','ac
 'Uma certa porcentagem da','população sofre de condições','como eplepsia e convulsões,','por isso sempre consulte','seu médico antes de jogar']
 
 ERROR = ['Oops! Alguma coisa deu errado... =(','Aperte qualquer botão para fechar']
- 
+
+MINIGAMES = {
+'Pinball': 'Pinball','Tetris': 'Tetris','Minesweeper': 'Campo Minado','Pong': 'Pong','Differences': '7 Erros','Jigsaw': 'Quebra-cabeça','Maze': 'Labirinto','Pool': 'Sinuca',
+'Snake': 'Snake','HittheMole': 'Acerte a toupeira','FallingItems': 'Chuva de itens','Jumping': 'Pulando','FlappyBird': 'Flappy Bird','Breakout': 'Breakout','BubbleBubble': 'Bubble Bubble','CannonBattle': 'Canhões','ColorMatch': 'Combinações',
+'Twothousandforthyeight': '2048','Memory': 'Jogo da Memória','Simon': 'Simon','FindtheCup': 'Jogo dos Copos','ImageMatch': 'Combine a imagem','Cassino': 'Caça-níquel','Roulette': 'Roleta',
+'Chess': 'Xadrez','Checkers': 'Damas','Trilha': 'Trilha','Blackgammon': 'Gamão','Ludo': 'Ludo','Reversi': 'Reversi','SnakesNLadders': 'Cobras e Escadas','NumberPuzzle': 'Quebra-cabeça de números',
+'Solitaire': 'Paciência','SpiderSolitaire': 'Paciência Spider','Freecell': 'Freecell','Mahjong': 'Mahjong','PegSolitaire': 'Resta 1',
+'Dominoes': 'Dominó','Truco': 'Truco','Sueca': 'Sueca','Cacheta': 'Cacheta','Pife': 'Pife','Buraco': 'Buraco','Poker': 'Poker','Copas': 'Copas','Espadas': 'Espadas','Maumau': 'Maumau',
+'Matchingwords': 'Palavras Cruzadas','TicTacToe': 'Jogo da Velha','LinesNBoxes': 'Timbiriche','Nonogram': 'Nonograma','HuntingWords': 'Caça Palavras','Sudoku': 'Sudoku','Hangman': 'Jogo da Forca',
+'Yatzy': 'Yatzy','Stop': 'Adedonha'
+}
+
 ACHIEVEMENTS = [
 ['Zerado','Ganhar todos os troféus',0,''],
    

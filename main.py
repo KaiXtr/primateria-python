@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-from mutagen.mp3 import MP3
 import pygame
-import pytmx
 import plyer
 import random
 import datetime
-import traceback
-import numpy
+import platform
 import math
 import sys
 import os
@@ -16,18 +13,13 @@ import resources as res
 import minigames as mng
 import GUI
 
-from PIL import Image
-import PIL.ImageOps
-
 if res.FILES[3] != []:
-	#if res.FILES[3][0] == 'PT': import database_PT as dtb
-	#if res.FILES[3][0] == 'EN': import database_EN as dtb
 	dtb = __import__('database_' + res.FILES[3][0])
-else: dtb = __import__('database_' + res.MAINLANG)#import database_PT as dtb
+else: dtb = __import__('database_' + res.MAINLANG)
 
 class Title:
 	def __init__(self):
-		if os.uname().sysname == 'Windows':
+		if platform.uname().system == 'Windows':
 			self.windoww = 1200
 			self.windowh = 800
 			res.MOUSE = 1
@@ -152,6 +144,8 @@ class Title:
 			self.run()
 		#LOADING BACKGROUNDS
 		if True:
+			from PIL import Image
+			import PIL.ImageOps
 			if self.windoww > self.windowh: sz = self.windoww
 			else: sz = self.windowh
 			self.sltc = pygame.Surface((sz,sz),pygame.SRCALPHA)
@@ -378,6 +372,7 @@ class Title:
 		if self.mnu == 12: self.about.outside_events(self.pressed)
 
 	def random(self,i=None):
+		from mutagen.mp3 import MP3
 		self.msc.pause()
 		pygame.mixer.music.pause()
 		self.ton.play(res.SOUND['NOISE'],-1)
@@ -840,7 +835,7 @@ class Game:
 		sz = pygame.display.Info()
 		self.windoww = sz.current_w
 		self.windowh = sz.current_h
-		res.GSCALE = 3
+		res.GSCALE = 2
 		self.displayzw = int(self.windoww/res.GSCALE)
 		self.displayzh = int(self.windowh/res.GSCALE)
 		self.displayx = 0
@@ -852,13 +847,13 @@ class Game:
 		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 10 * res.GSCALE), 'ALT': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', 30),
 			'MININFO': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 25), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 15),
 			'CONTROLKEYS': pygame.font.Font(res.FONTS_PATH + 'controlkeys.ttf', 15),'ANGER': pygame.font.Font(res.FONTS_PATH + res.FONT, 15 * res.GSCALE),
-			'DISDBG': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', int(7.5 * res.GSCALE))}
+			'DISDBG': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', int(7.5 * res.GSCALE)),'SCORETXT': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 12)}
 		self.cam = pygame.Rect(0,0,self.displayzw,self.displayzh)
 		self.camgrid = 1
 		self.campos = [0,0]
 		self.tilemation = 0
-		self.rectdebug = True
-		self.disdbg = True
+		self.rectdebug = False
+		self.disdbg = False
 		self.classrun = 1
 		self.hpctrl = []
 		self.waitime = 0
@@ -1019,6 +1014,7 @@ class Game:
 		else:
 			self.tilrect = [[437,437,437,437,437,0,437,437,437,0,0,437,437,437,0,0,437,437,437,0,0,0,0,0,0],
 							[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
+			#res.MAP = 'stage'
 			self.loadmap(res.MAP)
 			"""for i in range(30): self.run()
 			self.transiction(300,100,type='hole')
@@ -1165,10 +1161,10 @@ class Game:
 						for acc in acc_img:
 							head_img.blit(acc,(xx,5 + yy))
 					face_srf = pygame.Surface((hair_rect.width,hair_rect.height),pygame.SRCALPHA)
-					face_srf.blit(head_img,((hair_rect.width/2) - (head_rect.width/2),1 + (hair_rect.height/2) - (head_rect.height/2)))
+					face_srf.blit(head_img,(int(hair_rect.width/2) - int(head_rect.width/2),1 + int(hair_rect.height/2) - int(head_rect.height/2)))
 					face_srf.blit(hair_img,(0,0))
 					if fh_img != None:
-						face_srf.blit(fh_img,((hair_rect.width/2) - (head_rect.width/2),7 + (hair_rect.height/2) - (head_rect.height/2)))
+						face_srf.blit(fh_img,(int(hair_rect.width/2) - int(head_rect.width/2),7 + int(hair_rect.height/2) - int(head_rect.height/2)))
 					#HOLDING ITEM
 					if i['HOLD'] != None:
 						xx = -5; yy = -20
@@ -1206,8 +1202,8 @@ class Game:
 					if bsz.width > fsz.width: wd = bsz.width
 					else: wd = fsz.width
 					doll = pygame.Surface((wd,fsz.height + bsz.height),pygame.SRCALPHA)
-					doll.blit(body_img,((wd/2) - (bsz.width/2),fsz.height))
-					doll.blit(face_srf,((wd/2) - (fsz.width/2),xsp))
+					doll.blit(body_img,(int(wd/2) - int(bsz.width/2),fsz.height))
+					doll.blit(face_srf,(int(wd/2) - int(fsz.width/2),xsp))
 					#doll = pygame.transform.scale(doll,(wd * 2,(fsz.height + bsz.height) * 2))
 					self.donesprites[sprstr] = doll
 				#SHADE
@@ -1410,7 +1406,8 @@ class Game:
 					if (len(self.foe) + len(self.mrc)) == 1:
 						for b in res.BESTIARY:
 							if b['N'] == i['FILE'] and b['SEEN'] == 0 and i['TYPE'] != 'mercenary':
-								self.turn = -6
+								#self.turn = -6
+								self.turn = -2
 								break
 						if self.phone > 0: self.turn = -2
 						if self.inv.type > 0: self.turn = -2
@@ -1906,8 +1903,7 @@ class Game:
 							p['RECT'].y = lst[prb][1]
 					p['PAUSE'] = 0
 					
-	def pathfinding(self, rct, tgt, map):
-		pass
+	def pathfinding(self, rct, tgt, map): pass
 		
 	def soundplay(self, sound, value=1):
 		for i in self.channels:
@@ -2047,10 +2043,9 @@ class Game:
 			self.pressed = self.get_pressed(event)
 			#EXIT
 			if event.type == pygame.QUIT:
-				if self.confirmation() == 1:
-					pygame.quit()
-					sys.exit()
-					exit()
+				pygame.quit()
+				sys.exit()
+				exit()
 			#RESIZE
 			if event.type == pygame.VIDEORESIZE:
 				self.windoww = event.w
@@ -2069,8 +2064,8 @@ class Game:
 			if res.MOUSE == 1:
 				for i in range(2):
 					if res.CLICK[i] == 'move' and event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[i]:
-						rct = pygame.Rect(int((math.floor(self.click.x/self.map.tilewidth) * self.map.tilewidth)/res.GSCALE),
-						int((math.floor(self.click.y/self.map.tileheight) * self.map.tileheight)/res.GSCALE),10,10)
+						rct = pygame.Rect(int(math.floor(((self.click.x/res.GSCALE) + self.cam.x)/self.map.tilewidth) * self.map.tilewidth),
+						int(math.floor(((self.click.y/res.GSCALE) + self.cam.y)/self.map.tileheight) * self.map.tileheight),10,10)
 						img = []
 						for a in range(2): img.append(pygame.image.load(res.SPRITES_PATH + 'click_' + str(a) + '.png'))
 						self.objects.append(['click',{'RECT': rct,'IMAGE': img,'GIF': 0.0,'DESTROY': False},rct.y])
@@ -3862,6 +3857,7 @@ class Game:
 		self.transtype = 'bars'
 				
 	def audioedit(self,snd,function,value):
+		import numpy
 		snd = pygame.sndarray.array(snd)
 		if value > 0:
 			window_size=2**13
@@ -3954,26 +3950,7 @@ class Game:
 					self.mrc[0]['SPRITE'] = pygame.image.load(res.FREAKS_PATH + (self.mrc[0]['FILE']) + '_backwards.png')
 					self.mrc[0]['HEALTH'] = 1
 			#ZOOM TRANSITION
-			dw = int(self.windoww/100)
-			dh = int(self.windowh/100)
-			if self.turn != -6:
-				self.transiction(True,int(self.windoww/100),type='zoom')
-				"""acc = 0
-				while True:
-					self.displayzw -= acc * dw
-					self.displayzh -= acc * dh
-					self.cam.x += int(acc * (dw/2))
-					self.cam.y += int(acc * (dh/2))
-					self.cam.width = self.displayzw
-					self.cam.height = self.displayzh
-					if self.displayzw > dw: self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-					else:
-						self.displayzw = dw; self.displayzh = dh;
-						self.cam.width = dw; self.cam.height = dh;
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-						break
-					self.run()
-					acc += 1"""
+			if self.turn != -6: self.transiction(True,int(self.windoww/100),type='zoom')
 			#MYSTERIOUS FREAK
 			else:
 				freakname = self.foe[0]['NAME'].lower()
@@ -4008,28 +3985,7 @@ class Game:
 			self.battle = True
 			self.sttsy = 120
 			#ZOOM TRANSITION
-			if self.turn != -6:
-				self.transiction(False,int(self.windoww/res.GSCALE),type="zoom")
-				"""acc = 0
-				while True:
-					self.displayzw += acc * dw
-					self.displayzh += acc * dh
-					self.cam.x -= int(acc * (dw/2))
-					self.cam.y -= int(acc * (dh/2))
-					self.cam.width = self.displayzw
-					self.cam.height = self.displayzh
-					if self.displayzw < int(self.windoww/res.GSCALE): self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-					else:
-						self.displayzw = int(self.windoww/res.GSCALE)
-						self.displayzh = int(self.windowh/res.GSCALE)
-						self.cam.x = 0
-						self.cam.y = 0
-						self.cam.width = int(self.windoww/res.GSCALE)
-						self.cam.height = int(self.windowh/res.GSCALE)
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-						break
-					self.run()
-					acc += 1"""
+			if self.turn != -6: self.transiction(False,int(self.windoww/res.GSCALE),type="zoom")
 			#TRANSICTION
 			if res.GSCALE < 3: nb = 100
 			else: nb = 60
@@ -4626,6 +4582,7 @@ class Game:
 			p['TIME'] += 1
 	
 	def savemap(self, mp=None):
+		import pytmx
 		tilset = os.listdir(res.TILES_PATH + 'files')
 		tilset.remove('interior2.tsx')
 		tilset.sort()
@@ -4681,6 +4638,7 @@ class Game:
 		file.close()
 			
 	def loadmap(self, mp=None):
+		import pytmx
 		if mp == None: self.map = pytmx.load_pygame(res.MAPS_PATH + res.MAP + '.tmx')
 		else:
 			if mp[1:8] == 'highway':
@@ -4825,7 +4783,10 @@ class Game:
 									t['TIME'] = 0
 								#NORMAL TILE
 								elif t['TYPE'] not in ['INVISIBLE','CARRY','HOLD','HIDEON','HIDEOFF','WATER']:
-									self.tilmap[i][a].blit(image, (x * self.map.tilewidth - self.cam.x, y * self.map.tileheight - self.cam.y))
+									#this coordinates functions is suposed to draw tiles at the current camera position,however
+									# nothing is drawn when executed. <WORK ON IT>
+									#self.tilmap[i][a].blit(image, ((x * self.map.tilewidth) - self.cam.x, (y * self.map.tileheight) - self.cam.y))
+									self.tilmap[i][a].blit(image, (x * self.map.tilewidth, y * self.map.tileheight))
 								#TILRECT
 								try: 
 									p = self.map.get_tile_properties(x, y, i)
@@ -5029,9 +4990,11 @@ class Game:
 					self.enemies[i]['FILE'] = wh
 					self.enemies[i]['SPRITE'] = pygame.image.load(res.FREAKS_PATH + (self.enemies[i]['FILE']) + '_stand.png')
 					sz = pygame.image.load(res.FREAKS_PATH + self.enemies[i]['FILE'] + '_mini.png').get_rect()
+					mk = pygame.image.load(res.FREAKS_PATH + self.enemies[i]['FILE'] + '_stand.png').get_rect()
 					rct = None
 					while rct == None: rct = self.tilrect[0][round(random.randint(0, len(self.tilrect[0])))]
 					self.enemies[i]['RECT'] = pygame.Rect(rct[1].x,rct[1].y,sz.width,10)
+					self.enemies[i]['MASK'] = pygame.Rect(230,self.displayzh - (50 + mk.height),mk.width,mk.height)
 					self.enemies[i]['DIRECTION'] = 1
 					self.enemies[i]['FIGHTING'] = False
 					self.enemies[i]['HP'] = self.enemies[i]['VITALITY']
@@ -5078,7 +5041,6 @@ class Game:
 				}
 				self.shist.append(self.tilmap.copy())
 				self.ihist = 0
-				print(self.shist[self.ihist])
 			#ANIMALS
 			elif prp[0] == 'ANIMALS':
 				st = 0
@@ -5148,7 +5110,7 @@ class Game:
 			if len(self.tilmap[3]) > 0:
 				tt = (res.TIME[0] * 60) + res.TIME[1]
 				img = self.tilmap[3][0]
-				self.display[0].blit(img, (0, -(tt * ((img.get_height() - (img.get_height()/self.displayzh))/1440))))
+				self.display[0].blit(img, (0, -int(tt * ((img.get_height() - (img.get_height()/self.displayzh))/1440))))
 				if len(self.tilrect[6]) > 0:
 					for i in range(2):
 						aa = ((tt)/240) + 2 + (i * 3)
@@ -5162,6 +5124,7 @@ class Game:
 			for t in self.tilmap[4:]:
 				if len(t) > 0: self.display[0].blit(t[math.floor(self.tilemation)], (-math.floor(self.cam.x/px), -math.floor(self.cam.y/px)))
 				px += 3
+			#REGULAR GROUND
 			self.display[0].blit(self.tilmap[0][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
 			if len(self.tilmap[1]) > 0: self.display[0].blit(self.tilmap[1][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
 			#PROPS
@@ -5327,9 +5290,9 @@ class Game:
 													if t[0]['TYPE'].startswith('STREET'): self.soundplay('STEP_STONE',0)
 													elif t[0]['TYPE'].startswith('SIDEWALK'): self.soundplay('STEP_BRICK',0)
 													#COLOR TILES
-													elif t[0]['TYPE'] == 'COLOR':
+													elif t[0]['TYPE'] == 'XXXCOLOR':
 														if t[0]['SCALE'] == 30 and t[0]['COLOR'] > 0:
-															self.dmg.append({'INFO': pygame.Surface((43,40), pygame.SRCALPHA, 32), 'TYPE': 0,
+															self.dmg.append({'INFO': pygame.Surface((43,40), pygame.SRCALPHA, 32), 'TYPE': 2,
 															'TEXT': '10','RECT': pygame.Rect(i['RECT'].x, i['RECT'].y,1,1),
 															'GRAVITY': -8, 'SHADE': 1, 'SHAKE': 0, 'COLOR': (200,200,200), 'ALPHA': 250, 'TIME': 10})
 															i['SCORE'] += 10
@@ -5359,17 +5322,17 @@ class Game:
 				#ENEMIES
 				if y[0] == 'enemy':
 					for i in self.enemies:
-						if i['N'] == y[1]: self.enemy(i); y[2] = i['RECT'].y
+						if i['N'] == y[1] and self.colide(i['RECT'],cm): self.enemy(i); y[2] = i['RECT'].y
 				#NPCS
 				elif y[0] == 'npc':
 					for i in self.npcs:
-						if i['N'] == y[1]: self.npc(i); y[2] = i['RECT'].y
+						if i['N'] == y[1] and self.colide(i['RECT'],cm): self.npc(i); y[2] = i['RECT'].y
 				#VEHICLES
 				elif y[0] == 'vehicle':
 					for i in self.vehicles:
-						if i['N'] == y[1]: self.vehicle(i); y[2] = i['RECT'].y
+						if i['N'] == y[1] and self.colide(i['RECT'],cm): self.vehicle(i); y[2] = i['RECT'].y
 				#PORTALS
-				elif y[0] == 'portal': self.portal(y[1]); y[2] = y[1]['RECT'].y
+				elif y[0] == 'portal' and self.colide(i['RECT'],cm): self.portal(y[1]); y[2] = y[1]['RECT'].y
 				#SIGNS
 				elif y[0] == 'sign':
 					if self.colide(y[1]['RECT'],cm) and self.turn != -6:
@@ -5882,6 +5845,7 @@ class Game:
 			else: self.display[0].blit(pygame.transform.scale(upsts,(upsts.get_rect().width - (int(upsts.get_rect().width/10) * 4),60)),(0,int((self.sttsy - 120)/2)))
 			#ACTIONS
 			if self.battle:
+				print(wbrh)
 				if self.turn < len(res.PARTY[res.FORMATION]) and self.turn >= 0:
 					itind = res.PARTY[res.FORMATION][self.fig[self.turn]['N']]
 					#TIME BAR:
@@ -6066,7 +6030,8 @@ class Game:
 						elif i['SHAKE'] == 0: i['TIME'] -= 1
 						if i['INFO'] != None:
 							if i['TYPE'] == 0: fnt = 'DEFAULT'
-							else: fnt = 'MININFO'
+							if i['TYPE'] == 1: fnt = 'MININFO'
+							else: fnt = 'SCORETXT'
 							i['INFO'].blit(self.fnt[fnt].render(i['TEXT'], True, (0,0,0)), (11 - i['SHADE'], 11 - i['SHADE']))
 							i['INFO'].blit(self.fnt[fnt].render(i['TEXT'], True, i['COLOR'] ), (10 - i['SHADE'], 10 - i['SHADE']))
 					elif i['ALPHA'] > 0: i['ALPHA'] -= 40
@@ -6078,7 +6043,7 @@ class Game:
 			pygame.draw.rect(self.display[0],(10,10,10),pygame.Rect(pos[0],pos[1],50,10))
 			if i['BAR'] > 0: pygame.draw.rect(self.display[0],(10,200,10),pygame.Rect(pos[0],pos[1],math.floor(50/(100/i['BAR'])),10))
 		#INVENTORY
-		if self.inv.fade < self.windoww + 400:
+		'''if self.inv.fade < self.windoww + 400:
 			if self.inv.shake != 0: self.inv.rqst = True
 			if self.inv.scroll != (self.mnu * 200): self.inv.rqst = True
 			if self.inv.rqst: self.inv.draw()
@@ -6100,7 +6065,7 @@ class Game:
 		if self.inv.hld > 20:
 			if self.inv.hld == 30: srf = self.inv.wheel()
 			else: srf = pygame.transform.scale(self.inv.wheel(),((self.inv.hld - 20) * 3,(self.inv.hld - 20) * 3))
-			self.display[0].blit(srf,(self.player[0]['RECT'].x - self.cam.x - int(srf.get_width()/2),self.player[0]['RECT'].y - self.cam.y - int(srf.get_width()/2)))
+			self.display[0].blit(srf,(self.player[0]['RECT'].x - self.cam.x - int(srf.get_width()/2),self.player[0]['RECT'].y - self.cam.y - int(srf.get_width()/2)))'''
 		#DEVICE
 		if self.dev != None:
 			if self.dev.rqst and self.phone > 0:
@@ -6370,7 +6335,7 @@ class Game:
 			self.display[1].blit(self.fnt['DEFAULT'].render(dtb.CHAPTERS[res.CHAPTER][1], True, (250, 250, 250)), (10 * res.GSCALE, (int(self.displayzh/2) + 80) * res.GSCALE))
 			self.display[0].blit(srf, (0,0))
 		#SCORE COUNTERS
-		sz = 10 * res.GSCALE
+		'''sz = 10 * res.GSCALE
 		srf = pygame.Surface((sz,sz * 10),pygame.SRCALPHA)
 		srf.fill((0,0,0))
 		for i in [0,1,2,3,4,5,6,7,8,9,0]: srf.blit(self.fnt['DEFAULT'].render(str(i),True,(200,200,200)),(0,i * sz))		
@@ -6381,7 +6346,7 @@ class Game:
 					self.counter[x + 1][i + 10 - (len(str(p['SCORE'])))] += int(((int(str(p['SCORE'])[i]) * sz) - self.counter[x + 1][i + 10 - (len(str(p['SCORE'])))])/2)
 				for i in range(len(self.counter[x + 1])):
 					self.display[1].blit(srf, (20 + (i * sz), 20 + (x * sz)), (0,self.counter[x + 1][i],sz,sz))
-				x += 1
+				x += 1'''
 		#TIME COUNTER
 		if 'TIME' in dtb.TASKINDEX[res.TASKS[0][0]][res.TASKS[0][1]]:
 			for i in range(3):
@@ -6449,14 +6414,14 @@ class Game:
 		if self.disdbg:
 			prs = ''
 			mix = 0
-			osinfo = os.uname()
+			osinfo = platform.uname()
 			for i in range(len(self.pressed)): prs += str(self.pressed[i][0]) + ','
 			for i in range(len(self.channels)):
 				if self.channels[i][1]: mix += 1
 			dinfo = ['DEVICE WIDTH: ' + str(self.windoww) + ' | DEVICE HEIGHT: ' + str(self.windowh) + ' | ',
 			'GAME WIDTH: ' + str(self.displayzw) + ' | GAME HEIGHT: ' + str(self.displayzh) + ' | FPS: ' + str(int(self.glock.get_time())) + ' | ',
 			'CAMERA X: ' + str(self.cam.x) + ' | CAMERA Y: ' + str(self.cam.y) + ' | ',
-			'SYSTEM: ' + osinfo.sysname + ' | NODE: ' + osinfo.nodename + ' | RELEASE: ' + osinfo.release + ' | VERSION: ' + osinfo.version + ' | ',
+			'SYSTEM: ' + osinfo.system + ' | NODE: ' + osinfo.node + ' | RELEASE: ' + osinfo.release + ' | VERSION: ' + osinfo.version + ' | ',
 			'MACHINE: ' + osinfo.machine,
 			'PRESSED: [' + prs[0:-1] + '] + | MIXER: ' + str(mix) + ' | ',
 			'TIME: ' + str(res.TIME[0]) + ':' + str(res.TIME[1]) + ':' + str(res.TIME[2]) + ' | DATE: ' + str(res.DATE[0]) + '/' + str(res.DATE[1]) + '/' + str(res.DATE[2]) + ' | ',
@@ -6537,7 +6502,6 @@ class Game:
 			#EXIT
 			if event.type == pygame.QUIT:
 				self.classrun = 0
-				res.recent_data(1,res.ID)
 				pygame.quit()
 				sys.exit()
 				exit()
@@ -6558,10 +6522,11 @@ class Game:
 			pygame.display.update(pygame.Rect(self.windoww - 80,self.windowh - 80,30,30))
 
 	def crash(self):
+		from traceback import extract_tb
 		self.screen.fill((0,0,0))
 		et, ev, eb = sys.exc_info()
 		tlist = []
-		for t in traceback.extract_tb(eb):
+		for t in extract_tb(eb):
 			tlist.append((t[0],t[1],t[2],t[3]))
 
 		fnt = pygame.font.SysFont('Calibri', 26)
@@ -6585,7 +6550,6 @@ class Game:
 				#EXIT
 				if event.type == pygame.QUIT:
 					self.classrun = 0
-					res.recent_data(1,res.ID)
 					pygame.quit()
 					sys.exit()
 					exit()
@@ -6744,8 +6708,7 @@ class Game:
 							i[2] = None"""
 			#SECONDS
 			self.waitime += 1
-			if 'TIME' in dtb.TASKINDEX[res.TASKS[0][0]][res.TASKS[0][1]] and dtb.TASKINDEX[res.TASKS[0][0]][res.TASKS[0][1]]['TIME'][0] < 0:
-				pom = -1
+			if 'TIME' in dtb.TASKINDEX[res.TASKS[0][0]][res.TASKS[0][1]] and dtb.TASKINDEX[res.TASKS[0][0]][res.TASKS[0][1]]['TIME'][0] < 0: pom = -1
 			else: pom = 1
 			#BATTERY
 			battery = res.INVENTORY[res.SHORTCUT[0]][res.SHORTCUT[1]][res.SHORTCUT[2]][1]

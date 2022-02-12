@@ -1,12 +1,12 @@
-from PIL import Image
 import sqlite3
 import pygame
 import os
 
-GNAME = 'Setesalém: Mutation Purge'
+FNAME = 'Mutation Purge BETA'
+GNAME = 'Setesalém: Mutation Purge BETA'
 AUTHOR = 'Matt Kai'
-DESCRIPTION = 'Setesalém: Mutation Purge (2021)'
-VERSION = 'BETA 0.1'
+DESCRIPTION = 'Setesalém: Mutation Purge BETA (2021)'
+VERSION = '0.1'
 YEAR = '2021'
 MAINLANG = 'PT'
 DEBUG = True
@@ -80,27 +80,27 @@ MSC = 1.0
 CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,
 pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE],
 [pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,
-pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS]]
+pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS],[],[]]
 JOYSTICK = [0,1,2,3,4,5,6,7,None,None,None,8,None,6,7,0,1,2,3,0,1,None,None]
-MOUSE = 2 #keyboard only/keyboard and mouse/touchpad/joystick
-VIBRATE = False
-DTYPE = 1
-SPEED = 2
-COLOR = [255,10,10]
-CAMACC = 10
-BORDER = 0
-FONT = 'BohemianTypewriter.ttf'
-CENSORSHIP = True
-HINT = True
-HELP = True
-CURSOR = 0
-TMNU = False
-TTS = False
-CC = False
-DISLEXIC = False
+MOUSE = 1 #keyboard only/keyboard and mouse/touchpad/joystick
+VIBRATE = False #vibrate controlller
+DTYPE = 1 #type of dialog
+SPEED = 2 #dialog speed
+COLOR = [255,10,10] #UI color
+CAMACC = 10 #player camera acceleration
+BORDER = 0 #UI border
+FONT = 'BohemianTypewriter.ttf' #custom font
+CENSORSHIP = True #censor mature content
+HINT = True #tutorials and hints along the game
+HELP = True #display instructions on bottom of screen
+CURSOR = 0 #custom cursor
+TMNU = False #option to start on title screen or jump right into the first file
+TTS = False #text-to-speech
+CC = False #close caption
+DISLEXIC = False #spaced font
 BTYPE = 2 #1=turns,2=dynamic,3=action
 
-PARTY = [[0,4,3]]
+PARTY = [[0]]
 FORMATION = 0
 CALLHIST = []
 CONTACTS = []
@@ -315,7 +315,7 @@ def new_data(add=False):
 		CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,
 		pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_RETURN,pygame.K_BACKSPACE],
 		[pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,
-		pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_PLUS,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS]]
+		pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_PLUS,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS],[],[]]
 		MOUSE = 2
 		CURSOR = 0
 		SPEED = 2
@@ -338,9 +338,9 @@ def new_data(add=False):
 		MAP = dtb.CHAPTERS[CHAPTER][5][0]
 		PX = dtb.CHAPTERS[CHAPTER][5][1]
 		PY = dtb.CHAPTERS[CHAPTER][5][2]
-		MAP = 'labyrinth_1'
+		'''MAP = 'labyrinth_1'
 		PX = 90
-		PY = 90
+		PY = 90'''
 		
 		GAS = 100.0
 		SHORTCUT = [1,1,4]
@@ -353,11 +353,12 @@ def new_data(add=False):
 			CHARACTERS[i]['BONUS'] = [3,3,3,3,3]
 			CHARACTERS[i]['DEATHS'] = 0
 	 
-		PARTY = [[1,2,0]]
+		PARTY = [[1]]
 		CONTACTS = [['Maicon','923778988'],['Mercador','969696969'],['Pizza Delivery','953478809']]
 		CALLHIST = []
 		INBOX = []
-		TASKS = [['LVL_00_0',0]]
+		#TASKS = [['LVL_00_0',0]]
+		TASKS = [['CH01',0]]
 		TACTICAL = [[1,1,1,1]]
 		for i in dtb.ITEMS.items():
 			if i[0].startswith('food'):
@@ -712,9 +713,9 @@ def spr():
 	movs = [('STAND',[0,1,2,3]),('TIREDSTAND',[0,0,1,1]),('SEAT',[0]),('DRIVE',[0]),
 	('JUMP',[0,1]),('WALK',[0,1,2,1,0,3,4,3]),('RUN',[0,1,2,1,0,3,4,3])]
 	
-	SPRITES['PHONE'] = [pygame.image.load(TEMP_PATH + 'body_phone.png')]
-	SPRITES['CALL'] = [pygame.image.load(TEMP_PATH + 'body_call.png')]
-	SPRITES['REST'] = [pygame.image.load(TEMP_PATH + 'body_rest.png')]
+	SPRITES['PHONE'] = [pygame.image.load(TEMP_PATH + 'body_phone.png').convert()]
+	SPRITES['CALL'] = [pygame.image.load(TEMP_PATH + 'body_call.png').convert()]
+	SPRITES['REST'] = [pygame.image.load(TEMP_PATH + 'body_rest.png').convert()]
 	
 	for m in movs:
 		for d in dirs:
@@ -725,13 +726,13 @@ def spr():
 				for f in m[1]:
 					if m[1] == [0]: fn = ''
 					else: fn = '_' + str(f)
-					if d == 'LU': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HU' + fn + '.png')
-					elif d == 'L': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'H' + fn + '.png')
-					elif d == 'LD': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HD' + fn + '.png')
-					elif d == 'RU': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HU' + fn + '.png'),True,False)
-					elif d == 'R': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'H' + fn + '.png'),True,False)
-					elif d == 'RD': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HD' + fn + '.png'),True,False)
-					else: spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + d + fn + '.png')
+					if d == 'LU': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HU' + fn + '.png').convert()
+					elif d == 'L': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'H' + fn + '.png').convert()
+					elif d == 'LD': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HD' + fn + '.png').convert()
+					elif d == 'RU': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HU' + fn + '.png').convert(),True,False)
+					elif d == 'R': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'H' + fn + '.png').convert(),True,False)
+					elif d == 'RD': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HD' + fn + '.png').convert(),True,False)
+					else: spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + d + fn + '.png').convert()
 					SPRITES[m[0] + d].append(spr)
 	
 def animals():
@@ -742,11 +743,11 @@ def animals():
 	SPRITES['PIGEON_FLYL'] = []
 	SPRITES['PIGEON_FLYR'] = []
 	for i in (0,1):
-		SPRITES['PIGEON_WALKL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_pigeon_walk_' + str(i) + '.png'),True,False))
-		SPRITES['PIGEON_WALKR'].append(pygame.image.load(SPRITES_PATH + 'ani_pigeon_walk_' + str(i) + '.png'))
+		SPRITES['PIGEON_WALKL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_pigeon_walk_' + str(i) + '.png').convert(),True,False))
+		SPRITES['PIGEON_WALKR'].append(pygame.image.load(SPRITES_PATH + 'ani_pigeon_walk_' + str(i) + '.png').convert())
 	for i in (0,1):
-		SPRITES['PIGEON_FLYL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_pigeon_fly_' + str(i) + '.png'),True,False))
-		SPRITES['PIGEON_FLYR'].append(pygame.image.load(SPRITES_PATH + 'ani_pigeon_fly_' + str(i) + '.png'))
+		SPRITES['PIGEON_FLYL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_pigeon_fly_' + str(i) + '.png').convert(),True,False))
+		SPRITES['PIGEON_FLYR'].append(pygame.image.load(SPRITES_PATH + 'ani_pigeon_fly_' + str(i) + '.png').convert())
 	for a in [0]:
 		SPRITES['DOG' + str(a) + '_STANDL'] = []
 		SPRITES['DOG' + str(a) + '_STANDR'] = []
@@ -755,14 +756,14 @@ def animals():
 		SPRITES['DOG' + str(a) + '_WALKL'] = []
 		SPRITES['DOG' + str(a) + '_WALKR'] = []
 		for i in (0,1):
-			SPRITES['DOG' + str(a) + '_STANDL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_stand_' + str(i) + '.png'),True,False))
-			SPRITES['DOG' + str(a) + '_STANDR'].append(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_stand_' + str(i) + '.png'))
+			SPRITES['DOG' + str(a) + '_STANDL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_stand_' + str(i) + '.png').convert(),True,False))
+			SPRITES['DOG' + str(a) + '_STANDR'].append(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_stand_' + str(i) + '.png').convert())
 		for i in (0,1):
-			SPRITES['DOG' + str(a) + '_SITL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_sit_' + str(i) + '.png'),True,False))
-			SPRITES['DOG' + str(a) + '_SITR'].append(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_sit_' + str(i) + '.png'))
+			SPRITES['DOG' + str(a) + '_SITL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_sit_' + str(i) + '.png').convert(),True,False))
+			SPRITES['DOG' + str(a) + '_SITR'].append(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_sit_' + str(i) + '.png').convert())
 		for i in (0,1,2,3,4,3,2,1):
-			SPRITES['DOG' + str(a) + '_WALKL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_walk_' + str(i) + '.png'),True,False))
-			SPRITES['DOG' + str(a) + '_WALKR'].append(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_walk_' + str(i) + '.png'))
+			SPRITES['DOG' + str(a) + '_WALKL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_walk_' + str(i) + '.png').convert(),True,False))
+			SPRITES['DOG' + str(a) + '_WALKR'].append(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_walk_' + str(i) + '.png').convert())
 
 def battlesprites():
 	global SPRITES
@@ -772,7 +773,7 @@ def battlesprites():
 		i = 0
 		while True:
 			try:
-				SPRITES['ATTACKIMATION_' + str(a)].append(pygame.image.load(SPRITES_PATH + 'attackimation_' + str(a) + '_' + str(i) + '.png'))
+				SPRITES['ATTACKIMATION_' + str(a)].append(pygame.image.load(SPRITES_PATH + 'attackimation_' + str(a) + '_' + str(i) + '.png').convert())
 				i += 1
 			except: break
 	for e in (6,8,9):
@@ -780,7 +781,7 @@ def battlesprites():
 		i = 0
 		while True:
 			try:
-				SPRITES['EFFECT_' + str(e)].append(pygame.image.load(SPRITES_PATH + 'eff_' + str(e) + '_' + str(i) + '.png'))
+				SPRITES['EFFECT_' + str(e)].append(pygame.image.load(SPRITES_PATH + 'eff_' + str(e) + '_' + str(i) + '.png').convert())
 				i += 1
 			except: break
 
