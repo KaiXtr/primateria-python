@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.3.0" name="streets" tilewidth="30" tileheight="30" tilecount="91" columns="13">
- <image source="../streets.png" width="390" height="210"/>
+<tileset version="1.2" tiledversion="1.3.0" name="streets" tilewidth="30" tileheight="30" rows="7" columns="13">
+ <img source="../streets.png" width="390" height="210"/>
  <tile id="0">
   <properties>
    <property name="TYPE" value="street"/>

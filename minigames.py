@@ -14,8 +14,7 @@ import PIL.ImageOps
 import resources as res
 import GUI
 
-if res.FILES[3] != []:
-	dtb = __import__('database_' + res.FILES[3][0])
+if res.FILES != []: dtb = __import__('database_' + res.FILES[0][4])
 else: dtb = __import__('database_' + res.MAINLANG)
 
 pygame.init()
@@ -27,13 +26,13 @@ class Game:
 		#self.font = pygame.font.Font(res.FONTS_PATH + 'reglisse/Reglisse.otf', 30)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.minigame = None
+		self.minigame = Backgrounds()
 		self.guitools = GUI.Guitools()
 		self.bkg = self.guitools.gradient((800,1280),(100,100,200),(200,100,100))
 		pygame.event.set_allowed([pygame.QUIT,pygame.VIDEORESIZE,pygame.MOUSEBUTTONDOWN,pygame.MOUSEBUTTONUP,pygame.KEYDOWN,pygame.KEYUP])
 
 		self.mglstg = [[],
-			['Pinball','Tetris','Minesweeper','Pong','Differences','Jigsaw','Maze','Pool','Snake','HittheMole','FallingItems','Jumping','FlappyBird','Breakout','BubbleBubble','CannonBattle','ColorMatch'],
+			['Pinball','Tetris','Minesweeper','Pong','Differences','Jigsaw','Maze','Pool','Snake','HittheMole','FallingItems','Jumping','FlappyBird','Breakout','BubbleBubble','CannonBattle','ColorMatch','MusicTiles','Footrace','Hops'],
 			['Twothousandforthyeight','Memory','Simon','FindtheCup','ImageMatch','Cassino','Roulette','NumberPuzzle'],
 			['Chess','Checkers','Trilha','Blackgammon','Ludo','Reversi','SnakesNLadders'],
 			['Solitaire','SpiderSolitaire','Freecell','Mahjong','PegSolitaire'],
@@ -210,6 +209,70 @@ class Backgrounds:
 		srf.set_colorkey(old)
 		img_copy.blit(srf, (0, 0))
 		return img
+		
+	def random(self,i=None):
+		from mutagen.mp3 import MP3
+		self.msc.pause()
+		pygame.mixer.music.pause()
+		self.ton.play(res.SOUND['NOISE'],-1)
+		kp = str(self.tv)
+		self.tv = 0
+		self.rectrot = 0
+		self.img = self.bbgs[0]
+		chg = round(random.randint(0,100))
+		if kp == '0': chg = 100
+		elif i != None: chg = 100
+		if self.mnu < 6 and self.lopt != -1:
+			self.wait = round(random.randint(10,100))
+			for i in range(round(random.randint(1,30)/self.FPS)): self.run()
+			self.ton.stop()
+			#CHANGE IMAGE
+			if chg > 25:
+				if self.lopt == -1: self.tv = 0
+				elif self.mnu == 3:
+					if self.lopt < len(res.FILES[1]) - 1:
+						self.tv = round(random.randint(0,res.FILES[1][self.lopt])) + 1
+					else: self.tv = len(self.bbgs)
+				elif self.mnu == 4:
+					self.tv = self.lopt + 1
+			else: self.tv = int(kp)
+			if self.tv >= len(self.bbgs): self.bbgs[0]
+			else: self.img = self.bbgs[self.tv]
+			#CHANGE SONG
+			if chg > 50:
+				self.msc.stop()
+				pygame.mixer.music.stop()
+				rd = round(random.randint(0,res.RANGE_RADIO - 1))
+				if len(res.RADIO[rd]) > 0:
+					sng = round(random.randint(0,len(res.RADIO[rd]) - 1))
+					msc = res.MUSIC_PATH + res.RADIO[rd][sng] + '.mp3'
+					if msc.endswith('.mp3'):
+						audio = MP3(msc)
+						pygame.mixer.music.load(msc)
+						pygame.mixer.music.play(1,round(random.randint(20,int(audio.info.length) - 20)))
+						try: self.mscinfo = {'TITLE': audio['TIT2'].text[0],'ARTIST': audio['TPE1'].text[0],'ALBUM': audio['TALB'].text[0]}
+						except: self.mscinfo = {'TITLE': res.RADIO[rd][sng],'ARTIST': 'unknown','ALBUM': 'unknown'}
+					elif msc.endswith('.wav'):
+						audio = pygame.mixer.Sound(msc)
+						self.msc.play(audio)
+					elif msc.endswith('.ogg'):
+						audio = pygame.mixer.Sound(msc)
+						self.msc.play(audio)
+			else: self.msc.unpause(); pygame.mixer.music.unpause()
+			#CHANGE TRANSFORMATION
+			if chg > 75:
+				self.transform['VALUE'] = 0
+				self.transform['TYPE'] = round(random.randint(2,3))
+				spd = round(random.randint(0,100))
+				if self.transform['TYPE'] == 5: self.transform['SPEED'] = 2
+				elif spd > 75: self.transform['SPEED'] = -2
+				elif spd > 50: self.transform['SPEED'] = 2
+				elif spd > 25: self.transform['SPEED'] = -1
+				else: self.transform['SPEED'] = 1
+				if self.transform['TYPE'] in [0,4] and self.transform['SPEED'] < 0: self.transform['VALUE'] = round(random.randint(200,300))
+				if self.transform['TYPE'] == 5: self.transform['VALUE'] = round(random.randint(1,2))
+				if self.transform['TYPE'] in [1,4]:
+					self.rectrot = self.img.get_rect(center=pygame.Rect(0,0,600,400).center)
  
 	def swap(self,img,palette):
 		for i in palette:
@@ -220,6 +283,133 @@ class Backgrounds:
 			img = copy.copy()
 		img.set_colorkey((0, 0, 0))
 		return img
+	
+	def menu(self):
+		self.screen.fill((0,0,0))
+		for i in self.display: i.fill((0,0,0,0))
+		rztxt = math.floor((self.windoww/300)/2)
+		#RANDOM SCREEN
+		if self.mnu not in [6,5,9,10] and self.classrun and self.sltt == 140 and self.img != None:
+			#RANDOM FONT
+			if self.rndtxt < (100 + round(random.randint(5,20))): self.rndtxt += 1
+			else: self.rndtxt = 0
+			if self.rndtxt >= 100:
+				dt = self.fnt.keys()
+				lst = []
+				for i in dt: lst.append(i)
+				self.curfnt = lst[round(random.randint(0,len(self.fnt) - 1))]
+			else: self.curfnt = 'DEFAULT'
+			area = (0,-self.winbar,self.windoww,self.windowh - self.winbar)
+			#NOISE
+			if self.tv in [0,len(self.bbgs)]:
+				self.noise += 1
+				if self.noise == 3: self.noise = 0
+				self.display[0].blit(self.img[self.noise], (0, 0))
+			else:
+				self.transform['VALUE'] += self.transform['SPEED'] * self.FPS
+				if self.blink < (100 + round(random.randint(1,10))): self.blink += 1
+				else: self.blink = 0
+				img = self.img[math.floor(self.blink/100)]
+				#SCALE
+				if self.transform['TYPE'] == 0:
+					img = pygame.transform.scale(img,(img.get_rect().width + round(self.transform['VALUE'] * 2),img.get_rect().height + round(self.transform['VALUE'] * 2)))
+					self.display[0].blit(img, (600 - img.get_rect().width, 600 - img.get_rect().height),area)
+				#ROTATE
+				elif self.transform['TYPE'] == 1:
+					img = pygame.transform.scale(img,(800,800))
+					trs = pygame.transform.rotate(img,self.transform['VALUE'])
+					self.rectrot = trs.get_rect(center = self.rectrot.center)
+					self.display[0].blit(trs, self.rectrot,area)
+				#MOVE HORIZONTAL
+				elif self.transform['TYPE'] == 2:
+					self.display[0].blit(img, (self.transform['VALUE'], int(self.windowh/2) - int(img.get_rect().height/2)))
+					if self.transform['VALUE'] < 0: self.display[0].blit(img, (img.get_rect().width + self.transform['VALUE'], 0),area)
+					if self.transform['VALUE'] > 0: self.display[0].blit(img, (-img.get_rect().width + self.transform['VALUE'], 0),area)
+				#MOVE VERTICAL
+				elif self.transform['TYPE'] == 3:
+					self.display[0].blit(img, (0, self.transform['VALUE']))
+					if self.transform['VALUE'] < 0: self.display[0].blit(img, (0, img.get_rect().height + self.transform['VALUE']),area)
+					if self.transform['VALUE'] > 0: self.display[0].blit(img, (0, -img.get_rect().height + self.transform['VALUE']),area)
+				#SCALE AND ROTATE
+				if self.transform['TYPE'] == 4:
+					img = pygame.transform.scale(img,(img.get_rect().width + round(self.transform['VALUE']/6),img.get_rect().height + round(self.transform['VALUE']/4)))
+					trs = pygame.transform.rotate(img,self.transform['VALUE'])
+					self.rectrot = trs.get_rect(center = self.rectrot.center)
+					self.display[0].blit(trs, self.rectrot,area)
+				#RANDOM
+				if self.transform['TYPE'] == 5:
+					if self.transform['VALUE'] > 13: self.transform['VALUE'] = 1
+					img = pygame.image.load(res.BACKG_PATH + 'chp_' + str(self.transform['VALUE']) + str(self.blink) + '.png')
+					self.display[0].blit(img, (0,0),area)
+		
+		#GRADIENT
+		self.display[1].blit(self.grd[0],(0,0))
+		self.display[1].blit(self.grd[1],(0,self.windowh - 200))
+		#BLACK BARS
+		if self.mnu in [3,4] and self.winbar > 100 and self.sltt == 140:
+			self.winbar -= 10 * self.FPS
+		if self.mnu == 7:
+			if self.winbar < int(self.windowh/2):
+				self.winbar += 10 * self.FPS
+			if self.winbar == int(self.windowh/2):
+				self.classrun = False
+		if self.mnu == 9 and self.winbar > 0:
+			self.winbar -= 10 * self.FPS
+		if self.mnu == 10 and self.winbar < 100:
+			self.winbar += 10 * self.FPS
+		pygame.draw.rect(self.display[1], (0, 0, 0), pygame.Rect(0,0,self.windoww,self.winbar))
+		pygame.draw.rect(self.display[1], (0, 0, 0), pygame.Rect(0,self.windowh - self.winbar,self.windoww,self.winbar))
+		#INFO
+		if self.mnu > 1 and self.mnu < 6:
+			'''self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[0] + ' ' + res.VERSION + ':' + str(self.glock.get_fps()), True, (240,240,240)), ((-35 + int(self.displayzw/(self.displayzh/self.winbar))), (-35 + self.winbar)))
+			if self.stime > 0:
+				self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[1], True, (240,240,240)), ((self.windoww - 140 - int(self.displayzw/(self.displayzh/self.winbar))), (self.windowh + 35) - self.winbar))'''
+			self.display[1].blit(self.fnt[self.curfnt].render(dtb.ABOUT[0][:9], True, (240,240,240)), (50,25))
+			self.display[1].blit(self.fnt['MINI'].render(dtb.ABOUT[0][11:] + ' ' + res.VERSION, True, (240,240,240)), (50,55))
+			if self.stime > 0:
+				self.display[1].blit(self.fnt[self.curfnt].render(dtb.ABOUT[1], True, (240,240,240)), (self.windoww - 200,self.windowh - 35))
+			#HOLIDAYS
+			for i in dtb.HOLIDAYS:
+				if self.holiday.month == i[0] and self.holiday.day == i[1]:
+					sz = self.fnt[self.curfnt].size(i[2])[0] + 50
+					self.display[1].blit(self.fnt[self.curfnt].render(i[2], True, (240,240,240)), (self.windoww - sz, 65))
+			#SECRETS
+			if self.stime > 0: self.stime -= 1 * self.FPS
+			if self.stime <= 0:
+				if self.sscroll > -20 - self.fnt[self.curfnt].size(self.stext)[0]:
+					self.sscroll -= 3 * self.FPS
+					self.display[1].blit(self.fnt[self.curfnt].render(self.stext, True, (240,240,240)),(self.sscroll,self.windowh - 50))
+				else:
+					self.sscroll = self.windoww + 20
+					self.stext = dtb.TSECRETS[random.randint(0,len(dtb.TSECRETS) - 1)]
+					self.stime = random.randint(600,1000)
+		#WAIT
+		if self.mnu > 0 and self.mnu < 6:
+			if self.wait > 0 and self.tv > 0: self.wait -= 1 * self.FPS
+			prb = round(random.randint(0,100))
+			if prb > 50 and self.wait == 0 and self.tv > 0 and self.sltt == 140: self.random()
+		#LOAD GAME RECAP
+		if self.mnu == 8:
+			if self.wait > 0: self.wait -= 1 * self.FPS
+			if self.wait == 0 and self.tv == 0:
+				self.msc.play(pygame.mixer.Sound(res.MUSIC_PATH + 'fate_occurrences.mp3'),-1)
+				self.ton.stop()
+				self.mnu = 6
+		#DRAW CIRCLE
+		if self.sltt < 140:
+			self.sltt += 5
+			sz = self.sltc.get_rect()
+			img = pygame.transform.scale(self.sltc,(int(sz.width/100) * self.sltt,int(sz.width/100) * self.sltt))
+			sz = img.get_rect()
+			self.screen.blit(img,((self.windoww/2) - (sz.width/2),(self.windowh/2) - (sz.height/2)))
+		#DRAW SURFACES
+		else:
+			self.screen.blit(pygame.transform.scale(self.display[0], (self.windoww, self.windowh)),(0, 0))
+			self.screen.blit(self.display[1],(0, 0))
+		#MOUSE
+		if res.MOUSE == 1:
+			self.screen.blit(pygame.image.load(res.SPRITES_PATH + 'cursor_' + str(res.CURSOR) + '.png'), pygame.mouse.get_pos())
+		return self.display
 		
 	def draw(self):
 		self.surface.fill((0,0,0))
@@ -246,6 +436,61 @@ class Backgrounds:
 		if self.img > len(self.lst) - 1: self.img = 0
 		self.blink += 0.02
 		if self.blink >= random.randint(1.0,2.0): self.blink = 0.0
+		
+		return self.surface
+		
+class Footrace:
+	def __init__(self):
+		sz = pygame.display.Info()
+		self.surface = pygame.Surface((sz.current_w,sz.current_h))
+		self.font = pygame.font.SysFont("Arial", 64)
+		self.buttons = []
+		for x in range(2): self.buttons.append(pygame.Rect(10 + (x * 50), 300, 40, 40))
+		self.switch = False
+		self.dist = 0
+		self.speed = 0
+		
+	def events(self,event):
+		mp = pygame.mouse.get_pos()
+		mr = pygame.Rect(mp[0],mp[1],2,2)
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			for i in range(len(self.buttons)):
+				if pygame.Rect.colliderect(mr,self.buttons[i]):
+					if i == int(self.switch):
+						self.speed += 1
+						self.switch = not self.switch
+		
+	def draw(self):
+		self.surface.fill((0,0,0))
+		self.surface.blit(self.font.render(str(self.dist),1,(200,200,200)), (10,10))
+		self.dist += self.speed
+		if self.speed > 0: self.speed -= 0.1
+		dd = self.dist - (int(self.dist/50) * 50)
+		for i in range(20): pygame.draw.line(self.surface, (200,200,200), ((i * 50)-dd,200),((i * 50)-dd,220),3)
+		for i in self.buttons: pygame.draw.rect(self.surface,(200,200,200),i)
+		
+		return self.surface
+
+class Hops:
+	def __init__(self):
+		sz = pygame.display.Info()
+		self.surface = pygame.Surface((sz.current_w,sz.current_h))
+		self.font = pygame.font.SysFont("Arial", 64)
+		self.jump = 0
+		self.grvt = -5
+		self.score = 0
+		
+	def events(self,event):
+		if event.type == pygame.MOUSEBUTTONDOWN and self.grvt == -5:
+			self.grvt = 5
+		
+	def draw(self):
+		self.surface.fill((0,0,0))
+		self.surface.blit(self.font.render(str(self.score),1,(200,200,200)), (10,10))
+		if self.grvt > -5:
+			self.grvt -= 0.2
+			self.jump += self.grvt
+		pygame.draw.ellipse(self.surface,(200,100,100),pygame.Rect(100,100 - int(self.jump),30,30))
 		
 		return self.surface
 
@@ -923,6 +1168,35 @@ class ColorMatch:
 		
 		return self.surface
 
+class MusicTiles:
+	def __init__(self):
+		sz = pygame.display.Info()
+		self.surface = pygame.Surface((sz.current_w,sz.current_h))
+		self.font = pygame.font.SysFont("Arial", 64)
+		self.tiles = []
+		for x in range(7):
+			self.tiles.append([pygame.Rect(10 + (x * 65), -80, 60, 80), None, 0])
+		self.speed = 3
+		
+	def events(self,event):
+		mp = pygame.mouse.get_pos()
+		mr = pygame.Rect(mp[0],mp[1],2,2)
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			for i in self.tiles:
+				if pygame.Rect.colliderect(mr,i[0]):
+					pass
+		
+	def draw(self):
+		self.surface.fill((0,0,0))
+		#self.surface.blit(self.font.render(self.txt,1,(200,200,200)), (10,10))
+		cc = [(200,100,100),(200,200,100),(150,200,100),(100,200,100),(100,200,200),(100,100,200),(200,100,200)]
+		for i in self.tiles:
+			pygame.draw.rect(self.surface, cc[int((i[0].x-10)/65)], i[0])
+			i[0].y += self.speed
+		pygame.draw.rect(self.surface, (200,200,200), pygame.Rect(0,300,500,80),5)
+		
+		return self.surface
+
 #BALL SPORTS
 class Pool:
 	def __init__(self):
@@ -1028,7 +1302,7 @@ class CannonBattle:
 		
 	def draw(self):
 		self.surface.fill((0,0,0))
-
+		
 		mp = pygame.mouse.get_pos()
 		pygame.draw.rect(self.surface,(200,100,100),pygame.Rect(50,300,10,self.strg))
 		pygame.draw.rect(self.surface,(100,100,100),pygame.Rect(100,300,100,100),2)
@@ -1328,7 +1602,42 @@ class ImageMatch:
 					if self.rows[y] < -ln: self.rows[y] = 0
 		return self.surface
 
-class Cassino: pass
+class Cassino:
+	def __init__(self):
+		sz = pygame.display.Info()
+		self.surface = pygame.Surface((sz.current_w,sz.current_h))
+		self.font = pygame.font.SysFont("Arial", 64)
+		self.slots = []
+		self.sltsz = 90
+		for i in range(3): self.slots.append(random.randint(0,9) * self.sltsz)
+		self.stop = 0
+		self.acc = 10.0
+		self.img = pygame.Surface((self.sltsz,self.sltsz * 11))
+		self.img.fill((200,200,200))
+		for y in range(10):
+			self.img.blit(self.font.render(str(y),True,(10,10,10)),(10,10 + (y * self.sltsz)))
+		self.img.blit(self.font.render("0",True,(10,10,10)),(10,10 + (11 * self.sltsz)))
+		
+	def events(self,event):
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			if self.acc == 0.0: self.acc = 10.0
+			elif self.stop == 0: self.stop = 50
+		
+	def draw(self):
+		self.surface.fill((0,0,0))
+		
+		if self.stop > 0:
+			if self.acc > 0: self.acc -= 0.5
+			self.stop -= 1
+		for i in range(len(self.slots)):
+			if self.acc == 0.0:
+				self.slots[i] = int(self.slots[i]/self.sltsz) * self.sltsz
+		for x in range(3):
+			self.surface.blit(self.img,(50 + (x * 100),200),(0,self.slots[x],self.sltsz,self.sltsz))
+			self.slots[x] += int(self.acc)
+			if self.slots[x] > self.sltsz * 10: self.slots[x] = 0
+		
+		return self.surface
 
 class Roulette:
 	def __init__(self):
@@ -3155,5 +3464,4 @@ class Stop: pass
 
 if play:
 	g = Game()
-	while True:
-		g.run()
+	while True: g.run()

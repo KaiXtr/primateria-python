@@ -10,7 +10,7 @@ VERSION = '0.1'
 YEAR = '2021'
 MAINLANG = 'PT'
 DEBUG = True
-GSCALE = 2 #game ratio ÷ window ratio
+GSCALE = 3 #game ratio ÷ window ratio
 FPS = 30
 
 BACKG_PATH = 'backgrounds/'
@@ -27,7 +27,7 @@ TILESETS_PATH = 'tiles/files/'
 FONTS_PATH = 'fonts/'
 
 #None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip
-CLICK = ['move',None]
+CLICK = [None,None]
 ACTION = ['walk','walk','walk','walk','equip','run','inventory','pause']
 
 SPRITES = {}
@@ -105,10 +105,23 @@ FORMATION = 0
 CALLHIST = []
 CONTACTS = []
 INBOX = []
-TASKS = []
+TASKS = [['CH10',2]]
 TACTICAL = []
-BESTIARY = []
+BESTIARY = [{'N': '4.1.1','ID': '1','DATE': (3,3,2007),'SEEN': 2},{'N': '2.1.1','ID': '2','DATE': (3,3,2007),'SEEN': 2}]
 INVENTORY = []
+for u in range(6):
+	INVENTORY.append([])
+	for y in range(5):
+		INVENTORY[u].append([])
+		for x in range(5):
+			INVENTORY[u][y].append(['_','0000'])
+INVENTORY[0] = [
+	[['amulet1','0000'],['phone','3600','sim_card','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
+	[['vest1','7'],['til_grass','infinite'],['til_color','infinite'],['til_metalbars','infinite'],['food_pizza_4cheese','0000']],
+	[['head_glasses1','0000'],['guit_load','0'],['guit_save','0000'],['guit_undo','0000'],['guit_redo','0000']],
+	[['head_hairclip','0000'],['guit_pencil','0000'],['guit_erase','0000'],['guit_dropper','0000'],['_','0000']],
+	[['bag1','0000'],['bomb_regular','3'],['pow_triplebubble','3'],['cigar','0000'],['_','0000']]
+	]
 STORAGE = []
 PRODUCTS = []
 for i in range(25): PRODUCTS.append(['_',1])
@@ -124,82 +137,50 @@ TASKPIN = False
 MINIMAP = False
 
 CHARACTERS = [
-{'NAME': 'Sidney','LASTNAME': 'Barreto','PRONOUN': 'he','ID': '0064','BLOOD': 'A+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'mercenary','SUBCLASS': 'gunslinger',
-'HAIR': [0,1,0],'SKIN': 5,
-'FAVFOOD': ['food_coxinha','drink_whisky'],
-'FEAR': 'psychic','FLAW': 'alcoholic'},
+{'NAME': 'Sidney','LASTNAME': 'Barreto','NICK': 'Sid','PRONOUN': 'he','BIRTH': (3,3,1985),'HOMETOWN': 'ITATIAIA/RJ','BLOOD': 'A+','CLASS': 'mercenary','SUBCLASS': 'gunslinger',
+'HAIR': [0,1,0],'SKIN': 5,'FAVFOOD': ['food_coxinha','drink_whisky'],'IDEOLOGY': 'atheist','FEAR': 'psychic','FLAW': 'alcoholic'},
   
-{'NAME': 'Jane', 'LASTNAME': 'Oliveira','PRONOUN': 'she','ID': '0094','BLOOD': 'O-','CIVIL': 'casada','SIGN': 1,'CLASS': 'medium','SUBCLASS': 'necromancer',
-'HAIR': [0,2,0],'SKIN': 4,
-'FAVFOOD': ['food_chesse_bread','food_coffee'],
-'FEAR': 'reptile','FLAW': 'myopia'},
+{'NAME': 'Jane', 'LASTNAME': 'Oliveira','NICK': None,'PRONOUN': 'she','BIRTH': (3,3,1985),'HOMETOWN': 'VOLTA REDONDA/RJ','BLOOD': 'O-','CLASS': 'medium','SUBCLASS': 'necromancer',
+'HAIR': [0,2,0],'SKIN': 4,'FAVFOOD': ['food_chesse_bread','food_coffee'],'IDEOLOGY': 'spiritist','FEAR': 'reptile','FLAW': 'myopia'},
   
-{'NAME': 'Renan', 'LASTNAME': 'Pinheiro','PRONOUN': 'he','ID': '0100','BLOOD': 'A-','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'thief','SUBCLASS': 'smartass',
-'HAIR': [0,3,7],'SKIN': 6,
-'FAVFOOD': ['food_cola','food_cake_carrot'],
-'FEAR': 'mammal','FLAW': 'asthma'},
+{'NAME': 'Renan', 'LASTNAME': 'Pinheiro','NICK': None,'PRONOUN': 'he','BIRTH': (3,3,1985),'HOMETOWN': 'NILÓPOLIS/RJ','BLOOD': 'A-','CLASS': 'thief','SUBCLASS': 'smartass',
+'HAIR': [0,3,7],'SKIN': 6,'FAVFOOD': ['food_cola','food_cake_carrot'],'IDEOLOGY': 'baptist evangelic','FEAR': 'mammal','FLAW': 'asthma'},
  
-{'NAME': 'Diego', 'LASTNAME': 'Donovan','PRONOUN': 'he','ID': '0024','BLOOD': 'A-','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'hunter','SUBCLASS': 'researcher',
-'HAIR': [0,4,1],'SKIN': 8,
-'FAVFOOD': ['food_burguer','food_cola'],
-'FEAR': 'plant','FLAW': 'lactose intolerant'},
+{'NAME': 'Diego', 'LASTNAME': 'Donovan','NICK': None,'PRONOUN': 'he','BIRTH': (3,3,1985),'HOMETOWN': 'CAMPOS DO JORDÃO/SP','BLOOD': 'A-','CLASS': 'hunter','SUBCLASS': 'researcher',
+'HAIR': [0,4,1],'SKIN': 8,'FAVFOOD': ['food_burguer','food_cola'],'IDEOLOGY': 'scientologist','FEAR': 'plant','FLAW': 'lactose intolerant'},
   
-{'NAME': 'Bianca', 'LASTNAME': 'Pacheco','PRONOUN': 'she','ID': '0120','BLOOD': 'O+','CIVIL': 'casada','SIGN': 1,'CLASS': 'scientist','SUBCLASS': 'healer',
-'LEVEL': 0,'BLESS': 0,'HP': 0,'XP': 0,'HEALTH': 0,'MORALITY': 0,
-'HAIR': [0,5,0],'SKIN': 9,
-'FAVFOOD': ['food_sushi','food_juice_orange'],
-'FEAR': 'spirit','FLAW': 'celiac'},
+{'NAME': 'Bianca', 'LASTNAME': 'Pacheco','NICK': 'Bia','PRONOUN': 'she','BIRTH': (3,3,1985),'HOMETOWN': 'BELO HORIZONTE/MG','BLOOD': 'O+','CLASS': 'scientist','SUBCLASS': 'healer',
+'HAIR': [0,5,0],'SKIN': 9,'FAVFOOD': ['food_sushi','food_juice_orange'],'IDEOLOGY': 'agnostic','FEAR': 'spirit','FLAW': 'celiac'},
  
-{'NAME': 'Lúcia', 'LASTNAME': 'Figueiredo','PRONOUN': 'she','ID': '0013','BLOOD': 'O+','CIVIL': 'viúva','SIGN': 1,'CLASS': 'watchman','SUBCLASS': 'detective',
-'HAIR': [0,6,0],'SKIN': 1,
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'FEAR': 'inorganic','FLAW': 'cigarette addict'},
+{'NAME': 'Lúcia', 'LASTNAME': 'Figueiredo','NICK': 'Lúci','PRONOUN': 'she','BIRTH': (3,3,1985),'HOMETOWN': 'NITERÓI/RJ','BLOOD': 'O+','CLASS': 'watchman','SUBCLASS': 'detective',
+'HAIR': [0,6,0],'SKIN': 1,'FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'pentecostal evangelic','FEAR': 'inorganic','FLAW': 'cigarette addict'},
 
-{'NAME': 'Maicon', 'LASTNAME': 'Neves','PRONOUN': 'he','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'hunter','SUBCLASS': 'warrior',
-'HAIR': [0,1,0],'SKIN': '0',
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'BONUS': [0,0,0,0,0],
-'FEAR': 'psychic','FLAW': 'alcoholic'},
+{'NAME': 'Maicon', 'LASTNAME': 'Neves','NICK': None,'PRONOUN': 'he','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'hunter','SUBCLASS': 'warrior',
+'HAIR': [0,1,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'baptist evangelic','FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Iago', 'LASTNAME': 'Dantas','PRONOUN': 'he','ID': '0013','BLOOD': 'O+','CIVIL': 'comprometido','SIGN': 1,'CLASS': 'nomad','SUBCLASS': 'traveler',
-'HAIR': [0,14,0],'SKIN': '0',
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'FEAR': 'psychic','FLAW': 'alcoholic'},
+{'NAME': 'Iago', 'LASTNAME': 'Dantas','NICK': None,'PRONOUN': 'he','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'nomad','SUBCLASS': 'traveler',
+'HAIR': [0,14,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'atheist','FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Vinicíus', 'LASTNAME': 'Tavares','PRONOUN': 'he','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'mercenary','SUBCLASS': 'barbarian',
-'HAIR': [0,3,0],'SKIN': '0',
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'FEAR': 'psychic','FLAW': 'alcoholic'},
+{'NAME': 'Vinicíus', 'LASTNAME': 'Tavares','NICK': 'Vini','PRONOUN': 'he','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'mercenary','SUBCLASS': 'barbarian',
+'HAIR': [0,3,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'non religious','FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'João', 'LASTNAME': 'Pedro Lima','PRONOUN': 'he','ID': '0013','BLOOD': 'O+','CIVIL': 'solteiro','SIGN': 1,'CLASS': 'watchman','SUBCLASS': 'forensic',
-'HAIR': [0,3,0],'SKIN': '0',
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'FEAR': 'psychic','FLAW': 'alcoholic'},
+{'NAME': 'João', 'LASTNAME': 'Pedro Lima','NICK': 'João Grande','PRONOUN': 'he','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'watchman','SUBCLASS': 'forensic',
+'HAIR': [0,3,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'atheist','FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Sofia', 'LASTNAME': 'Torres','PRONOUN': 'she','ID': '0013','BLOOD': 'O+','CIVIL': 'casada','SIGN': 1,'CLASS': 'scientist','SUBCLASS': 'healer',
-'HAIR': [0,12,0],'SKIN': '0',
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'FEAR': 'psychic','FLAW': 'alcoholic'},
+{'NAME': 'Sofia', 'LASTNAME': 'Torres','NICK': None,'PRONOUN': 'she','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'scientist','SUBCLASS': 'healer',
+'HAIR': [0,12,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'atheist','FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Paulo', 'LASTNAME': 'Sousa','PRONOUN': 'he','ID': '0013','BLOOD': 'O+','CIVIL': 'casado','SIGN': 1,'CLASS': 'watchman','SUBCLASS': 'shooter',
-'HAIR': [0,0,6],'SKIN': '0',
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'FEAR': 'psychic','FLAW': 'alcoholic'},
+{'NAME': 'Paulo', 'LASTNAME': 'Sousa','NICK': None,'PRONOUN': 'he','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'watchman','SUBCLASS': 'shooter',
+'HAIR': [0,0,6],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'apostolic catholic','FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Pietra', 'LASTNAME': 'Amaral','PRONOUN': 'she','ID': '0013','BLOOD': 'O+','CIVIL': 'comprometida','SIGN': 1,'CLASS': 'thief','SUBCLASS': 'assassin',
-'HAIR': [0,8,0],'SKIN': '0',
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'FEAR': 'psychic','FLAW': 'alcoholic'},
+{'NAME': 'Pietra', 'LASTNAME': 'Amaral','NICK': None,'PRONOUN': 'she','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'thief','SUBCLASS': 'assassin',
+'HAIR': [0,8,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'baptist evangelic','FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Hermes', 'LASTNAME': 'Fonseca','PRONOUN': 'he','ID': '0013','BLOOD': 'O+','CIVIL': 'viúvo','SIGN': 1,'CLASS': 'alchemist','SUBCLASS': 'sorcerer',
-'HAIR': [0,13,0],'SKIN': '0',
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'FEAR': 'psychic','FLAW': 'alcoholic'},
+{'NAME': 'Hermes', 'LASTNAME': 'Fonseca','NICK': None,'PRONOUN': 'he','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'alchemist','SUBCLASS': 'sorcerer',
+'HAIR': [0,13,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'alchemy','FEAR': 'psychic','FLAW': 'alcoholic'},
 
-{'NAME': 'Dalibor', 'LASTNAME': 'Marković','PRONOUN': 'he','ID': '0013','BLOOD': 'O+','CIVIL': 'viúvo','SIGN': 1,'CLASS': 'watchman','SUBCLASS': 'detective',
-'HAIR': [0,13,0],'SKIN': '0',
-'FAVFOOD': ['food_juice_orange','food_fish'],
-'FEAR': 'psychic','FLAW': 'alcoholic'}
+{'NAME': 'Dalibor', 'LASTNAME': 'Marković','NICK': 'Sr.Dalibor','PRONOUN': 'he','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'watchman','SUBCLASS': 'detective',
+'HAIR': [0,13,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'ortodox catholic','FEAR': 'psychic','FLAW': 'alcoholic'}
 ]
 
 for i in range(len(CHARACTERS)):
@@ -207,7 +188,10 @@ for i in range(len(CHARACTERS)):
 	CHARACTERS[i]['HUNGER'] = 1000
 	CHARACTERS[i]['THIRST'] = 1000
 	CHARACTERS[i]['SLEEP'] = 1000
-	for j in ['LEVEL','BLESS','HP','XP','HEALTH','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
+	CHARACTERS[i]['SANITY'] = 100
+	CHARACTERS[i]['RACE'] = 'human'
+	CHARACTERS[i]['HEALTH'] = []
+	for j in ['LEVEL','BLESS','HP','XP','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
 	'ACROBATICS','FURTIVITY','PERCEPTION','MEDICINE','IMUNITY','INFANTRY','INVESTIGATION','CRAFTING','CULINARY','DEATHS']:
 		CHARACTERS[i][j] = 0
 
@@ -215,12 +199,9 @@ RELATIONS = []
 for i in range(15):
 	RELATIONS.append([])
 	for j in range(15):
-		if i > j:
-			RELATIONS[i].append(RELATIONS[j][i])
-		elif i == j:
-			RELATIONS[i].append(0)
-		else:
-			RELATIONS[i].append(0)
+		if i > j: RELATIONS[i].append(RELATIONS[j][i])
+		elif i == j: RELATIONS[i].append(0)
+		else: RELATIONS[i].append(0)
 RELATIONS[0][3] = 70
 RELATIONS[0][5] = 10
 RELATIONS[0][6] = 30
@@ -246,31 +227,25 @@ def recent_data(m,opt=0):
 
 	#LOAD FILES
 	if m == 0:
-		com.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='recent'")
+		com.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='files'")
 		rs = com.fetchone()
 		if rs != None:
-			FILES = [[],[],[],[],[]]
-			com.execute("SELECT id from recent")
-			for i in com.fetchall(): FILES[0].append(i[0])
-			com.execute("SELECT chp from recent")
-			for i in com.fetchall(): FILES[1].append(i[0])
-			com.execute("SELECT gt from recent")
-			for i in com.fetchall(): FILES[2].append(i[0])
-			com.execute("SELECT lang from recent")
-			for i in com.fetchall(): FILES[3].append(i[0])
-			com.execute("SELECT party from recent")
-			for i in com.fetchall(): FILES[4].append(i[0])
+			FILES = []
+			com.execute("SELECT id,name,chp,gt,lang,party FROM files")
+			for i in com.fetchall(): FILES.append(i)
+			for i in FILES:
+				if i[1] == 0: del i
 		else:
-			com.execute("CREATE TABLE recent (id integer,chp integer,gt integer,lang text,party text)")
-			com.execute("INSERT INTO recent VALUES (0,0,0,'PT','0')")
+			com.execute("CREATE TABLE files (id integer,name text,chp integer,gt integer,lang text,party text)")
+			com.execute("INSERT INTO files VALUES (0,'Matt',0,0,'PT','0')")
 			tbl.commit()
-			FILES = [[0],[0],[0],['PT'],['0']]
+			FILES = [[0,'Matt',0,0,'PT',[0]]]
 	#UPDATE FILE
 	elif m == 1:
 		prt = ''
 		for i in PARTY[FORMATION]:
 			prt += str(i)
-		com.execute("UPDATE recent SET chp = {}, gt = {}, lang = '{}', party = '{}' WHERE id = {}".format(CHAPTER,GAMETIME,LANG,prt,opt))
+		com.execute("UPDATE files SET chp = {}, gt = {}, lang = '{}', party = '{}' WHERE id = {}".format(CHAPTER,GAMETIME,LANG,prt,opt))
 		tbl.commit()
 	#NEW FILE
 	elif m == 2:
@@ -278,25 +253,16 @@ def recent_data(m,opt=0):
 		CHAPTER = 0
 		GAMETIME = 0
 		LANG = 'PT'
-		FILES[0].append(ID)
-		FILES[1].append(CHAPTER)
-		FILES[2].append(GAMETIME)
-		FILES[3].append(LANG)
-		FILES[3].append('0')
-		com.execute("INSERT INTO recent VALUES (" + str(ID) + "," + str(CHAPTER) + "," + str(GAMETIME) + ",'" + LANG + "','0')")
+		FILES.append([ID,'Matt',CHAPTER,GAMETIME,LANG,'0'])
+		com.execute("INSERT INTO files VALUES ({},'{}',{},{},'{}','0')".format(ID,'Matt',CHAPTER,GAMETIME,LANG,'0'))
 		tbl.commit()
 	#ADD FILE
 	elif m == 3:
 		ID = opt
 		prt = ''
-		for i in PARTY[FORMATION]:
-			prt += str(i)
-		FILES[0].append(ID)
-		FILES[1].append(CHAPTER)
-		FILES[2].append(GAMETIME)
-		FILES[3].append(LANG)
-		FILES[4].append(prt)
-		com.execute("INSERT INTO recent VALUES (" + str(ID) + "," + str(CHAPTER) + "," + str(GAMETIME) + ",'" + LANG + "','" + prt + "')")
+		for i in PARTY[FORMATION]: prt += str(i)
+		FILES.append(ID,'Matt',CHAPTER,GAMETIME,LANG,prt)
+		com.execute("INSERT INTO files VALUES ({},'{}',{},{},'{}','0')".format(ID,'Matt',CHAPTER,GAMETIME,LANG,'0'))
 		tbl.commit()
 	com.close()
 	tbl.close()
@@ -331,16 +297,13 @@ def new_data(add=False):
 		TIME = [0,32,0]
 		DATE = [25,12,2007,1,1]
 		WEATHER = 0
-		CHAPTER = 6
+		CHAPTER = 0
 		SCENE = 0
 		GAMETIME = 0
 		FORMATION = 0
 		MAP = dtb.CHAPTERS[CHAPTER][5][0]
 		PX = dtb.CHAPTERS[CHAPTER][5][1]
 		PY = dtb.CHAPTERS[CHAPTER][5][2]
-		'''MAP = 'labyrinth_1'
-		PX = 90
-		PY = 90'''
 		
 		GAS = 100.0
 		SHORTCUT = [1,1,4]
@@ -353,7 +316,7 @@ def new_data(add=False):
 			CHARACTERS[i]['BONUS'] = [3,3,3,3,3]
 			CHARACTERS[i]['DEATHS'] = 0
 	 
-		PARTY = [[1]]
+		PARTY = [[0]]
 		CONTACTS = [['Maicon','923778988'],['Mercador','969696969'],['Pizza Delivery','953478809']]
 		CALLHIST = []
 		INBOX = []
@@ -420,7 +383,7 @@ def new_data(add=False):
 	com.execute("CREATE TABLE IF NOT EXISTS rank (id integer,chp integer,level integer,score integer,time integer,paint integer,enemies integer,deaths integer)")
 	  
     #FILE ALREADY EXISTS
-	for i in ['recent','settings','data','characters','party','contacts',
+	for i in ['files','settings','data','characters','party','contacts',
 	'callhist','inbox','tasks','tactical','bestiary','achievements','inventory',
 	'storage','wash','rank']:
 		com.execute("DELETE FROM " + i + " WHERE id=" + str(ID))
@@ -697,7 +660,7 @@ def delete_data():
 	del FILES[2][ID]
 	del FILES[3][ID]
 	
-	for i in ['recent','settings','data','characters','party','contacts',
+	for i in ['files','settings','data','characters','party','contacts',
 	'callhist','inbox','tasks','tactical','bestiary','achievements','inventory',
 	'storage','wash','rank']:
 		com.execute("DELETE FROM " + i + " WHERE id=" + str(ID))
@@ -789,12 +752,10 @@ def sfx(j):
 	global SOUND
 	if j.endswith('.wav'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
 
+
+if FILES != []:
+	dtb = __import__('database_' + FILES[0][4])
+else: dtb = __import__('database_' + MAINLANG)
 recent_data(0)
-if FILES[3] != []:
-	if FILES[3][0] == 'PT': import database_PT as dtb
-	if FILES[3][0] == 'EN': import database_EN as dtb
-	ID = FILES[0][0]
-	CHAPTER = FILES[1][0]
-	GAMETIME = FILES[2][0]
-	LANG = FILES[3][0]
-else: import database_PT as dtb
+pygame.mixer.init()
+for j in os.listdir(SFX_PATH[:-1]): sfx(j)

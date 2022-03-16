@@ -6,6 +6,24 @@ import os
 NAMES = ('Sidney','Barreto','Jane','Oliveira','Renan','Pinheiro','Diego','Donovan','Bianca','Pacheco','Lúcia','Figueiredo',
 'Maicon','Neves','Iago','Dantas','Vinícius','Tavares','João','Pedro Lima','Sofia','Torres','Paulo','Sousa','Pietra','Mendonça','Hermes','Fonseca','Ryan','Figueiredo','Dalibor','Marković')
 
+CINFO = [
+'',
+'',
+'',
+'',
+'',
+'',
+'',
+'',
+'',
+'',
+'',
+'',
+'',
+'',
+''
+]
+
 PRONOUNS = {'he': 'Ele','she': 'Ela','they': 'Ele/Ela'}
 
 CITIES = (('Itatiaia',(25,25,24,22,20,18,17,19,20,22,23,24)),
@@ -24,11 +42,11 @@ CITIES = (('Itatiaia',(25,25,24,22,20,18,17,19,20,22,23,24)),
 ('Resende',(25,25,24,22,20,19,18,19,21,22,23,23)))
 
 CLASSES = {
-'mercenary': {'STRENGHT': [10,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
-'RESISTANCE': [20,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100],
-'AGILITY': [0,0.25,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
-'KNOWLEDGE': [0,1,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
-'CHARISMA': [20,22,22,25,25,26,28,30,30,32,33,35]},
+'mercenary': {'STRENGHT': [5,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
+'RESISTANCE': [4,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100],
+'AGILITY': [3,0.25,0.25,0.5,0.5,0.5,0.5,0.75,0.75,0.75,0.75,1,1,1,1.25,1.25,1.5,1.5,1.5,1.5,1.75],
+'KNOWLEDGE': [3,1,2,2,2,2.25,2.25,2.25,2.25,2.25,2.5,2.5,2.5,2.5,2.5,2.75,2.75,2.75,2.75,2.75,3],
+'CHARISMA': [2,22,22,25,25,26,28,30,30,32,33,35]},
 
 'hunter': {'STRENGHT': [10,1,1,1,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5],
 'RESISTANCE': [20,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100],
@@ -86,12 +104,11 @@ CLASSES = {
 }
 
 NEXTLEVEL = (100,150,200,300,300,350,450,500,600)
-
 PROFNAMES = {'STRENGHT': 'força','AGILITY': 'agilidade','RESISTANCE': 'resistência','KNOWLEDGE': 'sabedoria','CHARISMA': 'carisma'}
 MONTHS = ('janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro')
 ZODIAC = ('aquário','peixes','áries','touro','gêmeos','câncer','leão','virgem','libra','escorpião','sagitário','capricórnio')
-
-METERS = {'litters': ('ml',0)}
+MEASURINGS = {'distance': ('m',1),'volume': ('l',1),'weight': ('g',1),'temperature': ('ºC',1)}
+#('inches',39.37008),
 
 CNAMES = {
 'mercenary': ['mercenário',['novato','intermediário','profissional']],
@@ -192,28 +209,19 @@ CONDITIONS
 24 - velocidade (ganha um turno extra)
 '''
 
-FTYPES = {'mammal': 'mamífero', 'flying': 'alado', 'reptile': 'réptil','plant': 'vegetal', 'aquatic': 'aquático',
-'psychic': 'psíquico', 'humanoid': 'humanóide', 'inorganic': 'inorgânico','alien': 'alienígena',
-'mystic': 'místico','spirit': 'espírito'}
-
-FHABITATS = {'jungle': 'floresta', 'seaside': 'litoral', 'sierra': 'serra', 'cerrado': 'cerrado', 'pantanal': 'pantanal',
-'manguezal': 'manguezal', 'cave': 'subterrâneo', 'urban': 'urbano'}
-
+FTYPES = {0.0:'não incluso',1.0:'humanóide',1.1:'parte corporal',1.2:'metahumano',2.0:'quimera',2.1:'animal',3.0:'planta',4.0:'assombração',4.1:'psíquico',4.2:'espírito',4.3:'elemental',5.0:'inorgânico',5.1:'robótico',6.0:'extraterrestre'}
+FHABITATS = {'jungle':'floresta','seaside':'litoral','sierra':'serra','cerrado':'cerrado','pantanal':'pantanal','manguezal':'manguezal','cave':'subterrâneo','urban':'urbano'}
 FCONDITIONS = ('normal','costas','repelente','fedor','resfriado','febre','fome','sede','sono','náusea','enjôo','fraqueza','cegueira','preso','paralisia','inconsciente','parasita','queimadura','veneno aracnídeo','veneno antiofídico','veneno escorpiônico','hemorragia','regeneração','invisibilidade','velocidade')
-
-FWEAKNESSES = {'gold': 'ouro','silver': 'prata','copper': 'cobre','tin': 'estanho','lead': 'chumbo','iron': 'ferro','mercury': 'mercúrio','fire': 'fogo','water': 'água','earth': 'terra','air': 'ar','explosive': 'explosivos','corrosive': 'corrosivos'}
+FWEAKNESSES = {'gold':'ouro','silver':'prata','copper':'cobre','tin':'estanho','lead':'chumbo','iron':'ferro','mercury':'mercúrio','fire':'fogo','water':'água','earth':'terra','air':'ar','explosive':'explosivos','corrosive':'corrosivos'}
 
 #HABILITIES: [[name,description,damage,type,probability,attackimation],...]
 
 FREAKS = {
-#JUNGLE
-'madladcat': {'NAME': 'Gatacado','INFO': 'É um felino sobrenatural que flutua como um fantasma. Pequeno e ágil, porém bem frágil.',
-'HEIGHT': '0,80','HABITAT': 'jungle','TYPE': 'mammal',
-'STRENGHT': 2,'AGILITY': 5,'RESISTANCE': 1,'VITALITY': 8,'PATH': 'stealth','DODGE': 'walk',
-'HABILITIES': [['Morder','O felino morde o oponente.',-5,1,40,1],
-['Arranhar','O felino usa suas garras para atacar o oponente.',-3,10,40,10],
-['Ronronar','O felino ronrona, mostrando seu desprezo pela situação.',0,9,10,1],
-['Miar','O felino mia para o além, chamando outros felinos.',('madladcat'),7,10,1]],
+'4.1.1': {'NAME': 'Gatacado','INFO': 'É um felino sobrenatural que flutua como um fantasma. Pequeno e ágil, porém bem frágil.',
+'OA': 4,'HEIGHT': '0,80','HABITAT': 'jungle','STRENGHT': 2,'AGILITY': 5,'RESISTANCE': 1,'VITALITY': 8,
+'PATH': 'horizontal','DODGE': 'walk','SKELETON': {'body': (12,39),'eye': [(13,26),(31,26)]},
+'HABILITIES': [['Morder','O felino morde o oponente.',-5,1,40,1],['Arranhar','O felino usa suas garras para atacar o oponente.',-3,10,40,10],
+['Ronronar','O felino ronrona, mostrando seu desprezo pela situação.',0,9,10,1],['Miar','O felino mia para o além, chamando outros felinos.',('4.1.0'),7,10,1]],
 'FOOD': 'ingredient_mice','WEAKNESS': 'LEAD','BLOOD': 10,'ITEM': None,'SONG': 'HEY_SAM','SCREAM': 1},
    
 'lizardshrimp': {'NAME': 'Camaraleão','INFO': 'É um réptil que se fundiu com um camarão, não se sabe se é um alimento apetitoso.',
@@ -224,8 +232,8 @@ FREAKS = {
 ['Estalo','O réptil se estala, criando um campo de força elétrico.',-13,1]],
 'WEAKNESS': 'EARTH','BLOOD': 10,'ITEM': ('food_camarão',50),'SONG': 'GREENBLOOD','SCREAM': 2},
    
-'peacockpigeon': {'NAME': 'Pombo Pavão','INFO': 'Um pombo urbano com uma mutação que o fez desenvolver penas de pavão com olhos reais nas suas pontas.',
-'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'flying',
+'2.1.1': {'NAME': 'Pombo Pavão','INFO': 'Um pombo urbano com uma mutação que o fez desenvolver penas de pavão com olhos reais nas suas pontas.',
+'OA': 2,'HEIGHT': '0,25','HABITAT': 'urban','TYPE': 'flying',
 'STRENGHT': 2,'AGILITY': 4,'RESISTANCE': 0,'VITALITY': 6,'PATH': 'horizontal','DODGE': 'walk',
 'HABILITIES': [['Defecar','A ave defeca no oponente, infectando-o.',5,6,20,1],
 ['Hipnose','A ave hipnotiza o oponente com os olhos das penas de pavão, diminuindo sua AGILIDADE.',-2,3,20],
@@ -524,6 +532,12 @@ FREAKS = {
 'WEAKNESS': 'LEAD','BLOOD': 0,'ITEM': None,'SONG': 'HERMITES','SCREAM': 25},
   
 #MISCELANEOUS
+'squaresponge': {'NAME': 'Esponja Quadrada','INFO': 'Ele vai acabar com sua raça.',
+'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
+'STRENGHT': 2,'AGILITY': 4,'RESISTANCE': 0,'VITALITY': 6,'PATH': 'stay','DODGE': 'jump',
+'HABILITIES': [['Ataque',['O elemento se joga contra o','opontente, se machucando no processo.'],-5,1,100,1]],
+'WEAKNESS': 'IRON','BLOOD': 10,'ITEM': ['food_egg',50],'SONG': 'EGG_RAP','SCREAM': 26},
+
 'eggrapper1': {'NAME': 'MC Ovinho','INFO': 'Ele vai acabar com sua raça.',
 'HEIGHT': '0,10','HABITAT': 'urban','TYPE': 'inorganic',
 'STRENGHT': 2,'AGILITY': 4,'RESISTANCE': 0,'VITALITY': 6,'PATH': 'stay','DODGE': 'jump',
@@ -1278,6 +1292,10 @@ ITEMS = {
 'ingredient_eye': ['olho',['Um glóbulo ocular.'],1,1,1,2],
 'ingredient_crab_claw': ['garra de caranguejo',['Um garra de caranguejo pontuda e afiada.'],1,1,1,2],
 'ingredient_ox_horn': ['Chifre de boi',['Um material resistente e duro como osso.'],1,1,1,2],
+
+#UTENSILS (name,description,price,volume,weight)
+'utn_cup': ['prato',['Objeto arremessável.'],1,1,1,2],
+'utn_plate': ['prato',['Objeto arremessável.'],1,1,1,2],
  
 #TRASH (name,description,price,volume,weight)
 'trash_packing': ['embalagem',['Um papel que não serve pra absolutamente nada','a menos que seja uma esponja amarela.'],8,1,1],
@@ -2039,24 +2057,8 @@ res.DLGSAV = {}
 for i in DIALOGS.items(): res.DLGSAV[i[0]] = 0
 		
 for i in ITEMS.items():
-	if i[0].startswith('food'):
-		res.DISITEMS[i[0]] = 0
-	if i[0].startswith('drug'):
-		res.DISITEMS[i[0]] = 0
-
-IDINFO =[('ITATIAIA/RJ','XX/XX/XXXX'),
-('VOLTA REDONDA/RJ','XX/XX/XXXX'),
-('NILÓPOLIS/RJ','XX/XX/XXXX'),
-('CAMPOS DO JORDÃO/SP','XX/XX/XXXX'),
-('BELO HORIZONTE/MG','XX/XX/XXXX'),
-('NITERÓI/RJ','XX/XX/XXXX')]
-
-ITINFO = {'VOLUME': 'volume','WEIGHT': 'peso','DISCOVER': 'Use o item para obter informações.',
-'STORAGE': 'depositar','PRODUCTS': 'produtos','BASKET': 'carrinho','WASH': 'lavar','MERCATOR': 'mercador','TRASH': 'lixeira',
-'ARMOR': 'proteção','DURATION': 'duração','DAMAGE': 'dano','RECHARGE': 'recarga','CADENCY': 'cadência','CAPACITY': 'capacidade',
-'GAUGE': 'calibre','VITALITY': 'vitalidade','HUNGER': 'fome','THIRST': 'sede'}
-
-NOTINFO = {'EMAIL': 'Novo Email','CONTACT': 'Novo contato adicionado!','WASH': 'Sua roupa foi lavada!'}
+	if i[0].startswith('food'): res.DISITEMS[i[0]] = 0
+	if i[0].startswith('drug'): res.DISITEMS[i[0]] = 0
 
 SIGNS = {
 'INN': 'pousada', 'PUB': 'bar', 'HOTEL': 'hotel', 'DRUGSTORE': 'drogaria', 'BAKERY': 'padaria', 'BAZAAR': 'bazar', 'MARKET': 'mercado', 'BANK': 'banco',
@@ -2120,70 +2122,36 @@ HINTS = {
 'NAMING': ['digite os nomes no teclado',6,'prosseguir']
 }
      
-'''MANUAL = [['CONTROLES',['Aperte ' + pygame.key.name(res.LEFT[0]) + ', ' + pygame.key.name(res.RIGHT[0]) + ', ' + pygame.key.name(res.UP[0]) + ' e ' + pygame.key.name(res.DOWN[0]) + ' para mover seu personagem']],\
-['CELULAR',['O celular é o equivalente ao','menu do jogo, acesse-o','apertando ' + pygame.key.name(res.PHONE[0]) + '.','\
-','Na barra superior do celular,','aparecem informações de data,','hora, sinal e carga.','\
-','Atente-se á carga do celular:','ao se esgotar, você fica','incapacitado de utilizá-lo, para','carregar, use o carregador.','Utilize carregadores portáteis','ao se afastar da área urbana.','\
-','Os créditos servem para fazer','ligações, recarregue-os na','farmácia.','\
-','Fora da área urbana, o sinal',' pode diminuir, e alguns','aplicativos estarão indisponíveis.','\
-','Esses são os aplicativos que','pode usar:','\
-','MAPA: ver o mapa da cidade,','traçar rotas e ver informações','dos locais. Não mostra as','regiões florestais.','\
-','CHAMADAS: ver os contatos','salvos, histórico de ligações','e fazer chamadas. Quanto mais','longa for a chamada, mais','créditos são gastos.','\
-','EMAIL: ver emails enviados da','agência e outras instituições.','\
-','NOTÍCIAS: ver as últimas notícias','da região, podem aparecer casos','resolvidos e casos para resolver.','\
-','RÁDIO: escutar música aleatória','de várias estações diferentes,','ao se afastar da área urbana','não é possível utilizá-lo.','É necessário um fone de','ouvido para usá-lo.','\
-','CÂMERA: tirar capturas de tela e','ver capturas salvas.','\
-','TAREFAS: ver missões e casos','já cumpridos ou para cumprir.','\
-','STATUS: ver as informações','completas dos atributos','do jogador.','\
-','BESTIÁRIO: banco de dados da','agência onde se registram','todas as anomalias.','\
-','CONQUISTAS: ver todas as',' conquistas do jogo.','\
-','PLACAR: ver sua posição no','placar do jogo.','\
-','AJUDA: ler o manual completo','do jogo.','\
-','CONFIGURAÇÕES: editar opções','de som, imagem, controles,','idioma e etc.','\
-','SOBRE: ver créditos e liçenca GNU.','\
-','SALVAR: salva o progresso','atual do jogo.']],\
-['BATALHA',['Para vencer uma batalha, você deve derrotar todos os inimigos da tela ao mesmo tempo que deve se defender dos ataques inimigos.','\
-HP: A barra vermelha mostra seu HP, ela pode ser maior dependendo do seu nível de VITALIDADE, a barra diminui com o ataque inimigo e uma barra amarela diminui lentamente com ela, baseada no nível de RESISTÊNCIA.\n\n\
-PP: Mostra a quantidade de munição para as armas de fogo, sendo a barra diferente para cada arma.','\
-XP: Seu nível de experiência, quanto mais experiente for nas batalhas, maior seu grau dentro da agência.','\
-Numa batalha, aparecem como opções os itens equipados, mas você também pode abrir seu inventário e fugir da batalha. Seu desempenho ao atacar é baseado nos seus atributos, \
-ao mesmo tempo em que os inimigos também possuem seus atributos para defender, sendo esses: ','\
-ATAQUE: distância dos extremos da barra','\
-AGILIDADE: velocidade do cursor da barra','\
-RESISTÊNCIA: velocidade de consumo da barra de HP','']],\
-['LOCAIS',['']]]'''
-
 TTSTEXT = {'.': 'ponto',',': 'vírgula',':': 'dois pontos',';': 'ponto e vírgula',' ': 'espaço','!': 'exclamação','?': 'interrogação',
 '"': 'aspas duplas',"'": 'aspas','(': 'abre parênteses',')': 'fecha parenteses','[': 'abre colchetes',']': 'fecha colchetes','{': 'abre chaves','}': 'fecha chaves',
-'<': 'menor que','>': 'maior que','CAPS1': 'minúscula','CAPS2': 'maíscula','CAPS3': 'caps lock','CONFIRM': 'confirm','DELETE': 'deletar',
-'PAGE': 'página'}
+'<': 'menor que','>': 'maior que','CAPS1': 'minúscula','CAPS2': 'maíscula','CAPS3': 'caps lock','CONFIRM': 'confirm','DELETE': 'deletar','PAGE': 'página'}
 
-PAUSE = ['continuar','carregar','salvar','ajustes','sobre','sair']
-    
-BATTLE = [' aparece no caminho!',' encurrala você!',' é emboscado!',
-'incrível!','errou...','outra vez!',
-'vitória!','perfeito!','derrota...','acertos: ','dano total: ','vitalidade perdida: ','bônus de tempo: ',' de experiência',
-' foi promovido para ',
-' tentou fugir','...mas falhou','...e consegue!',
-' vai ',' usa ',' perdeu ',' ganhou ',' de ATAQUE',' de AGILIDADE',' de FORÇA','de RESISTÊNCIA',
-' está com resfriado',' está com febre',' está desidratado',' está com náusea',' não consegue se mexer!',' está inconsciente...',' foi atacado por um parasita',
-' está queimando!',' foi envenenado!',' está com hemorragia!',
-' foi quebrado...',
-' entrou na batalha!', 'Mas não funcionou...',
-'força','ataque','agilidade','resistência','vitalidade',
-'Um exército aparece para te atacar!','maravilhoso!']
-  
-MENU = ['mapa','chamadas','correios','notícias','rádio','câmera','bestiário','tarefas','status','táticas','conquistas','placar','manual','ajustes','sobre',
-'sem conexão','não há contatos','sem créditos...','sem dinheiro...','não há mensagens','sem sinal','nenhuma anomalia registrada','não há tarefas',
-'grupos','contatos','histórico','novas','lidas','todas','fazer','feitas','novo grupo',
+MENU = {'new_file': 'nova sessão','load_file': 'iniciar sessão','save_file': 'salvar sessão','delete_file': 'excluir sessão','resume': 'continuar','exit': 'sair',
+'Inventory': 'inventário','volume': 'volume','weight': 'peso','discover': 'Use o item para obter informações.',
+'storage': 'depositar','products': 'produtos','basket': 'carrinho','wash': 'lavar','mercator': 'mercador','trash': 'lixeira',
+'armor': 'proteção','duration': 'duração','damage': 'dano','recharge': 'recarga','cadency': 'cadência','capacity': 'capacidade',
+'gauge': 'calibre','vitality': 'vitalidade','hunger': 'fome','thirst': 'sede','storage': 'depositar',
+'success': 'sucesso','fail': 'falha','touche': 'touché','strike': 'strike','ko': 'nocaute','one_more': 'oitra vez','miss': 'errou...','victory': 'vitória','perfect': 'perfeito','lost': 'derrota','level_up': 'foi promovido para',
+'GPS': 'mapa','Contacts': 'contatos','Email': 'emails','Newspaper': 'notícias','Radio': 'música','Camera': 'galeria','Bestiary': 'bestiário',
+'Tasks': 'tarefas','Status': 'ficha','Tactics': 'táticas','Achievements': 'conquistas','Rank': 'placar','Help': 'ajuda','Settings': 'ajustes','About': 'sobre',
+'no_signal': 'sem sinal','no_credit': 'sem saldo','no_freaks': 'nenhuma anomalia registrada','empty': 'nada por aqui','calling': 'chamando',
+'to_do': 'fazer','done': 'feitas','all': 'todas','unread': 'novas','read': 'lidas','groups': 'grupos','history': 'histórico',
+'name': 'nome','birth': 'data de nascimento','hometown': 'naturalidade','rg': 'registrado','cpf': 'cpf',
+'gameplay': 'geral','sound': 'áudio','controls': 'controles',
+'lang': 'idioma','border': 'borda','hints': 'dicas','tutorials': 'tutoriais','cursor': 'cursor','dislexic': 'dislexia',
+'sfx': 'som','music': 'música','tts': 'narrador','cc': 'áudio descrição','speed': 'velocidade','censorship': 'censura',
+'bt_choose': 'escolba o botão','vibrate': 'vibrar',
+'conf': 'confirmar','info': 'info','yes': 'sim','no': 'não','ok': 'ok','cancel': 'cancelar',
+'not_email': 'Novo Email','not_contact': 'Novo contato adicionado!','not_wash': 'Sua roupa foi lavada!'}
+
+
+"""
+MENU = [
 'créditos: ','chamando...','DE: ','PARA: ','nova tática','VITALIDADE: ','FORÇA: ','ATAQUE: ','AGILIDADE: ','RESISTÊNCIA:',
 'RESFRIADO','FEBRE','SEDE','NÁUSEA','PARALISIA','INCONSCIÊNCIA','PARASITA','QUEIMADURA','VENENO','HEMORRAGIA','REFORÇOS','ROUBAR',
-'equipamento 1','equipamento 2','equipamento 3','equipamento 4','dialogar','defender','fugir','nova história',
-'idioma','sfx','música','mover cima','mover baixo','mover esquerda','mover direita','ato','celular','inventário','velocidade','cor R','cor G','cor B','salvar',
-'escolha um botão','volume','peso','Nome','Sobrenome','Tudo certo?','Sim','Não','Tem certeza?','correr','borda','gameplay','áudio','controles','muito lento','lento','médio','rápido','muito rápido',
-'censura','tutoriais','dicas','mouse','jogador 1','jogador 2','jogador 3','habilitar','ícone','sensibilidade']
-
-SHOP = ['comprar','sair','nada aqui','banco: $','dinheiro: $','sacar','depositar','cancelar','Mercador','vender']
+'equipamento 1','equipamento 2','equipamento 3','equipamento 4','dialogar','defender','fugir','mover cima','mover baixo','mover esquerda','mover direita','ato','celular','inventário','velocidade,
+Nome','Sobrenome','Tudo certo?','Sim','Não','Tem certeza?','correr','muito lento','lento','médio','rápido','muito rápido','jogador 1','jogador 2','jogador 3','habilitar','ícone','sensibilidade']
+"""
 
 HOLIDAYS = [(1,1,'Feliz ano novo!'),(3,8,'Feliz dia da mulher!'),(3,15,'É aniversário do autor!'),(4,7,'Feliz páscoa!'),(4,22,'Feliz dia da terra!'),(10,31,'Feliz Halloween!'),(12,25,'Feliz natal!')]
 
@@ -2200,7 +2168,8 @@ DISCLAIMER = ['Esta é uma obra de ficção,','e quaisquer semelhanças com','ac
 ERROR = ['Oops! Alguma coisa deu errado... =(','Aperte qualquer botão para fechar']
 
 MINIGAMES = {
-'Pinball': 'Pinball','Tetris': 'Tetris','Minesweeper': 'Campo Minado','Pong': 'Pong','Differences': '7 Erros','Jigsaw': 'Quebra-cabeça','Maze': 'Labirinto','Pool': 'Sinuca',
+'Pinball': 'Pinball','Tetris': 'Tetris','Minesweeper': 'Campo Minado','Pong': 'Pong','Differences': '7 Erros','Jigsaw': 'Quebra-cabeça','Maze': 'Labirinto','Pool': 'Sinuca','MusicTiles': 'Guitarrero',
+'Footrace': 'Corrida','Hops': 'Pula corda',
 'Snake': 'Snake','HittheMole': 'Acerte a toupeira','FallingItems': 'Chuva de itens','Jumping': 'Pulando','FlappyBird': 'Flappy Bird','Breakout': 'Breakout','BubbleBubble': 'Bubble Bubble','CannonBattle': 'Canhões','ColorMatch': 'Combinações',
 'Twothousandforthyeight': '2048','Memory': 'Jogo da Memória','Simon': 'Simon','FindtheCup': 'Jogo dos Copos','ImageMatch': 'Combine a imagem','Cassino': 'Caça-níquel','Roulette': 'Roleta',
 'Chess': 'Xadrez','Checkers': 'Damas','Trilha': 'Trilha','Blackgammon': 'Gamão','Ludo': 'Ludo','Reversi': 'Reversi','SnakesNLadders': 'Cobras e Escadas','NumberPuzzle': 'Quebra-cabeça de números',
@@ -2212,11 +2181,22 @@ MINIGAMES = {
 
 ACHIEVEMENTS = [
 ['Zerado','Ganhar todos os troféus',0,''],
-   
-['YAS','Fique na 1 posição do placar',0,''],
-['Meh','Fique na 2 posição do placar',0,''],
-['Bruh','Fique na 3 posição do placar',0,''],
-   
+
+['Zerado','Complete o capítulo "Depois do Começo"',0,''],
+['Zerado','Complete o capítulo "Duplo Andantes"',0,''],
+['Zerado','Complete o capítulo "Sangue Verde"',0,''],
+['Zerado','Complete o capítulo "Não se meta com a gangue"',0,''],
+['Zerado','Complete o capítulo "Caminhões Canavieiros"',0,''],
+['Zerado','Complete o capítulo "Peste Negra"',0,''],
+['Zerado','Complete o capítulo "Pelo benefício de Mr.Kite!"',0,''],
+['Zerado','Complete o capítulo "Vida Loka"',0,''],
+['Zerado','Complete o capítulo "Milícia x Meliante"',0,''],
+['Zerado','Complete o capítulo "Dr.Estanho"',0,''],
+['Zerado','Complete o capítulo "Não Identificado"',0,''],
+['Zerado','Complete o capítulo "Químicas Quimeras"',0,''],
+['Zerado','Complete o capítulo "Quem tem medo de assombração?"',0,''],
+['Zerado','Complete o capítulo "MP-XIII"',0,''],
+
 ['Piloto','Vencer 10 corridas',0,''],
 ['Fúria da Estrada','Vencer 50 corridas',0,''],
 ['Corredor da Noite','Vencer 100 corridas',0,''],
@@ -2251,18 +2231,22 @@ MESSAGES = [
 ['Esta é uma obra de ficção,','e quaisquer semelhanças com','acontecimentos reais podem','ter alterações artísticas.'],
 ['Uma certa porcentagem da','população sofre de condições','como eplepsia e convulsões,','por isso sempre consulte','seu médico antes de jogar'],
 ['Conecte-se na Steam ou','No Google Play para salvar','seus dados'],
-['Algum youtuber está','jogando isso aqui?'],
-['A vingança nunca é plena','mata a alma e a envenena'],
-['A morte faz você morrer'],
-['O jogo não travou, só','tá carregando, beleza?'],
-['Você tem louça para lavar?'],
-['Caso esteja carregando o jogo','pela primeira vez, ele irá','demorar para carregar','todos os recursos'],
-['Feche outros programas','para o jogo rodar mais rápido'],
-['Nunca deixe de explorar','entre as entrelinhas'],
-['insira uma mensagem aqui'],
-['Escute Pink Floyd','Escute Pink Floyd','Escute Pink Floyd'],
-['Hoc non pereo habebo fortior me'],
-['Veritas lux mea']
+['Algum youtuber está','jogando isso aqui?']
 ]
 
-TSECRETS = ['É verdade, certo, e muito verdadeiro.','54 68 65 20 42 69 72 64 20 6f 66 20 48 65 72 6d 65 73 20 69 73 20 6d 79 20 6e 61 6d 65 2c 20 65 61 74 69 6e 67 20 6d 79 20 77 69 6e 67 73 20 74 6f 20 6d 61 6b 65 20 6d 65 20 74 61 6d 65 2e','Você tem louça para lavar?','54 68 65 20 53 65 72 70 65 6e 74 20 6f 66 20 41 72 61 62 69 61 20 69 73 20 6d 79 20 6e 61 6d 65 2c 20 74 68 65 20 77 68 69 63 68 20 69 73 20 6c 65 61 64 65 72 20 6f 66 20 61 6c 6c 20 74 68 69 73 20 67 61 6d 65 2e','4c 61 72 6b 27 73 20 54 6f 6e 67 75 65 73 20 69 6e 20 41 73 70 69 63','49 20 77 61 6e 74 20 74 6f 20 62 65 6c 69 65 76 65','Hoc non pereo habebo fortior me','01010110 01101111 01100011 11101010 00100000 01100100 01100101 01110011 01100011 01101111 01100010 01110010 01101001 01110101 00100000 01110101 01101101 00100000 01100101 01101110 01101001 01100111 01101101 01100001 00100001','ipse se nihil scire id unum sciat','01001110 01101111 01110011 01110011 01100001 00100000 01100101 01110011 01110000 01100101 01110010 01100001 01101110 11100111 01100001 00100000 01100101 01110011 01110100 11100001 00100000 01101110 01101111 00100000 01101110 01101111 01110011 01110011 01101111 00100000 01110011 01100001 01101100 01110110 01100001 01100100 01101111 01110010 00100000 01001011 01100001 00100111 01101100 01100101 01100010 ','Hello World!']
+TSECRETS = ['É verdade, certo, e muito verdadeiro.',
+'54 68 65 20 42 69 72 64 20 6f 66 20 48 65 72 6d 65 73 20 69 73 20 6d 79 20 6e 61 6d 65 2c 20 65 61 74 69 6e 67 20 6d 79 20 77 69 6e 67 73 20 74 6f 20 6d 61 6b 65 20 6d 65 20 74 61 6d 65 2e',
+'Você tem louça para lavar?',
+'54 68 65 20 53 65 72 70 65 6e 74 20 6f 66 20 41 72 61 62 69 61 20 69 73 20 6d 79 20 6e 61 6d 65 2c 20 74 68 65 20 77 68 69 63 68 20 69 73 20 6c 65 61 64 65 72 20 6f 66 20 61 6c 6c 20 74 68 69 73 20 67 61 6d 65 2e',
+'4c 61 72 6b 27 73 20 54 6f 6e 67 75 65 73 20 69 6e 20 41 73 70 69 63',
+'49 20 77 61 6e 74 20 74 6f 20 62 65 6c 69 65 76 65',
+'Hoc non pereo habebo fortior me',
+'01010110 01101111 01100011 11101010 00100000 01100100 01100101 01110011 01100011 01101111 01100010 01110010 01101001 01110101 00100000 01110101 01101101 00100000 01100101 01101110 01101001 01100111 01101101 01100001 00100001',
+'ipse se nihil scire id unum sciat',
+'A vingança nunca é plena, mata a alma e a envenena',
+'01001110 01101111 01110011 01110011 01100001 00100000 01100101 01110011 01110000 01100101 01110010 01100001 01101110 11100111 01100001 00100000 01100101 01110011 01110100 11100001 00100000 01101110 01101111 00100000 01101110 01101111 01110011 01110011 01101111 00100000 01110011 01100001 01101100 01110110 01100001 01100100 01101111 01110010 00100000 01001011 01100001 00100111 01101100 01100101 01100010 ',
+'Hello World!',
+'insira uma mensagem aqui',
+'Veritas lux mea',
+'Soy juan carlos bodoque, y esta fue mi nota verde'
+]
