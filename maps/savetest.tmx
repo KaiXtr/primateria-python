@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.3.0" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="5" height="5" tilewidth="30" tileheight="30" infinite="0" nextlayerid="14" nextobjectid="77">
+<map version="1.2" tiledversion="1.3.0" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="9" height="9" tilewidth="30" tileheight="30" infinite="0" nextlayerid="14" nextobjectid="77">
 	<properties>
 		<property name="EDIT" type="bool" value="True"/>
 		<property name="INTERIOR" type="int" value="0"/>
@@ -19,20 +19,15 @@
 	<tileset firstgid="626" source="../tiles/files/streets.tsx"/>
 	<layer id="1" name="TILE LAYER 1" width="5" height="5">
 <data encoding="csv">
-626,640,641,641,641,
-000,627,641,641,000,
-000,641,630,641,000,
-000,641,641,641,000,
-000,000,000,000,000
-</data>
-	</layer>
-	<layer id="1" name="TILE LAYER 2" width="5" height="5">
-<data encoding="csv">
-000,000,000,000,000,
-000,000,000,000,000,
-000,000,000,000,000,
-000,000,000,000,000,
-000,000,000,000,000
+632,632,629,626,630,626,629,632,632
+632,632,629,626,632,626,629,632,632
+629,629,629,627,627,627,629,629,629
+626,626,628,626,626,626,628,626,626
+641,641,628,626,626,626,628,641,641
+626,626,628,626,626,626,628,626,626
+629,629,629,627,627,627,629,629,629
+632,632,629,626,631,626,629,632,632
+632,632,629,626,631,626,629,632,632
 </data>
 	</layer>
 </map>

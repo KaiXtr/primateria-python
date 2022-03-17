@@ -12,6 +12,11 @@ class MapHandler(xml.sax.ContentHandler):
 		self.tileset = []
 		self.layers = []
 		self.content = ''
+		
+		self.npcs = [{'RECT': pygame.Rect(x * 30,60,25,25), 'DIRECTION': 1} for x in range(3)]
+		self.cars = [pygame.Rect(x * 30,90,25,25) for x in range(3)]
+		self.sidewalk = []
+		self.streets = []
    
 	def startElement(self, tag, attributes):
 		tag = tag.lower()
@@ -47,7 +52,11 @@ class MapHandler(xml.sax.ContentHandler):
 				pos = 0
 				for y in range(self.map['height']):
 					for x in range(self.map['width']):
-						if i[pos] > 0: self.surface.blit(tls[i[pos]]['IMG'],(x * self.map['tilewidth'],y * self.map['tileheight']))
+						if i[pos] > 0:
+							cor = (x * self.map['tilewidth'],y * self.map['tileheight'])
+							self.surface.blit(tls[i[pos]]['IMG'],cor)
+							if tls[i[pos]]['TYPE'] == 'sidewalk': self.sidewalk.append(cor)
+							if tls[i[pos]]['TYPE'] == 'street': self.streets.append(cor)
 						pos += 1
 		self.current = ''
 
@@ -63,6 +72,27 @@ class MapHandler(xml.sax.ContentHandler):
 		for event in pygame.event.get(): pass
 		self.window.fill((100,100,100))
 		self.window.blit(self.surface,(0,0))
+		for i in self.sidewalk: pygame.draw.rect(self.window,(100,100,200),pygame.Rect(i[0],i[1],30,30),2)
+		for i in self.streets: pygame.draw.rect(self.window,(200,100,100),pygame.Rect(i[0],i[1],30,30),2)
+		for i in range(len(self.npcs)):
+			rct = self.npcs[i]['RECT']
+			pygame.draw.ellipse(self.window,(100,100,200),rct)
+			rct = [x for x in self.layers[0][i]['RECT'][0]
+			if int(rct.x/30) * 30 == int(self.layers[0][i]/30) * 30: self.npcs[i]['DIRECTION'] = 7
+			
+			spd = 1
+			if self.npcs[i]['DIRECTION'] == 1: rct.x += spd
+			if self.npcs[i]['DIRECTION'] == 2: rct.x += spd; rct.y += spd
+			if self.npcs[i]['DIRECTION'] == 3: rct.y += spd
+			if self.npcs[i]['DIRECTION'] == 4: rct.x -= spd; rct.y += spd
+			if self.npcs[i]['DIRECTION'] == 5: rct.x -= spd
+			if self.npcs[i]['DIRECTION'] == 6: rct.x -= spd; rct.y -= spd
+			if self.npcs[i]['DIRECTION'] == 7: rct.y -= spd
+			if self.npcs[i]['DIRECTION'] == 8: rct.x += spd; rct.y -= spd
+				
+		for i in self.cars:
+			pygame.draw.ellipse(self.window,(200,100,100),i)
+			i.x += 2
 		pygame.display.flip()
 		pygame.time.Clock().tick(60)
 
@@ -75,6 +105,7 @@ class TileHandler(xml.sax.ContentHandler):
 		self.tiles = {}
 		self.tilprp = {}
 		self.first = first
+		self.gid = 0
    
 	def startElement(self, tag, attributes):
 		if tag == 'tileset':
@@ -85,16 +116,19 @@ class TileHandler(xml.sax.ContentHandler):
 		if tag == 'tile':
 			if int(attributes['id']) + self.first in self.tileset:
 				lid = int(attributes['id'])
-				gid = int(attributes['id']) + self.first
+				self.gid = int(attributes['id']) + self.first
 				xx = (lid - (int(lid/self.properties['columns']) * self.properties['columns'])) * self.properties['tilewidth']
 				yy = int(lid/self.properties['rows']) * self.properties['tileheight']
 				rct = (xx,yy,self.properties['tilewidth'],self.properties['tileheight'])
-				self.tiles[gid] = {'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0), 'PROPERTIES': self.tilprp}
-		if tag == 'properties': self.tilprp = {}
+				self.tiles[self.gid] = {'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0)}
+				if tag == 'properties': self.tilprp = {}
 		if tag == 'property': self.tilprp[attributes['name']] = attributes['value']
 		self.ind = tag
 
-	def endElement(self, tag): self.ind = ''
+	def endElement(self, tag):
+		if tag == 'tile':
+			for i in self.tilprp.items(): self.tiles[self.gid][i[0]] = i[1]
+		self.ind = ''
 
 	def characters(self, content): pass
 	
