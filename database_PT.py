@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import pygame
 import resources as res
-import os
 
 NAMES = ('Sidney','Barreto','Jane','Oliveira','Renan','Pinheiro','Diego','Donovan','Bianca','Pacheco','Lúcia','Figueiredo',
 'Maicon','Neves','Iago','Dantas','Vinícius','Tavares','João','Pedro Lima','Sofia','Torres','Paulo','Sousa','Pietra','Mendonça','Hermes','Fonseca','Ryan','Figueiredo','Dalibor','Marković')
@@ -107,7 +105,7 @@ NEXTLEVEL = (100,150,200,300,300,350,450,500,600)
 PROFNAMES = {'STRENGHT': 'força','AGILITY': 'agilidade','RESISTANCE': 'resistência','KNOWLEDGE': 'sabedoria','CHARISMA': 'carisma'}
 MONTHS = ('janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro')
 ZODIAC = ('aquário','peixes','áries','touro','gêmeos','câncer','leão','virgem','libra','escorpião','sagitário','capricórnio')
-MEASURINGS = {'distance': ('m',1),'volume': ('l',1),'weight': ('g',1),'temperature': ('ºC',1)}
+MEASURINGS = {'hour': ('h',0.0187),'minutes': ('m',60),'distance': ('m',1),'volume': ('l',1),'weight': ('g',1),'temperature': ('ºC',1)}
 #('inches',39.37008),
 
 CNAMES = {
@@ -941,7 +939,7 @@ FREAKS = {
 'FOOD': None,'WEAKNESS': None,'BLOOD': 0,'ITEM': None,'SONG': None,'SCREAM': None},
 }
 
-ITEMENEMIES = {'drink_guarana': ('wingedcan',100),'key_bedroom': ('elkeys',100),'tool_pen': ('ppap',100),'cigar': ('cigaruto',100)}
+ITEMENEMIES = {'drink_guarana': ('wingedcan',100),'key_bedroom': ('elkeys',100),'tool_pen': ('ppap',100),'cigar': ('cigaruto',0)}
 
 ITEMS = {
 #BAGS (name,description,price,volume,weight)
@@ -2127,8 +2125,8 @@ TTSTEXT = {'.': 'ponto',',': 'vírgula',':': 'dois pontos',';': 'ponto e vírgul
 '<': 'menor que','>': 'maior que','CAPS1': 'minúscula','CAPS2': 'maíscula','CAPS3': 'caps lock','CONFIRM': 'confirm','DELETE': 'deletar','PAGE': 'página'}
 
 MENU = {'new_file': 'nova sessão','load_file': 'iniciar sessão','save_file': 'salvar sessão','delete_file': 'excluir sessão','resume': 'continuar','exit': 'sair',
-'Inventory': 'inventário','volume': 'volume','weight': 'peso','discover': 'Use o item para obter informações.',
-'storage': 'depositar','products': 'produtos','basket': 'carrinho','wash': 'lavar','mercator': 'mercador','trash': 'lixeira',
+'Inventory': 'inventário','volume': 'volume','weight': 'peso','discover': 'Use o item para obter informações.','drop': 'Escolha os itens que deseja descartar.',
+'Storage': 'depositar','Products': 'produtos','Basket': 'carrinho','Wash': 'lavar','Mercator': 'Mercador','Trash': 'lixeira',
 'armor': 'proteção','duration': 'duração','damage': 'dano','recharge': 'recarga','cadency': 'cadência','capacity': 'capacidade',
 'gauge': 'calibre','vitality': 'vitalidade','hunger': 'fome','thirst': 'sede','storage': 'depositar',
 'success': 'sucesso','fail': 'falha','touche': 'touché','strike': 'strike','ko': 'nocaute','one_more': 'oitra vez','miss': 'errou...','victory': 'vitória','perfect': 'perfeito','lost': 'derrota','level_up': 'foi promovido para',
@@ -2165,7 +2163,7 @@ ABOUT = [res.GNAME.upper(),res.AUTHOR + ' (2020)','Source code por Matt Kai','Fe
 DISCLAIMER = ['Esta é uma obra de ficção,','e quaisquer semelhanças com','acontecimentos reais são','mera coincidência.','',
 'Uma certa porcentagem da','população sofre de condições','como eplepsia e convulsões,','por isso sempre consulte','seu médico antes de jogar']
 
-ERROR = ['Oops! Alguma coisa deu errado... =(','Aperte qualquer botão para fechar']
+ERROR = ['Oops! Alguma coisa deu errado... =(','Aperte qualquer botão para fechar','Arquivo','linha','em','Reiniciando...']
 
 MINIGAMES = {
 'Pinball': 'Pinball','Tetris': 'Tetris','Minesweeper': 'Campo Minado','Pong': 'Pong','Differences': '7 Erros','Jigsaw': 'Quebra-cabeça','Maze': 'Labirinto','Pool': 'Sinuca','MusicTiles': 'Guitarrero',

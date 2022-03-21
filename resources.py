@@ -10,8 +10,8 @@ VERSION = '0.1'
 YEAR = '2021'
 MAINLANG = 'PT'
 DEBUG = True
-GSCALE = 3 #game ratio ÷ window ratio
-FPS = 30
+GSCALE = 2 #game ratio ÷ window ratio
+FPS = 60
 
 BACKG_PATH = 'backgrounds/'
 SPRITES_PATH = 'sprites/'
@@ -78,7 +78,7 @@ SCENE = 0
 SFX = 1.0
 MSC = 1.0
 CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,
-pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE],
+pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
 [pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,
 pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS],[],[]]
 JOYSTICK = [0,1,2,3,4,5,6,7,None,None,None,8,None,6,7,0,1,2,3,0,1,None,None]
@@ -86,7 +86,7 @@ MOUSE = 1 #keyboard only/keyboard and mouse/touchpad/joystick
 VIBRATE = False #vibrate controlller
 DTYPE = 1 #type of dialog
 SPEED = 2 #dialog speed
-COLOR = [255,10,10] #UI color
+COLOR = (255,10,10) #UI color
 CAMACC = 10 #player camera acceleration
 BORDER = 0 #UI border
 FONT = 'BohemianTypewriter.ttf' #custom font
@@ -100,7 +100,7 @@ CC = False #close caption
 DISLEXIC = False #spaced font
 BTYPE = 2 #1=turns,2=dynamic,3=action
 
-PARTY = [[0]]
+PARTY = [[0,1]]
 FORMATION = 0
 CALLHIST = []
 CONTACTS = []
@@ -116,19 +116,20 @@ for u in range(6):
 		for x in range(5):
 			INVENTORY[u][y].append(['_','0000'])
 INVENTORY[0] = [
-	[['amulet1','0000'],['phone','3600','sim_card','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
+	[['amulet1','0000'],['phone','3600','simcard1','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
 	[['vest1','7'],['til_grass','infinite'],['til_color','infinite'],['til_metalbars','infinite'],['food_pizza_4cheese','0000']],
 	[['head_glasses1','0000'],['guit_load','0'],['guit_save','0000'],['guit_undo','0000'],['guit_redo','0000']],
 	[['head_hairclip','0000'],['guit_pencil','0000'],['guit_erase','0000'],['guit_dropper','0000'],['_','0000']],
 	[['bag1','0000'],['bomb_regular','3'],['pow_triplebubble','3'],['cigar','0000'],['_','0000']]
 	]
-STORAGE = []
+STORAGE = [['amulet2','0000'],['amulet3','0000'],['_','0000'],['_','0000'],['_','0000']]
 PRODUCTS = []
 for i in range(25): PRODUCTS.append(['_',1])
 BASKET = []
 for i in range(25): BASKET.append(['_','0000'])
 WASH = []
 RANK = []
+EQUIP = [0,0,0]
 
 GAS = 100.0
 SHORTCUT = [1,0,1]
@@ -190,8 +191,9 @@ for i in range(len(CHARACTERS)):
 	CHARACTERS[i]['SLEEP'] = 1000
 	CHARACTERS[i]['SANITY'] = 100
 	CHARACTERS[i]['RACE'] = 'human'
+	CHARACTERS[i]['HP'] = 100
 	CHARACTERS[i]['HEALTH'] = []
-	for j in ['LEVEL','BLESS','HP','XP','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
+	for j in ['LEVEL','BLESS','XP','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
 	'ACROBATICS','FURTIVITY','PERCEPTION','MEDICINE','IMUNITY','INFANTRY','INVESTIGATION','CRAFTING','CULINARY','DEATHS']:
 		CHARACTERS[i][j] = 0
 

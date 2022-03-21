@@ -41,6 +41,7 @@ bdist = {
     "upgrade_code": "{96a85bac-52af-4019-9e94-3afcc9e1ad0c}"
 }
 
+
 exe = Executable(
 	script = r"main.py",
 	targetName = res.FNAME,

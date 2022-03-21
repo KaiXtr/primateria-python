@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pygame
+import xml.sax
 import plyer
 import random
 import datetime
@@ -18,16 +19,15 @@ else: dtb = __import__('database_' + res.MAINLANG)
 
 class Initialize:
 	def __init__(self):
+		print(res.GNAME.upper() + ' v.' + res.VERSION + ' - ' + res.AUTHOR + ' ' + res.YEAR)
 		pygame.init()
 		pygame.mixer.init()
 		pygame.display.set_caption(res.GNAME)
 		pygame.display.set_icon(pygame.image.load('icon.ico'))
 		pygame.mouse.set_visible(False)
-		if res.TTS: plyer.tts.speak('')
-		if res.VIBRATE: plyer.vibrator.vibrate(0.01)
 		if platform.uname().system == 'Windows':
-			self.windoww = 1200
-			self.windowh = 800
+			self.windoww = 800
+			self.windowh = 600
 			res.MOUSE = 1
 			res.GSCALE = 2
 		else:
@@ -36,8 +36,12 @@ class Initialize:
 			self.windowh = sz.current_h
 			res.MOUSE = 2
 			res.GSCALE = 2
-
 		self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
+		img = pygame.image.load('Icon.png')
+		self.screen.blit(img,(int(self.windoww/2) - int(img.get_width()/2),int(self.windowh/2) - int(img.get_height()/2)))
+		pygame.display.update()
+		if res.TTS: plyer.tts.speak('')
+		if res.VIBRATE: plyer.vibrator.vibrate(0.01)
 		self.srf = pygame.Surface((600,400),pygame.SRCALPHA)
 		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 22)}
 		pygame.mixer.music.set_volume(res.MSC)
@@ -436,49 +440,111 @@ class Enemy:
 		sz = (self.surface.get_width() * res.GSCALE,self.surface.get_height() * res.GSCALE)
 		self.window.blit(pygame.transform.scale(self.surface,sz),(0,0))
 		pygame.display.flip()
-		pygame.time.Clock().tick(60)
-		
+		pygame.time.Clock().tick(res.FPS)
+
 '''
-e = Enemy('madladcat',(50,50))
+e = Enemy('4.1.1',(50,50))
 while True: e.test()
 '''
 
-class Map:
+class MapHandler(xml.sax.ContentHandler):
 	def __init__(self):
-		pass
+		self.window = pygame.display.set_mode((400,300))
+		self.surface = pygame.Surface((0,0))
+		self.current = ''
+		self.map = None
+		self.properties = {}
+		self.tileset = []
+		self.layers = []
+		self.content = ''
 		
-	def savemap(self, mp=None):
-		import pytmx
-		tilset = os.listdir(res.TILES_PATH + 'files')
-		tilset.remove('interior2.tsx')
-		tilset.sort()
+		self.npcs = [{'RECT': pygame.Rect(x * 30,60,25,25), 'DIRECTION': 1} for x in range(3)]
+		self.cars = [{'RECT': pygame.Rect(x * 30,90,25,25), 'DIRECTION': 1} for x in range(3)]
+		self.sidewalk = []
+		self.streets = []
+		self.crossing = []
+		self.traflight = 0
+   
+	def startElement(self, tag, attributes):
+		tag = tag.lower()
+		self.current = tag
+		if tag == 'map':
+			self.map = {i[0]: int(i[1]) for i in attributes.items() if i[0] not in ['version','tiledversion','orientation','renderorder']}
+			self.surface = pygame.Surface((self.map['width'] * self.map['tilewidth'],self.map['height'] * self.map['tileheight']))
+		if tag == 'property': self.properties[attributes['name']] = attributes['value']
+		if tag == 'tileset': pass
+
+	def characters(self, content):
+		content = content.lower()
+		if self.current == "data" and content:
+			tt = content
+			for i in ['\n',' ','	',',']:
+				tt = tt.replace(i,'')
+			self.content += tt
+	
+	def endElement(self, tag):
+		tag = tag.lower()
+		if tag == 'data':
+			if self.content:
+				tt = []
+				for t in range(len(self.content[::3])):
+					lid = self.content[t * 3:(t + 1) * 3]
+					if int(lid) not in self.tileset: self.tileset.append(int(lid))
+					tt.append(int(lid))
+				self.layers.append(tt)
+		if tag == 'map':
+			parser = xml.sax.make_parser()
+			parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+			tls = {}
+			gid = 626
+			for t in ['streets.tsx']: #os.listdir(res.TILESETS_PATH):
+				hh = TileHandler(self.tileset,gid)
+				parser.setContentHandler(hh)
+				parser.parse(res.TILESETS_PATH + t)
+				tls = {**tls,**hh.tiles}
+				gid += hh.properties['length']
+			for i in self.layers:
+				pos = 0
+				for y in range(self.map['height']):
+					for x in range(self.map['width']):
+						if i[pos] > 0:
+							cor = (x * self.map['tilewidth'],y * self.map['tileheight'])
+							self.surface.blit(tls[i[pos]]['IMG'],cor)
+							if tls[i[pos]]['TYPE'] == 'sidewalk': self.sidewalk.append(cor)
+							if tls[i[pos]]['TYPE'] == 'street': self.streets.append(cor)
+							if tls[i[pos]]['TYPE'] == 'crossing': self.crossing.append(cor)
+						pos += 1
+		self.current = ''
+
+	def save(self, mp=None):
 		contents = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
-		'<map version="1.2" tiledversion="1.3.0" orientation="orthogonal" ' + \
-		'renderorder="left-up" compressionlevel="0" width="{}" height="{}" '.format(self.mapdata['WIDTH'],self.mapdata['HEIGHT'])
-		contents += 'tilewidth="{}" tileheight="{}" infinite="0" nextlayerid="14" nextobjectid="77">\n'.format(self.mapdata['TILEWIDTH'],self.mapdata['TILEHEIGHT'])
+		'<map version="1.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="{}" height="{}" '.format(self.map['width'],self.map['height'])
+		contents += 'tilewidth="{}" tileheight="{}" infinite="0" nextlayerid="14" nextobjectid="77">\n'.format(self.map['tilewidth'],self.map['tileheight'])
 		if len(self.mapdata['PROPERTIES']) > 0:
 			contents += '	<properties>\n'
 			for p in self.mapdata['PROPERTIES'].items():
 				contents += '		<property name="{}" type="{}" value="{}"/>\n'.format(p[0],type(p[1]).__name__,p[1])
 			contents += '	</properties>\n'
+		'''
 		gid = 1
 		for i in tilset:
 			tst = pytmx.load_pygame(res.TILESETS_PATH + i)
 			gid += tst.tilecount
-			contents += '	<tileset firstgid="{}" source="../{}"/>\n'.format(gid,res.TILESETS_PATH + i)
+			contents += '	<tileset firstgid="{}" source="../{}"/>\n'.format(gid,res.TILESETS_PATH + i)'''
 		id = 1
 		tid = 0
 		oid = 1
-		for i in self.mapdata['TILES']:
-			contents += '	<layer id="{}" name="TILE LAYER {}" width="{}" height="{}">\n'.format(id,tid + 1,self.mapdata['WIDTH'],self.mapdata['HEIGHT'])
-			contents += '<data encoding="csv">\n'
+		for i in self.map['TILES']:
+			contents += '	<layer id="{}" name="TILE LAYER {}" width="{}" height="{}">\n'.format(id,tid + 1,self.map['width'],self.map['height'])
+			contents += '		<data encoding="csv">\n'
 			dd = ''
 			for d in i: dd += self.guitools.digitstring(d,3) + ','
-			for d in range(self.mapdata['WIDTH']):
-				contents += str(dd[d * (self.mapdata['WIDTH']) * 4:(d + 1) * (self.mapdata['HEIGHT']) * 4]) + '\n'
-			contents = contents[0:-2] + '\n</data>\n	</layer>\n'
+			for d in range(self.map['width']):
+				contents += '			' + str(dd[d * (self.map['width']) * 4:(d + 1) * (self.map['height']) * 4]) + '\n'
+			contents = contents[0:-2] + '\n		</data>\n	</layer>\n'
 			tid += 1
-		for i in self.mapdata['LAYERS']:
+
+		for i in self.map['layers']:
 			nol = False
 			if i.name.startswith('Camada'): nol = True
 			elif i.name.startswith('TILE LAYER'): nol = True
@@ -502,6 +568,122 @@ class Map:
 		file = open(res.MAPS_PATH + nn + '.tmx','w')
 		file.write(contents)
 		file.close()
+
+	def test(self):
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				exit()
+		self.window.fill((100,100,100))
+		self.window.blit(self.surface,(0,0))
+		self.traflight += 1
+		if self.traflight > 240: self.traflight = 0
+		for i in self.sidewalk: pygame.draw.rect(self.window,(100,100,200),pygame.Rect(i[0],i[1],30,30),2)
+		for i in self.streets: pygame.draw.rect(self.window,(200,100,100),pygame.Rect(i[0],i[1],30,30),2)
+		for i in self.crossing:
+			if self.traflight < 120: pygame.draw.rect(self.window,(200,100,100),pygame.Rect(i[0],i[1],30,30),2)
+			else: pygame.draw.rect(self.window,(100,100,200),pygame.Rect(i[0],i[1],30,30),2)
+		lst = [self.npcs,self.cars]
+		for l in range(len(lst)):
+			for i in range(len(lst[l])):
+				rct = lst[l][i]['RECT']
+				cl = [(100,100,200),(200,100,100)]
+				pygame.draw.ellipse(self.window,cl[l],rct)
+
+				if lst[l][i]['DIRECTION'] == 1: chk = [1,0]
+				if lst[l][i]['DIRECTION'] == 2: chk = [1,1]
+				if lst[l][i]['DIRECTION'] == 3: chk = [0,1]
+				if lst[l][i]['DIRECTION'] == 4: chk = [-1,1]
+				if lst[l][i]['DIRECTION'] == 5: chk = [-1,0]
+				if lst[l][i]['DIRECTION'] == 6: chk = [-1,-1]
+				if lst[l][i]['DIRECTION'] == 7: chk = [0,-1]
+				if lst[l][i]['DIRECTION'] == 8: chk = [1,-1]
+				chk = []
+				for c in [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]]:
+					chk.append([rct.x + (c[0] * 30),rct.y + (c[1] * 30)])
+
+				if l == 0: ls = self.streets; eq = 'self.traflight < 120'
+				else: ls = self.sidewalk; eq = 'self.traflight >= 120'
+				ntil = [cor for x in ls for cor in range(len(chk)) if x[0] == int(chk[cor][0]/self.map['tilewidth']) * self.map['tilewidth'] and x[1] == int(chk[cor][1]/self.map['tileheight']) * self.map['tileheight']]
+				if eval(eq): ntil += [x for x in self.crossing for cor in chk if x[0] == int(cor[0]/self.map['tilewidth']) * self.map['tilewidth'] and x[1] == int(cor[1]/self.map['tileheight']) * self.map['tileheight']]
+				dirs = [x for x in [1,3,5,7] if x not in ntil]
+				if len(dirs) == 0: lst[l][i]['DIRECTION'] = 0
+				elif lst[l][i]['DIRECTION'] not in dirs: lst[l][i]['DIRECTION'] = dirs[random.randint(0,len(dirs) - 1)]
+
+				spd = 1
+				if lst[l][i]['DIRECTION'] == 1: rct.x += spd
+				if lst[l][i]['DIRECTION'] == 2: rct.x += spd; rct.y += spd
+				if lst[l][i]['DIRECTION'] == 3: rct.y += spd
+				if lst[l][i]['DIRECTION'] == 4: rct.x -= spd; rct.y += spd
+				if lst[l][i]['DIRECTION'] == 5: rct.x -= spd
+				if lst[l][i]['DIRECTION'] == 6: rct.x -= spd; rct.y -= spd
+				if lst[l][i]['DIRECTION'] == 7: rct.y -= spd
+				if lst[l][i]['DIRECTION'] == 8: rct.x += spd; rct.y -= spd
+				
+		pygame.display.flip()
+		pygame.time.Clock().tick(res.FPS)
+
+class TileHandler(xml.sax.ContentHandler):
+	def __init__(self,lst,first):
+		self.ind = ''
+		self.img = None
+		self.properties = {}
+		self.tileset = lst
+		self.tiles = {}
+		self.tilprp = {} #for old tiled tileset versions
+		self.tilani = []
+		self.first = first
+		self.gid = 0
+   
+	def startElement(self, tag, attributes):
+		if tag == 'tileset':
+			self.properties = {i[0]: int(i[1]) for i in attributes.items() if i[0] not in ['version','tiledversion','name']}
+			self.properties['length'] = self.properties['rows'] * self.properties['columns']
+		if tag == 'img':
+			self.img = pygame.image.load(res.TILESETS_PATH + attributes['source'])
+		if tag == 'tile':
+			if int(attributes['id']) + self.first in self.tileset:
+				lid = int(attributes['id'])
+				self.gid = int(attributes['id']) + self.first
+				xx = (lid - (int(lid/self.properties['columns']) * self.properties['columns'])) * self.properties['tilewidth']
+				yy = int(lid/self.properties['rows']) * self.properties['tileheight']
+				rct = (xx,yy,self.properties['tilewidth'],self.properties['tileheight'])
+				self.tiles[self.gid] = {'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0)}
+				for x in attributes.items(): self.tiles[self.gid][x[0].upper()] = x[1]
+		if tag == 'properties': self.tilprp = {}
+		if tag == 'property': self.tilprp[attributes['name']] = attributes['value']
+		if tag == 'animation': self.tilani = []
+		if tag == 'frame': self.tilani.append(attributes['tile'])
+		self.ind = tag
+
+	def endElement(self, tag):
+		if tag == 'tile':
+			for i in self.tilprp.items(): self.tiles[self.gid][i[0]] = i[1]
+			if self.tilani: self.tiles[self.gid]['ANIMATION'] = self.tilani
+		self.ind = ''
+
+	def characters(self, content): pass
+	
+	def save(self, f=None):
+		contents = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
+		'<tileset version="1.2" name="{}" tilewidth="{}" tileheight="{}" rows="{}" columns="{}">\n'.format(self.properties['tilewidth'],self.properties['tileheight'],self.properties['rows'],self.properties['columns'])
+		contents += '	<img source="{}" width="{}" height="{}"/>\n'.format(self.mapdata['WIDTH'],self.mapdata['HEIGHT'])
+		id = 1
+		for i in tilset:
+			gid += tst.tilecount
+			contents += '	<tile id="{}" mask="{}" type="{}">\n'.format(id,(0,0,30,30),0)
+			id += 1
+		contents += '</tilset>'
+		
+		if f: ff = self.name
+		else: ff = f
+		file = open(res.MAPS_PATH + ff + '.xml','w')
+		file.write(contents)
+		file.close()
+
+class Map:
+	def __init__(self):
+		pass
 			
 	def loadmap(self, mp=None):
 		import pytmx
@@ -924,12 +1106,12 @@ class Map:
 			self.loadingif = None
 		for i in self.objects:
 			if i[0] == 4: print(i[1])
-	
-		
+			
 class Game:
 	def __init__(self):
 		#GAME SETTINGS
 		sz = pygame.display.Info()
+		self.running = True
 		self.windoww = sz.current_w
 		self.windowh = sz.current_h
 		self.displayzw = int(self.windoww/res.GSCALE)
@@ -939,7 +1121,6 @@ class Game:
 		self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE | pygame.DOUBLEBUF)
 		self.display = [pygame.Surface((self.displayzw, self.displayzh)), pygame.Surface((self.windoww, self.windowh), pygame.SRCALPHA)]
 		self.glock = pygame.time.Clock()
-		self.FPS = 0
 		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 10 * res.GSCALE), 'ALT': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', 30),
 			'MININFO': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 25), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 15),
 			'CONTROLKEYS': pygame.font.Font(res.FONTS_PATH + 'controlkeys.ttf', 15),'ANGER': pygame.font.Font(res.FONTS_PATH + res.FONT, 15 * res.GSCALE),
@@ -955,7 +1136,7 @@ class Game:
 		self.waitime = 0
 		self.waitlst = [['advice',432000],['rain',3600]]
 		self.blankimg = pygame.Surface((self.windoww,self.windowh))
-		self.blankimg.fill((res.COLOR[0],res.COLOR[1],res.COLOR[2]))
+		self.blankimg.fill(res.COLOR)
 		self.blankimg.set_alpha(100)
 		for x in range(math.ceil(self.blankimg.get_width()/10)):
 			for y in range(math.ceil(self.blankimg.get_height()/10)):
@@ -979,8 +1160,8 @@ class Game:
 		self.guitools = GUI.Guitools()
 		self.tilset = self.guitools.get_tiles()
 		self.rad = GUI.Radio()
-		self.cal = GUI.Contacts()
-		self.inv = GUI.Inventory((self.displayzw,self.displayzh))
+		#self.cal = GUI.Contacts()
+		self.inv = GUI.Inventory((self.displayzw,self.displayzh),0)
 		dv = self.inv.dev()
 		self.dev = dv[0]
 		if self.dev == 'radio': self.dev = self.rad
@@ -991,15 +1172,10 @@ class Game:
 		self.read = None
 		#score counter, time counter
 		self.counter = [[0,0,0]]
-		self.opt = 1
-		self.lopt = 0
-		self.mnu = 1
-		self.exvar = 0
 		self.phone = 0
 		self.phofa = 0
-		self.winbar = int(self.displayzh/2)
-		self.winbar = 0
-		self.transtype = 'bars'
+		self.trsction = None
+		self.guis = []
 		self.grd = []
 		for g in range(200):
 			srf = pygame.Surface((self.windoww,1),pygame.SRCALPHA)
@@ -1032,35 +1208,21 @@ class Game:
 		self.barxp = []
 		self.dices = []
 		self.sttsy = 0
+		self.objects = []
+		self.log = ''
 		res.MAP = 'savetest'
 		res.PX = 0
 		res.PY = 0
 		#PLAYERS
 		x = 0
 		for i in res.PARTY[res.FORMATION]:
-			#HP BAR
-			res.CHARACTERS[i]['HP'] = dtb.CLASSES[res.CHARACTERS[i]['CLASS']]['RESISTANCE'][res.CHARACTERS[i]['LEVEL']]
-			self.barhp.append(int(100/(dtb.CLASSES[res.CHARACTERS[i]['CLASS']]['RESISTANCE'][res.CHARACTERS[i]['LEVEL']]/abs(res.CHARACTERS[i]['HP']))))
-			#XP BAR
-			if res.CHARACTERS[i]['XP'] > 0: self.barxp.append(int(100/(dtb.NEXTLEVEL[res.CHARACTERS[i]['LEVEL']]/res.CHARACTERS[i]['XP'])))
-			else: self.barxp.append(0)
-			#AMMO BAR
-			self.equip.append(0)
-			self.barpp.append([])
-			for j in res.INVENTORY[i][4][1:]:
-				if j[0] != '_':
-					if j[0].startswith('gun') and int(j[1]) > 0: b = int(100/(dtb.ITEMS[j[0]][5]['CAPACITY']/int(j[1])))
-					else: b = 0
-					self.barpp[x].append(b)
-				else:
-					self.barpp[x].append(0)
-			#PLAYER
 			self.player.append({'RECT': pygame.Rect(res.PX,res.PY,20,20),'SPEED': 0,'ACC': 0,'SPEEDLOCK': False,'JUMP': 0,'GRAVITY': -5,'STEP': 10,
 			'SWIM': None,'HEAT': res.TEMPERATURE,'HEAD': 'D','SPRITE': 'STANDD','SCORE': 0,'DRIVING': None,'SLEEP': False,'POSTURE': 1,
 			'HAIR': res.CHARACTERS[i]['HAIR'],'SKIN': res.CHARACTERS[i]['SKIN'],
 			'ACCESORIES': self.inv.find(i,['head'],'position'),'COSTUME': self.inv.find(i,['clth'],'position'),
 			'GIF': 0.0,'BLINK': 100,'INVFRM': 0,'DMGTIM': 100,'SHK': 0,'DIRECTION': 3,'PAUSE': 0,
 			'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','PLAYING': False,'NODES': [],'HOLD': None})
+			self.objects.append(['player',x,self.player[x]['RECT'].y])
 			x += 1
 		self.player[0]['PLAYING'] = True
 		self.donesprites = {}
@@ -1094,6 +1256,12 @@ class Game:
 		self.ihist = 0
 		self.sselect = [0,0,0,0]
 		self.sstore = []
+		self.map = None
+		#START MENU
+		self.files = GUI.Files((self.displayzw,self.displayzh))
+		self.bckgs = GUI.Backgrounds()
+		for i in self.guitools.transiction((self.displayzw,self.displayzh),1,-100,'fade'): self.trsction = i; self.run()
+
 		#STARTING GAME
 		if res.CHAPTER == 0 and res.SCENE == -3:
 			self.tutorial = {'TEXT': dtb.TUTORIALS['BEGIN'], 'OUTPUT': [], 'FADE': 0, 'TIME': 0, 'WAIT': 300, 'NEXT': '','GO': 0}
@@ -1111,22 +1279,13 @@ class Game:
 			self.phone = 1
 			self.mnu = 1
 		else:
-			self.tilrect = [[437,437,437,437,437,0,437,437,437,0,0,437,437,437,0,0,437,437,437,0,0,0,0,0,0],
-							[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
-			self.loadmap(res.MAP)
-			"""for i in range(30): self.run()
-			self.transiction(300,100,type='hole')
-			for i in range(30): self.run()
-			self.transiction(100,300,type='hole')
-			for i in range(30): self.run()
-			self.transiction(True,self.displayzw,type='side')
-			for i in range(30): self.run()
-			self.transiction(True,self.displayzw * 2,type='side')
-			for i in range(30): self.run()
-			self.transiction(True,1,type='zoom')
-			for i in range(30): self.run()
-			self.transiction(False,100,type='zoom')"""
-			#self.transiction(False,0)
+			'''self.tilrect = [[437,437,437,437,437,0,437,437,437,0,0,437,437,437,0,0,437,437,437,0,0,0,0,0,0],
+							[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]'''
+			parser = xml.sax.make_parser()
+			parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+			self.map = MapHandler()
+			parser.setContentHandler(self.map)
+			parser.parse(res.MAPS_PATH + 'savetest.tmx')
 
 	def people(self,i,t):
 		doll = None
@@ -1764,8 +1923,6 @@ class Game:
 							p['RECT'].x = lst[prb][0]
 							p['RECT'].y = lst[prb][1]
 					p['PAUSE'] = 0
-					
-	def pathfinding(self, rct, tgt, map): pass
 		
 	def soundplay(self, sound, value=1):
 		for i in self.channels:
@@ -1849,72 +2006,19 @@ class Game:
 				elif i1['RECT'].y < i2['RECT'].y: return 3
 				else: return 1
 		else: return 1
-		
-	def get_pressed(self,event):
-		pressed = []
-		for i in range(len(res.CONTROLS[0])):
-			pressed.append([])
-			for p in range(4):
-				pressed[i].append(0)
-		#KEYBOARD/MOUSE
-		if res.MOUSE < 2:
-			ky = pygame.key.get_pressed()
-			for p in range(4):
-				for i in range(len(res.CONTROLS[p])):
-					pressed[i][p] = ky[res.CONTROLS[p][i]]
-		#JOYSTICK
-		pygame.joystick.init()
-		connect = pygame.joystick.get_count()
-		if connect > 1:
-			res.MOUSE = 3
-			joystick = pygame.joystick.Joystick(0)
-			joystick.init()
-			#for i in range(6 + joystick.get_numbuttons()): pressed.append([0])
-			for b in range(4):
-				if pressed[res.JOYSTICK[b]][0] == 0:
-					pressed[res.JOYSTICK[b]][0] = int(joystick.get_axis(b))
-			for b in range(joystick.get_numbuttons()):
-				if res.JOYSTICK[b + 4] == None and pressed[b + 4][0] == 0: pressed[b + 4][0] = 0
-				elif pressed[res.JOYSTICK[b + 4]][0] == 0: pressed[res.JOYSTICK[b + 4]][0] = joystick.get_button(b)
-			for b in range(2):
-				if res.JOYSTICK[b + 4 + joystick.get_numbuttons()] == None: pressed[b + 4 + joystick.get_numbuttons()][0] = 0
-				elif pressed[res.JOYSTICK[b + 4 + joystick.get_numbuttons()]][0] == 0:
-					pressed[res.JOYSTICK[b + 4 + joystick.get_numbuttons()]][0] = int(joystick.get_axis(b + 4))
-			for i in pressed:
-				while len(i) < 3: i.append(0)
-		#TOUCH
-		mp = pygame.mouse.get_pos()
-		self.click = pygame.Rect(mp[0],mp[1],2,2)
-		if len(self.buttons) > 0:
-			res.MOUSE = 2
-			if event != None:
-				if event.type == pygame.MOUSEBUTTONDOWN:
-					if res.VIBRATE: plyer.vibrator.vibrate(0.1)
-					chk = 1
-				else: chk = 0
-			else: chk = pygame.mouse.get_pressed()[0]
-			for i in range(len(self.buttons)):
-				if self.colide(self.click,self.buttons[i]):
-					if chk: pressed[i] = [1,0,0,0]
-					elif pressed[i][0] == 0: pressed[i] = [0,0,0,0]
-				elif pressed[i][0] == 0: pressed[i] = [0,0,0,0]
-		return pressed
-
+	
 	def events(self):
 		for event in pygame.event.get():
-			self.pressed = self.get_pressed(event)
+			self.pressed, self.click = self.guitools.get_pressed(event)
 			#EXIT
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				sys.exit()
-				exit()
+			if event.type == pygame.QUIT: self.running = False
 			#RESIZE
 			if event.type == pygame.VIDEORESIZE:
 				self.windoww = event.w
 				self.windowh = event.h
 				self.displayzw = int(self.windoww/res.GSCALE)
 				self.displayzh = int(self.windowh/res.GSCALE)
-				self.inv = GUI.Inventory((self.displayzw,self.displayzh))
+				self.inv = GUI.Inventory((self.displayzw,self.displayzh),0)
 				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE | pygame.DOUBLEBUF)
 				self.display = [pygame.Surface((self.displayzw, self.displayzh)),pygame.Surface((self.windoww, self.windowh), pygame.SRCALPHA)]
 				self.buttons = [pygame.Rect(20,self.windowh - 264,240,80),pygame.Rect(20,self.windowh - 100,240,80),pygame.Rect(20,self.windowh - 264,80,240),
@@ -2066,7 +2170,6 @@ class Game:
 					for p in self.player: p['PAUSE'] = 2
 					self.title.mnu = 10
 					self.winbar = 1
-			if self.title.mnu == 10: self.title.events()
 			#CHAT MENU
 			if mnuchk[1] and self.pressed[mnuchk[1]][0]:
 				self.dialog([(3,'chat'),(22,'chat')])
@@ -2090,393 +2193,7 @@ class Game:
 			do = 0
 			if self.inv.hld > 20: do = 1
 			if self.inv.type > 0: do = 2
-			if do:
-				if event.type == pygame.KEYDOWN: self.inv.rqst = True
-				if event.type == pygame.MOUSEBUTTONDOWN: self.inv.rqst = True
-				#HOLDING ITEM
-				if self.inv.itmov != '':
-					#ACCESORIES SELECT
-					if self.inv.itmov[0] == 0:
-						if self.pressed[2][0]:
-							if self.inv.opt[3] > 1: self.inv.opt[3] -= 1; self.ch_sfx.play(res.SOUND['MENU_HOR'])
-						if self.pressed[3][0]:
-							if self.inv.opt[3] < len(self.inv.itmov): self.inv.opt[3] += 1; self.ch_sfx.play(res.SOUND['MENU_HOR'])
-					#MOVING ITEM
-					else:
-						if self.pressed[2][0]: self.inv.opt[0] -= 1; self.ch_sfx.play(res.SOUND['MENU_HOR'])
-						if self.pressed[3][0]: self.inv.opt[0] += 1; self.ch_sfx.play(res.SOUND['MENU_HOR'])
-						if do > 1:
-							if self.pressed[0][0]: self.inv.opt[1] -= 1; self.ch_sfx.play(res.SOUND['MENU_VER'])
-							if self.pressed[1][0]: self.inv.opt[1] += 1; self.ch_sfx.play(res.SOUND['MENU_VER'])
-				#SELECT ITEM
-				else:
-					if self.pressed[2][0]: self.inv.opt[0] -= 1; self.ch_sfx.play(res.SOUND['MENU_HOR'])
-					if self.pressed[3][0]: self.inv.opt[0] += 1; self.ch_sfx.play(res.SOUND['MENU_HOR'])
-					if do > 1:
-						if self.pressed[0][0]: self.inv.opt[1] -= 1; self.ch_sfx.play(res.SOUND['MENU_VER'])
-						if self.pressed[1][0]: self.inv.opt[1] += 1; self.ch_sfx.play(res.SOUND['MENU_VER'])	
-				if self.inv.type == 1:
-					if self.inv.opt[0] < 0: self.inv.opt[0] = 4; self.inv.opt[2] -= 1
-					if self.inv.opt[0] > 4: self.inv.opt[0] = 0; self.inv.opt[2] += 1
-					if self.inv.opt[1] < 0: self.inv.opt[1] = 4
-					if self.inv.opt[1] > 4: self.inv.opt[1] = 0
-				else:
-					if self.inv.opt[0] < 0: self.inv.opt[0] = 9
-					if self.inv.opt[0] > 9: self.inv.opt[0] = 0
-					if self.inv.opt[0] < 5:
-						if self.inv.opt[1] < 0: self.inv.opt[1] = 4; self.inv.opt[2] -= 1
-						if self.inv.opt[1] > 4: self.inv.opt[1] = 0; self.inv.opt[2] += 1
-					else:
-						if self.inv.opt[1] < 0: self.inv.opt[1] = math.ceil(len(res.STORAGE)/5) - 1
-						if self.inv.opt[1] > math.ceil(len(res.STORAGE)/5) - 1: self.inv.opt[1] = 0
-				if self.inv.opt[2] < 0: self.inv.opt[2] = len(res.PARTY[res.FORMATION]) - 1
-				if self.inv.opt[2] > len(res.PARTY[res.FORMATION]) - 1: self.inv.opt[2] = 0
-				#MOUSE CLICK
-				abl = False
-				mr = pygame.Rect(self.click.x - self.inv.pos[0],self.click.y - self.inv.pos[1],2,2)
-				if event.type == pygame.MOUSEBUTTONDOWN:
-					for u in range(len(self.inv.optrects)):
-						for j in range(len(self.inv.optrects[u])):
-							for i in range(len(self.inv.optrects[u][j])):
-								optrct = self.inv.optrects[u][j][i][self.inv.type]
-								if self.colide(mr,pygame.Rect(optrct.x - self.inv.scroll,optrct.y,optrct.width,optrct.height)):
-									self.inv.opt[0] = i
-									self.inv.opt[1] = j
-									self.inv.opt[2] = u
-									abl = True
-				ch = res.CHARACTERS[res.PARTY[res.FORMATION][self.inv.opt[2]]]
-				if self.inv.type == 2 and self.inv.opt[0] > 4: it = res.STORAGE[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5]
-				elif self.inv.type == 3 and self.inv.opt[0] > 4: it = res.BASKET[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5]
-				elif self.inv.type == 4 and self.inv.opt[0] > 4: it = res.WASH[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5]
-				elif self.inv.type == 6:
-					if self.inv.opt[0] > 4: it = res.BASKET[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5]
-					else: it = res.PRODUCTS[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5]
-				elif self.inv.type == 7 and self.inv.opt[0] > 4: it = res.PRODUCTS[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5]
-				else: it = res.INVENTORY[res.PARTY[res.FORMATION][self.inv.opt[2]]][self.inv.opt[1]][self.inv.opt[0]]
-				if self.pressed[4][0]: abl = True
-				if abl and self.inv.opt[0] < 4:
-					#USING ITEMS
-					if self.inv.itmov == '' or self.inv.itmov[0] == 0:
-						prb = random.randint(0,100)
-						#RANDOM BATTLE
-						if it[0] in dtb.ITEMENEMIES and prb > 100 - dtb.ITEMENEMIES[it[0]][1]:
-							self.dialog([(13,[dtb.ITEMENEMIES[it[0]][0]])])
-						#FOOD
-						elif it[0].startswith('food_'):
-							#if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] not in [4,10]:
-							self.actqueue.append({'RECT': self.player[0]['RECT'],'SPEED': 5,'ACT': 0,'BAR': 0,
-							'CHARACTER': res.PARTY[res.FORMATION][self.inv.opt[2]],'ITEM': (self.inv.opt[1],self.inv.opt[0])})
-							self.soundplay('MENU_GO')
-						#DRINK
-						elif it[0].startswith('drink') or it[0].startswith('bottle'):
-							if it[0].startswith('drink'): drk = it[0]; amt = int(it[1])
-							elif it[0].startswith('bottle') and len(it) > 2: drk = it[2]; amt = int(it[3])
-							else: drk == None
-							if drk != None:
-								if ch['FLAW'] == 'lactose intolerant':
-									if drk in dtb.LACTOSE_FOOD: good = False
-									else: good = True
-								else: good = True
-								if good:
-									self.ch_ton.play(res.SOUND['HEAL'])
-									hl = dtb.ITEMS[drk][5]
-									if it in res.CHARACTERS[self.inv.opt[2]]['FAVFOOD']: hl += int(hl/2)
-									ch['HP'] += hl
-									ch['THIRST'] += dtb.ITEMS[drk][6]
-									if it[0].startswith('drink') and res.DISITEMS[it[0]] == 0:
-										res.DISITEMS[it[0]] = 1
-									if ch['HP'] > dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]:
-										ch['HP'] = dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]
-								else:
-									self.ch_ton.play(res.SOUND['INCONSCIOUS'])
-									ch['HEALTH'] = 10
-								if amt > 0: amt -= 1
-								if amt == 0:
-									if it[0].startswith('bottle'):
-										it = it[0:2]
-									else:
-										if dtb.ITEMS[it[0]][8] != None: it = ['trash_' + dtb.ITEMS[drk][8],'0000']
-										else: it = ['_','0000']
-									res.INVENTORY[res.PARTY[res.FORMATION][self.inv.opt[2]]][self.inv.opt[1]][self.inv.opt[0]] = it
-								self.notification.append({'TEXT': 'hp_' + str(hl), 'COLOR': (255, 0, 0), 'HALIGN': 'left','X': 0})
-							else: self.ch_ton.play(res.SOUND['ERROR'])
-						#TOOLS
-						elif it[0].startswith('tool_') and self.battle == False:
-							try: t = self.tilrect[0][(math.floor((self.player[self.inv.opt[2]]['RECT'].y + 15)/self.map.tilewidth) * self.map.width) + math.floor((self.player[p]['RECT'].x + 15)/self.map.tilewidth)]
-							except: t = None
-							if t != None and len(dtb.ITEMS[it[0]]) > 5:
-								if t[0] == dtb.ITEMS[it[0]][5]['UNLOCK']:
-									self.ch_sfx.play(res.SOUND['MENU_GO'])
-						#GRENADES
-						elif it[0].startswith('grenade') and self.battle and it in res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][1:]:
-							self.ch_sfx.play(res.SOUND['MELEE'])
-							it = ['_','0000']
-							self.inv.opt[2] = 1
-							self.inv.type = 0
-						#REPELLENTS
-						elif it[0].startswith('repellent'):
-							self.ch_sfx.play(res.SOUND['MENU_GO'])
-							ch['HEALTH'] = 2
-							self.waitlst.append(['repellent' + str(res.PARTY[res.FORMATION][self.inv.opt[2]]),self.waitime + dtb.ITEMS[it[0]][5]])
-							it = ['_','0000']
-						#PILLS
-						elif it[0].startswith('pill_'):
-							self.ch_ton.play(res.SOUND['ATTRIBUTE_GAIN'])
-							if it[0].endswith('strenght'): ch['BONUS'][0] += 1
-							if it[0].endswith('resistance'): ch['BONUS'][1] += 1
-							if it[0].endswith('agility'): ch['BONUS'][2] += 1
-							if it[0].endswith('knowledge'): ch['BONUS'][3] += 1
-							if it[0].endswith('charisma'): ch['BONUS'][4] += 1
-							it = ['_','0000']
-						#ACCESORIES ACCESS
-						elif it[0].startswith('phone') or it[0] == 'wallet' or it[0].startswith('bag') or it[0].startswith('locksmith'):
-							self.ch_ton.play(res.SOUND['MENU_GO'])
-							self.inv.itmov = [0]
-							for a in range(len(it[2::2])):
-								self.inv.itmov.append([it[(a + 1) * 2],it[((a + 1) * 2) + 1]])
-							self.inv.opt[3] = 1
-						#TENTS
-						elif it[0].startswith('tent_'):
-							self.ch_sfx.play(res.SOUND['INVENTORY_CLOSE'])
-							self.build = it[0]
-							self.player[0]['PAUSE'] = 0
-							self.inv.type = 0
-							if it[1] != 'infinite':
-								if int(it[1]) > 0: it = [it[0],str(int(i[1]) - 1)]
-								else: it = ['_','0000']
-						#NEWSPAPERS
-						elif it[0].startswith('newspaper'):
-							self.ch_sfx.play(res.SOUND['PAGE_FLIP'])
-							self.player[0]['PAUSE'] = 0
-							self.read = GUI.Newspaper()
-						#IDENTIFICATION
-						elif it[0].startswith('id'):
-							self.ch_sfx.play(res.SOUND['PAGE_FLIP'])
-							self.player[0]['PAUSE'] = 0
-							self.read = GUI.ID(dtb.ITEMS[it[0]][5])
-						#PAINT TILES
-						elif it[0].startswith('til_'):
-							self.ch_sfx.play(res.SOUND['INVENTORY_CLOSE'])
-							self.paint = dtb.ITEMS[it[0]][5]
-							self.player[0]['PAUSE'] = 0
-							self.inv.type = 0
-							if it[1] != 'infinite':
-								if int(it[1]) > 0: it = [it[0],str(int(i[1]) - 1)]
-								else: it = ['_','0000']
-						#GUI TOOLS
-						elif it[0].startswith('guit_'):
-							if it[0] == 'guit_save': self.ch_ton.play(res.SOUND['FILE_SAVE']); self.savemap()
-							elif it[0] == 'guit_load': self.ch_ton.play(res.SOUND['FILE_LOAD']); self.loadmap()
-							elif it[0] == 'guit_undo' and self.ihist > 0: self.ch_ton.play(res.SOUND['MENU_BACK']); self.ihist -= 1
-							elif it[0] == 'guit_redo' and self.ihist < len(self.shist): self.ch_ton.play(res.SOUND['MENU_GO']); self.ihist += 1
-							elif it[0] in ['guit_scissors','guit_glue','guit_copy']:
-								if it[0] == 'guit_scissors': self.sstore = []
-								pos = [0,0]
-								for t in self.mapdata['TILES'][self.slayer]:
-									if it[0] == 'guit_glue':
-										self.mapdata['TILES'][self.slayer][pos[0] * pos[1]] = self.sstore[pos[0] * pos[1]]
-									if pos[0] >= self.slctbox[0] and pos[0] < self.slctbox[2]:
-										if pos[1] >= self.slctbox[1] and pos[1] < self.slctbox[3]:
-											if it[0] in ['guit_scissors','guit_copy']: self.sstore.append(t)
-											if it[0] == 'guit_scissors':
-												self.mapdata['TILES'][self.slayer][pos[0] * pos[1]] = 0
-											pos[0] += 1
-									if pos[0] >= self.mapdata['WIDTH']:
-										pos[0] = 0; pos[1] += 1
-							else:
-								self.ch_sfx.play(res.SOUND['INVENTORY_CLOSE'])
-								self.guit = dtb.ITEMS[it[0]][5]
-								self.player[0]['PAUSE'] = 0
-								self.inv.type = 0
-						#ERROR
-						else: self.ch_ton.play(res.SOUND['ERROR'])
-						if self.battle:
-							self.turn += 1
-							self.inv.opt[2] = 1
-							self.inv.type = 0
-					#ACCESORIES EXIT
-					elif self.inv.itmov[0] == 0:
-						if self.inv.opt[3] == len(self.inv.itmov):
-							self.ch_sfx.play(res.SOUND['MENU_GO'])
-							self.inv.itmov = ''
-							self.inv.opt[3] = 0
-						else: self.ch_ton.play(res.SOUND['ERROR'])
-					#CRAFTING
-					elif it[0] != '_':
-						craft = False
-						if it[0].startswith('bag') and dtb.ITEMS[self.inv.itmov[0]][3] == 1: craft = True
-						if it[0].startswith('undr') and dtb.ITEMS[self.inv.itmov[0]][3] == 1: craft = True
-						if self.inv.itmov[0].startswith('clth') and it[0].startswith('clth'): craft = True
-						if self.inv.itmov[0].startswith('key') and it[0].startswith('locksmith'): craft = True
-						if self.inv.itmov[0].startswith('id_card') and it[0].startswith('wallet'): craft = True
-						if self.inv.itmov[0].startswith('credit_card') and it[0].startswith('wallet'): craft = True
-						if self.inv.itmov[0].startswith('condiment') and it[0].startswith('food'): craft = True
-						if self.inv.itmov[0].startswith('drink') and it[0].startswith('bottle'): craft = True
-						if self.inv.itmov[0].startswith('acc') and it[0].startswith('gun'): craft = True
-						if self.inv.itmov[0] == 'tool_syringe' and it[0].startswith('drug'): craft = True
-						#LIGHTER
-						if self.inv.itmov[0].startswith('tool_lighter') and int(self.inv.itmov[1]) != 0:
-							if it[0] == 'grenade_molotov_cocktail':
-								self.inv.itmov[1] = str(int(self.inv.itmov[1]) - 1)
-								it[1] = '300'
-							if it[0] == 'cigar':
-								self.inv.itmov[1] = str(int(self.inv.itmov[1]) - 1)
-								it[1] = '500'
-						#RECHARGE WEAPONS
-						if self.inv.itmov[0].startswith('ammo') and it.startswith('gun'):
-							if dtb.ITEMS[self.inv.itmov[0]][5] == dtb.ITEMS[it[0]][5]['GAUGE']:
-								craft = True
-								self.ch_ton.play(res.SOUND['GUN_RECHARGE'])
-								it[3] = dtb.ITEMS[it[0]][5]['CAPACITY']
-								if self.inv.opt[1] == 4 and self.inv.opt[0]> 0:
-									if int(it[3]) > 0:
-										plus = int(98/(dtb.ITEMS[it[0]][5]['CAPACITY']/int(it[3])))
-									else: plus = 0
-									self.barpp[self.inv.opt[2]][self.inv.opt[0] - 1] = plus
-							else: craft = False
-						#ADDING ACCESORIES
-						if craft:
-							for a in range(len(it[::2])):
-								if it[a] == '_':
-									self.ch_ton.play(res.SOUND['CRAFT'])
-									it[(a + 1) * 2] = self.inv.itmov[0]
-									it[((a + 1) * 2) + 1] = self.inv.itmov[1]
-									self.inv.itmov = ''
-									break
-								else: self.ch_ton.play(res.SOUND['ERROR']); self.shake = 5
-						#MERGE ITEMS
-						merge = False
-						for a in dtb.CRAFTING:
-							if it[0] in a[0:2] and self.inv.itmov[0] in a[0:2]:
-								self.ch_ton.play(res.SOUND['CRAFT'])
-								it = [a[2],'9999']
-								self.inv.itmov = ''
-								merge = True
-						if merge == False and craft == False: self.ch_ton.play(res.SOUND['ERROR']); self.shake = 5
-						if self.battle:
-							self.turn += 1
-							self.inv.opt[2] = 1
-							self.inv.type = 0
-					else: self.ch_ton.play(res.SOUND['ERROR'])
-				#MOVE ITEMS
-				if self.pressed[5][0] and do > 1:
-					#TRASH
-					if self.inv.type == 5:
-						if it[0] != '_': #and self.confirmation() == 1:
-							it = ['_','0000']
-					elif self.inv.itmov != '':
-						#TAKE SUB-ITEM
-						if self.inv.itmov[0] == 0:
-							if self.inv.opt[3] < len(self.inv.itmov) and self.inv.itmov[self.inv.opt[3]][0] != '_':
-								self.ch_sfx.play(res.SOUND['MENU_GO'])
-								self.inv.itmov = [self.inv.itmov[self.inv.opt[3]][0],self.inv.itmov[self.inv.opt[3]][1]]
-								for i in range(2): del it[2 * self.inv.opt[3]]
-							else: self.ch_sfx.play(res.SOUND['ERROR']); self.inv.shake = 5
-						#PLACE ITEM
-						elif it[0] == '_' and self.inv.space(res.PARTY[res.FORMATION][self.inv.opt[2]],self.inv.opt[3],self.inv.opt[0],self.inv.opt[1],self.inv.type):
-							#CLOTHING
-							if self.inv.itmov[0].startswith('clth'):
-								self.player[self.inv.opt[2]]['COSTUME'] = self.inv.find(res.PARTY[res.FORMATION][self.inv.opt[2]],['clth'],'position')
-							if self.inv.itmov[0].startswith('head'):
-								self.player[self.inv.opt[2]]['ACCESORIES'] = self.inv.find(res.PARTY[res.FORMATION][self.inv.opt[2]],['head'],'position')
-								if self.inv.itmov[0] == 'head_hairclip':
-									if self.inv.opt[0] == 0: hr = 2
-									else: hr = 8
-									res.CHARACTERS[res.PARTY[res.FORMATION][self.inv.opt[2]]]['HAIR'][1] = hr
-									self.player[self.inv.opt[2]]['HAIR'][1] = hr
-							#AMMO BAR
-							if self.inv.itmov[0].startswith('gun'):
-								self.barpp = []
-								x = 0
-								for i in res.PARTY[res.FORMATION]:
-									self.barpp.append([])
-									for j in res.INVENTORY[i][4][1:]:
-										if j[0] != '_' and j[0].startswith('melee') == False:
-											if int(j[1]) > 0: b = int(100/(dtb.ITEMS[j[0]][5]['CAPACITY']/int(j[1])))
-											else: b = 0
-											self.barpp[x].append(b)
-										else:
-											self.barpp[x].append(0)
-									x += 1
-							if self.inv.type == 2:
-								chk = True
-								for j in res.STORAGE:
-									if j[0] == '_': chk = False
-								if chk:
-									for i in range(5):
-										res.STORAGE.append(['_','0000'])
-							self.ch_sfx.play(res.SOUND['EQUIP'])
-							if self.inv.type == 4:
-								if res.TIME[0] >= 10: hh = str(res.TIME[0])
-								else: hh = '0' + str(res.TIME[0])
-								if res.TIME[1] >= 10: mm = str(res.TIME[1])
-								else: mm = '0' + str(res.TIME[1])
-								if (self.inv.opt[0] + (self.inv.opt[1] * 5) - 5) > len(res.WASH):
-									res.WASH.append([self.inv.itmov[0],'0000',hh + mm])
-								else: it = [self.inv.itmov[0],'0000',hh + mm]
-							else: it = self.inv.itmov.copy()
-							self.inv.itmov = ''
-							if self.battle:
-								self.turn += 1
-								self.inv.opt[2] = 1
-								self.inv.type = 0
-						#SWITCH ITEMS
-						elif self.inv.space(res.PARTY[res.FORMATION][self.inv.opt[2]],self.inv.opt[3],self.inv.opt[0],self.inv.opt[1],self.inv.type):
-							self.ch_sfx.play(res.SOUND['EQUIP'])
-							trd = it.copy()
-							it = self.inv.itmov
-							if self.inv.itmov[0].startswith('clth'):
-								self.player[self.inv.opt[2]]['COSTUME'] = dtb.ITEMS[self.inv.itmov[0]][5]
-							self.inv.itmov = trd
-						#ERROR
-						else: self.ch_sfx.play(res.SOUND['ERROR']); self.inv.shake = 5
-					#TAKE ITEM
-					elif it[0] != '_':
-						if self.inv.opt[0] > 4:
-							#BUY AND SELL
-							if self.inv.type in [6,7]:
-								mny = self.inv.find(None,'wallet','value')
-								if mny != None and mny[1] >= dtb.ITEMS[it[0]][2]:
-									if self.inv.space(res.PARTY[res.FORMATION][0]) == False:
-										self.dialog(dtb.DIALOGS['MERCATOR'][2])
-									elif self.confirmation() == 1:
-										self.inv.add(res.PARTY[res.FORMATION][0],it[0])
-										self.ch_sfx.play(res.SOUND['BUY'])
-										mny[1] -= int(dtb.ITEMS[it[0]][2] * it[0])
-								else:
-									self.ch_sfx.play(res.SOUND['ERROR'])
-									self.dialog(dtb.DIALOGS['MERCATOR'][1])
-							#WASH
-							elif self.inv.type == 4:
-								if res.TIME[0] >= int(it[2][0:2]):
-									if res.TIME[1] >= int(it[2][2:4]): prp = '0100'
-									else: prp = '0000'
-								else: prp = '0000'
-								self.inv.itmov = [it[0],prp]
-								del it
-						else:
-							self.ch_sfx.play(res.SOUND['MENU_GO'])
-							self.inv.itmov = it.copy()
-							it = ['_','0000']
-					else: self.ch_ton.play(res.SOUND['ERROR'])
-				#DEVICES SHORTCUT
-				if self.pressed[7][0]:
-					self.ch_sfx.play(res.SOUND['MENU_GO'])
-					res.SHORTCUT = [res.PARTY[res.FORMATION][self.inv.opt[2]],self.inv.opt[1],self.inv.opt[0]]
-					dv = self.inv.dev()
-					self.dev = dv[0]
-					if self.dev == 'radio': self.dev = self.rad
-					if self.dev != None: self.dev.battery = dv[1]
-				if self.inv.type == 2 and self.inv.opt[0] > 4: res.STORAGE[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
-				elif self.inv.type == 3 and self.inv.opt[0] > 4: res.BASKET[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
-				elif self.inv.type == 4 and self.inv.opt[0] > 4: res.WASH[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
-				elif self.inv.type == 6:
-					if self.inv.opt[0] > 4: res.BASKET[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
-					else: res.PRODUCTS[self.inv.opt[0] + (self.inv.opt[1] * 5) - 5] = it
-				elif self.inv.type == 7 and self.inv.opt[0] > 4: res.PRODUCTS[self.opt + (self.lopt * 5) - 5] = it
-				else: res.INVENTORY[res.PARTY[res.FORMATION][self.inv.opt[2]]][self.inv.opt[1]][self.inv.opt[0]] = it
-				if self.inv.itmov != '' and self.inv.itmov[0] == '_':
-					self.inv.itmov = ''
+			
 			#DEVICE OPTIONS
 			if mnuchk[3] and self.pressed[mnuchk[3]][0] and self.dev != None and self.inv.find(res.PARTY[res.FORMATION][0],'phone') != None and self.inv.type == 0:
 				#OPEN AND CLOSE
@@ -2485,13 +2202,17 @@ class Game:
 					self.player[0]['SPRITE'] = 'PHONE'
 					self.player[0]['PAUSE'] = 1
 					self.phone = 1
+
+					dv = self.dev()
+					self.dev = dv[0]
+					if self.dev == 'radio': self.dev = self.rad
+					if self.dev != None: self.dev.battery = dv[1]
 				else:
 					self.phone = 0
 					if self.battle == False:
 						self.dev.opt = [0,0]
 						self.player[0]['PAUSE'] = 0
-					else:
-						self.mnu = 1
+					else: self.mnu = 1
 			#DEVICE EVENTS
 			if self.phone > 0 and self.dev != None and self.dev.battery > 0:
 				if event.type == pygame.KEYDOWN: self.dev.rqst = True
@@ -2512,8 +2233,7 @@ class Game:
 					self.player[0]['SPRITE'] = 'PHONE'
 					self.phone = 1
 				#CAN'T CALL
-				elif self.dev.ingame == 3:
-					self.dialog([dtb.MENU[17]])
+				elif self.dev.ingame == 3: self.dialog([dtb.MENU[17]])
 				#GET CALL
 				elif self.dev.ingame < 6:
 					self.phone = 0
@@ -2541,8 +2261,7 @@ class Game:
 				elif self.dev.ingame == 7:
 					self.notification.append({'TEXT': self.foe[0]['NAME'] + ' registrada', 'COLOR': (134, 0, 211), 'HALIGN': 'left','X': 0})
 			#MINIGAMES EVENTS
-			if self.minigame != None:
-				self.minigame.events(event)
+			if self.minigame != None: self.minigame.events(event)
 			#READING OPTIONS
 			if self.read != None:
 				self.read.inside_events(self.pressed)
@@ -2644,7 +2363,7 @@ class Game:
 						self.build = ''
 			#VKEYBOARD
 			if self.vkb.active == True: self.vkb.events(event)
-		self.pressed = self.get_pressed(None)
+		self.pressed, self.click = self.guitools.get_pressed(None)
 		#BATTLE AIM MOVE
 		if self.battle and self.mnu == 2 and res.MOUSE < 2:
 			for tp in range(len(self.player)):
@@ -2652,16 +2371,12 @@ class Game:
 				if self.pressed[1][tp] and self.aim.x < self.displayzw - 10: self.aim.x += 1
 				if self.pressed[2][tp] and self.aim.y > self.winbar: self.aim.y -= 1
 				if self.pressed[3][tp] and self.aim.y < self.displayzh - self.winbar: self.aim.y += 1
-		#INVENTORY WHEEL
-		if self.pressed[6][0]:
-			if self.inv.hld < 40: self.inv.hld += 1
-		elif self.inv.hld > 0: self.inv.hld -= 1
 		#PHONE HOLDING OPTIONS
 		if self.phone > 0 and self.dev != None: self.dev.outside_events(self.pressed)
 		#READING SCROLL
 		if self.read != None: self.read.outside_events(self.pressed)
 		#MOVE CAMERA
-		if True:
+		if self.map:
 			dir = 0
 			spd = 2
 			bt = [3,1,2,0,3,0]
@@ -2777,7 +2492,7 @@ class Game:
 					i['FOLLEND'] = 'head'
 					i['SPEED'] = 0
 			#MOVING CHARACTER
-			dx = 0; dy = 0
+			'''dx = 0; dy = 0
 			if i['DIRECTION'] in [8,1,2]: dx = self.map.tilewidth
 			if i['DIRECTION'] in [2,3,4]: dy = self.map.tileheight
 			if i['DIRECTION'] in [4,5,6]: dx = -self.map.tilewidth
@@ -2789,7 +2504,8 @@ class Game:
 				cld = self.colide(i['RECT'],rct[1])
 				#if cld == False:
 				#	for obj in self.objects:
-				#		if obj[0] == 'move': cld = self.colide(i['RECT'],obj[1]['RECT'])
+				#		if obj[0] == 'move': cld = self.colide(i['RECT'],obj[1]['RECT'])'''
+			cld = True
 			if cld: i['SPEED'] = 0
 			else:
 				#POSITION UPDATE
@@ -3566,82 +3282,6 @@ class Game:
 			if self.winbar > 0 and self.battle == False:
 				self.winbar -= 5
 				self.run()
-
-	def wait(self):
-		waiting = True
-		while waiting:
-			self.pressed = self.get_pressed(None)
-			for i in self.pressed:
-				for j in i:
-					if j: waiting = False
-			for event in pygame.event.get():
-				if event.type == pygame.MOUSEBUTTONDOWN: waiting = False
-				if event.type == pygame.KEYDOWN: waiting = False
-			self.run(False)
-
-	def transiction(self, fade, limit, spd=5, type='bars'):
-		dw = int((self.windoww/res.GSCALE)/100)
-		dh = int((self.windowh/res.GSCALE)/100)
-		self.transtype = type
-		if type in ['bars','hole','side','fade','image','squares']:
-			if type in ['hole','image']:
-				chk = fade < limit
-				self.winbar = 200
-			else: chk = fade
-			if type in ['bars','hole']: mm = dh
-			else: mm = 1
-			if chk:
-				while self.winbar < limit:
-					self.winbar += mm * spd
-					self.run()
-				if self.winbar > limit: self.winbar = limit
-			else:
-				while self.winbar > limit:
-					self.winbar -= mm * spd
-					self.run(False)
-				if self.winbar < limit: self.winbar = limit
-		if type == 'zoom':
-			if fade == False:
-				acc = 1
-				while True:
-					self.displayzw += dw * acc
-					self.displayzh += dh * acc
-					self.cam.x += int(acc * (dw/2))
-					self.cam.y += int(acc * (dh/2))
-					self.cam.width = self.displayzw
-					self.cam.height = self.displayzh
-					if self.displayzw < dw * limit:
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-					else:
-						self.displayzw = dw * limit
-						self.displayzh = dh * limit
-						self.cam.width = dw * limit
-						self.cam.height = dh * limit
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-						break
-					self.run(False)
-					acc += 1
-			else:
-				acc = 1
-				while True:
-					self.displayzw -= dw * acc
-					self.displayzh -= dh * acc
-					self.cam.x += int(acc * (dw/2))
-					self.cam.y += int(acc * (dh/2))
-					self.cam.width = self.displayzw
-					self.cam.height = self.displayzh
-					if self.displayzw > dw * limit:
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-					else:
-						self.displayzw = dw * limit
-						self.displayzh = dh * limit
-						self.cam.width = dw * limit
-						self.cam.height = dh * limit
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-						break
-					self.run(False)
-					acc += 1
-		self.transtype = 'bars'
 				
 	def audioedit(self,snd,function,value):
 		import numpy
@@ -4368,8 +4008,6 @@ class Game:
 			p['SPIN'] += 10
 			p['TIME'] += 1
 	
-	
-	
 	def draw(self):
 		for i in self.display: i.fill((0,0,0,0))
 		if self.battle and self.turn < 0: self.hpctrl = []
@@ -4379,8 +4017,7 @@ class Game:
 		if self.player[0]['PAUSE'] < 2: self.tilemation += 0.1
 		if self.tilemation >= 2.0: self.tilemation = 0.0
 		#BLINDNESS
-		if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] == 12:
-			self.display[0].fill((0,0,0))
+		if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] == 12: self.display[0].fill((0,0,0))
 		#STUDIO
 		elif self.editing:
 			self.display[0].fill((200,0,200))
@@ -4402,7 +4039,7 @@ class Game:
 				if y[0] == 'portal': pygame.draw.rect(self.display[0],(200,200,0),pygame.Rect(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y,y[1]['RECT'].width,y[1]['RECT'].height))
 			self.display[0].blit(self.inv.bar(1,4,(1,5),'vertical'),(0,0))
 		#TILED MAP
-		elif self.turn != -6:
+		elif self.map and self.turn != -6:
 			#SKY
 			if len(self.tilmap[3]) > 0:
 				tt = (res.TIME[0] * 60) + res.TIME[1]
@@ -4488,6 +4125,7 @@ class Game:
 		else: self.display[0].fill((250,10,10))
 		#for t in self.tilrect[3]:
 		#	if self.rectdebug and t!= None: pygame.draw.rect(self.display[0],(255,0,0),pygame.Rect(t[1].x - self.cam.x,t[1].y - self.cam.y,t[1].width,t[1].height),3)
+		
 		#DEPTH
 		dpth = 0
 		for i in range(len(self.objects)):
@@ -4518,7 +4156,7 @@ class Game:
 							#CONDITIONS
 							if res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HEALTH'] > 1:
 								if i['SHK'] == 0:
-									pygame.draw.rect(self.display[0], (res.COLOR[0],res.COLOR[1],res.COLOR[2]), pygame.Rect(i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40,16,13))
+									pygame.draw.rect(self.display[0], res.COLOR, pygame.Rect(i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40,16,13))
 								else: pygame.draw.rect(self.display[0], (255,10,10), pygame.Rect(i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40,16,13))
 								self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'hl_' + str(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HEALTH']) + '.png'), (i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40))
 							if self.map.properties['HSCROLL'] != 0 and i['RECT'].x < self.cam.x - self.map.tilewidth: res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HP'] = 0
@@ -4744,16 +4382,17 @@ class Game:
 			if self.rectdebug:
 				for i in self.nodes: pygame.draw.rect(self.display[0], (250,250,10),pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
 			#OVER TILES & CLOUDS
-			if res.MAP != 'rodoviary':
-				if self.turn != -6 and res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] != 12:
-					if len(self.tilmap[2]) > 0: self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)],(0,0),(self.cam.x, self.cam.y,self.displayzw,self.displayzh))
-			else:
-				self.bbg['X'] += 0.2
-				if math.floor(self.bbg['X']) > (self.map.width * self.map.tilewidth): self.bbg['X'] = 0.0
-				self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)], (math.floor(self.bbg['X']) - self.cam.x, -self.cam.y))
-				self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)], (math.floor(self.bbg['X']) - (self.map.width * self.map.tilewidth) - self.cam.x, -self.cam.y))
-			'''for t in self.tilrect[4 + math.floor(self.tilemation)]:
-				if self.colide(t[1],self.cam): self.display[0].blit(t[2], (t[1].x - self.cam.x, t[1].y - self.cam.y))'''
+			if self.map:
+				if res.MAP != 'rodoviary':
+					if self.turn != -6 and res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] != 12:
+						if len(self.tilmap[2]) > 0: self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)],(0,0),(self.cam.x, self.cam.y,self.displayzw,self.displayzh))
+				else:
+					self.bbg['X'] += 0.2
+					if math.floor(self.bbg['X']) > (self.map.width * self.map.tilewidth): self.bbg['X'] = 0.0
+					self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)], (math.floor(self.bbg['X']) - self.cam.x, -self.cam.y))
+					self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)], (math.floor(self.bbg['X']) - (self.map.width * self.map.tilewidth) - self.cam.x, -self.cam.y))
+				'''for t in self.tilrect[4 + math.floor(self.tilemation)]:
+					if self.colide(t[1],self.cam): self.display[0].blit(t[2], (t[1].x - self.cam.x, t[1].y - self.cam.y))'''
 			#DAYTIME & WEATHER
 			if res.TIME[0] >= 18: tim = 100
 			elif res.TIME[0] >= 6: tim = 0
@@ -4766,9 +4405,9 @@ class Game:
 				if y[0] == 'light':
 					if self.colide(y[1]['RECT'], self.cam):
 						srf.blit(y[1]['IMAGE'], (y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y),None,pygame.BLEND_RGBA_SUB)
-			if self.map.properties['INTERIOR'] == 0: self.display[0].blit(srf, (0,0))
+			if self.map and self.map.properties['INTERIOR'] == 0: self.display[0].blit(srf, (0,0))
 			#RAIN
-			if self.map.properties['INTERIOR'] == 0 and res.WEATHER == 1 and res.MAP != 'rodoviary':
+			if self.map and self.map.properties['INTERIOR'] == 0 and res.WEATHER == 1 and res.MAP != 'rodoviary':
 				if len(self.particles) < 100:
 					for i in range(5):
 						img = pygame.Surface((2,2),pygame.SRCALPHA)
@@ -4815,15 +4454,16 @@ class Game:
 			if len(self.particles) > 0:
 				for p in self.particles: self.particle(p)
 			#HIDE PLACES
-			if self.tilhide == False and self.tilalpha > 0: self.tilalpha -= 20
-			if self.tilhide and self.tilalpha < 255: self.tilalpha += 20
-			if self.tilalpha < 0: self.tilalpha = 0
-			if self.tilalpha > 255: self.tilalpha = 255
-			al = 255 - self.tilalpha
-			for i in self.tilrect[4]:
-				srf = pygame.Surface((i[1].width,i[1].height))
-				if i[0].endswith('ON') and al > 0: srf.set_alpha(al); srf.fill((0,0,0)); self.display[0].blit(srf, (i[1].x - self.cam.x,i[1].y - self.cam.y))
-				if i[0].endswith('OFF') and self.tilalpha > 0: srf.set_alpha(self.tilalpha); srf.fill((0,0,0)); self.display[0].blit(srf, (i[1].x - self.cam.x,i[1].y - self.cam.y))
+			if self.map:
+				if self.tilhide == False and self.tilalpha > 0: self.tilalpha -= 20
+				if self.tilhide and self.tilalpha < 255: self.tilalpha += 20
+				if self.tilalpha < 0: self.tilalpha = 0
+				if self.tilalpha > 255: self.tilalpha = 255
+				al = 255 - self.tilalpha
+				for i in self.tilrect[4]:
+					srf = pygame.Surface((i[1].width,i[1].height))
+					if i[0].endswith('ON') and al > 0: srf.set_alpha(al); srf.fill((0,0,0)); self.display[0].blit(srf, (i[1].x - self.cam.x,i[1].y - self.cam.y))
+					if i[0].endswith('OFF') and self.tilalpha > 0: srf.set_alpha(self.tilalpha); srf.fill((0,0,0)); self.display[0].blit(srf, (i[1].x - self.cam.x,i[1].y - self.cam.y))
 			#MAP COMPASS
 			if len(res.MARKER) > 0 and res.MARKER[0][0] == res.MAP:
 				xx = (self.player[0]['RECT'].x - self.cam.x) - (res.MARKER[0][1] - self.cam.x)
@@ -4847,41 +4487,7 @@ class Game:
 					if p['SPEED'] > 0: pygame.draw.rect(self.display[0], (0,255,0), pygame.Rect(20,42,int(100/(20/p['SPEED'])),20))
 					self.hpctrl = dtb.HINTS['VEHICLE_CONTROLS']
 			#BLACK BARS
-			if self.winbar > 0:
-				#MYSTERIOUS FREAK
-				"""if self.turn == -6:
-					srf = pygame.Surface((self.displayzw,self.displayzh),pygame.SRCALPHA)
-					srf.fill((0,0,0))
-					srf.blit(pygame.image.load(res.SPRITES_PATH + 'aim_mysterious.png'), (self.dlg['CAMERA'].x - self.cam.x - 30, self.dlg['CAMERA'].y - self.cam.y - 30),None,pygame.BLEND_RGBA_SUB)
-					self.display[0].blit(srf,(0,0))"""
-				#REGULAR BARS
-				if self.transtype == 'bars':
-					pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,0,self.displayzw,self.winbar))
-					pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,self.displayzh - self.winbar,self.displayzw,self.winbar))
-				if self.transtype == 'hole':
-					srf = pygame.Surface((self.displayzw,self.displayzh),pygame.SRCALPHA)
-					srf.fill((0,0,0))
-					img = pygame.image.load(res.SPRITES_PATH + 'aim_mysterious.png')
-					sz = (int(img.get_width()/100) * self.winbar,int(img.get_height()/100) * self.winbar)
-					img = pygame.transform.scale(img,(sz[0],sz[1]))
-					srf.blit(img, (self.player[0]['RECT'].x - self.cam.x - int(img.get_width()/2), self.player[0]['RECT'].y - self.cam.y - int(img.get_height()/2)),None,pygame.BLEND_RGBA_SUB)
-					self.display[0].blit(srf,(0,0))
-				if self.transtype == 'side':
-					if self.winbar < self.displayzw: pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,0,self.winbar,self.displayzh))
-					else: pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(self.displayzw - self.winbar,0,self.winbar,self.displayzh))
-				if self.transtype == 'image':
-					srf = pygame.Surface((self.displayzw,self.displayzh),pygame.SRCALPHA)
-					srf.fill((0,0,0))
-					img = pygame.image.load(res.SPRITES_PATH + 'aim_mysterious.png')
-					sz = (int(img.get_width()/100) * self.winbar,int(img.get_height()/100) * self.winbar)
-					img = pygame.transform.scale(img,(sz[0],sz[1]))
-					srf.blit(img, (self.dlg['CAMERA'].x - self.cam.x - int(img.get_width()/2), self.dlg['CAMERA'].y - self.cam.y - int(img.get_height()/2)),None,pygame.BLEND_RGBA_SUB)
-					self.display[0].blit(srf,(0,0))
-				if self.transtype == 'fade':
-					srf = pygame.Surface((self.displayzw,self.displayzh),pygame.SRCALPHA)
-					srf.fill((0,0,0))
-					srf.set_alpha(self.winbar)
-					self.display[0].blit(srf,(0,0))
+			if self.trsction: self.display[1].blit(self.trsction,(0,0))
 			#RADIOPLAY
 			if self.rad.onoff and self.turn != -6: self.display[1].blit(self.rad.display(),(0,0))
 			#CITY NAME
@@ -4949,7 +4555,7 @@ class Game:
 			while self.sttsy > 120:
 				self.sttsy -= 10
 				self.run(False)
-			self.transiction(True, 100)
+			for i in self.guitools.transiction((800,600),1,-100,'fade'): self.trsction = i; self.run()
 			self.battle = True
 			self.obstacles = False
 			self.turn = -5
@@ -5066,10 +4672,10 @@ class Game:
 				if self.battle == False: ctr = res.PARTY[res.FORMATION][p]
 				else: ctr = res.PARTY[res.FORMATION][self.fig[p]['N']]
 				if p == self.turn:
-					pygame.draw.rect(upsts, (res.COLOR[0],res.COLOR[1],res.COLOR[2]), pygame.Rect(p * 120,0,120,100))
+					pygame.draw.rect(upsts, res.COLOR, pygame.Rect(p * 120,0,120,100))
 					upsts.blit(self.fnt['MININFO'].render(res.CHARACTERS[ctr]['NAME'].lower(), True, (0,0,0)), (10 + p * 120, 10))
 				else: 
-					upsts.blit(self.fnt['MININFO'].render(res.CHARACTERS[ctr]['NAME'].lower(), True, (res.COLOR[0],res.COLOR[1],res.COLOR[2])), (10 + p * 120, 10))
+					upsts.blit(self.fnt['MININFO'].render(res.CHARACTERS[ctr]['NAME'].lower(), True, res.COLOR), (10 + p * 120, 10))
 				#VITALITY GRAY
 				pygame.draw.rect(upsts, (10, 10, 10), pygame.Rect(10 + p * 120,40,100,20))
 				col = (255,255,0)
@@ -5142,7 +4748,7 @@ class Game:
 					itind = res.PARTY[res.FORMATION][self.fig[self.turn]['N']]
 					#TIME BAR:
 					if self.btime > 0:
-						pygame.draw.rect(self.display[0], (res.COLOR[0],res.COLOR[1],res.COLOR[2]), pygame.Rect(0,self.displayzh - wbrh,int(self.displayzw/(100/self.btime)),5))
+						pygame.draw.rect(self.display[0], res.COLOR, pygame.Rect(0,self.displayzh - wbrh,int(self.displayzw/(100/self.btime)),5))
 					if self.mnu < 3 and self.turn < len(self.fig): self.btime -= 0.5
 					if self.btime == 0:
 						self.turn = len(self.fig)
@@ -5222,7 +4828,7 @@ class Game:
 				y = 0
 				for i in self.dices:
 					if i[0] != -1:
-						pygame.draw.rect(self.display[0],(res.COLOR[0],res.COLOR[1],res.COLOR[2]),pygame.Rect(int(self.displayzw/2) - (30 * len(self.dices)) + (y * 80),int(self.displayzh/2) - 30,60,60))
+						pygame.draw.rect(self.display[0],res.COLOR,pygame.Rect(int(self.displayzw/2) - (30 * len(self.dices)) + (y * 80),int(self.displayzh/2) - 30,60,60))
 						self.display[0].blit(self.fnt['MININFO'].render(str(i[0]),True,(10,10,10)),(int(self.displayzw/2) - (30 * len(self.dices)) + (y * 80) + 15,int(self.displayzh/2) - 15))
 					y += 1
 			#GRADIENT
@@ -5334,6 +4940,7 @@ class Game:
 			else: pos = (i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y)
 			pygame.draw.rect(self.display[0],(10,10,10),pygame.Rect(pos[0],pos[1],50,10))
 			if i['BAR'] > 0: pygame.draw.rect(self.display[0],(10,200,10),pygame.Rect(pos[0],pos[1],math.floor(50/(100/i['BAR'])),10))
+		
 		#INVENTORY
 		'''if self.inv.fade < self.windoww + 400:
 			if self.inv.shake != 0: self.inv.rqst = True
@@ -5447,16 +5054,16 @@ class Game:
 						#DIALOG BALOONS
 						if sd == False:
 							pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(20,yyax + self.dlg['Y'] - yy,5 + txtsz,25))
-							pygame.draw.rect(self.display[0], (res.COLOR[0],res.COLOR[1],res.COLOR[2]), pygame.Rect(20,(yyax + 25) + self.dlg['Y'] - yy,5 + txtsz,5))
-							pygame.draw.polygon(self.display[0], (res.COLOR[0],res.COLOR[1],res.COLOR[2]), ((25,(yyax + 25) + self.dlg['Y'] - yy),(45,(yyax + 25) + self.dlg['Y'] - yy),(25,(yyax + 35) + self.dlg['Y'] - yy)))
+							pygame.draw.rect(self.display[0], res.COLOR, pygame.Rect(20,(yyax + 25) + self.dlg['Y'] - yy,5 + txtsz,5))
+							pygame.draw.polygon(self.display[0], res.COLOR, ((25,(yyax + 25) + self.dlg['Y'] - yy),(45,(yyax + 25) + self.dlg['Y'] - yy),(25,(yyax + 35) + self.dlg['Y'] - yy)))
 							pygame.draw.polygon(self.display[0], (0, 0, 0), ((25,(yyax + 21) + self.dlg['Y'] - yy),(45,(yyax + 21) + self.dlg['Y'] - yy),(25,(yyax + 31) + self.dlg['Y'] - yy)))
 						else:
 							if self.lopt == opt:
-								col1 = (res.COLOR[0],res.COLOR[1],res.COLOR[2])
+								col1 = res.COLOR
 								col2 = (10,10,10)
 							else:
 								col1 = (10,10,10)
-								col2 = (res.COLOR[0],res.COLOR[1],res.COLOR[2])
+								col2 = res.COLOR
 							pygame.draw.rect(self.display[0], col1, self.dlgrct[opt - 1])
 							pygame.draw.rect(self.display[0], col2, pygame.Rect(self.dlgrct[opt - 1].x,self.dlgrct[opt - 1].y + 25,self.dlgrct[opt - 1].width,self.dlgrct[opt - 1].height - 25))
 							pygame.draw.polygon(self.display[0], col2, (((self.displayzw - 42),(yyax + 25) + self.dlg['Y'] - yy),((self.displayzw - 22),(yyax + 25) + self.dlg['Y'] - yy),((self.displayzw - 22),(yyax + 35) + self.dlg['Y'] - yy)))
@@ -5542,72 +5149,6 @@ class Game:
 				y[yy] += szh + 10
 			if i['X'] in [1000,-1000]:
 				i['TEXT'] = None
-		#TUTORIALS
-		if self.tutorial['OUTPUT'] != []:
-			nxt = False
-			if self.tutorial['GO'] > 0 and self.phone == self.tutorial['GO']: self.tutorial['TIME'] = self.tutorial['WAIT']; nxt = True
-
-			if self.tutorial['TIME'] < self.tutorial['WAIT']:
-				if self.tutorial['FADE'] < 200: self.tutorial['FADE'] += 20
-			elif self.tutorial['TIME'] >= self.tutorial['WAIT']: nxt = True
-			if nxt:
-				if self.tutorial['NEXT'] != '':
-					self.tutorial = {'TEXT': dtb.TUTORIALS[self.tutorial['NEXT']].copy(), 'OUTPUT': [], 'FADE': 200, 'TIME': 0, 'WAIT': 300, 'NEXT': '','GO': 0}
-					for j in self.tutorial['TEXT']:
-						if isinstance(j,list):
-							if j[0] == 'phone':
-								self.tutorial['GO'] = j[1]
-								if len(j) > 2: self.tutorial['NEXT'] = j[2]
-							if j[0] == 'wait':
-								self.tutorial['WAIT'] = j[1]
-								if len(j) > 2: self.tutorial['NEXT'] = j[2]
-							if j[0] == 'image':
-								self.tutorial['OUTPUT'].append(j)
-						else: self.tutorial['OUTPUT'].append(j)
-				else:
-					self.tutorial['GO'] = 0
-					if self.tutorial['FADE'] > 0: self.tutorial['FADE'] -= 10
-					else: self.tutorial['OUTPUT'] = []
-
-			if self.tutorial['GO'] == 0: self.tutorial['TIME'] += 1
-			pygame.draw.rect(self.display[0], (250,250,250), pygame.Rect(578 - self.tutorial['FADE'],18,self.tutorial['FADE'] + 4,int(self.tutorial['FADE']/2) + 4))
-			pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(580 - self.tutorial['FADE'],20,self.tutorial['FADE'],int(self.tutorial['FADE']/2)))
-			if self.tutorial['FADE'] == 200:
-				x = 0
-				y = 0
-				sid = 0
-				end = 0
-				ky = [res.UP[0],res.DOWN[0],res.LEFT[0],res.RIGHT[0],res.ACT[0],res.RUN[0],res.BAG[0],res.PHONE[0]]
-				for j in self.tutorial['OUTPUT']:
-					if isinstance(j,str): self.display[1].blit(self.fnt['DEFAULT'].render(j, True, (250, 250, 250)), (770 + x,50 + y))
-					elif isinstance(j,list) and j[0] == 'image': self.display[0].blit(pygame.image.load(res.SPRITES_PATH + '' + j[1] + '.png'), (520 + x,25 + y))
-					elif j == 0:
-						for i in range(end): sid += 1
-						x = 0
-						y += 20
-					else:
-						if ky[j - 1] == pygame.K_LSHIFT: out = 'À'
-						elif ky[j - 1] == pygame.K_RSHIFT: out = 'À'
-						elif ky[j - 1] == pygame.K_LCTRL: out = 'Á'
-						elif ky[j - 1] == pygame.K_RCTRL: out = 'Á'
-						elif ky[j - 1] == pygame.K_LALT: out = 'Â'
-						elif ky[j - 1] == pygame.K_RALT: out = 'Â'
-						elif ky[j - 1] == pygame.K_BACKSPACE: out = 'Ã'
-						elif ky[j - 1] == pygame.K_RETURN: out = 'Ä'
-						elif ky[j - 1] == pygame.K_UP: out = 'È'
-						elif ky[j - 1] == pygame.K_LEFT: out = 'É'
-						elif ky[j - 1] == pygame.K_DOWN: out = 'Ê'
-						elif ky[j - 1] == pygame.K_RIGHT: out = 'Ë'
-						else: out = pygame.key.name(ky[j - 1]).upper()
-						self.display[0].blit(self.fnt['CONTROLKEYS'].render(out, True, (250, 250, 250)), (385 + x,30 + y))
-						for l in self.tutorial['OUTPUT'][sid:end]:
-							if l in ['m','w','M','Q','T','U','V','W','Y','?']: x += 8
-							elif l in ['f','r']: x += 6
-							elif l in ['J']: x += 5
-							elif l in ['l']: x += 4
-							elif l in ['i','I','!','.',',']: x += 2
-							else: x += 7
-					end += 1
 		#CHAPTER NAME
 		if res.SCENE == -1:
 			srf = pygame.Surface((self.displayzw,self.displayzh),pygame.SRCALPHA)
@@ -5645,7 +5186,7 @@ class Game:
 			for i in range(len(self.counter[0])):
 				self.display[1].blit(srf, (200 + (i * sz), 60), (0,self.counter[0][i],sz,sz))
 		#GUI WINDOWS
-		for i in self.wdws: self.display[1].blit(i.draw(), (i.rect.x,i.rect.y))
+		for i in self.guis: self.display[1].blit(i.draw(), (i.rect.x,i.rect.y))
 		#VKEYBOARD
 		if self.vkb.active:
 			self.display[1].blit(self.vkb.draw(),(0,self.vkb.size[1] - self.vkb.pos))
@@ -5681,7 +5222,7 @@ class Game:
 			if self.player[0]['SPEED'] > 0: prs = str(self.player[0]['DIRECTION'])
 			else: prs = '0'
 			tchpad = pygame.image.load(res.SPRITES_PATH + 'tchpad_' + prs + '.png')
-			tchpad.fill((res.COLOR[0],res.COLOR[1],res.COLOR[2]),None,pygame.BLEND_RGBA_MULT)
+			tchpad.fill(res.COLOR,None,pygame.BLEND_RGBA_MULT)
 			self.display[1].blit(tchpad,(20,self.windowh - 264))
 			for bt in [(4,(self.windoww - 190,self.windowh - 100)),(5,(self.windoww - 100,self.windowh - 100)),
 			(6,(self.windoww - 190,40)),(7,(self.windoww - 100,40))]:
@@ -5694,7 +5235,7 @@ class Game:
 						else: fr = str(int(self.pressed[bt[0]][0]))
 					else: fr = str(int(self.pressed[bt[0]][0]))
 					img = pygame.image.load(res.SPRITES_PATH + 'tch_' + fr + '.png')
-					img.fill((res.COLOR[0],res.COLOR[1],res.COLOR[2]),None,pygame.BLEND_RGBA_MULT)
+					img.fill(res.COLOR,None,pygame.BLEND_RGBA_MULT)
 					self.display[1].blit(img,bt[1])
 		#DISDEBUG
 		if self.disdbg:
@@ -5728,11 +5269,16 @@ class Game:
 				else: pcam[0] += i['RECT'].x; pcam[1] += i['RECT'].y
 			pcam = [int(pcam[0]/len(self.player)),int(pcam[1]/len(self.player))]
 		else: pcam = [self.dlg['CAMERA'].x,self.dlg['CAMERA'].y]
-		cmgrd = [[0,(self.map.width * self.map.tilewidth) - self.displayzw],
-		[0,(self.map.height * self.map.tileheight) - self.displayzh]]
-		lst = [[self.map.width * self.map.tilewidth,self.map.height * self.map.tileheight],
-		[self.displayzw,self.displayzh]]
-		camscroll = [self.map.properties['HSCROLL'],self.map.properties['VSCROLL']]
+
+		if self.map:
+			cmgrd = [[0,(self.map.width * self.map.tilewidth) - self.displayzw],[0,(self.map.height * self.map.tileheight) - self.displayzh]]
+			lst = [[self.map.width * self.map.tilewidth,self.map.height * self.map.tileheight],[self.displayzw,self.displayzh]]
+			camscroll = [self.map.properties['HSCROLL'],self.map.properties['VSCROLL']]
+		else:
+			cmgrd = [[0,300],[0,200]]
+			lst = [[300,200],[300,200]]
+			camscroll = [0,0]
+
 		for i in range(2):
 			if lst[0][i] > lst[1][i]:
 				if camfollow:
@@ -5776,8 +5322,7 @@ class Game:
 			self.screen.blit(pygame.transform.scale(self.display[0], (self.displayzw * res.GSCALE, self.displayzh * res.GSCALE)), (self.displayx, self.displayy))
 			self.screen.blit(self.display[1], (self.displayx, self.displayy))
 		#MOUSE
-		if res.MOUSE == 1:
-			self.screen.blit(pygame.image.load(res.SPRITES_PATH + 'cursor_' + str(res.CURSOR) + '.png'),(self.click.x,self.click.y))
+		if res.MOUSE == 1: self.screen.blit(pygame.image.load(res.SPRITES_PATH + 'cursor_' + str(res.CURSOR) + '.png'),(self.click.x,self.click.y))
 
 	def loading(self):
 		for event in pygame.event.get():
@@ -5805,33 +5350,29 @@ class Game:
 
 	def crash(self):
 		from traceback import extract_tb
-		self.screen.fill((0,0,0))
+		#self.screen.fill((0,0,0))
 		et, ev, eb = sys.exc_info()
-		tlist = []
-		for t in extract_tb(eb):
-			tlist.append((t[0],t[1],t[2],t[3]))
+		err = str(et.__name__) + ': ' + str(ev) + ''
+		tlist = [dtb.ERROR[2] + ' "' + str(i[0]) + '", ' + dtb.ERROR[3] + ' ' + str(i[1]) + ' ' + dtb.ERROR[4] + ' ' + str(i[2]) + ': ' + str(i[3]) for i in extract_tb(eb)]
 
 		fnt = pygame.font.SysFont('Calibri', 26)
 		self.screen.blit(fnt.render(dtb.ERROR[0],True,(10,250,10)),(10,20))
 		fnt = pygame.font.SysFont('Calibri', 22)
-		self.screen.blit(fnt.render(str(et.__name__),True,(10,250,10)),(10,60))
-		self.screen.blit(fnt.render(str(ev),True,(10,250,10)),(10,80))
-		y = 100
-		for j in tlist:
-			self.screen.blit(fnt.render(str(j),True,(10,250,10)),(10,y))
-			y += 20
-		self.screen.blit(fnt.render(dtb.ERROR[1],True,(10,250,10)),(10,y + 20))
-		print(str(et.__name__))
-		print(str(ev))
-		print(tlist)
+		self.screen.blit(fnt.render(err,True,(10,250,10)),(10,60))
+		for i in range(len(tlist)): self.screen.blit(fnt.render(str(tlist[i]),True,(10,250,10)),(10,100 + (i * 20)))
+		self.screen.blit(fnt.render(dtb.ERROR[1],True,(10,250,10)),(10,140 + (i * 20)))
 		pygame.display.flip()
+
+		self.log += '\n ' + dtb.ERROR[0] + '\n' + err
+		print('\n' + dtb.ERROR[0])
+		print(err)
+		for i in tlist: print('	' + i)
 			
-		again = False
-		while again == False:
+		lp = True
+		while lp:
 			for event in pygame.event.get():
 				#EXIT
 				if event.type == pygame.QUIT:
-					self.classrun = 0
 					pygame.quit()
 					sys.exit()
 					exit()
@@ -5846,8 +5387,9 @@ class Game:
 				if event.type == pygame.KEYDOWN: do = True
 				if event.type == pygame.MOUSEBUTTONDOWN: do = True
 				if do:
-					self.loadmap()
-					again = True
+					#self.loadmap()
+					lp = False
+					print(dtb.ERROR[5])
 
 	def run(self,tr=True):
 		if tr:
@@ -6061,21 +5603,26 @@ class Game:
 		if int(self.glock.get_fps()) > 0:
 			jp = math.floor(res.FPS/int(self.glock.time()))
 		else: jp = 1
-		self.FPS += 1
-		if self.FPS >= jp:
+		res.FPS += 1
+		if res.FPS >= jp:
 			#UPDATE
 			try: pygame.display.flip()
 			except: self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE | pygame.DOUBLEBUF)
 			#FPS
-			self.FPS = int()
-			if self.FPS > 0:
+			res.FPS = int()
+			if res.FPS > 0:
 				self.glock.tick(res.FPS)
-			self.FPS = 0 
+			res.FPS = 0 
 			res.GAMETIME += self.glock.get_rawtime()
 
 Initialize()
-'''
 g = Game()
-while True:
+while g.running:
 	try: g.run()
-	except: g.crash()'''
+	except: g.crash()
+
+f = open('log.txt','w')
+f.write(g.log)
+f.close()
+pygame.quit()
+exit()

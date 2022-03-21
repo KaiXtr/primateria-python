@@ -8,6 +8,9 @@ import math
 import sys
 import os
 
+from PIL import Image
+import PIL.ImageOps
+
 import resources as res
 if res.FILES != []: dtb = __import__('database_' + res.FILES[0][4])
 else: dtb = __import__('database_' + res.MAINLANG)
@@ -17,46 +20,55 @@ test = False
 class Test:
 	def __init__(self):
 		pygame.init()
-		self.display = pygame.display.set_mode((800, 1280),pygame.RESIZABLE | pygame.SRCALPHA)
+		self.display = pygame.display.set_mode((800, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		#self.font = pygame.font.Font(res.FONTS_PATH + 'reglisse/Reglisse.otf', 30)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Popup('Status',(0,0),miniature=True),Popup('Inventory',(300,0),miniature=True)]#,Popup('About',(100,200)),Popup('Bestiary',(50,200)),Popup('Email',(100,100))]
-		self.files = Files((800,1280))
+		self.menu = [Popup('Status',(0,0),miniature=True),Popup('Storage',(400,0),miniature=True)]#,Popup('Storage',(100,200)),Popup('Products',(50,200)),Popup('Basket',(100,100))]
+		self.files = None#Files((800,1280))
+		self.guitools = Guitools()
+		self.tsrf = None
+		for i in self.guitools.transiction((800,600),1,-100,'fade'): self.tsrf = i; self.run()
 		
 	def run(self):
-		pressed = []
-		for i in range(len(res.CONTROLS[0])):
-			pressed.append([])
-			for p in range(4):
-				pressed[i].append(0)
 		for event in pygame.event.get():
+			pressed, click = self.guitools.get_pressed(event)
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
 				exit()
 			if event.type == pygame.VIDEORESIZE:
 				self.display = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE | pygame.SRCALPHA)
-			if event.type == pygame.MOUSEBUTTONDOWN: pressed[5][0] = 1
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if pygame.mouse.get_pressed()[0]: pressed[4][0] = 1
+				if pygame.mouse.get_pressed()[2]: pressed[5][0] = 1
 			for i in self.menu:
 				i.inside_events(pressed)
 				self.menu = [x for x in self.menu if x.gui != None]
 			if self.files: self.files.inside_events(pressed)
+		pressed, click = self.guitools.get_pressed(None)
 		for i in self.menu: i.outside_events(pressed)
 		if self.files: self.files.outside_events(pressed)
 		self.display.fill((100,100,100))
 		for i in self.menu: self.display.blit(i.draw(),(i.rect.x,i.rect.y))
 		if self.files: self.display.blit(self.files.draw()[1],(0,0))
+		if self.tsrf: self.display.blit(self.tsrf,(0,0))
 		pygame.display.flip()
 		self.clock.tick(60)
 		
 class Popup:
 	def __init__(self,gui,rect=(100,100),msg=None,miniature=None):
+		self.fnt = {'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40),'MESSAGE': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE)}
 		self.bdsz = 10
 		self.top = 50
 		self.btrects = []
 		if gui not in ['conf','info']:
-			if gui == 'Inventory': self.gui = eval(gui)((200,150))
+			sz = (400,300)
+			if gui == 'Inventory': self.gui = eval('Inventory')(sz,0)
+			elif gui == 'Trash': self.gui = eval('Inventory')(sz,1)
+			elif gui == 'Storage': self.gui = eval('Inventory')(sz,2)
+			elif gui == 'Products': self.gui = eval('Inventory')(sz,3)
+			elif gui == 'Basket': self.gui = eval('Inventory')(sz,4)
 			else: self.gui = eval(gui)()
 			self.ratio = [self.gui.scr[1].get_width() + (self.bdsz * 2),self.gui.scr[1].get_height() + (self.bdsz * 2) + self.top]
 		else:
@@ -65,10 +77,17 @@ class Popup:
 			if gui == 'conf': rg = 2
 			else: rg = 1
 			for i in range(rg): self.btrects.append(pygame.Rect(self.bdsz + 40 + (100 * i),self.bdsz + self.top + 50,80,40))
-		self.surface = pygame.Surface(tuple(self.ratio))
+
 		self.title = gui
+		self.surface = pygame.Surface(tuple(self.ratio))
+		self.brd = pygame.Surface(tuple(self.ratio))
+		self.brd.fill(res.COLOR)
+		for x in range(int(self.ratio[0]/10)):
+			for y in range(int(self.ratio[1]/10)):
+				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
+		self.brd.blit(self.fnt['TITLE'].render(dtb.MENU[self.title], True, (0, 0, 0)), (10, 10))
+
 		self.msg = msg
-		self.fnt = {'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40),'MESSAGE': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE)}
 		self.rect = pygame.Rect(rect[0],rect[1],self.surface.get_width(),self.surface.get_height())
 		self.optrects = [pygame.Rect(self.bdsz,self.bdsz,30,30),pygame.Rect(self.surface.get_width() - self.bdsz - 30,self.bdsz,30,30)]
 		if miniature != None: self.optrects.append(pygame.Rect(self.surface.get_width() - self.bdsz - 70,self.bdsz,30,30))
@@ -80,11 +99,13 @@ class Popup:
 		mr1 = pygame.Rect(int((mp[0] - self.rect.x)/res.GSCALE),int((mp[1] - self.rect.y)/res.GSCALE),20,20)
 		mr2 = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),20,20)
 		if self.title not in ['conf','info']: self.gui.inside_events(pressed,mr2)
-		elif pygame.Rect.colliderect(self.btrects[0],mr2): self.gui = None; return True
-		elif pygame.Rect.colliderect(self.btrects[1],mr2): self.gui = None; return False
-		if self.min == False:
-			if pygame.Rect.colliderect(self.optrects[1],mr2): self.gui = None
-			if len(self.optrects) > 2 and pygame.Rect.colliderect(self.optrects[2],mr2): self.min = not self.min
+		elif pressed[4][0]:
+			if pygame.Rect.colliderect(self.btrects[0],mr2): self.gui = None; return True
+			elif pygame.Rect.colliderect(self.btrects[1],mr2): self.gui = None; return False
+		if pressed[4][0]:
+			if self.min == False:
+				if pygame.Rect.colliderect(self.optrects[1],mr2): self.gui = None
+				if len(self.optrects) > 2 and pygame.Rect.colliderect(self.optrects[2],mr2): self.min = not self.min
 	
 	def outside_events(self,pressed):
 		mp = pygame.mouse.get_pos()
@@ -94,23 +115,25 @@ class Popup:
 		if pygame.Rect.colliderect(self.optrects[0],mr2): self.rect.x = mp[0] - 10; self.rect.y = mp[1] - 10
 	
 	def draw(self):
+		#DISPLAY UI
 		if self.title not in ['conf','info']:
 			sz = (self.gui.scr[1].get_width() + (self.bdsz * 2),self.gui.scr[1].get_height() + (self.bdsz * 2) + self.top)
+			#MINIMIZED WINDOW
 			if self.min:
 				self.surface.fill((0,0,0))
 				if (round(self.ratio[0]),round(self.ratio[1])) != self.gui.ratio[1]:
 					for i in range(2): self.ratio[i] -= (sz[i] - self.gui.ratio[1][i])/10
 					self.surface = pygame.Surface((round(self.ratio[0]),round(self.ratio[1])))
 				else:
-					if self.title == 'Inventory': self.surface.blit(self.gui.bar(0,4,(0,4),'horizontal'),(0,0))
+					if self.title in ['Inventory','Storage','Products','Basket','Trash']: self.surface.blit(self.gui.bar(0,4,(0,4),'horizontal'),(0,0))
 					else: self.surface.blit(self.gui.miniature(),(0,0))
+			#MAXIMIZED WINDOW
 			else:
 				if (round(self.ratio[0]),round(self.ratio[1])) != sz:
 					for i in range(2): self.ratio[i] += (self.gui.ratio[0][i] - self.gui.ratio[1][i])/10
 					self.surface = pygame.Surface((round(self.ratio[0]),round(self.ratio[1])))
 				else:
-					self.surface.fill((res.COLOR[0],res.COLOR[1],res.COLOR[2]))
-					self.surface.blit(self.fnt['TITLE'].render(dtb.MENU[self.title], True, (0, 0, 0)), (10, 10))
+					self.surface.blit(self.brd,(0,0))
 					for i in self.optrects[1:]: pygame.draw.rect(self.surface,(200,100,100),i)
 					self.gui.draw()
 					self.surface.blit(pygame.transform.scale(self.gui.scr[0],(self.gui.scr[0].get_width() * res.GSCALE,self.gui.scr[0].get_height() * res.GSCALE)),(self.bdsz,self.bdsz + self.top))
@@ -118,9 +141,9 @@ class Popup:
 			'''srf = self.phnbr.draw()
 			self.surface.blit(pygame.transform.scale(srf[0],(srf[0].get_width() * res.GSCALE,srf[0].get_height() * res.GSCALE)),(self.bdsz,self.bdsz + self.top))
 			self.surface.blit(srf[1],(self.bdsz,self.bdsz + self.top))'''
+		#POPUP MESSAGE
 		else:
-			self.surface.fill((res.COLOR[0],res.COLOR[1],res.COLOR[2]))
-			self.surface.blit(self.fnt['TITLE'].render(dtb.MENU[self.title], True, (0, 0, 0)), (10, 10))
+			self.surface.blit(self.brd,(0,0))
 			for i in self.optrects[1:]: pygame.draw.rect(self.surface,(200,100,100),i)
 			
 			pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(self.bdsz,self.bdsz + self.top,350,100))
@@ -157,9 +180,12 @@ class Guitools:
 					nn = False
 			if nn: nw += txt[i]
 		return nw
-		
+	
+	def date_convert(self,input):
+		pass
+
 	def measure_convert(self,input):
-		return str(int(input[1] * dtb.MEASURINGS[input[0]][1])) + ' ' + dtb.MEASURINGS[input[0]][0]
+		return str(float(input[1] * dtb.MEASURINGS[input[0]][1])) + ' ' + dtb.MEASURINGS[input[0]][0]
 	
 	def follow(self,rct1,rct2):
 		offstx = [rct1.x + int(rct1.width/2),rct2.x + int(rct2.width/2)]
@@ -180,12 +206,146 @@ class Guitools:
 			if offsty[0] > offsty[1]: return 6
 			elif offsty[0] < offsty[1]: return 4
 			else: return 5
+
+	def get_pressed(self,event):
+		pressed = []
+		for i in range(len(res.CONTROLS[0])):
+			pressed.append([])
+			for p in range(4):
+				pressed[i].append(0)
+		#KEYBOARD/MOUSE
+		if res.MOUSE < 2:
+			ky = pygame.key.get_pressed()
+			for p in range(4):
+				for i in range(len(res.CONTROLS[p])):
+					pressed[i][p] = ky[res.CONTROLS[p][i]]
+		#JOYSTICK
+		pygame.joystick.init()
+		connect = pygame.joystick.get_count()
+		if connect > 1:
+			res.MOUSE = 3
+			joystick = pygame.joystick.Joystick(0)
+			joystick.init()
+			#for i in range(6 + joystick.get_numbuttons()): pressed.append([0])
+			for b in range(4):
+				if pressed[res.JOYSTICK[b]][0] == 0:
+					pressed[res.JOYSTICK[b]][0] = int(joystick.get_axis(b))
+			for b in range(joystick.get_numbuttons()):
+				if res.JOYSTICK[b + 4] == None and pressed[b + 4][0] == 0: pressed[b + 4][0] = 0
+				elif pressed[res.JOYSTICK[b + 4]][0] == 0: pressed[res.JOYSTICK[b + 4]][0] = joystick.get_button(b)
+			for b in range(2):
+				if res.JOYSTICK[b + 4 + joystick.get_numbuttons()] == None: pressed[b + 4 + joystick.get_numbuttons()][0] = 0
+				elif pressed[res.JOYSTICK[b + 4 + joystick.get_numbuttons()]][0] == 0:
+					pressed[res.JOYSTICK[b + 4 + joystick.get_numbuttons()]][0] = int(joystick.get_axis(b + 4))
+			for i in pressed:
+				while len(i) < 3: i.append(0)
+		#TOUCH
+		mp = pygame.mouse.get_pos()
+		click = pygame.Rect(mp[0],mp[1],2,2)
+		self.buttons = []
+		if len(self.buttons) > 0:
+			res.MOUSE = 2
+			if event != None:
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if res.VIBRATE: plyer.vibrator.vibrate(0.1)
+					chk = 1
+				else: chk = 0
+			else: chk = pygame.mouse.get_pressed()[0]
+			for i in range(len(self.buttons)):
+				if self.colide(click,self.buttons[i]):
+					if chk: pressed[i] = [1,0,0,0]
+					elif pressed[i][0] == 0: pressed[i] = [0,0,0,0]
+				elif pressed[i][0] == 0: pressed[i] = [0,0,0,0]
+		return pressed, click
 	
 	def align(self,input,value):
 		xx = math.floor(input.x/value[0]) * value[0]
 		yy = math.floor(input.y/value[1]) * value[1]
 		return (xx,yy)
 	
+	def transiction(self, size, limit, spd=5, typ='fade', col=(0,0,0)):
+		lst = []
+		if limit < 1: limit = 1
+		trs = int(100/limit)
+		sq = [(x,y) for x in range(10) for y in range(10)]
+		sd = None
+		while trs != limit:
+			srf = pygame.Surface(size,pygame.SRCALPHA)
+			if typ == 'fade':
+				srf.fill((col[0],col[1],col[2],trs * (250/100)))
+			elif typ == 'bars':
+				pygame.draw.rect(srf,col,pygame.Rect(0,0,size[0],int(trs * ((size[1]/2)/100))))
+				pygame.draw.rect(srf,col,pygame.Rect(0,size[1] - int(trs * ((size[1]/2)/100)),size[0],int(trs * ((size[1]/2)/100))))
+			elif typ.startswith('side'):
+				if typ.endswith('top'): pygame.draw.rect(srf,col,pygame.Rect(0,0,size[0],int(trs * (size[1]/100))))
+				if typ.endswith('left'): pygame.draw.rect(srf,col,pygame.Rect(0,0,int(trs * (size[0]/100)),size[1]))
+				if typ.endswith('bottom'): pygame.draw.rect(srf,col,pygame.Rect(0,size[1] - int(trs * (size[1]/100)),size[0],int(trs * (size[1]/100))))
+				if typ.endswith('right'): pygame.draw.rect(srf,col,pygame.Rect(size[0] - int(trs * (size[0]/100)),0,int(trs * (size[0]/100)),size[1]))
+			elif typ in ['hole','aim']:
+				srf.fill(col)
+				c = pygame.Surface((int(trs * (size[0]/80)),int(trs * (size[0]/80))),pygame.SRCALPHA)
+				pygame.draw.ellipse(c,(200,0,0),pygame.Rect(0,0,c.get_width(),c.get_height()))
+				srf.blit(c,(int(size[0]/2) - int(c.get_width()/2),int(size[1]/2) - int(c.get_height()/2)),None,pygame.BLEND_RGBA_SUB)
+				if typ == 'aim':
+					pygame.draw.line(srf,col,(int(size[0]/2),int(size[1]/2) + int(c.get_height()/2)),(int(size[0]/2),int(size[1]/2) - int(c.get_height()/2)),5)
+					pygame.draw.line(srf,col,(int(size[0]/2) + int(c.get_width()/2),int(size[1]/2)),(int(size[0]/2) - int(c.get_width()/2),int(size[1]/2)),5)
+			elif typ == 'cover':
+				for y in range(int(size[0]/10)):
+					for x in range(int(size[1]/10)):
+						if x + (y * 10) < trs: pygame.draw.rect(srf,col,pygame.Rect(x * int(size[0]/10),y * int(size[1]/10),int(size[0]/10),int(size[1]/10)))
+			elif typ == 'squares':
+				prb = random.randint(0,len(sq)-1)
+				if sd: srf = sd.copy()
+				pygame.draw.rect(srf,col,pygame.Rect(sq[prb][0] * int(size[0]/10),sq[prb][1] * int(size[1]/10),int(size[0]/10),int(size[1]/10)))
+				sd = srf.copy()
+				del sq[prb]
+			lst.append(srf)
+			trs += int(100/spd)
+		lst.append(None)
+		'''
+		if type == 'zoom':
+			if fade == False:
+				acc = 1
+				while True:
+					self.displayzw += dw * acc
+					self.displayzh += dh * acc
+					self.cam.x += int(acc * (dw/2))
+					self.cam.y += int(acc * (dh/2))
+					self.cam.width = self.displayzw
+					self.cam.height = self.displayzh
+					if self.displayzw < dw * limit:
+						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
+					else:
+						self.displayzw = dw * limit
+						self.displayzh = dh * limit
+						self.cam.width = dw * limit
+						self.cam.height = dh * limit
+						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
+						break
+					self.run(False)
+					acc += 1
+			else:
+				acc = 1
+				while True:
+					self.displayzw -= dw * acc
+					self.displayzh -= dh * acc
+					self.cam.x += int(acc * (dw/2))
+					self.cam.y += int(acc * (dh/2))
+					self.cam.width = self.displayzw
+					self.cam.height = self.displayzh
+					if self.displayzw > dw * limit:
+						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
+					else:
+						self.displayzw = dw * limit
+						self.displayzh = dh * limit
+						self.cam.width = dw * limit
+						self.cam.height = dh * limit
+						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
+						break
+					self.run(False)
+					acc += 1'''
+		return lst
+
 	def gradient(self,size,top,bottom,value=0,direction='vertical'):
 		srf = pygame.Surface(size,pygame.SRCALPHA)
 		srf.fill(top)
@@ -221,7 +381,22 @@ class Guitools:
 		return tls
 		
 	def sign(self,birth):
+		dd = birth[0] + (birth[1] * 31)
 		return 0
+
+	def pathfinding(self, rct, tgt, map): pass
+
+	def wait(self):
+		waiting = True
+		while waiting:
+			pressed = self.get_pressed(None)
+			for i in pressed:
+				for j in i:
+					if j: waiting = False
+			for event in pygame.event.get():
+				if event.type == pygame.MOUSEBUTTONDOWN: waiting = False
+				if event.type == pygame.KEYDOWN: waiting = False
+			self.run(False)
 		
 	def dislexic(self,txt):
 		if res.DISLEXIC == True:
@@ -250,7 +425,226 @@ class Guitools:
 					else: t += ' ' + w
 		txt.append(t)
 		return txt
+
+
+class Backgrounds:
+	def __init__(self):
+		self.surface = pygame.Surface((640,1280))
+		self.font = pygame.font.SysFont("Arial", 64)
+		self.lst = []
+		self.img = 0
+		self.transform = 4
+		self.blink = 0.0
+		self.x = 0
+		self.palette = [[(196,206,228),(250,0,0)],[(18,46,85),(0,250,0)]]
+		for t in range(14):
+			self.lst.append([])
+			for r in range(2):
+				img = Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+				if img.mode == 'RGBA':
+					nw = Image.new("RGB", img.size, (255, 255, 255))
+					nw.paste(img, mask=img.split()[3])
+					nw.save(res.BACKG_PATH + 'chp_' + str(t) + '.png', 'PNG', quality=100)
+					img = Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+				if r: img = PIL.ImageOps.invert(img)
+				img = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
+				sz = img.get_width()
+				srf = pygame.Surface((sz * 2,sz * 2))
+				srf.blit(img, (0,0))
+				srf.blit(pygame.transform.flip(img,True,False), (sz,0))
+				srf.blit(pygame.transform.flip(img,False,True), (0,sz))
+				srf.blit(pygame.transform.flip(img,True,True), (sz,sz))
+				self.lst[t].append(srf)
 		
+	def random(self,i=None):
+		from mutagen.mp3 import MP3
+		self.msc.pause()
+		pygame.mixer.music.pause()
+		self.ton.play(res.SOUND['NOISE'],-1)
+		kp = str(self.tv)
+		self.tv = 0
+		self.rectrot = 0
+		self.img = self.bbgs[0]
+		chg = round(random.randint(0,100))
+		if kp == '0': chg = 100
+		elif i != None: chg = 100
+		if self.mnu < 6 and self.lopt != -1:
+			self.wait = round(random.randint(10,100))
+			for i in range(round(random.randint(1,30)/res.FPS)): self.run()
+			self.ton.stop()
+			#CHANGE IMAGE
+			if chg > 25:
+				if self.lopt == -1: self.tv = 0
+				elif self.mnu == 3:
+					if self.lopt < len(res.FILES[1]) - 1:
+						self.tv = round(random.randint(0,res.FILES[1][self.lopt])) + 1
+					else: self.tv = len(self.bbgs)
+				elif self.mnu == 4:
+					self.tv = self.lopt + 1
+			else: self.tv = int(kp)
+			if self.tv >= len(self.bbgs): self.bbgs[0]
+			else: self.img = self.bbgs[self.tv]
+			#CHANGE SONG
+			if chg > 50:
+				self.msc.stop()
+				pygame.mixer.music.stop()
+				rd = round(random.randint(0,res.RANGE_RADIO - 1))
+				if len(res.RADIO[rd]) > 0:
+					sng = round(random.randint(0,len(res.RADIO[rd]) - 1))
+					msc = res.MUSIC_PATH + res.RADIO[rd][sng] + '.mp3'
+					if msc.endswith('.mp3'):
+						audio = MP3(msc)
+						pygame.mixer.music.load(msc)
+						pygame.mixer.music.play(1,round(random.randint(20,int(audio.info.length) - 20)))
+						try: self.mscinfo = {'TITLE': audio['TIT2'].text[0],'ARTIST': audio['TPE1'].text[0],'ALBUM': audio['TALB'].text[0]}
+						except: self.mscinfo = {'TITLE': res.RADIO[rd][sng],'ARTIST': 'unknown','ALBUM': 'unknown'}
+					elif msc.endswith('.wav'):
+						audio = pygame.mixer.Sound(msc)
+						self.msc.play(audio)
+					elif msc.endswith('.ogg'):
+						audio = pygame.mixer.Sound(msc)
+						self.msc.play(audio)
+			else: self.msc.unpause(); pygame.mixer.music.unpause()
+			#CHANGE TRANSFORMATION
+			if chg > 75:
+				self.transform['VALUE'] = 0
+				self.transform['TYPE'] = round(random.randint(2,3))
+				spd = round(random.randint(0,100))
+				if self.transform['TYPE'] == 5: self.transform['SPEED'] = 2
+				elif spd > 75: self.transform['SPEED'] = -2
+				elif spd > 50: self.transform['SPEED'] = 2
+				elif spd > 25: self.transform['SPEED'] = -1
+				else: self.transform['SPEED'] = 1
+				if self.transform['TYPE'] in [0,4] and self.transform['SPEED'] < 0: self.transform['VALUE'] = round(random.randint(200,300))
+				if self.transform['TYPE'] == 5: self.transform['VALUE'] = round(random.randint(1,2))
+				if self.transform['TYPE'] in [1,4]:
+					self.rectrot = self.img.get_rect(center=pygame.Rect(0,0,600,400).center)
+	
+	def menu(self):
+		self.screen.fill((0,0,0))
+		for i in self.display: i.fill((0,0,0,0))
+		rztxt = math.floor((self.windoww/300)/2)
+		#RANDOM SCREEN
+		if self.mnu not in [6,5,9,10] and self.classrun and self.sltt == 140 and self.img != None:
+			#RANDOM FONT
+			if self.rndtxt < (100 + round(random.randint(5,20))): self.rndtxt += 1
+			else: self.rndtxt = 0
+			if self.rndtxt >= 100:
+				dt = self.fnt.keys()
+				lst = []
+				for i in dt: lst.append(i)
+				self.curfnt = lst[round(random.randint(0,len(self.fnt) - 1))]
+			else: self.curfnt = 'DEFAULT'
+			area = (0,-self.winbar,self.windoww,self.windowh - self.winbar)
+			#NOISE
+			if self.tv in [0,len(self.bbgs)]:
+				self.noise += 1
+				if self.noise == 3: self.noise = 0
+				self.display[0].blit(self.img[self.noise], (0, 0))
+			else:
+				self.transform['VALUE'] += self.transform['SPEED'] * res.FPS
+				if self.blink < (100 + round(random.randint(1,10))): self.blink += 1
+				else: self.blink = 0
+				img = self.img[math.floor(self.blink/100)]
+				#SCALE
+				if self.transform['TYPE'] == 0:
+					img = pygame.transform.scale(img,(img.get_rect().width + round(self.transform['VALUE'] * 2),img.get_rect().height + round(self.transform['VALUE'] * 2)))
+					self.display[0].blit(img, (600 - img.get_rect().width, 600 - img.get_rect().height),area)
+				#ROTATE
+				elif self.transform['TYPE'] == 1:
+					img = pygame.transform.scale(img,(800,800))
+					trs = pygame.transform.rotate(img,self.transform['VALUE'])
+					self.rectrot = trs.get_rect(center = self.rectrot.center)
+					self.display[0].blit(trs, self.rectrot,area)
+				#MOVE HORIZONTAL
+				elif self.transform['TYPE'] == 2:
+					self.display[0].blit(img, (self.transform['VALUE'], int(self.windowh/2) - int(img.get_rect().height/2)))
+					if self.transform['VALUE'] < 0: self.display[0].blit(img, (img.get_rect().width + self.transform['VALUE'], 0),area)
+					if self.transform['VALUE'] > 0: self.display[0].blit(img, (-img.get_rect().width + self.transform['VALUE'], 0),area)
+				#MOVE VERTICAL
+				elif self.transform['TYPE'] == 3:
+					self.display[0].blit(img, (0, self.transform['VALUE']))
+					if self.transform['VALUE'] < 0: self.display[0].blit(img, (0, img.get_rect().height + self.transform['VALUE']),area)
+					if self.transform['VALUE'] > 0: self.display[0].blit(img, (0, -img.get_rect().height + self.transform['VALUE']),area)
+				#SCALE AND ROTATE
+				if self.transform['TYPE'] == 4:
+					img = pygame.transform.scale(img,(img.get_rect().width + round(self.transform['VALUE']/6),img.get_rect().height + round(self.transform['VALUE']/4)))
+					trs = pygame.transform.rotate(img,self.transform['VALUE'])
+					self.rectrot = trs.get_rect(center = self.rectrot.center)
+					self.display[0].blit(trs, self.rectrot,area)
+				#RANDOM
+				if self.transform['TYPE'] == 5:
+					if self.transform['VALUE'] > 13: self.transform['VALUE'] = 1
+					img = pygame.image.load(res.BACKG_PATH + 'chp_' + str(self.transform['VALUE']) + str(self.blink) + '.png')
+					self.display[0].blit(img, (0,0),area)
+		
+		#INFO
+		if self.mnu > 1 and self.mnu < 6:
+			'''self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[0] + ' ' + res.VERSION + ':' + str(self.glock.get_fps()), True, (240,240,240)), ((-35 + int(self.displayzw/(self.displayzh/self.winbar))), (-35 + self.winbar)))
+			if self.stime > 0:
+				self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[1], True, (240,240,240)), ((self.windoww - 140 - int(self.displayzw/(self.displayzh/self.winbar))), (self.windowh + 35) - self.winbar))'''
+			self.display[1].blit(self.fnt[self.curfnt].render(dtb.ABOUT[0][:9], True, (240,240,240)), (50,25))
+			self.display[1].blit(self.fnt['MINI'].render(dtb.ABOUT[0][11:] + ' ' + res.VERSION, True, (240,240,240)), (50,55))
+			if self.stime > 0:
+				self.display[1].blit(self.fnt[self.curfnt].render(dtb.ABOUT[1], True, (240,240,240)), (self.windoww - 200,self.windowh - 35))
+			#HOLIDAYS
+			for i in dtb.HOLIDAYS:
+				if self.holiday.month == i[0] and self.holiday.day == i[1]:
+					sz = self.fnt[self.curfnt].size(i[2])[0] + 50
+					self.display[1].blit(self.fnt[self.curfnt].render(i[2], True, (240,240,240)), (self.windoww - sz, 65))
+			#SECRETS
+			if self.stime > 0: self.stime -= 1 * res.FPS
+			if self.stime <= 0:
+				if self.sscroll > -20 - self.fnt[self.curfnt].size(self.stext)[0]:
+					self.sscroll -= 3 * res.FPS
+					self.display[1].blit(self.fnt[self.curfnt].render(self.stext, True, (240,240,240)),(self.sscroll,self.windowh - 50))
+				else:
+					self.sscroll = self.windoww + 20
+					self.stext = dtb.TSECRETS[random.randint(0,len(dtb.TSECRETS) - 1)]
+					self.stime = random.randint(600,1000)
+		#WAIT
+		if self.mnu > 0 and self.mnu < 6:
+			if self.wait > 0 and self.tv > 0: self.wait -= 1 * res.FPS
+			prb = round(random.randint(0,100))
+			if prb > 50 and self.wait == 0 and self.tv > 0 and self.sltt == 140: self.random()
+
+		#LOAD GAME RECAP
+		if self.mnu == 8:
+			if self.wait > 0: self.wait -= 1 * res.FPS
+			if self.wait == 0 and self.tv == 0:
+				self.msc.play(pygame.mixer.Sound(res.MUSIC_PATH + 'fate_occurrences.mp3'),-1)
+				self.ton.stop()
+				self.mnu = 6
+		return self.display
+		
+	def draw(self):
+		self.surface.fill((0,0,0))
+		sz = 400
+		bimg = self.lst[self.img][math.floor(self.blink)]
+		ww = bimg.get_width() - sz
+		hh = bimg.get_height() - sz
+		if self.transform == 0:
+			self.surface.blit(bimg, (0,0),(ww - self.x,0,sz,sz))
+			self.surface.blit(pygame.transform.flip(bimg,True,False), (sz,0),(self.x,0,sz,sz))
+		if self.transform > 0:
+			if self.transform in [1,2]: xx = self.x
+			if self.transform in [3,4]: xx = -self.x
+			if self.transform in [1,3]: yy = self.x
+			if self.transform in [2,4]: yy = -self.x
+			self.surface.blit(bimg, (0,0),(ww - xx,hh - yy,sz,sz))
+			self.surface.blit(pygame.transform.flip(bimg,True,False), (sz,0),(xx,hh - yy,sz,sz))
+			self.surface.blit(pygame.transform.flip(bimg,False,True), (0,sz),(ww - xx,yy,sz,sz))
+			self.surface.blit(pygame.transform.flip(bimg,True,True), (sz,sz),(xx,yy,sz,sz))
+		self.x += 2
+		if self.x > 0:
+			self.x = -ww
+			self.img += 1
+		if self.img > len(self.lst) - 1: self.img = 0
+		self.blink += 0.02
+		if self.blink >= random.randint(1.0,2.0): self.blink = 0.0
+		
+		return self.surface
+
 class Files:
 	def __init__(self,sz):
 		self.display = [pygame.Surface(sz,pygame.SRCALPHA),pygame.Surface(sz, pygame.SRCALPHA)]
@@ -292,74 +686,72 @@ class Files:
 	
 	def inside_events(self,pressed):
 		rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0]
-		if True:
-			self.pressed = pressed
-			if self.wdw:
-				self.wdw.inside_events(self.pressed)
-				if self.wdw.gui == None: self.wdw = None
-			#MOUSE
-			if res.MOUSE > 0:
-				#SELECT FILES
-				if not self.wdw:
-					self.opt = -1
-					for i in range(rng[self.mnu]):
-						mp = pygame.mouse.get_pos()
-						mr = pygame.Rect(mp[0],mp[1],2,2)
-						if pygame.Rect.colliderect(mr,pygame.Rect(self.optrects[i].x,self.optrects[i].y + self.scroll,self.optrects[i].width,self.optrects[i].height)):
-							self.opt = i
-							if pressed[5][0]: #and self.optrects[i].width == 250:
-								#TITLE AND PAUSE MENU
-								if self.mnu in [0,1]:
-									if self.mnu == 1: lst = [0,1,2,3,4,5]
-									else: lst = [1,3,4,5]
-									if lst[i] == 0: self.classrun = False #CONTINUE
-									if lst[i] == 1: self.mnu = 2 #LOAD GAME
-									if lst[i] == 2: self.mnu = 4 #SAVE GAME
-									if lst[i] == 3: self.wdw = Popup('Settings') #SETTINGS
-									if lst[i] == 4: self.wdw = Popup('About') #ABOUT
-									if lst[i] == 5: pygame.quit(); exit() #EXIT GAME
-								#FILE SELECT
-								elif self.mnu in [2,4]:
-									#SELECT GAME
-									if i < len(res.FILES):
-										res.ID = self.opt
-										self.opt = -1
-										self.mnu = 3
-									#NEW GAME
-									else:
-										res.ID = self.opt
-										self.sfx.play(res.SOUND['FILE_NEW'])
-										res.new_data()
-										#res.recent_data(2,self.opt)
-										pygame.mixer.music.fadeout(3000)
-										self.msc.fadeout(3000)
-										self.ton.fadeout(3000)
-										self.mnu = 7
-								#CHAPTER SELECT
-								elif self.mnu == 3:
-									#LOAD GAME
-									if i < res.FILES[res.ID][2] + 1:
-										self.sfx.play(res.SOUND['FILE_LOAD'])
-										res.load_data()
-										res.CHAPTER = self.opt
-										self.msc.stop()
-										self.scroll = int(50/res.GSCALE)
-										self.wait = 50
-										self.mnu = 8
-										self.txt = self.guitools.wrap(dtb.CHAPTERS[res.CHAPTER][2],self.fnt['RECAP'],self.display[1].get_width() - 200)
-									#DELETE GAME
-									else:
-										self.sfx.play(res.SOUND['FILE_DELETE'])
-										res.delete_data()
-										self.mnu -= 1
-										self.scroll = 0
+		if self.wdw:
+			self.wdw.inside_events(pressed)
+			if self.wdw.gui == None: self.wdw = None
+		#MOUSE
+		if res.MOUSE > 0:
+			#SELECT FILES
+			if not self.wdw:
+				self.opt = -1
+				for i in range(rng[self.mnu]):
+					mp = pygame.mouse.get_pos()
+					mr = pygame.Rect(mp[0],mp[1],2,2)
+					if pygame.Rect.colliderect(mr,pygame.Rect(self.optrects[i].x,self.optrects[i].y + self.scroll,self.optrects[i].width,self.optrects[i].height)):
+						self.opt = i
+						if pressed[5][0]: #and self.optrects[i].width == 250:
+							#TITLE AND PAUSE MENU
+							if self.mnu in [0,1]:
+								if self.mnu == 1: lst = [0,1,2,3,4,5]
+								else: lst = [1,3,4,5]
+								if lst[i] == 0: self.classrun = False #CONTINUE
+								if lst[i] == 1: self.mnu = 2 #LOAD GAME
+								if lst[i] == 2: self.mnu = 4 #SAVE GAME
+								if lst[i] == 3: self.wdw = Popup('Settings') #SETTINGS
+								if lst[i] == 4: self.wdw = Popup('About') #ABOUT
+								if lst[i] == 5: pygame.quit(); exit() #EXIT GAME
+							#FILE SELECT
+							elif self.mnu in [2,4]:
+								#SELECT GAME
+								if i < len(res.FILES):
+									res.ID = self.opt
+									self.opt = -1
+									self.mnu = 3
+								#NEW GAME
+								else:
+									res.ID = self.opt
+									self.sfx.play(res.SOUND['FILE_NEW'])
+									res.new_data()
+									#res.recent_data(2,self.opt)
+									pygame.mixer.music.fadeout(3000)
+									self.msc.fadeout(3000)
+									self.ton.fadeout(3000)
+									self.mnu = 7
+							#CHAPTER SELECT
+							elif self.mnu == 3:
+								#LOAD GAME
+								if i < res.FILES[res.ID][2] + 1:
+									self.sfx.play(res.SOUND['FILE_LOAD'])
+									res.load_data()
+									res.CHAPTER = self.opt
+									self.msc.stop()
+									self.scroll = int(50/res.GSCALE)
+									self.wait = 50
+									self.mnu = 8
+									self.txt = self.guitools.wrap(dtb.CHAPTERS[res.CHAPTER][2],self.fnt['RECAP'],self.display[1].get_width() - 200)
+								#DELETE GAME
+								else:
+									self.sfx.play(res.SOUND['FILE_DELETE'])
+									res.delete_data()
+									self.mnu -= 1
+									self.scroll = 0
 			#KEYBOARD
 			if res.MOUSE < 2:
-				if self.pressed[5][0]:
+				if pressed[5][0]:
 					if self.mnu == 4: self.mnu = 3
 				#SELECT
-				if self.pressed[0][0] and self.mnu == 3: self.opt -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-				if self.pressed[1][0] and self.mnu == 3: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+				if pressed[0][0] and self.mnu == 3: self.opt -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[1][0] and self.mnu == 3: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
 
 			#RANGE LIMIT
 			if res.MOUSE == 0:
@@ -373,43 +765,42 @@ class Files:
 		for i in self.display: i.fill((0,0,0,0))
 		rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0]
 		#FILES/CHAPTERS MENU
-		if True:
-			scrl = 0
-			for i in range(rng[self.mnu]):
-				if self.opt == i:
-					if self.optrects[i].width < 250:
-						self.optrects[i].width += 4
-						self.optrects[i].x -= 4
-					if self.optrects[i].y > int(self.display[1].get_height()/2): scrl = -(self.optrects[i].height * i)
-					else: scrl = int(self.display[1].get_height()/2) - int(self.optrects[i].height/2) - self.optrects[i].y
-					col = (255,255,0)
-				else:
-					if self.optrects[i].width > 230:
-						self.optrects[i].width -= 4
-						self.optrects[i].x += 4
-					col = (255,255,255)
-				shd = pygame.Surface((self.optrects[i].width,self.optrects[i].height))
-				shd.set_alpha(100)
-				shd.fill((10,10,10))
-				self.display[1].blit(shd,(self.optrects[i].x + 5,self.optrects[i].y + 5 + self.scroll))
-				pygame.draw.rect(self.display[1], col, pygame.Rect(self.optrects[i].x,self.optrects[i].y + self.scroll,self.optrects[i].width,self.optrects[i].height))
-				#TITLE AND PAUSE
-				if self.mnu in [0,1]:
-					if self.mnu == 1: lst = ['resume','load_file','save_file','Settings','About','exit']
-					else: lst = ['load_file','Settings','About','exit']
-					self.display[1].blit(self.fnt[self.curfnt].render(dtb.MENU[lst[i]], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
-				#FILES MENU
-				if self.mnu in [2,4]:
-					if i != len(res.FILES):
-						self.display[1].blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[res.FILES[i][2]][0], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
-						self.display[1].blit(self.fnt[self.curfnt].render(self.gmtim[i], True, (0, 0, 0)), (self.optrects[i].x + 10, self.optrects[i].y + 30 + self.scroll))
-					else: self.display[1].blit(self.fnt[self.curfnt].render(dtb.MENU['new_file'], True, (0,0,0)), (self.optrects[i].x + 50, self.optrects[i].y + 20 + self.scroll))
-				#CHAPTERS MENU
-				if self.mnu == 3:
-					if i != res.FILES[res.ID][2] + 1:
-						self.display[1].blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[i][0], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
-						self.display[1].blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[i][1], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 30 + self.scroll))
-					else: self.display[1].blit(self.fnt[self.curfnt].render(dtb.MENU['delete_file'], True, (0,0,0)), (self.optrects[i].x + 70, self.optrects[i].y + 20 + self.scroll))
+		scrl = 0
+		for i in range(rng[self.mnu]):
+			if self.opt == i:
+				if self.optrects[i].width < 250:
+					self.optrects[i].width += 4
+					self.optrects[i].x -= 4
+				if self.optrects[i].y > int(self.display[1].get_height()/2): scrl = -(self.optrects[i].height * i)
+				else: scrl = int(self.display[1].get_height()/2) - int(self.optrects[i].height/2) - self.optrects[i].y
+				col = (255,255,0)
+			else:
+				if self.optrects[i].width > 230:
+					self.optrects[i].width -= 4
+					self.optrects[i].x += 4
+				col = (255,255,255)
+			shd = pygame.Surface((self.optrects[i].width,self.optrects[i].height))
+			shd.set_alpha(100)
+			shd.fill((10,10,10))
+			self.display[1].blit(shd,(self.optrects[i].x + 5,self.optrects[i].y + 5 + self.scroll))
+			pygame.draw.rect(self.display[1], col, pygame.Rect(self.optrects[i].x,self.optrects[i].y + self.scroll,self.optrects[i].width,self.optrects[i].height))
+			#TITLE AND PAUSE
+			if self.mnu in [0,1]:
+				if self.mnu == 1: lst = ['resume','load_file','save_file','Settings','About','exit']
+				else: lst = ['load_file','Settings','About','exit']
+				self.display[1].blit(self.fnt[self.curfnt].render(dtb.MENU[lst[i]], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
+			#FILES MENU
+			if self.mnu in [2,4]:
+				if i != len(res.FILES):
+					self.display[1].blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[res.FILES[i][2]][0], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
+					self.display[1].blit(self.fnt[self.curfnt].render(self.gmtim[i], True, (0, 0, 0)), (self.optrects[i].x + 10, self.optrects[i].y + 30 + self.scroll))
+				else: self.display[1].blit(self.fnt[self.curfnt].render(dtb.MENU['new_file'], True, (0,0,0)), (self.optrects[i].x + 50, self.optrects[i].y + 20 + self.scroll))
+			#CHAPTERS MENU
+			if self.mnu == 3:
+				if i != res.FILES[res.ID][2] + 1:
+					self.display[1].blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[i][0], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
+					self.display[1].blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[i][1], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 30 + self.scroll))
+				else: self.display[1].blit(self.fnt[self.curfnt].render(dtb.MENU['delete_file'], True, (0,0,0)), (self.optrects[i].x + 70, self.optrects[i].y + 20 + self.scroll))
 		#SETTINGS/ABOUT MENU
 		if self.wdw: srf = self.display[1].blit(self.wdw.draw(),(100,100))
 		if self.mnu in [3,4]:
@@ -424,13 +815,13 @@ class Files:
 				self.display[1].blit(self.fnt['RECAP'].render(y, True, (0,0,0)), (102, (self.displayzh - math.floor(self.scroll * 1.5) + lt) * res.GSCALE))
 				self.display[1].blit(self.fnt['RECAP'].render(y, True, (255,255,255)), (100, (self.displayzh - math.floor(self.scroll * 1.5) + lt) * res.GSCALE))
 				lt += 25
-			self.scroll += 1 * self.FPS
+			self.scroll += 1 * res.FPS
 			if self.scroll > (self.displayzh + int(lt/res.GSCALE)) - int(100/res.GSCALE) or self.skip:
 				self.msc.fadeout(5000)
-				self.mnu = 7
+				self.classrun = False
 		#LOAD GAME RECAP
 		if self.mnu == 8:
-			if self.wait > 0: self.wait -= 1 * self.FPS
+			if self.wait > 0: self.wait -= 1 * res.FPS
 			if self.wait == 0:
 				pygame.mixer.music.play(pygame.mixer.Sound(res.MUSIC_PATH + 'fate_occurrences.mp3'),-1)
 				self.mnu = 7
@@ -438,9 +829,8 @@ class Files:
 		return self.display
 
 class Inventory:
-	def __init__(self,srf):
-		self.pos = [0,0]
-		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 12 * res.GSCALE),'PRICE': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE),
+	def __init__(self,srf,typ):
+		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 12 * res.GSCALE),'DESCRIPTION': pygame.font.Font(res.FONTS_PATH + res.FONT, 9 * res.GSCALE),
 		'ALT': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', 10)}
 		self.guitools = Guitools()
 		self.allowlimit = False
@@ -450,61 +840,58 @@ class Inventory:
 		self.sfx.set_volume(res.SFX)
 		self.ratio = [srf,(100,40)]
 		if srf != False:
-			self.window = (srf[0],srf[1])
-			ww = srf[0] * 0.9
-			if ww < 300: ww = 300
-			self.wdw = pygame.Surface((ww, 300), pygame.SRCALPHA)
-			self.wdw.fill((res.COLOR[0],res.COLOR[1],res.COLOR[2]))
-			for x in range(math.ceil(self.wdw.get_width()/10)):
-				for y in range(math.ceil(self.wdw.get_height()/10)):
-					self.wdw.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10, y * 10))
 			self.itbor = pygame.Surface((130, 40))
-			self.itbor.fill((res.COLOR[0],res.COLOR[1],res.COLOR[2]))
+			self.itbor.fill(res.COLOR)
 			for x in range(13):
 				for y in range(4):
 					self.itbor.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
-			'''self.mnbor = pygame.Surface((60, 40))
-			self.mnbor.fill((res.COLOR[0],res.COLOR[1],res.COLOR[2]))
-			for x in range(6):
-				for y in range(4):
-					self.mnbor.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (1 + (x * 10),1 + (y * 10)))'''
 			self.scr = [pygame.Surface(srf),pygame.Surface((srf[0] * res.GSCALE,srf[1] * res.GSCALE), pygame.SRCALPHA)]
 			self.dsrf = pygame.Surface((self.scr[0].get_width(),50))
 			self.fade = srf[0] + 400
 		self.whl = pygame.Surface((60,60),pygame.SRCALPHA)
 		self.srf = None
-		self.rqst = True
 		self.hld = 0
 		self.spn = 0
 		self.itmov = ''
-		self.type = 0
+		self.type = typ
 		self.opt = [0,0,0,0]
-		self.scroll = 0
-		self.strgscroll = 50
+		self.scroll = [0,0]
 		self.shake = 0
 		self.arrow = 0
 		self.arrdir = False
-		self.optrects = []
 		self.doneimages = {}
 		self.exzoom = 0
 		self.tilset = self.guitools.get_tiles()
-		x = 10
-		y = 45
-		for u in range(3):
-			self.optrects.append([])
-			for j in range(5):
-				self.optrects[u].append([])
-				if j == 4: y += 5
-				for i in range(5):
-					if i == 1: x += 5
-					self.optrects[u][j].append((pygame.Rect(x + (200 * u),y,30,30),pygame.Rect(x,y + (210 * u),30,30),
-					pygame.Rect(x,y + (210 * u),30,30),pygame.Rect(x,y + (210 * u),30,30),pygame.Rect(x + (200 * u),y,30,30),
-					pygame.Rect(x,y + (200 * u),30,30),pygame.Rect(x,y + (200 * u),30,30)))
-					x += 32
-				x = 10
-				y += 32
+		self.battle = False
+		xx = 0
+		yy = 0
+		w = 30
+		h = 30
+		b = 2
+		ptinv = [res.INVENTORY[x] for x in range(len(res.INVENTORY)) if x in res.PARTY[res.FORMATION]]
+		lst = [[ptinv],[ptinv],[ptinv,res.STORAGE],[ptinv,res.PRODUCTS],[ptinv,res.BASKET],[res.BASKET,res.PRODUCTS]]
+		self.optrects = []
+		for l in range(len(lst[self.type])):
 			x = 10
 			y = 45
+			self.optrects.append([])
+			for u in range(3):
+				if self.type < 2: xx = (200 * u)
+				else: yy = (200 * u)
+				self.optrects[l].append([])
+				for j in range(5):
+					self.optrects[l][u].append([])
+					if j == 4: y += 5
+					for i in range(5):
+						if i == 1: x += 5
+						exx = []
+						for ex in range(4): exx.append(pygame.Rect(x + xx + (ex * w) + (l * 200),y + yy,w,h))
+						self.optrects[l][u][j].append(exx)
+						x += w + b
+					x = 10
+					y += h + b
+				x = 10
+				y = 45
 			
 	def dev(self,d=None):
 		if d == None:
@@ -618,10 +1005,336 @@ class Inventory:
 		elif i[0] == 'cigar' and float(i[1]) > 0: i[1] = str(float(i[1]) - 0.2)
 			
 	def inside_events(self,pressed,mouse):
-		pass
+		#ACCESORIES SELECT
+		if self.itmov != '' and self.itmov[0] == 0:
+			for i in range(len(self.optrects[0][self.opt[2]][self.opt[1]][self.opt[0]][self.opt[3]])):
+				if pygame.Rect.colliderect(mouse,pygame.Rect(optrct.x - self.scroll[0],optrct.y,optrct.width,optrct.height)):
+					self.opt[3] = i
+			if pressed[2][0] and self.opt[3] > 1: self.opt[3] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
+			if pressed[3][0] and self.opt[3] < len(self.itmov): self.opt[3] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		#SELECT ITEM
+		else:
+			for l in range(len(self.optrects)):
+				for u in range(len(self.optrects[l])):
+					for j in range(len(self.optrects[l][u])):
+						for i in range(len(self.optrects[l][u][j])):
+							optrct = pygame.Rect(self.optrects[l][u][j][i][0].x * res.GSCALE,self.optrects[l][u][j][i][0].y * res.GSCALE,self.optrects[l][u][j][i][0].width * res.GSCALE,self.optrects[l][u][j][i][0].height * res.GSCALE)
+							if pygame.Rect.colliderect(mouse,pygame.Rect(optrct.x - self.scroll[0],optrct.y,optrct.width,optrct.height)):
+								self.opt[0] = i
+								self.opt[1] = j
+								self.opt[2] = u
+			if pressed[2][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
+			if pressed[3][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+			if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])	
+		if self.type < 2:
+			if self.opt[0] < 0: self.opt[0] = 4; self.opt[2] -= 1
+			if self.opt[0] > 4: self.opt[0] = 0; self.opt[2] += 1
+			if self.opt[1] < 0: self.opt[1] = 4
+			if self.opt[1] > 4: self.opt[1] = 0
+		else:
+			if self.opt[0] < 0: self.opt[0] = 9
+			if self.opt[0] > 9: self.opt[0] = 0
+			if self.opt[0] < 5:
+				if self.opt[1] < 0: self.opt[1] = 4; self.opt[2] -= 1
+				if self.opt[1] > 4: self.opt[1] = 0; self.opt[2] += 1
+			else:
+				if self.opt[1] < 0: self.opt[1] = math.ceil(len(res.STORAGE)/5) - 1
+				if self.opt[1] > math.ceil(len(res.STORAGE)/5) - 1: self.opt[1] = 0
+		if self.opt[2] < 0: self.opt[2] = len(res.PARTY[res.FORMATION]) - 1
+		if self.opt[2] > len(res.PARTY[res.FORMATION]) - 1: self.opt[2] = 0
+
+		ch = res.CHARACTERS[res.PARTY[res.FORMATION][self.opt[2]]]
+		lst = [res.STORAGE,res.BASKET,res.WASH,None,res.BASKET,res.PRODUCTS]
+		if self.type == 6 and self.opt[0] < 5: it = res.PRODUCTS[self.opt[0] + (self.opt[1] * 5) - 5]
+		elif self.opt[0] > 4 and self.type > 1: it = lst[self.type - 2][self.opt[0] + (self.opt[1] * 5) - 5]
+		else: it = res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]]
+
+		if pressed[4][0] and self.opt[0] < 4:
+			#USING ITEMS
+			if self.itmov == '' or self.itmov[0] == 0:
+				prb = random.randint(0,100)
+				#RANDOM BATTLE
+				if it[0] in dtb.ITEMENEMIES and prb > 100 - dtb.ITEMENEMIES[it[0]][1]:
+					self.dialog([(13,[dtb.ITEMENEMIES[it[0]][0]])])
+				#FOOD
+				elif it[0].startswith('food_'):
+					#if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] not in [4,10]:
+					self.actqueue.append({'RECT': self.player[0]['RECT'],'SPEED': 5,'ACT': 0,'BAR': 0,
+					'CHARACTER': res.PARTY[res.FORMATION][self.opt[2]],'ITEM': (self.opt[1],self.opt[0])})
+					self.soundplay('MENU_GO')
+				#DRINK
+				elif it[0].startswith('drink') or it[0].startswith('bottle'):
+					if it[0].startswith('drink'): drk = it[0]; amt = int(it[1])
+					elif it[0].startswith('bottle') and len(it) > 2: drk = it[2]; amt = int(it[3])
+					else: drk == None
+					if drk != None:
+						if ch['FLAW'] == 'lactose intolerant':
+							if drk in dtb.LACTOSE_FOOD: good = False
+							else: good = True
+						else: good = True
+						if good:
+							self.sfx.play(res.SOUND['HEAL'])
+							hl = dtb.ITEMS[drk][5]
+							if it in res.CHARACTERS[self.opt[2]]['FAVFOOD']: hl += int(hl/2)
+							ch['HP'] += hl
+							ch['THIRST'] += dtb.ITEMS[drk][6]
+							if it[0].startswith('drink') and res.DISITEMS[it[0]] == 0:
+								res.DISITEMS[it[0]] = 1
+							if ch['HP'] > dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]:
+								ch['HP'] = dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]
+						else:
+							self.sfx.play(res.SOUND['INCONSCIOUS'])
+							ch['HEALTH'] = 10
+						if amt > 0: amt -= 1
+						if amt == 0:
+							if it[0].startswith('bottle'):
+								it = it[0:2]
+							else:
+								if dtb.ITEMS[it[0]][8] != None: it = ['trash_' + dtb.ITEMS[drk][8],'0000']
+								else: it = ['_','0000']
+							res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]] = it
+						self.notification.append({'TEXT': 'hp_' + str(hl), 'COLOR': (255, 0, 0), 'HALIGN': 'left','X': 0})
+					else: self.sfx.play(res.SOUND['ERROR'])
+				#TOOLS
+				elif it[0].startswith('tool_'):
+					try: t = self.tilrect[0][(math.floor((self.player[self.opt[2]]['RECT'].y + 15)/self.map.tilewidth) * self.map.width) + math.floor((self.player[p]['RECT'].x + 15)/self.map.tilewidth)]
+					except: t = None
+					if t != None and len(dtb.ITEMS[it[0]]) > 5:
+						if t[0] == dtb.ITEMS[it[0]][5]['UNLOCK']:
+							self.sfx.play(res.SOUND['MENU_GO'])
+				#GRENADES
+				elif it[0].startswith('grenade') and it in res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][1:]:
+					self.sfx.play(res.SOUND['MELEE'])
+					it = ['_','0000']
+					self.opt[2] = 1
+					self.type = 0
+				#REPELLENTS
+				elif it[0].startswith('repellent'):
+					self.sfx.play(res.SOUND['MENU_GO'])
+					ch['HEALTH'] = 2
+					self.waitlst.append(['repellent' + str(res.PARTY[res.FORMATION][self.opt[2]]),self.waitime + dtb.ITEMS[it[0]][5]])
+					it = ['_','0000']
+				#PILLS
+				elif it[0].startswith('pill_'):
+					for i in range(len(dtb.PROFNAMES.keys())):
+						if it[0].endswith(dtb.PROFNAMES.keys()[i]):
+							self.sfx.play(res.SOUND['ATTRIBUTE_GAIN'])
+							ch['BONUS'][i] += 1
+							it = ['_','0000']
+				#ACCESORIES ACCESS
+				elif it[0].startswith('phone' or 'wallet' or 'bag' or 'locksmith'):
+					self.sfx.play(res.SOUND['MENU_GO'])
+					self.opt[3] = 1
+				#TENTS
+				elif it[0].startswith('tent_'):
+					self.sfx.play(res.SOUND['INVENTORY_CLOSE'])
+					self.build = it[0]
+					self.type = 0
+					if it[1] != 'infinite':
+						if int(it[1]) > 0: it = [it[0],str(int(i[1]) - 1)]
+						else: it = ['_','0000']
+				#EXAMINE
+				elif it[0].startswith('newspaper' or 'id_'):
+					self.sfx.play(res.SOUND['PAGE_FLIP'])
+					if it[0].startswith('id_'): self.read = GUI.ID(res.PARTY[res.FORMATION][self.opt[2]])
+					else: self.read = GUI.Newspaper()
+				#PAINT TILES
+				elif it[0].startswith('til_'):
+					self.sfx.play(res.SOUND['INVENTORY_CLOSE'])
+					self.paint = dtb.ITEMS[it[0]][5]
+					self.player[0]['PAUSE'] = 0
+					self.type = 0
+					if it[1] != 'infinite':
+						if int(it[1]) > 0: it = [it[0],str(int(i[1]) - 1)]
+						else: it = ['_','0000']
+				#GUI TOOLS
+				elif it[0].startswith('guit_'):
+					if it[0] == 'guit_save': self.sfx.play(res.SOUND['FILE_SAVE']); self.savemap()
+					elif it[0] == 'guit_load': self.sfx.play(res.SOUND['FILE_LOAD']); self.loadmap()
+					elif it[0] == 'guit_undo' and self.ihist > 0: self.sfx.play(res.SOUND['MENU_BACK']); self.ihist -= 1
+					elif it[0] == 'guit_redo' and self.ihist < len(self.shist): self.sfx.play(res.SOUND['MENU_GO']); self.ihist += 1
+					elif it[0] in ['guit_scissors','guit_glue','guit_copy']:
+						if it[0] == 'guit_scissors': self.sstore = []
+						pos = [0,0]
+						for t in self.mapdata['TILES'][self.slayer]:
+							if it[0] == 'guit_glue':
+								self.mapdata['TILES'][self.slayer][pos[0] * pos[1]] = self.sstore[pos[0] * pos[1]]
+							if pos[0] >= self.slctbox[0] and pos[0] < self.slctbox[2]:
+								if pos[1] >= self.slctbox[1] and pos[1] < self.slctbox[3]:
+									if it[0] in ['guit_scissors','guit_copy']: self.sstore.append(t)
+									if it[0] == 'guit_scissors':
+										self.mapdata['TILES'][self.slayer][pos[0] * pos[1]] = 0
+									pos[0] += 1
+							if pos[0] >= self.mapdata['WIDTH']:
+								pos[0] = 0; pos[1] += 1
+					else:
+						self.sfx.play(res.SOUND['INVENTORY_CLOSE'])
+						self.guit = dtb.ITEMS[it[0]][5]
+						self.player[0]['PAUSE'] = 0
+						self.type = 0
+				#ERROR
+				else: self.sfx.play(res.SOUND['ERROR'])
+				if self.battle:
+					self.turn += 1
+					self.opt[2] = 1
+					self.type = 0
+			#ACCESORIES EXIT
+			elif self.itmov[0] == 0:
+				if self.opt[3] == len(self.itmov):
+					self.sfx.play(res.SOUND['MENU_GO'])
+					self.itmov = ''
+					self.opt[3] = 0
+				else: self.sfx.play(res.SOUND['ERROR'])
+			#CRAFTING
+			elif it[0] != '_':
+				craft = False
+				if it[0].startswith('bag') and dtb.ITEMS[self.itmov[0]][3] == 1: craft = True
+				if it[0].startswith('undr') and dtb.ITEMS[self.itmov[0]][3] == 1: craft = True
+				for i in [('clth','clth'),('key','locksmith'),('id_card','wallet'),('credit_card','wallet'),
+					('condiment','food'),('drink','bottle'),('acc','gun'),('tool_syringe','drug')]:
+					if self.itmov[0].startswith(i[0]) and it[0].startswith(i[1]): craft = True
+				#LIGHTER
+				if self.itmov[0].startswith('tool_lighter') and int(self.itmov[1]) != 0:
+					if it[0] == 'grenade_molotov_cocktail':
+						self.itmov[1] = str(int(self.itmov[1]) - 1)
+						it[1] = '300'
+					if it[0] == 'cigar':
+						self.itmov[1] = str(int(self.itmov[1]) - 1)
+						it[1] = '500'
+				#RECHARGE WEAPONS
+				if self.itmov[0].startswith('ammo') and it[0].startswith('gun'):
+					if dtb.ITEMS[self.itmov[0]][5] == dtb.ITEMS[it[0]][5]['GAUGE']:
+						craft = True
+						self.sfx.play(res.SOUND['GUN_RECHARGE'])
+						it[3] = dtb.ITEMS[it[0]][5]['CAPACITY']
+						if self.opt[1] == 4 and self.opt[0]> 0:
+							if int(it[3]) > 0:
+								plus = int(98/(dtb.ITEMS[it[0]][5]['CAPACITY']/int(it[3])))
+							else: plus = 0
+							self.barpp[self.opt[2]][self.opt[0] - 1] = plus
+					else: craft = False
+				#ADDING ACCESORIES
+				if craft:
+					for a in range(len(it[::2])):
+						if it[a] == '_':
+							self.sfx.play(res.SOUND['CRAFT'])
+							it[(a + 1) * 2] = self.itmov[0]
+							it[((a + 1) * 2) + 1] = self.itmov[1]
+							self.itmov = ''
+							break
+						else: self.sfx.play(res.SOUND['ERROR']); self.shake = 5
+				#MERGE ITEMS
+				merge = False
+				for a in dtb.CRAFTING:
+					if it[0] in a[0:2] and self.itmov[0] in a[0:2]:
+						self.sfx.play(res.SOUND['CRAFT'])
+						it = [a[2],'9999']
+						self.itmov = ''
+						merge = True
+				if merge == False and craft == False: self.sfx.play(res.SOUND['ERROR']); self.shake = 5
+				if self.battle:
+					self.turn += 1
+					self.opt[2] = 1
+					self.type = 0
+			else: self.sfx.play(res.SOUND['ERROR'])
+		#MOVE ITEMS
+		if pressed[5][0]:
+			#TRASH
+			if self.type == 1 and it[0] != '_': it = ['_','0000']; self.sfx.play(res.SOUND['FILE_DELETE'])
+			elif self.itmov != '':
+				#TAKE SUB-ITEM
+				if self.itmov[0] == 0:
+					if self.opt[3] < len(self.itmov) and self.itmov[self.opt[3]][0] != '_':
+						self.sfx.play(res.SOUND['MENU_GO'])
+						self.itmov = [self.itmov[self.opt[3]][0],self.itmov[self.opt[3]][1]]
+						for i in range(2): del it[2 * self.opt[3]]
+					else: self.sfx.play(res.SOUND['ERROR']); self.shake = 5
+				#PLACE ITEM
+				elif it[0] == '_' and self.space(res.PARTY[res.FORMATION][self.opt[2]],self.opt[3],self.opt[0],self.opt[1],self.type):
+					#CLOTHING
+					if self.itmov[0].startswith('clth'):
+						self.player[self.opt[2]]['COSTUME'] = self.find(res.PARTY[res.FORMATION][self.opt[2]],['clth'],'position')
+					if self.itmov[0].startswith('head'):
+						self.player[self.opt[2]]['ACCESORIES'] = self.find(res.PARTY[res.FORMATION][self.opt[2]],['head'],'position')
+						if self.itmov[0] == 'head_hairclip':
+							if self.opt[0] == 0: hr = 2
+							else: hr = 8
+							res.CHARACTERS[res.PARTY[res.FORMATION][self.opt[2]]]['HAIR'][1] = hr
+							self.player[self.opt[2]]['HAIR'][1] = hr
+					#STORAGE
+					if self.type == 2:
+						chk = True
+						for j in res.STORAGE:
+							if j[0] == '_': chk = False
+						if chk:
+							for i in range(5): res.STORAGE.append(['_','0000'])
+					self.sfx.play(res.SOUND['EQUIP'])
+					if self.type == 4:
+						if res.TIME[0] >= 10: hh = str(res.TIME[0])
+						else: hh = '0' + str(res.TIME[0])
+						if res.TIME[1] >= 10: mm = str(res.TIME[1])
+						else: mm = '0' + str(res.TIME[1])
+						if (self.opt[0] + (self.opt[1] * 5) - 5) > len(res.WASH):
+							res.WASH.append([self.itmov[0],'0000',hh + mm])
+						else: it = [self.itmov[0],'0000',hh + mm]
+					else: it = self.itmov.copy()
+					self.itmov = ''
+					if self.battle:
+						self.turn += 1
+						self.opt[2] = 1
+						self.type = 0
+				#SWITCH ITEMS
+				elif self.space(res.PARTY[res.FORMATION][self.opt[2]],self.opt[3],self.opt[0],self.opt[1],self.type):
+					self.sfx.play(res.SOUND['EQUIP'])
+					trd = it.copy()
+					it = self.itmov
+					if self.itmov[0].startswith('clth'):
+						self.player[self.opt[2]]['COSTUME'] = dtb.ITEMS[self.itmov[0]][5]
+					self.itmov = trd
+				#ERROR
+				else: self.sfx.play(res.SOUND['ERROR']); self.shake = 5
+			#TAKE ITEM
+			elif it[0] != '_':
+				if self.opt[0] > 4:
+					#BUY AND SELL
+					if self.type in [6,7]:
+						mny = self.find(None,'wallet','value')
+						if mny != None and mny[1] >= dtb.ITEMS[it[0]][2]:
+							if self.space(res.PARTY[res.FORMATION][0]) == False:
+								self.dialog(dtb.DIALOGS['MERCATOR'][2])
+							elif self.confirmation() == 1:
+								self.add(res.PARTY[res.FORMATION][0],it[0])
+								self.sfx.play(res.SOUND['BUY'])
+								mny[1] -= int(dtb.ITEMS[it[0]][2] * it[0])
+						else:
+							self.sfx.play(res.SOUND['ERROR'])
+							self.dialog(dtb.DIALOGS['MERCATOR'][1])
+					#WASH
+					elif self.type == 4:
+						if res.TIME[0] >= int(it[2][0:2]):
+							if res.TIME[1] >= int(it[2][2:4]): prp = '0100'
+							else: prp = '0000'
+						else: prp = '0000'
+						self.itmov = [it[0],prp]
+						del it
+				else:
+					self.sfx.play(res.SOUND['MENU_GO'])
+					self.itmov = it.copy()
+					it = ['_','0000']
+			else: self.sfx.play(res.SOUND['ERROR'])
+		#DEVICES SHORTCUT
+		if pressed[7][0]: res.SHORTCUT = [res.PARTY[res.FORMATION][self.opt[2]],self.opt[1],self.opt[0]]; self.sfx.play(res.SOUND['MENU_GO'])
+
+		if self.type == 6 and self.opt[0] < 5: res.PRODUCTS[self.opt[0] + (self.opt[1] * 5) - 5] = it
+		elif self.opt[0] > 4 and self.type > 1: lst[self.type - 2][self.opt[0] + (self.opt[1] * 5) - 5] = it
+		else: res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]] = it
+		if self.itmov != '' and self.itmov[0] == '_': self.itmov = ''
 		
 	def outside_events(self,pressed):
-		pass
+		#INVENTORY WHEEL
+		if pressed[6][0] and self.hld < 40: self.hld += 1
+		elif self.hld > 0: self.hld -= 1
 		
 	def itimg(self,it):
 		img = None
@@ -662,7 +1375,7 @@ class Inventory:
 		for i in res.INVENTORY[res.PARTY[res.FORMATION][0]][4][1:]:
 			xx = int(math.cos(a) * 5) + 30
 			yy = int(math.sin(a) * 5) + 30
-			if self.opt[0] == a - 1: pygame.draw.arc(self.whl,(res.COLOR[0],res.COLOR[1],res.COLOR[2]),pygame.Rect(0,0,60,60),a,a + 1)
+			if self.opt[0] == a - 1: pygame.draw.arc(self.whl,res.COLOR,pygame.Rect(0,0,60,60),a,a + 1)
 			if i[0] != '_': self.whl.blit(self.itimg(i[0]),(xx,yy))
 			a += 1
 		return self.whl
@@ -696,80 +1409,74 @@ class Inventory:
 		mnc = 0
 		dscr = '_'
 		#SCROLL
-		if self.type == 1:
-			if self.scroll < (self.opt[2] * 200):
-				self.scroll += 40
-			if self.scroll > (self.opt[2] * 200):
-				self.scroll -= 40
-		if self.type == 2:
-			if self.scroll < (self.opt[2] * 210):
-				self.scroll += 42
-			if self.scroll > (self.opt[2] * 210):
-				self.scroll -= 42
-		if self.scroll < 0: self.scroll = 0
-		#INVENTORY FOR EACH ONE IN THE PARTY
-		if self.type != 6:
-			for n in res.PARTY[res.FORMATION]:
-				optx = 0
-				opty = 0
+		if self.type == 0:
+			if self.scroll[0] < (self.opt[2] * 200):
+				self.scroll[0] += 40
+			if self.scroll[0] > (self.opt[2] * 200):
+				self.scroll[0] -= 40
+		if self.scroll[0] < 0: self.scroll[0] = 0
+
+		#if self.type in [1,5]: rct.x = self.optrects[mnc][j][i].x - self.scroll[0]
+		#else: rct.y = self.optrects[mnc][j][i].y - self.scroll[0]
+		#DRAW ITEMS
+		ptinv = [res.INVENTORY[x] for x in range(len(res.INVENTORY)) if x in res.PARTY[res.FORMATION]]
+		lst = [[ptinv],[ptinv],[ptinv,res.STORAGE],[ptinv,res.PRODUCTS],[ptinv,res.BASKET],[res.BASKET,res.PRODUCTS]]
+		ll = 0
+		for l in lst[self.type]:
+			for n in range(len(l)):
 				vlm = 0
 				wei = 0
-				for j in range(len(res.INVENTORY[n])):
-					for i in range(len(res.INVENTORY[n][j])):
+				for j in range(len(l[n])):
+					for i in range(len(l[n][j])):
+						if ll == 1: it = l[0]
+						else: it = l[n][j][i]
 						#CHECK BAG
 						trigg = False
-						if optx == 0 or opty == 4: trigg = True
+						if i == 0 or j == 4: trigg = True
 						elif self.allowbag:
-							if res.INVENTORY[n][4][0][0] != '_': trigg = True
+							if l[n][4][0][0] != '_': trigg = True
 						else: trigg = True
+
 						#DRAW RECTS
-						if self.opt[0] == optx and self.opt[1] == opty and self.opt[2] == mnc:
-							cl = (res.COLOR[0],res.COLOR[1],res.COLOR[2])
-							dscr = res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]]
-						elif res.SHORTCUT[0] == n and res.SHORTCUT[1] == opty and res.SHORTCUT[2] == optx: cl = (255,255,167)
-						elif res.INVENTORY[n][j][i][0].endswith('_wasted'): cl = (176,255,182)
-						elif res.INVENTORY[n][j][i][0].startswith('clth_') and int(res.INVENTORY[n][j][i][1]) == 0: cl = (176,255,182)
-						else: cl = (255,255,255)
-						
-						rct = self.optrects[n][j][i][self.type - 1].copy()
-						if self.type in [1,5]: rct.x = self.optrects[mnc][j][i][self.type - 1].x - self.scroll
-						else: rct.y = self.optrects[mnc][j][i][self.type - 1].y - self.scroll
+						if self.opt[0] == i and self.opt[1] == j and self.opt[2] == mnc:
+							cl = res.COLOR; trigg = True
+							dscr = l[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]]
+						elif res.SHORTCUT[0] == n and res.SHORTCUT[1] == j and res.SHORTCUT[2] == i: cl = (255,255,167)
+						elif it[0].endswith('_wasted'): cl = (176,255,182)
+						elif it[0].startswith('clth_') and int(it[1]) == 0: cl = (176,255,182)
+						else: cl = (200,200,200)
+						if ll == 1: rct = self.optrects[ll][0][n][j][0]
+						else: rct = self.optrects[ll][n][j][i][0]
 						if trigg == True:
 							pygame.draw.rect(self.scr[0],cl,rct)
-						elif self.opt[0] == optx and self.opt[1] == opty and self.opt[2] == mnc:
-							pygame.draw.rect(self.scr[0],cl,rct)
-						#ITEM DURATION
-						for dr in [['tube',(10,200,10),5],['bottle',(100,100,200),5],['vest',(153,153,153),6],['cigar',(153,153,153),500],
-						['gun',(255,183,183),'CAPACITY'],['phone',(255,226,173),3600]]:
-							if res.INVENTORY[n][j][i][0].startswith(dr[0]) and float(res.INVENTORY[n][j][i][1]) > 1.0:
-								if self.opt[0] != optx or self.opt[1] != opty or self.opt[2] != mnc:
-									if isinstance(dr[2],str): dv = dtb.ITEMS[res.INVENTORY[n][j][i][0]][5][dr[2]]
-									elif dr[2] >= 500: dv = int(dr[2])
-									else: dv = dtb.ITEMS[res.INVENTORY[n][j][i][0]][dr[2]]
-									drct = rct.copy()
-									drct.height = int(rct.height/(dv/float(res.INVENTORY[n][j][i][1])))
-									drct.y += rct.height - drct.height
-									pygame.draw.rect(self.scr[0],dr[1],drct)
-						#DRAW SPRITES
-						if trigg == True:
-							if res.INVENTORY[n][j][i][0] != '_':
-								img = self.itimg(res.INVENTORY[n][j][i][0])
-								self.scr[0].blit(img, (rct.x,rct.y))
-								if optx > 0 and opty < 4:
-									vlm += dtb.ITEMS[res.INVENTORY[n][j][i][0]][3]
-									wei += dtb.ITEMS[res.INVENTORY[n][j][i][0]][4]
-						optx += 1
-					optx = 0
-					opty += 1
+							#ITEM DURATION
+							for dr in [['tube',(10,200,10),5],['bottle',(100,100,200),5],['vest',(153,153,153),6],['cigar',(153,153,153),500],
+								['gun',(255,183,183),'CAPACITY'],['phone',(255,226,173),3600]]:
+								if it[0].startswith(dr[0]) and float(it[1]) > 1.0:
+									if self.opt[0] != i or self.opt[1] != j or self.opt[2] != mnc:
+										if isinstance(dr[2],str): dv = dtb.ITEMS[it[0]][5][dr[2]]
+										elif dr[2] >= 500: dv = int(dr[2])
+										else: dv = dtb.ITEMS[it[0]][dr[2]]
+										drct = rct.copy()
+										drct.height = int(rct.height/(dv/float(it[1])))
+										drct.y += rct.height - drct.height
+										pygame.draw.rect(self.scr[0],dr[1],drct)
+							#DRAW SPRITES
+							if it[0] != '_':
+								img = self.itimg(it[0])
+								self.scr[0].blit(img,(rct.x,rct.y))
+								if i > 0 and j < 4:
+									vlm += dtb.ITEMS[it[0]][3]
+									wei += dtb.ITEMS[it[0]][4]
 				#VOLUME AND WEIGHT
 				lst = [['volume',vlm],['weight',wei]]
 				sz = self.fnt['DEFAULT'].size(res.CHARACTERS[n]['NAME'])[0]
-				if self.type in [1,5]:
-					pos = [[(93 + (210 * mnc) - self.scroll,10),(93 + (210 * mnc) - self.scroll,25),(15 + (210 * mnc) - self.scroll, 20)],
-					[((55 + (210 * mnc) - self.scroll) * res.GSCALE, 15 * res.GSCALE),((55 + (210 * mnc) - self.scroll) * res.GSCALE, 30 * res.GSCALE),(((40 + (210 * mnc) - self.scroll) * res.GSCALE) - sz, 15 * res.GSCALE)]]
+				if self.type in [0,1]:
+					pos = [[(93 + (210 * mnc) - self.scroll[0],10),(93 + (210 * mnc) - self.scroll[0],25),(15 + (210 * mnc) - self.scroll[0], 20)],
+					[((55 + (210 * mnc) - self.scroll[0]) * res.GSCALE, 15 * res.GSCALE),((55 + (210 * mnc) - self.scroll[0]) * res.GSCALE, 30 * res.GSCALE),(((40 + (210 * mnc) - self.scroll[0]) * res.GSCALE) - sz, 15 * res.GSCALE)]]
 				else:
-					pos = [[(93,10 + (210 * mnc) - self.scroll),(93,25 + (210 * mnc) - self.scroll),(15, 20 + (210 * mnc) - self.scroll)],
-					[(55 * res.GSCALE, (15 + (210 * mnc) - self.scroll) * res.GSCALE),(55 * res.GSCALE, (30 + (210 * mnc) - self.scroll) * res.GSCALE),((40 * res.GSCALE) - sz, (15 + (210 * mnc) - self.scroll) * res.GSCALE)]]
+					pos = [[(93,10 + (210 * mnc) - self.scroll[0]),(93,25 + (210 * mnc) - self.scroll[0]),(15, 20 + (210 * mnc) - self.scroll[0])],
+					[(55 * res.GSCALE, (15 + (210 * mnc) - self.scroll[0]) * res.GSCALE),(55 * res.GSCALE, (30 + (210 * mnc) - self.scroll[0]) * res.GSCALE),((40 * res.GSCALE) - sz, (15 + (210 * mnc) - self.scroll[0]) * res.GSCALE)]]
 				if self.allowlimit:
 					for i in range(2):
 						self.scr[1].blit(self.fnt['DEFAULT'].render(dtb.MENU[lst[i][0]], True, (255, 255, 255)), pos[1][i])
@@ -781,47 +1488,7 @@ class Inventory:
 				self.scr[1].blit(self.fnt['DEFAULT'].render(res.CHARACTERS[n]['NAME'], True, (255, 255, 255)),pos[1][2])
 				self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(n) + '.png'),pos[0][2])
 				mnc += 1
-		#OTHER SCROLL
-		if self.opt[1] > 5:
-			if self.strgscroll < (self.opt[1] * 32):
-				self.strgscroll += 8
-			if self.strgscroll > (self.opt[1] * 32):
-				self.strgscroll -= 8
-		else:
-			if self.strgscroll > 0:
-				self.strgscroll -= 40
-		if self.strgscroll < 0: self.strgscroll = 0
-		#OTHER INVENTORY
-		if self.type > 1:
-			if self.type == 6: r = 2; rw = 0
-			else: r = 1; rw = 1
-			for i in range(r):
-				x = (200 * rw)
-				y = 45
-				optx = 5 * rw
-				opty = 0
-				itinf = [['storage',res.STORAGE],['basket',res.BASKET],['wash',res.WASH],None,[['products',res.PRODUCTS],['basket',res.BASKET]],['mercator',res.PRODUCTS]]
-				if self.type != 6: txt = dtb.MENU[itinf[self.type - 2][0]]; lst = itinf[self.type - 2][1]
-				else: txt = dtb.MENU[itinf[self.type - 2][rw][0]]; lst = itinf[self.type - 2][rw][1]
-				self.scr[1].blit(self.fnt['DEFAULT'].render(txt, True, (255, 255, 255)), ((x + 5) * res.GSCALE, (15 - self.strgscroll) * res.GSCALE))
-				for j in lst:
-					if optx == 5 * (rw + 1):
-						x = (200 * rw)
-						if self.type in [3,6,7]: y += 44
-						else: y += 32
-						optx = 5 * rw
-						opty += 1
-					if self.opt[0] == optx and self.opt[1] == opty:
-						pygame.draw.rect(self.scr[0], (res.COLOR[0],res.COLOR[1],res.COLOR[2]), pygame.Rect(x, y - self.strgscroll,30,30))
-						dscr = j
-					else: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(x, y - self.strgscroll,30,30))
-					if self.type in [3,6,7]:
-						pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(x, y - self.strgscroll + 32,30,10))
-						self.scr[1].blit(self.fnt['PRICE'].render('$' + str(j[1]), True, (10,10,10)), ((x + 12) * res.GSCALE, (y + 43 - self.strgscroll) * res.GSCALE))
-					if j[0] != '_': self.scr[0].blit(self.itimg(j[0]), (x, y - self.strgscroll))
-					x += 32
-					optx += 1
-				rw += 1
+			ll += 1
 		#HOLDING ITEM
 		if self.itmov != '' and self.itmov[0] != '_':
 			ox = (self.opt[0] * 32) 
@@ -832,111 +1499,99 @@ class Inventory:
 			#ITEM MOVE
 			if self.itmov[0] != 0:
 				img = self.itimg(self.itmov[0])
-				if self.type == 1:
-					self.scr[0].blit(pygame.image.load(res.ITEMS_PATH + 'shade.png'), (14 + (self.opt[2] * 200) + ox - self.scroll,62 + lox))
-					self.scr[0].blit(img, (10 + (self.opt[2] * 200) + ox - self.scroll + self.shake,35 + lox))
+				if self.type < 2:
+					self.scr[0].blit(pygame.image.load(res.ITEMS_PATH + 'shade.png'), (14 + (self.opt[2] * 200) + ox - self.scroll[0],62 + lox))
+					self.scr[0].blit(img, (10 + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,35 + lox))
 				else:
-					self.scr[0].blit(pygame.image.load(res.ITEMS_PATH + 'shade.png'), (14 + ox,62 + (self.opt[2] * 200) + lox - self.scroll))
-					self.scr[0].blit(img, (10 + ox + self.shake,35 + (self.opt[2] * 200) + lox - self.scroll))
+					self.scr[0].blit(pygame.image.load(res.ITEMS_PATH + 'shade.png'), (14 + ox,62 + (self.opt[2] * 200) + lox - self.scroll[0]))
+					self.scr[0].blit(img, (10 + ox + self.shake,35 + (self.opt[2] * 200) + lox - self.scroll[0]))
 			#SUB-ITEMS
 			else:
 				srf = pygame.Surface((70,40))
 				srf.set_alpha(100)
 				srf.fill((0, 0, 0))
-				self.scr[0].blit(srf, (25 + (self.opt[2] * 200) + ox - self.scroll,40 + lox),pygame.Rect(0,0,10 + (len(self.itmov) * 30),40))
-				self.scr[0].blit(self.itbor, (20 + (self.opt[2] * 200) + ox - self.scroll + self.shake,35 + lox),pygame.Rect(0,0,10 + (len(self.itmov) * 30),40))
+				self.scr[0].blit(srf, (25 + (self.opt[2] * 200) + ox - self.scroll[0],40 + lox),pygame.Rect(0,0,10 + (len(self.itmov) * 30),40))
+				self.scr[0].blit(self.itbor, (20 + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,35 + lox),pygame.Rect(0,0,10 + (len(self.itmov) * 30),40))
 				for it in range(len(res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]][2::2]) + 1):
 					if self.opt[3] == it + 1:
-						pygame.draw.rect(self.scr[0], (res.COLOR[0],res.COLOR[1],res.COLOR[2]), pygame.Rect(25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
+						pygame.draw.rect(self.scr[0], res.COLOR, pygame.Rect(25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox,30,30))
 						if self.opt[3] != len(self.itmov): dscr = [self.itmov[self.opt[3]][0],res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]][it * 2]]
-					else: pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll + self.shake,40 + lox,30,30))
+					else: pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox,30,30))
 					if it + 1 == len(self.itmov):
-						self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_run.png'), (25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll + self.shake,40 + lox))
+						self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_run.png'), (25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox))
 					elif self.itmov[it + 1][0] != '_':
 						img = self.itimg(self.itmov[it + 1][0])
-						self.scr[0].blit(img, (25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll + self.shake,40 + lox))
+						self.scr[0].blit(img, (25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox))
 		#ARROWS
-		'''if self.arrdir == False:
+		if self.arrdir == False:
 			self.arrow += 1
 			if self.arrow == 8: self.arrdir = True
 		elif self.arrdir == True:
 			self.arrow -= 1
 			if self.arrow == 0: self.arrdir = False
-		if self.type == 1:
+		if self.type < 2:
 			if self.opt[2] > 0: self.scr[0].blit(pygame.transform.rotate(pygame.image.load(res.SPRITES_PATH + 'arw.png'),270), (0 + self.arrow,110))
 			if self.opt[2] < len(res.PARTY[res.FORMATION]) - 1: self.scr[0].blit(pygame.transform.rotate(pygame.image.load(res.SPRITES_PATH + 'arw.png'),90), ((self.scr[0].get_width() - 12) - self.arrow,110))
-		if self.type == 2:
+		else:
 			if self.opt[2] > 0: self.scr[0].blit(pygame.transform.flip(pygame.image.load(res.SPRITES_PATH + 'arw.png'),False,True), (80,0 + self.arrow))
-			if self.opt[2] < len(res.PARTY[res.FORMATION]) - 1: self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (80,208 - self.arrow))'''
-
-		#ITEM DESCRIPTION
-		if self.itmov != '' and self.opt[3] < len(self.itmov):
-			dtp = 1
-			if self.itmov[0] != 0:
-				for i in ('bag','vest','amulet','melee','gun','grenade'):
-					if self.itmov[0].startswith(i):
-						dtp = 3
-						if dscr[0].startswith(i): dtp = 4
-			if self.opt[3] != len(self.itmov) and self.itmov[self.opt[3]][0] in res.DISITEMS:
-				if res.DISITEMS[self.itmov[0][0]] == 0: dtp = 2
-			if dtp == 1 and dscr[0] == '_': dtp = 0
-		elif dscr[0] != '_': dtp = 1
-		else: dtp = 0
-		if dtp > 0:
+			if self.opt[2] < len(res.PARTY[res.FORMATION]) - 1: self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (80,208 - self.arrow))
+		
+		#TRASH
+		if self.type == 1: self.scr[1].blit(self.fnt['DESCRIPTION'].render(dtb.MENU['drop'], True, (255, 255, 255)), (20, self.scr[1].get_height() - 50))
+		else:
 			#ITEM DESCRIPTION
-			if dtp == 1:
-				txt = dtb.ITEMS[dscr[0]][1].copy()
-				if self.type == 3 and self.opt[0] > 4:
-					if len(txt) == 1: txt.append('$' + str(dtb.ITEMS[dscr[0]][2] * dscr[1]))
-					elif len(txt) == 2: txt[1] += '$' + str(dtb.ITEMS[dscr[0]][2] * dscr[1])
-				elif dscr[0].startswith('gun'):
-					if len(txt) == 1: txt.append('ammo: ' + str(dscr[1]) + '/' + str(dtb.ITEMS[dscr[0]][5]['CAPACITY']))
-					elif len(txt) == 2: txt[1] += ' - ammo: ' + str(dscr[1]) + '/' + str(dtb.ITEMS[dscr[0]][5]['CAPACITY'])
-				if dscr[0].startswith('wallet'):
-					if len(txt) == 1: txt.append('$' + str(dscr[1][0:6]))
-					elif len(txt) == 2: txt[1] += ' - $' + str(dscr[1][0:6])
-				if dscr[0].startswith('credit_card'):
-					if len(txt) == 1: txt.append('$' + str(dscr[1]))
-					elif len(txt) == 2: txt[1] += ' - $' + str(dscr[1])
-				if dscr[0].startswith('bottle') and len(dscr) > 2:
-					if len(txt) == 1: txt.append(str(dscr[1]) + ': ' + str(dtb.ITEMS[dscr[2]][0]))
-					elif len(txt) == 2: txt[1] += ' - ' + str(dscr[1]) + 'm: ' + str(dtb.ITEMS[dscr[2]][0])
-				y = 0
-				for t in txt:
-					if res.DISLEXIC == True:
-						out = ''
-						for tl in t:
-							out += tl + ' '
-					else: out = t
-					self.scr[1].blit(self.fnt['DEFAULT'].render(out, True, (255, 255, 255)), (80, self.scr[1].get_height() - 80 + y))
-					y += 30
-			#NOT DISCOVERED
-			elif dtp == 2: self.scr[1].blit(self.fnt['DEFAULT'].render(dtb.MENU['discover'], True, (255, 255, 255)), (20, self.scr[1].get_height() - 50))
-			#ITEM STATS
-			elif dtp > 2 and self.itmov[0] != 0:
-				xbr = 0
-				ybr = 0
-				for p in [[['vest','amulet'],'armor',5],[['vest','amulet'],'duration',6],[['tool','melee','gun','grenade'],'damage',5,'DAMAGE'],
-				[['gun'],'capacity',5,'CAPACITY'],[['tool','melee','gun'],'recharge',5,'RECHARGE'],[['tool','melee','gun'],'cadency',5,'CADENCY'],
-				[['gun'],'gauge',5,'GAUGE'],[['food','drink'],'vitality',5],[['food'],'hunger',6],[['drink'],'thirst',6]]:
-					shw = False
-					for n in p[0]:
-						if self.itmov[0].startswith(n): shw = True
-					if shw:
-						if len(p) > 3: it = dtb.ITEMS[self.itmov[0]][p[2]][p[3]]
-						else: it = dtb.ITEMS[self.itmov[0]][p[2]]
-						self.scr[1].blit(self.fnt['DEFAULT'].render(dtb.MENU[p[1]], True, (255, 255, 255)), (80 + (xbr * 200), self.scr[1].get_height() - 80 + (ybr * 30)))
-						pygame.draw.rect(self.dsrf,(100,100,100),pygame.Rect(80 + (xbr * 160),10 + (ybr * 20),50,10))
-						pygame.draw.rect(self.dsrf,(255,255,255),pygame.Rect(80 + (xbr * 160),10 + (ybr * 20),math.floor(50/it),10))
-						if dtp == 4:
-							df = math.floor(50/dtb.ITEMS[self.itmov[0]][5]) - math.floor(50/dtb.ITEMS[dscr[0]][5])
-							if df != 0:
-								if df < 0: pygame.draw.rect(self.dsrf,(200,10,10),pygame.Rect(80 + (xbr * 160) + math.floor(50/it),10 + (ybr * 20),abs(df),10))
-								if df > 0: pygame.draw.rect(self.dsrf,(10,200,10),pygame.Rect(80 + (xbr * 160) + math.floor(50/it) - abs(df),10 + (ybr * 20),abs(df),10))
-						ybr += 1
-						if ybr == 2:
-							xbr += 1
-							ybr = 0
+			if self.itmov != '' and self.opt[3] < len(self.itmov):
+				dtp = 1
+				if self.itmov[0] != 0:
+					for i in ('bag','vest','amulet','melee','gun','grenade'):
+						if self.itmov[0].startswith(i):
+							dtp = 3
+							if dscr[0].startswith(i): dtp = 4
+				if self.opt[3] != len(self.itmov) and self.itmov[self.opt[3]][0] in res.DISITEMS:
+					if res.DISITEMS[self.itmov[0][0]] == 0: dtp = 2
+				if dtp == 1 and dscr[0] == '_': dtp = 0
+			elif dscr[0] != '_': dtp = 1
+			else: dtp = 0
+			if dtp > 0:
+				#ITEM DESCRIPTION
+				if dtp == 1:
+					txt = dtb.ITEMS[dscr[0]][1].copy()
+					if self.type == 3 and self.opt[0] > 4: txt[1] += '$' + str(dtb.ITEMS[dscr[0]][2] * dscr[1])
+					elif dscr[0].startswith('gun'): txt[1] += ' - ammo: ' + str(dscr[1]) + '/' + str(dtb.ITEMS[dscr[0]][5]['CAPACITY'])
+					if dscr[0].startswith('wallet'): txt[1] += ' - $' + str(dscr[1][0:6])
+					if dscr[0].startswith('credit_card'): txt[1] += ' - $' + str(dscr[1])
+					if dscr[0].startswith('bottle') and len(dscr) > 2: txt[1] += ' - ' + str(dscr[1]) + 'm: ' + str(dtb.ITEMS[dscr[2]][0])
+					y = 0
+					for t in self.guitools.wrap(txt,self.fnt['DESCRIPTION'],self.scr[1].get_width() - 40):
+						self.scr[1].blit(self.fnt['DESCRIPTION'].render(self.guitools.dislexic(t), True, (255, 255, 255)), (20, self.scr[1].get_height() - 80 + y))
+						y += 30
+				#NOT DISCOVERED
+				elif dtp == 2: self.scr[1].blit(self.fnt['DESCRIPTION'].render(dtb.MENU['discover'], True, (255, 255, 255)), (20, self.scr[1].get_height() - 50))
+				#ITEM STATS
+				elif dtp > 2 and self.itmov[0] != 0:
+					xbr = 0
+					ybr = 0
+					for p in [[['vest','amulet'],'armor',5],[['vest','amulet'],'duration',6],[['tool','melee','gun','grenade'],'damage',5,'DAMAGE'],
+					[['gun'],'capacity',5,'CAPACITY'],[['tool','melee','gun'],'recharge',5,'RECHARGE'],[['tool','melee','gun'],'cadency',5,'CADENCY'],
+					[['gun'],'gauge',5,'GAUGE'],[['food','drink'],'vitality',5],[['food'],'hunger',6],[['drink'],'thirst',6]]:
+						shw = False
+						for n in p[0]:
+							if self.itmov[0].startswith(n): shw = True
+						if shw:
+							if len(p) > 3: it = dtb.ITEMS[self.itmov[0]][p[2]][p[3]]
+							else: it = dtb.ITEMS[self.itmov[0]][p[2]]
+							self.scr[1].blit(self.fnt['DESCRIPTION'].render(dtb.MENU[p[1]], True, (255, 255, 255)), (80 + (xbr * 200), self.scr[1].get_height() - 80 + (ybr * 30)))
+							pygame.draw.rect(self.scr[1],(100,100,100),pygame.Rect(80 + (xbr * 160),self.scr[1].get_height() - (ybr * 20),50,10))
+							pygame.draw.rect(self.scr[1],(255,255,255),pygame.Rect(80 + (xbr * 160),self.scr[1].get_height() - (ybr * 20),math.floor(50/it),10))
+							if dtp == 4:
+								df = math.floor(50/dtb.ITEMS[self.itmov[0]][5]) - math.floor(50/dtb.ITEMS[dscr[0]][5])
+								if df != 0:
+									if df < 0: pygame.draw.rect(self.scr[1],(200,10,10),pygame.Rect(80 + (xbr * 160) + math.floor(50/it),self.scr[1].get_height() - (ybr * 20),abs(df),10))
+									if df > 0: pygame.draw.rect(self.scr[1],(10,200,10),pygame.Rect(80 + (xbr * 160) + math.floor(50/it) - abs(df),self.scr[1].get_height() - (ybr * 20),abs(df),10))
+							ybr += 1
+							if ybr == 2:
+								xbr += 1
+								ybr = 0
 		#ITEM SHAKE
 		if self.shake > 0: self.shake = -self.shake
 		elif self.shake < 0: self.shake = -self.shake - 1
@@ -1063,20 +1718,20 @@ class Vkeyboard:
 	def draw(self):
 		self.surface.fill((0,0,0))
 		
-		if self.display: self.surface.blit(self.font.render(self.output,1,(res.COLOR[0],res.COLOR[1],res.COLOR[2])),(10,10))
+		if self.display: self.surface.blit(self.font.render(self.output,1,res.COLOR),(10,10))
 		r = 0
 		for i in self.buttons[self.page]:
 			add = 0
 			if self.type == 'QWERTY' and r > 19 and r < 29: add = 20
-			pygame.draw.rect(self.surface,(res.COLOR[0],res.COLOR[1],res.COLOR[2]),pygame.Rect(add + i[0].x,i[0].y,i[0].width,i[0].height),i[2])
-			if i[1] == 0: self.surface.blit(self.font.render('<X>',1,(res.COLOR[0],res.COLOR[1],res.COLOR[2])),(add + i[0].x + 8,i[0].y))
-			elif i[1] == 1: self.surface.blit(self.font.render(str(self.caps) + '^',1,(res.COLOR[0],res.COLOR[1],res.COLOR[2])),(add + i[0].x + 8,i[0].y))
-			elif i[1] == 2: self.surface.blit(self.font.render(str(self.page + 1) + '/2',1,(res.COLOR[0],res.COLOR[1],res.COLOR[2])),(add + i[0].x + 8,i[0].y))
-			elif i[1] == 3: self.surface.blit(self.font.render('&',1,(res.COLOR[0],res.COLOR[1],res.COLOR[2])),(add + i[0].x + 8,i[0].y))
+			pygame.draw.rect(self.surface,res.COLOR,pygame.Rect(add + i[0].x,i[0].y,i[0].width,i[0].height),i[2])
+			if i[1] == 0: self.surface.blit(self.font.render('<X>',1,res.COLOR),(add + i[0].x + 8,i[0].y))
+			elif i[1] == 1: self.surface.blit(self.font.render(str(self.caps) + '^',1,res.COLOR),(add + i[0].x + 8,i[0].y))
+			elif i[1] == 2: self.surface.blit(self.font.render(str(self.page + 1) + '/2',1,res.COLOR),(add + i[0].x + 8,i[0].y))
+			elif i[1] == 3: self.surface.blit(self.font.render('&',1,res.COLOR),(add + i[0].x + 8,i[0].y))
 			else:
 				if self.caps == 0: txt = i[1][0]
 				else: txt = i[1][0].upper()
-				self.surface.blit(self.font.render(txt,1,(res.COLOR[0],res.COLOR[1],res.COLOR[2])),(add + i[0].x + 8,i[0].y))
+				self.surface.blit(self.font.render(txt,1,res.COLOR),(add + i[0].x + 8,i[0].y))
 			i[2] = 3
 			r += 1
 		
@@ -1367,9 +2022,9 @@ class Contacts:
 		self.opt = [0,0]
 		self.nb = None
 		self.credit = 0
-		self.inv = Inventory(False)
-		self.battery = self.inv.find(res.PARTY[res.FORMATION][0],'phone')
-		self.credit = self.inv.find(res.PARTY[res.FORMATION][0],'sim_card','value')
+		self = Inventory(False)
+		self.battery = self.find(res.PARTY[res.FORMATION][0],'phone')
+		self.credit = self.find(res.PARTY[res.FORMATION][0],'sim_card','value')
 		if self.battery != None: self.battery = int(self.battery[1])
 		else: self.battery = 0
 		if self.credit != None: self.credit = self.credit[1]
@@ -1384,7 +2039,7 @@ class Contacts:
 			if pressed[2][0] and self.opt == 1: self.opt = 0; self.sfx.play(res.SOUND['MENU_VER'])
 			if pressed[3][0] and self.opt == 0: self.opt = 1; self.sfx.play(res.SOUND['MENU_VER'])
 			if pressed[4][0]:
-				self.ch_ton.stop()
+				self.sfx.stop()
 				self.ch_rng.stop()
 				if self.opt == 0:
 					self.ingame = 4
@@ -1462,7 +2117,7 @@ class Contacts:
 					if self.mnu == 0:
 						pygame.time.wait(round(random.randint(10,200)))
 						if self.credit > 0:
-							credit = self.inv.find(res.PARTY[res.FORMATION][0],'phone')
+							credit = self.find(res.PARTY[res.FORMATION][0],'phone')
 							if credit != None:
 								if credit[2] == 'sim_card': credit[3] = str(int(credit[3]) - 1); self.credit = int(credit[3])
 								elif credit[4] == 'sim_card': credit[5] = str(int(credit[5]) - 1); self.credit = int(credit[5])
@@ -2180,20 +2835,23 @@ class Status:
 		self.ratio = [(180 * res.GSCALE,232 * res.GSCALE),(90 * res.GSCALE,90 * res.GSCALE)]
 		self.scroll = 0
 		self.optrects = []
+		dvd3 = math.floor((180 * res.GSCALE)/3)
+		for i in range(len(res.PARTY[res.FORMATION])): self.optrects.append(pygame.Rect(i * dvd3,0,dvd3,40))
 		self.opt = 0
 		self.equip = 1
 		self.bars = []
 		for i in range(3): self.bars.append([100,100])
 	
 	def inside_events(self,pressed,mouse):
+		for i in range(len(self.optrects)):
+			if pressed[4][0] and pygame.Rect.colliderect(mouse,self.optrects[i]): self.opt = i
 		if pressed[2][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
 		if pressed[3][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_HOR'])
 
 		if self.opt < 0: self.opt = len(res.PARTY[res.FORMATION]) - 1
 		if self.opt > len(res.PARTY[res.FORMATION]) - 1: self.opt = 0
 					
-	def outside_events(self,pressed):
-		pass
+	def outside_events(self,pressed): pass
 		
 	def miniature(self):
 		self.mnsrf.fill((10,10,10))
@@ -2233,14 +2891,12 @@ class Status:
 		if self.opt > 2: self.scroll += (self.opt - 2) * 60
 		for i in self.scr: i.fill((10,10,10,0))
 
-		x = 0
-		dvd3 = math.floor(sz/3)
-		for i in res.PARTY[res.FORMATION]:
-			if self.opt == x/dvd3:
-				pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0 + x - self.scroll,0,dvd3,20))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(res.CHARACTERS[i]['NAME'], True, (0, 0, 0)), ((16 + x - self.scroll) * res.GSCALE, 5 * res.GSCALE))
-			else: self.scr[1].blit(self.fnt['CALIBRI'].render(res.CHARACTERS[i]['NAME'], True, (255, 255, 255)), ((16 + x - self.scroll) * res.GSCALE, 5 * res.GSCALE))
-			x += dvd3
+		for i in range(len(res.PARTY[res.FORMATION])):
+			tsz = self.fnt['CALIBRI'].size(res.CHARACTERS[res.PARTY[res.FORMATION][i]]['NAME'])[0]
+			if self.opt == i: pygame.draw.rect(self.scr[1], (200, 200, 200), self.optrects[i]); cl = (10, 10, 10)
+			else: pygame.draw.rect(self.scr[1], (100, 200, 200), self.optrects[i]); cl = (10, 10, 10)
+			#else: cl = (200, 200, 200)
+			self.scr[1].blit(self.fnt['CALIBRI'].render(res.CHARACTERS[res.PARTY[res.FORMATION][i]]['NAME'], True, cl), (self.optrects[i].x + int(self.optrects[i].width/2) - int(tsz/2), 5))
 		#TEXT
 		ch = res.CHARACTERS[res.PARTY[res.FORMATION][self.opt]]
 		self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(res.PARTY[res.FORMATION][self.opt]) + '.png'), (10, 40))
@@ -2258,9 +2914,9 @@ class Status:
 		#PENTACLE
 		xx = 40
 		yy = 400
-		rr = 125
+		rr = 40 * res.GSCALE
 		pnt = []
-		lst = ['STRENGHT','AGILITY','RESISTANCE','KNOWLEDGE','CHARISMA']
+		lst = [x for x in dtb.PROFNAMES.keys()]
 		for i in range(len(lst)):
 			p = -((2 * 3.14)/len(lst)) * i
 			vl = (rr/(5/dtb.CLASSES[ch['CLASS']][lst[i]][ch['LEVEL']]))
@@ -2525,7 +3181,7 @@ class Settings:
 					self.opt[1] = 4
 					self.phone = 1
 					if res.CHAPTER == 0 and res.SCENE == 0:
-						self.ch_ton.play(res.SOUND['CALLING'],-1)
+						self.sfx.play(res.SOUND['CALLING'],-1)
 						self.ch_rng.play(res.SOUND['RINGTONE_' + str(self.phn.pbg)],-1)
 						self.phone = 17
 						self.nb = '977904623'
