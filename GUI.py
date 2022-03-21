@@ -57,7 +57,7 @@ class Test:
 		self.clock.tick(60)
 		
 class Popup:
-	def __init__(self,gui,rect=(100,100),msg=None,miniature=None):
+	def __init__(self,gui,rect=(100,100),msg=None,miniature=None,deletable=True):
 		self.fnt = {'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40),'MESSAGE': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE)}
 		self.bdsz = 10
 		self.top = 50
@@ -92,7 +92,9 @@ class Popup:
 		self.optrects = [pygame.Rect(self.bdsz,self.bdsz,30,30),pygame.Rect(self.surface.get_width() - self.bdsz - 30,self.bdsz,30,30)]
 		if miniature != None: self.optrects.append(pygame.Rect(self.surface.get_width() - self.bdsz - 70,self.bdsz,30,30))
 		self.phnbr = PhoneBar(35)
+		self.show = True
 		self.min = False
+		self.deletable = deletable
 		
 	def inside_events(self,pressed):
 		mp = pygame.mouse.get_pos()
@@ -104,7 +106,9 @@ class Popup:
 			elif pygame.Rect.colliderect(self.btrects[1],mr2): self.gui = None; return False
 		if pressed[4][0]:
 			if self.min == False:
-				if pygame.Rect.colliderect(self.optrects[1],mr2): self.gui = None
+				if pygame.Rect.colliderect(self.optrects[1],mr2):
+					if self.deletable: self.gui = None
+					else: self.show = False
 				if len(self.optrects) > 2 and pygame.Rect.colliderect(self.optrects[2],mr2): self.min = not self.min
 	
 	def outside_events(self,pressed):

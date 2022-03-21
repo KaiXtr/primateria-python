@@ -100,7 +100,7 @@ CC = False #close caption
 DISLEXIC = False #spaced font
 BTYPE = 2 #1=turns,2=dynamic,3=action
 
-PARTY = [[0,1]]
+PARTY = [[0]]
 FORMATION = 0
 CALLHIST = []
 CONTACTS = []

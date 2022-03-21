@@ -19,13 +19,16 @@ else: dtb = __import__('database_' + res.MAINLANG)
 
 class Initialize:
 	def __init__(self):
+		osinfo = platform.uname()
 		print(res.GNAME.upper() + ' v.' + res.VERSION + ' - ' + res.AUTHOR + ' ' + res.YEAR)
+		print(osinfo.system + ' ' + osinfo.machine + ' ' + osinfo.node + ' ' + osinfo.release + ' ' + osinfo.version)
 		pygame.init()
 		pygame.mixer.init()
 		pygame.display.set_caption(res.GNAME)
 		pygame.display.set_icon(pygame.image.load('icon.ico'))
 		pygame.mouse.set_visible(False)
-		if platform.uname().system == 'Windows':
+		self.glock = pygame.time.Clock()
+		if osinfo.system == 'Windows':
 			self.windoww = 800
 			self.windowh = 600
 			res.MOUSE = 1
@@ -45,7 +48,6 @@ class Initialize:
 		self.srf = pygame.Surface((600,400),pygame.SRCALPHA)
 		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 22)}
 		pygame.mixer.music.set_volume(res.MSC)
-		self.glock = pygame.time.Clock()
 		self.alpha = 0
 		self.wait = 0
 		self.mnu = 0
@@ -450,7 +452,7 @@ while True: e.test()
 class MapHandler(xml.sax.ContentHandler):
 	def __init__(self):
 		self.window = pygame.display.set_mode((400,300))
-		self.surface = pygame.Surface((0,0))
+		self.surfaces = [pygame.Surface((0,0)) for i in range(8)]
 		self.current = ''
 		self.map = None
 		self.properties = {}
@@ -470,7 +472,7 @@ class MapHandler(xml.sax.ContentHandler):
 		self.current = tag
 		if tag == 'map':
 			self.map = {i[0]: int(i[1]) for i in attributes.items() if i[0] not in ['version','tiledversion','orientation','renderorder']}
-			self.surface = pygame.Surface((self.map['width'] * self.map['tilewidth'],self.map['height'] * self.map['tileheight']))
+			self.surfaces = [pygame.Surface((self.map['width'] * self.map['tilewidth'],self.map['height'] * self.map['tileheight'])) for i in range(8)]
 		if tag == 'property': self.properties[attributes['name']] = attributes['value']
 		if tag == 'tileset': pass
 
@@ -503,16 +505,16 @@ class MapHandler(xml.sax.ContentHandler):
 				parser.parse(res.TILESETS_PATH + t)
 				tls = {**tls,**hh.tiles}
 				gid += hh.properties['length']
-			for i in self.layers:
+			for i in range(len(self.layers)):
 				pos = 0
 				for y in range(self.map['height']):
 					for x in range(self.map['width']):
-						if i[pos] > 0:
+						if self.layers[i][pos] > 0:
 							cor = (x * self.map['tilewidth'],y * self.map['tileheight'])
-							self.surface.blit(tls[i[pos]]['IMG'],cor)
-							if tls[i[pos]]['TYPE'] == 'sidewalk': self.sidewalk.append(cor)
-							if tls[i[pos]]['TYPE'] == 'street': self.streets.append(cor)
-							if tls[i[pos]]['TYPE'] == 'crossing': self.crossing.append(cor)
+							self.surfaces[i].blit(tls[self.layers[i][pos]]['IMG'],cor)
+							if tls[self.layers[i][pos]]['TYPE'] == 'sidewalk': self.sidewalk.append(cor)
+							if tls[self.layers[i][pos]]['TYPE'] == 'street': self.streets.append(cor)
+							if tls[self.layers[i][pos]]['TYPE'] == 'crossing': self.crossing.append(cor)
 						pos += 1
 		self.current = ''
 
@@ -568,6 +570,12 @@ class MapHandler(xml.sax.ContentHandler):
 		file = open(res.MAPS_PATH + nn + '.tmx','w')
 		file.write(contents)
 		file.close()
+		
+	def draw(self):
+		pass
+		#REGULAR GROUND
+		#self.surfaces[0].blit(self.tilmap[0][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+		#if len(self.tilmap[1]) > 0: self.display[0].blit(self.tilmap[1][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
 
 	def test(self):
 		for event in pygame.event.get():
@@ -1279,13 +1287,14 @@ class Game:
 			self.phone = 1
 			self.mnu = 1
 		else:
-			'''self.tilrect = [[437,437,437,437,437,0,437,437,437,0,0,437,437,437,0,0,437,437,437,0,0,0,0,0,0],
-							[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]'''
+			self.tilrect = [[437,437,437,437,437,0,437,437,437,0,0,437,437,437,0,0,437,437,437,0,0,0,0,0,0],
+							[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
 			parser = xml.sax.make_parser()
 			parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 			self.map = MapHandler()
 			parser.setContentHandler(self.map)
 			parser.parse(res.MAPS_PATH + 'savetest.tmx')
+			self.tilmap = [[i,i] for i in self.map.surfaces]
 
 	def people(self,i,t):
 		doll = None
@@ -2262,6 +2271,8 @@ class Game:
 					self.notification.append({'TEXT': self.foe[0]['NAME'] + ' registrada', 'COLOR': (134, 0, 211), 'HALIGN': 'left','X': 0})
 			#MINIGAMES EVENTS
 			if self.minigame != None: self.minigame.events(event)
+			for i in self.guis:
+				if i.show: i.inside_events(self.pressed,self.click)
 			#READING OPTIONS
 			if self.read != None:
 				self.read.inside_events(self.pressed)
@@ -2375,6 +2386,8 @@ class Game:
 		if self.phone > 0 and self.dev != None: self.dev.outside_events(self.pressed)
 		#READING SCROLL
 		if self.read != None: self.read.outside_events(self.pressed)
+		for i in self.guis:
+			if i.show: i.outside_events(pressed)
 		#MOVE CAMERA
 		if self.map:
 			dir = 0
@@ -4041,11 +4054,11 @@ class Game:
 		#TILED MAP
 		elif self.map and self.turn != -6:
 			#SKY
-			if len(self.tilmap[3]) > 0:
+			if len(self.tilmap) > 2:
 				tt = (res.TIME[0] * 60) + res.TIME[1]
 				img = self.tilmap[3][0]
 				self.display[0].blit(img, (0, -int(tt * ((img.get_height() - (img.get_height()/self.displayzh))/1440))))
-				if len(self.tilrect[6]) > 0:
+				if len(self.tilrect) > 5:
 					for i in range(2):
 						aa = ((tt)/240) + 2 + (i * 3)
 						xx = int(math.cos(aa) * 100) + int(self.displayzw/2)
@@ -4058,9 +4071,10 @@ class Game:
 			for t in self.tilmap[4:]:
 				if len(t) > 0: self.display[0].blit(t[math.floor(self.tilemation)], (-math.floor(self.cam.x/px), -math.floor(self.cam.y/px)))
 				px += 3
-			#REGULAR GROUND
-			self.display[0].blit(self.tilmap[0][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
-			if len(self.tilmap[1]) > 0: self.display[0].blit(self.tilmap[1][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+			#MAP FLOOR
+			if self.map:
+				self.map.draw()
+				self.display[0].blit(self.map.surfaces[0],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
 			#PROPS
 			ind = 0
 			for i in list(filter(lambda item: item != None, self.tilrect[0] + self.tilrect[1])):
@@ -4385,7 +4399,7 @@ class Game:
 			if self.map:
 				if res.MAP != 'rodoviary':
 					if self.turn != -6 and res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] != 12:
-						if len(self.tilmap[2]) > 0: self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)],(0,0),(self.cam.x, self.cam.y,self.displayzw,self.displayzh))
+						if len(self.tilmap) > 1: self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)],(0,0),(self.cam.x, self.cam.y,self.displayzw,self.displayzh))
 				else:
 					self.bbg['X'] += 0.2
 					if math.floor(self.bbg['X']) > (self.map.width * self.map.tilewidth): self.bbg['X'] = 0.0
@@ -5302,7 +5316,7 @@ class Game:
 		chk = False
 		for i in res.INVENTORY[res.PARTY[res.FORMATION][0]]:
 			if i[0][0].startswith('head_glasses'): chk = True; break
-		if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['FLAW'] != 'myopia': chk = not chk
+		if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['FLAW'] == 'myopia': chk = not chk
 		if chk == False:
 			srf = pygame.transform.scale(self.display[0], (self.displayzw * res.GSCALE, self.displayzh * res.GSCALE))
 			srf.set_alpha(100)
