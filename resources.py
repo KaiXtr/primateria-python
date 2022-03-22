@@ -117,7 +117,7 @@ for u in range(6):
 			INVENTORY[u][y].append(['_','0000'])
 INVENTORY[0] = [
 	[['amulet1','0000'],['phone','3600','simcard1','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
-	[['vest1','7'],['til_grass','infinite'],['til_color','infinite'],['til_metalbars','infinite'],['food_pizza_4cheese','0000']],
+	[['clth_shirt1','7'],['til_grass','infinite'],['til_color','infinite'],['til_metalbars','infinite'],['food_pizza_4cheese','0000']],
 	[['head_glasses1','0000'],['guit_load','0'],['guit_save','0000'],['guit_undo','0000'],['guit_redo','0000']],
 	[['head_hairclip','0000'],['guit_pencil','0000'],['guit_erase','0000'],['guit_dropper','0000'],['_','0000']],
 	[['bag1','0000'],['bomb_regular','3'],['pow_triplebubble','3'],['cigar','0000'],['_','0000']]

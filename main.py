@@ -213,7 +213,7 @@ class Avatar:
 		self.player = {'RECT': pygame.Rect(res.PX,res.PY,20,20),'SPEED': 0,'ACC': 0,'SPEEDLOCK': False,'JUMP': 0,'GRAVITY': -5,'STEP': 10,
 			'SWIM': None,'HEAT': res.TEMPERATURE,'HEAD': 'D','SPRITE': 'STANDD','SCORE': 0,'DRIVING': None,'SLEEP': False,'POSTURE': 1,
 			'HAIR': res.CHARACTERS[0]['HAIR'],'SKIN': res.CHARACTERS[0]['SKIN'],
-			'ACCESORIES': self.inv.find(0,['head'],'position'),'COSTUME': self.inv.find(0,['clth'],'position'),
+			'ACCESORIES': self.inv.find(0,['head'],'position'),'COSTUME': self.inv.find(0,['clth_shirt1'],'position'),
 			'GIF': 0.0,'BLINK': 100,'INVFRM': 0,'DMGTIM': 100,'SHK': 0,'DIRECTION': 3,'PAUSE': 0,
 			'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','PLAYING': False,'NODES': [],'HOLD': None}
 		self.donesprites = {}
@@ -369,8 +369,8 @@ class Avatar:
 						else: body_img = res.SPRITES[i['SPRITE']][math.floor(i['GIF'])].copy()
 						body_img.fill((res.PALETTES[0][int(i['SKIN'])]),None,pygame.BLEND_RGBA_MULT)
 						#CLOTHES
-						'''clth_img = []
-						if t and i['COSTUME'] != [] and int(i['DIRECTION']) < 6:
+						clth_img = []
+						if t and i['COSTUME'] and int(i['DIRECTION']) < 6:
 							for clth in i['COSTUME']:
 								it = res.INVENTORY[clth[0]][clth[1]][clth[2]][clth[3]]
 								cc = pygame.image.load(res.TEMP_PATH + it[0:-2] + '_' + i['SPRITE'] + '.png')
@@ -378,7 +378,7 @@ class Avatar:
 								clth_img.append(cc)
 						if clth_img != []:
 							for clth in clth.img:
-								body_img.blit(clth,(0,0))'''
+								body_img.blit(clth,(0,0))
 					#SWIMMING
 					else:
 						xsp += 21
