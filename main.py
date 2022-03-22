@@ -196,7 +196,41 @@ m = ModeSeven((200,200),20)
 while True: m.test()'''
 		
 
-class Enemy:
+class Avatar:
+	def __init__(self):
+		self.brd = pygame.Surface((200,150))
+		for x in range(math.ceil(self.brd.get_width()/10)):
+			for y in range(math.ceil(self.brd.get_height()/10)):
+				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10, y * 10))
+		self.scr = [pygame.Surface((200,150)), pygame.Surface((400,300), pygame.SRCALPHA)]
+		self.fnt = {'MEDIUM': pygame.font.SysFont('Calibri', 40), 'SMALL': pygame.font.SysFont('Calibri', 20)}
+		self.ingame = 0
+		self.sfx = pygame.mixer.Channel(0)
+		self.sfx.set_volume(res.SFX)
+		
+	def inside_events(self,pressed):
+		if pressed[2][0]: self.page = 0; self.sfx.play(res.SOUND['PAGE_FLIP'])
+		if pressed[3][0]: self.page = 1; self.sfx.play(res.SOUND['PAGE_FLIP'])
+		
+	def outside_events(self,pressed):
+		pass
+		
+	def draw(self,doll,data):
+		sz = self.scr[0].get_width() #button width
+		for i in self.scr: i.fill((0,0,0,0))
+		self.scr[0].fill((100,200,100))
+		pygame.draw.rect(self.scr[0],(10,40,10),pygame.Rect(0,0,400,300),10)
+		
+		if self.page == 0:
+			img = pygame.image.load(res.SPRITES_PATH + 'pht_' + str(self.who) + '.png')
+			pygame.draw.rect(self.scr[0],(250,250,250),pygame.Rect(15,15,img.get_rect().width,img.get_rect().height))
+			self.scr[0].blit(img, (15, 15))
+		if self.page == 1:
+			self.scr[1].blit(self.fnt['SMALL'].render('REGISTRO', True, (10,40,10)), (15, 15))
+			
+		return self.scr
+
+class NPC:
 	def __init__(self,index,pos):
 		self.item = None
 		for i in dtb.FREAKS[index].items():
@@ -445,20 +479,25 @@ class Enemy:
 		pygame.time.Clock().tick(res.FPS)
 
 '''
-e = Enemy('4.1.1',(50,50))
+e = NPC('4.1.1',(50,50))
 while True: e.test()
 '''
 
 class MapHandler(xml.sax.ContentHandler):
 	def __init__(self):
 		self.window = pygame.display.set_mode((400,300))
-		self.surfaces = [pygame.Surface((0,0)) for i in range(8)]
-		self.current = ''
-		self.map = None
-		self.properties = {}
+		self.surfaces = [None for i in range(5)]
+		self.layers = [[] for i in range(5)]
 		self.tileset = []
-		self.layers = []
+		self.srflvl = 0
+		self.current = None
 		self.content = ''
+
+		self.interior = 0
+		self.hscroll = 0
+		self.vscroll = 0
+		self.city = 0
+		self.edit = False
 		
 		self.npcs = [{'RECT': pygame.Rect(x * 30,60,25,25), 'DIRECTION': 1} for x in range(3)]
 		self.cars = [{'RECT': pygame.Rect(x * 30,90,25,25), 'DIRECTION': 1} for x in range(3)]
@@ -469,16 +508,24 @@ class MapHandler(xml.sax.ContentHandler):
    
 	def startElement(self, tag, attributes):
 		tag = tag.lower()
-		self.current = tag
+		lst = ['floor','walls','ceil']
 		if tag == 'map':
-			self.map = {i[0]: int(i[1]) for i in attributes.items() if i[0] not in ['version','tiledversion','orientation','renderorder']}
-			self.surfaces = [pygame.Surface((self.map['width'] * self.map['tilewidth'],self.map['height'] * self.map['tileheight'])) for i in range(8)]
-		if tag == 'property': self.properties[attributes['name']] = attributes['value']
+			for i in [i[0] for i in attributes.items() if i[0] not in ['version','tiledversion','orientation','renderorder']]:
+				setattr(self, i, int(attributes[i]))
+			self.surfaces = [pygame.Surface((int(attributes['width']) * int(attributes['tilewidth']),int(attributes['height']) * int(attributes['tileheight'])),pygame.SRCALPHA) for i in range(5)]
+		if tag == 'property': setattr(self, attributes['name'], attributes['value'])
 		if tag == 'tileset': pass
+		if tag in lst: self.srflvl = lst.index(tag)
+		if tag == 'layer':
+			dct = {i[0]: i[1] for i in attributes.items()}
+			dct['data'] = []
+			dct['surface'] = pygame.Surface((int(attributes['width']) * self.tilewidth,int(attributes['height']) * self.tileheight),pygame.SRCALPHA)
+			self.layers[self.srflvl].append(dct)
+		self.current = tag
 
 	def characters(self, content):
 		content = content.lower()
-		if self.current == "data" and content:
+		if self.current == "layer" and content:
 			tt = content
 			for i in ['\n',' ','	',',']:
 				tt = tt.replace(i,'')
@@ -486,42 +533,47 @@ class MapHandler(xml.sax.ContentHandler):
 	
 	def endElement(self, tag):
 		tag = tag.lower()
-		if tag == 'data':
-			if self.content:
-				tt = []
-				for t in range(len(self.content[::3])):
-					lid = self.content[t * 3:(t + 1) * 3]
-					if int(lid) not in self.tileset: self.tileset.append(int(lid))
-					tt.append(int(lid))
-				self.layers.append(tt)
+		lst = ['floor','walls','ceil']
+
+		if tag == 'layer' and self.content:
+			ldx = len(self.layers[self.srflvl]) - 1
+			for t in range(len(self.content[::3])):
+				lid = self.content[t * 3:(t + 1) * 3]
+				if int(lid) not in self.tileset: self.tileset.append(int(lid))
+				self.layers[self.srflvl][ldx]['data'].append(int(lid))
 		if tag == 'map':
 			parser = xml.sax.make_parser()
 			parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 			tls = {}
-			gid = 626
-			for t in ['streets.tsx']: #os.listdir(res.TILESETS_PATH):
-				hh = TileHandler(self.tileset,gid)
-				parser.setContentHandler(hh)
+			gid = 1
+			for t in os.listdir(res.TILESETS_PATH):
+				tset = TileHandler(self.tileset,gid)
+				parser.setContentHandler(tset)
 				parser.parse(res.TILESETS_PATH + t)
-				tls = {**tls,**hh.tiles}
-				gid += hh.properties['length']
-			for i in range(len(self.layers)):
-				pos = 0
-				for y in range(self.map['height']):
-					for x in range(self.map['width']):
-						if self.layers[i][pos] > 0:
-							cor = (x * self.map['tilewidth'],y * self.map['tileheight'])
-							self.surfaces[i].blit(tls[self.layers[i][pos]]['IMG'],cor)
-							if tls[self.layers[i][pos]]['TYPE'] == 'sidewalk': self.sidewalk.append(cor)
-							if tls[self.layers[i][pos]]['TYPE'] == 'street': self.streets.append(cor)
-							if tls[self.layers[i][pos]]['TYPE'] == 'crossing': self.crossing.append(cor)
-						pos += 1
-		self.current = ''
+				tls = {**tls,**tset.tiles}
+				gid += tset.lenght
+			for i in range(5):
+				for ldx in range(len(self.layers[i])):
+					#DRAW LAYERS
+					for y in range(int(self.layers[i][ldx]['height'])):
+						for x in range(int(self.layers[i][ldx]['width'])):
+							t = self.layers[i][ldx]['data'][x + (y * int(self.layers[i][ldx]['height']))]
+							if t > 0: self.layers[i][ldx]['surface'].blit(tls[t]['IMG'],(x * self.tilewidth,y * self.tileheight))
+					#DRAW SURFACES
+					for l in self.layers[i]:
+						if 'offsetx' in l.keys(): cor = (int(l['offsetx']) * self.tilewidth,int(l['offsety']) * self.tileheight)
+						else: cor = (0,0)
+						self.surfaces[i].blit(l['surface'],cor)
+				'''if tls[self.layers[i][pos]]['TYPE'] == 'sidewalk': self.sidewalk.append(cor)
+				if tls[self.layers[i][pos]]['TYPE'] == 'street': self.streets.append(cor)
+				if tls[self.layers[i][pos]]['TYPE'] == 'crossing': self.crossing.append(cor)'''
+		self.current = None
+		self.content = ''
 
 	def save(self, mp=None):
 		contents = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
-		'<map version="1.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="{}" height="{}" '.format(self.map['width'],self.map['height'])
-		contents += 'tilewidth="{}" tileheight="{}" infinite="0" nextlayerid="14" nextobjectid="77">\n'.format(self.map['tilewidth'],self.map['tileheight'])
+		'<map version="1.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="{}" height="{}" '.format(self.width,self.height)
+		contents += 'tilewidth="{}" tileheight="{}" infinite="0" nextlayerid="14" nextobjectid="77">\n'.format(self.tilewidth,self.tileheight)
 		if len(self.mapdata['PROPERTIES']) > 0:
 			contents += '	<properties>\n'
 			for p in self.mapdata['PROPERTIES'].items():
@@ -536,17 +588,17 @@ class MapHandler(xml.sax.ContentHandler):
 		id = 1
 		tid = 0
 		oid = 1
-		for i in self.map['TILES']:
-			contents += '	<layer id="{}" name="TILE LAYER {}" width="{}" height="{}">\n'.format(id,tid + 1,self.map['width'],self.map['height'])
+		for i in self.tileset:
+			contents += '	<layer id="{}" name="TILE LAYER {}" width="{}" height="{}">\n'.format(id,tid + 1,self.width,self.height)
 			contents += '		<data encoding="csv">\n'
 			dd = ''
 			for d in i: dd += self.guitools.digitstring(d,3) + ','
 			for d in range(self.map['width']):
-				contents += '			' + str(dd[d * (self.map['width']) * 4:(d + 1) * (self.map['height']) * 4]) + '\n'
+				contents += '			' + str(dd[d * (self.width) * 4:(d + 1) * (self.height) * 4]) + '\n'
 			contents = contents[0:-2] + '\n		</data>\n	</layer>\n'
 			tid += 1
 
-		for i in self.map['layers']:
+		for i in self.layers:
 			nol = False
 			if i.name.startswith('Camada'): nol = True
 			elif i.name.startswith('TILE LAYER'): nol = True
@@ -573,9 +625,15 @@ class MapHandler(xml.sax.ContentHandler):
 		
 	def draw(self):
 		pass
+		'''
 		#REGULAR GROUND
-		#self.surfaces[0].blit(self.tilmap[0][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
-		#if len(self.tilmap[1]) > 0: self.display[0].blit(self.tilmap[1][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+		self.surfaces[0].blit(self.tilmap[0][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+		if len(self.tilmap[1]) > 0: self.display[0].blit(self.tilmap[1][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+		#MIRROR SURFACES
+		for i in self.tilrect[5]:
+			self.display[0].blit(i[0],(i[1].x - self.cam.x, i[1].y - self.cam.y))
+			if self.rectdebug: pygame.draw.rect(self.display[0],(0,0,255),pygame.Rect(i[1].x - self.cam.x,i[1].y - self.cam.y,i[1].width,i[1].height),3)
+		'''
 
 	def test(self):
 		for event in pygame.event.get():
@@ -583,7 +641,7 @@ class MapHandler(xml.sax.ContentHandler):
 				pygame.quit()
 				exit()
 		self.window.fill((100,100,100))
-		self.window.blit(self.surface,(0,0))
+		for i in self.surfaces: self.window.blit(i,(0,0))
 		self.traflight += 1
 		if self.traflight > 240: self.traflight = 0
 		for i in self.sidewalk: pygame.draw.rect(self.window,(100,100,200),pygame.Rect(i[0],i[1],30,30),2)
@@ -635,37 +693,47 @@ class TileHandler(xml.sax.ContentHandler):
 	def __init__(self,lst,first):
 		self.ind = ''
 		self.img = None
-		self.properties = {}
 		self.tileset = lst
 		self.tiles = {}
 		self.tilprp = {} #for old tiled tileset versions
 		self.tilani = []
 		self.first = first
 		self.gid = 0
+
+		self.rows = None
+		self.columns = None
    
 	def startElement(self, tag, attributes):
 		if tag == 'tileset':
-			self.properties = {i[0]: int(i[1]) for i in attributes.items() if i[0] not in ['version','tiledversion','name']}
-			self.properties['length'] = self.properties['rows'] * self.properties['columns']
-		if tag == 'img':
+			for i in [i[0] for i in attributes.items() if i[0] not in ['version','tiledversion','name']]:
+				setattr(self, i, int(attributes[i]))
+			if self.rows == None: self.rows = int(self.tilecount/self.columns)
+			self.lenght = self.rows * self.columns
+		if tag in ['img','image']:
 			self.img = pygame.image.load(res.TILESETS_PATH + attributes['source'])
+			self.width = self.img.get_width(); self.height = self.img.get_height()
 		if tag == 'tile':
-			if int(attributes['id']) + self.first in self.tileset:
+			#if int(attributes['id']) + self.first in self.tileset:
+			if True:
 				lid = int(attributes['id'])
 				self.gid = int(attributes['id']) + self.first
-				xx = (lid - (int(lid/self.properties['columns']) * self.properties['columns'])) * self.properties['tilewidth']
-				yy = int(lid/self.properties['rows']) * self.properties['tileheight']
-				rct = (xx,yy,self.properties['tilewidth'],self.properties['tileheight'])
+				xx = (lid - (math.floor(lid/self.columns) * self.columns)) * self.tilewidth
+				yy = 0
+				rct = (xx,yy,self.tilewidth,self.tileheight)
+				print(lid)
+				print(rct)
 				self.tiles[self.gid] = {'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0)}
 				for x in attributes.items(): self.tiles[self.gid][x[0].upper()] = x[1]
 		if tag == 'properties': self.tilprp = {}
 		if tag == 'property': self.tilprp[attributes['name']] = attributes['value']
 		if tag == 'animation': self.tilani = []
-		if tag == 'frame': self.tilani.append(attributes['tile'])
+		if tag == 'frame':
+			if 'tileid' in attributes.keys(): self.tilani.append(attributes['tileid'])
+			else: self.tilani.append(attributes['tile'])
 		self.ind = tag
 
 	def endElement(self, tag):
-		if tag == 'tile':
+		if tag == 'tile' and self.gid > 0:
 			for i in self.tilprp.items(): self.tiles[self.gid][i[0]] = i[1]
 			if self.tilani: self.tiles[self.gid]['ANIMATION'] = self.tilani
 		self.ind = ''
@@ -688,6 +756,13 @@ class TileHandler(xml.sax.ContentHandler):
 		file = open(res.MAPS_PATH + ff + '.xml','w')
 		file.write(contents)
 		file.close()
+
+parser = xml.sax.make_parser()
+parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+map = MapHandler()
+parser.setContentHandler(map)
+parser.parse(res.MAPS_PATH + 'savetest.tmx')
+while True: map.test()
 
 class Map:
 	def __init__(self):
@@ -2411,7 +2486,7 @@ class Game:
 		if self.pressed[4][0]: do = True
 		if pygame.mouse.get_pressed()[0]: do = True
 		if self.editing and do and self.paint != '' and self.battle == False and self.phone == 0 and self.player[0]['PAUSE'] == 0:
-			if self.inv.type == 0 and self.map.properties['EDIT']:
+			if self.inv.type == 0 and self.map.edit:
 				self.ch_sfx.play(res.SOUND['PAINT'])
 				mse = [math.floor((self.cam.x + int(self.click.x/res.GSCALE))/self.mapdata['TILEWIDTH']),
 				math.floor((self.cam.y + int(self.click.y/res.GSCALE))/self.mapdata['TILEHEIGHT'])]
@@ -3349,7 +3424,7 @@ class Game:
 			elif self.foe[0]['TYPE'] == 'boss': self.ch_ton.play(res.SOUND['BATTLE_BOSS'])
 			if self.player[0]['DRIVING'] != None: self.obstacles = True
 			#BACKGROUND
-			self.bbg['IMAGE'] = pygame.image.load(res.BACKG_PATH + 'bt_' + self.map.properties['HABITAT'] + '.png')
+			self.bbg['IMAGE'] = pygame.image.load(res.BACKG_PATH + 'bt_' + self.map.habitat + '.png')
 			self.bbg['X'] = 0
 			self.bbg['ACC'] = 0
 			self.bbg['DIRECTION'] = False
@@ -4053,7 +4128,8 @@ class Game:
 			self.display[0].blit(self.inv.bar(1,4,(1,5),'vertical'),(0,0))
 		#TILED MAP
 		elif self.map and self.turn != -6:
-			#SKY
+			self.map.draw()
+			'''#SKY
 			if len(self.tilmap) > 2:
 				tt = (res.TIME[0] * 60) + res.TIME[1]
 				img = self.tilmap[3][0]
@@ -4070,73 +4146,69 @@ class Game:
 			px = 2
 			for t in self.tilmap[4:]:
 				if len(t) > 0: self.display[0].blit(t[math.floor(self.tilemation)], (-math.floor(self.cam.x/px), -math.floor(self.cam.y/px)))
-				px += 3
+				px += 3'''
 			#MAP FLOOR
-			if self.map:
-				self.map.draw()
-				self.display[0].blit(self.map.surfaces[0],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+			self.display[0].blit(self.map.surfaces[0],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
 			#PROPS
-			ind = 0
-			for i in list(filter(lambda item: item != None, self.tilrect[0] + self.tilrect[1])):
-				if i != None:
-					if i[0]['TYPE'] == 'COLOR':
-						if i[0]['SCALE'] == self.map.tilewidth: img = i[0]['IMAGE'][i[0]['COLOR']]
-						else:
-							img = pygame.transform.scale(i[0]['IMAGE'][i[0]['COLOR']],(i[0]['SCALE'],self.map.tileheight))
-							i[0]['SCALE'] += 1
-						self.display[0].blit(img, (i[1].x - self.cam.x, i[1].y - self.cam.y))
-					if i[0]['TYPE'] in ['TREADMILL','PORTAL']:
-						self.display[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
-						i[0]['GIF'] += 0.5
-						if i[0]['GIF'] == len(i[0]['IMAGE']):
-							i[0]['GIF'] = 0
-						sdist = 60
-						sarea = pygame.Rect(i[1].x - sdist,i[1].y - sdist,sdist * 2,sdist * 2)
-						"""sx = (self.player[0]['RECT'].x - sarea.x/sdist)
-						if sx > 1.0: sx -= 1.0
-						sy = (self.player[0]['RECT'].y - sarea.y/sdist)
-						if sy > 1.0: sy -= 1.0
-						i[0]['SFX'] = (sx + sy/2)
-						self.ch_ton.set_volume(i[0]['SFX'] * res.SFX)
-						self.ch_ton.play(res.SOUND['STEP_MOTOR'])"""
-					if i[0]['TYPE'] == 'MOVING':
-						self.display[0].blit(i[0]['IMAGE'], (i[1].x - self.cam.x, i[1].y - self.cam.y))
-						if i[0]['INOUT'] == False:
-							if i[0]['DIRECTION'] == 1: i[1].x -= 1
-							if i[0]['DIRECTION'] == 3: i[1].y -= 1
-						if i[0]['INOUT']:
-							if i[0]['DIRECTION'] == 1: i[1].x += 1
-							if i[0]['DIRECTION'] == 3: i[1].y += 1
-						i[0]['TIME'] += 1
-						if i[0]['TIME'] == 30:
-							i[0]['TIME'] = 0
-							i[0]['INOUT'] = not i[0]['INOUT']
-					if i[0]['TYPE'] == 'SPIKE':
-						self.display[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
-						if i[0]['TIME'] < 30: i[0]['TIME'] += 1
-						if i[0]['TIME'] == 30:
-							if i[0]['HIDE'] == False:
-								i[0]['GIF'] += 0.5
-								if int(i[0]['GIF']) == len(i[0]['IMAGE']) - 1:
-									i[0]['HIDE'] = True
-									i[0]['TIME'] = 0
-							elif i[0]['HIDE']:
-								i[0]['GIF'] -= 0.5
-								if int(i[0]['GIF']) == 0:
-									i[0]['HIDE'] = False
-									i[0]['TIME'] = 0
-					if i[0]['TYPE'] == 'JUMP' and i[0]['DIRECTION'] == 0:
-						self.display[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
-						if i[0]['GIF'] > 0: i[0]['GIF'] += 0.5
-						if int(i[0]['GIF']) == len(i[0]['IMAGE']) - 1: i[0]['GIF'] = 0
-					if i[0]['TYPE'] == 'SLIME':
-						self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'slime.png'), (i[1].x - self.cam.x, i[1].y - self.cam.y))
-				ind += 1
-			#MIRROR SURFACES
-			for i in self.tilrect[5]:
-				self.display[0].blit(i[0],(i[1].x - self.cam.x, i[1].y - self.cam.y))
-				if self.rectdebug: pygame.draw.rect(self.display[0],(0,0,255),pygame.Rect(i[1].x - self.cam.x,i[1].y - self.cam.y,i[1].width,i[1].height),3)
-		else: self.display[0].fill((250,10,10))
+			xxxx = False
+			if xxxx:
+				ind = 0
+				for i in list(filter(lambda item: item != None, self.tilrect[0] + self.tilrect[1])):
+					if i != None:
+						if i[0]['TYPE'] == 'COLOR':
+							if i[0]['SCALE'] == self.map.tilewidth: img = i[0]['IMAGE'][i[0]['COLOR']]
+							else:
+								img = pygame.transform.scale(i[0]['IMAGE'][i[0]['COLOR']],(i[0]['SCALE'],self.map.tileheight))
+								i[0]['SCALE'] += 1
+							self.display[0].blit(img, (i[1].x - self.cam.x, i[1].y - self.cam.y))
+						if i[0]['TYPE'] in ['TREADMILL','PORTAL']:
+							self.display[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							i[0]['GIF'] += 0.5
+							if i[0]['GIF'] == len(i[0]['IMAGE']):
+								i[0]['GIF'] = 0
+							sdist = 60
+							sarea = pygame.Rect(i[1].x - sdist,i[1].y - sdist,sdist * 2,sdist * 2)
+							"""sx = (self.player[0]['RECT'].x - sarea.x/sdist)
+							if sx > 1.0: sx -= 1.0
+							sy = (self.player[0]['RECT'].y - sarea.y/sdist)
+							if sy > 1.0: sy -= 1.0
+							i[0]['SFX'] = (sx + sy/2)
+							self.ch_ton.set_volume(i[0]['SFX'] * res.SFX)
+							self.ch_ton.play(res.SOUND['STEP_MOTOR'])"""
+						if i[0]['TYPE'] == 'MOVING':
+							self.display[0].blit(i[0]['IMAGE'], (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							if i[0]['INOUT'] == False:
+								if i[0]['DIRECTION'] == 1: i[1].x -= 1
+								if i[0]['DIRECTION'] == 3: i[1].y -= 1
+							if i[0]['INOUT']:
+								if i[0]['DIRECTION'] == 1: i[1].x += 1
+								if i[0]['DIRECTION'] == 3: i[1].y += 1
+							i[0]['TIME'] += 1
+							if i[0]['TIME'] == 30:
+								i[0]['TIME'] = 0
+								i[0]['INOUT'] = not i[0]['INOUT']
+						if i[0]['TYPE'] == 'SPIKE':
+							self.display[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							if i[0]['TIME'] < 30: i[0]['TIME'] += 1
+							if i[0]['TIME'] == 30:
+								if i[0]['HIDE'] == False:
+									i[0]['GIF'] += 0.5
+									if int(i[0]['GIF']) == len(i[0]['IMAGE']) - 1:
+										i[0]['HIDE'] = True
+										i[0]['TIME'] = 0
+								elif i[0]['HIDE']:
+									i[0]['GIF'] -= 0.5
+									if int(i[0]['GIF']) == 0:
+										i[0]['HIDE'] = False
+										i[0]['TIME'] = 0
+						if i[0]['TYPE'] == 'JUMP' and i[0]['DIRECTION'] == 0:
+							self.display[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							if i[0]['GIF'] > 0: i[0]['GIF'] += 0.5
+							if int(i[0]['GIF']) == len(i[0]['IMAGE']) - 1: i[0]['GIF'] = 0
+						if i[0]['TYPE'] == 'SLIME':
+							self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'slime.png'), (i[1].x - self.cam.x, i[1].y - self.cam.y))
+					ind += 1
+		else: self.display[0].fill((250,10,250))
 		#for t in self.tilrect[3]:
 		#	if self.rectdebug and t!= None: pygame.draw.rect(self.display[0],(255,0,0),pygame.Rect(t[1].x - self.cam.x,t[1].y - self.cam.y,t[1].width,t[1].height),3)
 		
@@ -4173,8 +4245,8 @@ class Game:
 									pygame.draw.rect(self.display[0], res.COLOR, pygame.Rect(i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40,16,13))
 								else: pygame.draw.rect(self.display[0], (255,10,10), pygame.Rect(i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40,16,13))
 								self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'hl_' + str(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HEALTH']) + '.png'), (i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40))
-							if self.map.properties['HSCROLL'] != 0 and i['RECT'].x < self.cam.x - self.map.tilewidth: res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HP'] = 0
-							if self.map.properties['VSCROLL'] != 0 and i['RECT'].y < self.cam.y - self.map.tileheight: res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HP'] = 0
+							if self.map.hscroll != 0 and i['RECT'].x < self.cam.x - self.map.tilewidth: res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HP'] = 0
+							if self.map.vscroll != 0 and i['RECT'].y < self.cam.y - self.map.tileheight: res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HP'] = 0
 							#MIRROR SURFACES
 							for t in self.tilrect[5]:
 								doll = pygame.transform.flip(doll,False,True)
@@ -4419,9 +4491,9 @@ class Game:
 				if y[0] == 'light':
 					if self.colide(y[1]['RECT'], self.cam):
 						srf.blit(y[1]['IMAGE'], (y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y),None,pygame.BLEND_RGBA_SUB)
-			if self.map and self.map.properties['INTERIOR'] == 0: self.display[0].blit(srf, (0,0))
+			if self.map and self.map.interior == 0: self.display[0].blit(srf, (0,0))
 			#RAIN
-			if self.map and self.map.properties['INTERIOR'] == 0 and res.WEATHER == 1 and res.MAP != 'rodoviary':
+			if self.map and self.map.interior == 0 and res.WEATHER == 1 and res.MAP != 'rodoviary':
 				if len(self.particles) < 100:
 					for i in range(5):
 						img = pygame.Surface((2,2),pygame.SRCALPHA)
@@ -4468,7 +4540,7 @@ class Game:
 			if len(self.particles) > 0:
 				for p in self.particles: self.particle(p)
 			#HIDE PLACES
-			if self.map:
+			if self.map and len(self.tilrect) > 3:
 				if self.tilhide == False and self.tilalpha > 0: self.tilalpha -= 20
 				if self.tilhide and self.tilalpha < 255: self.tilalpha += 20
 				if self.tilalpha < 0: self.tilalpha = 0
@@ -5108,12 +5180,7 @@ class Game:
 		#EASTER EGG
 		if self.cityname == 'TWNN': self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'TWNN.png'), (35,0))
 		#NOTIFICATIONS
-		i = 0
-		while i < len(self.notification):
-			if self.notification[i]['TEXT'] == None:
-				del self.notification[i]
-				i -= 1
-			i += 1
+		self.notification = [i for i in self.notification if i['TEXT'] != None]
 		y = [0,0]
 		for i in self.notification:
 			ch = res.CHARACTERS[res.PARTY[res.FORMATION][0]]
@@ -5287,7 +5354,7 @@ class Game:
 		if self.map:
 			cmgrd = [[0,(self.map.width * self.map.tilewidth) - self.displayzw],[0,(self.map.height * self.map.tileheight) - self.displayzh]]
 			lst = [[self.map.width * self.map.tilewidth,self.map.height * self.map.tileheight],[self.displayzw,self.displayzh]]
-			camscroll = [self.map.properties['HSCROLL'],self.map.properties['VSCROLL']]
+			camscroll = [self.map.hscroll,self.map.vscroll]
 		else:
 			cmgrd = [[0,300],[0,200]]
 			lst = [[300,200],[300,200]]
@@ -5600,7 +5667,7 @@ class Game:
 						if res.CHARACTERS[u]['HEALTH'] in (4,5,9,10,11):
 							res.CHARACTERS[u]['HEALTH'] = 0
 			#DAYS
-			if res.TIME[0] >= 24: res.DATE[0] += 1; res.DATE[3] += 1; res.TIME[0] = 0; res.TEMPERATURE = dtb.CITIES[self.map.properties['CITY']][1][res.DATE[1] - 1]
+			if res.TIME[0] >= 24: res.DATE[0] += 1; res.DATE[3] += 1; res.TIME[0] = 0; res.TEMPERATURE = dtb.CITIES[self.map.city][1][res.DATE[1] - 1]
 			#WEEKS
 			if res.DATE[3] > 7: res.DATE[3] = 1; res.DATE[4] += 1
 			if res.DATE[4] > 8: res.DATE[4] = 1

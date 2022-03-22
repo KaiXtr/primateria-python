@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="9" height="9" tilewidth="30" tileheight="30" infinite="0" nextlayerid="14" nextobjectid="77">
-	<properties>
-		<property name="EDIT" type="bool" value="True"/>
-		<property name="INTERIOR" type="int" value="0"/>
-		<property name="CITY" type="int" value="0"/>
-		<property name="HSCROLL" type="int" value="0"/>
-		<property name="VSCROLL" type="int" value="0"/>
-	</properties>
 	<floor>
-		<layer id="1" width="9" height="9">
-			<data encoding="csv">
-				632,632,629,626,630,626,629,632,632
-				632,632,629,626,632,626,629,632,632
-				629,629,629,627,627,627,629,629,629
-				626,626,628,626,626,626,628,626,626
-				641,641,628,626,629,626,628,641,641
-				626,626,628,626,626,626,628,626,626
-				629,629,629,627,627,627,629,629,629
-				632,632,629,626,631,626,629,632,632
-				632,632,629,626,631,626,629,632,632
-			</data>
+		<layer id="0" width="9" height="9">
+			581,581,580,577,582,577,580,581,581
+			581,581,580,577,581,577,580,581,581
+			580,580,580,578,578,578,580,580,580
+			577,577,579,577,577,577,579,577,577
+			582,582,579,577,580,577,579,582,582
+			577,577,579,577,577,577,579,577,577
+			580,580,580,578,578,578,580,580,580
+			581,581,580,577,631,577,580,581,581
+			581,581,580,577,631,577,580,581,581
+		</layer>
+		<layer id="1" width="3" height="3" offsetx="3" offsety="3">
+			581,581,581,
+			581,000,581,
+			581,581,581,
 		</layer>
 	</floor>
 </map>

@@ -430,7 +430,6 @@ class Guitools:
 		txt.append(t)
 		return txt
 
-
 class Backgrounds:
 	def __init__(self):
 		self.surface = pygame.Surface((640,1280))
@@ -1740,40 +1739,6 @@ class Vkeyboard:
 			r += 1
 		
 		return self.surface
-
-class Avatar:
-	def __init__(self):
-		self.brd = pygame.Surface((200,150))
-		for x in range(math.ceil(self.brd.get_width()/10)):
-			for y in range(math.ceil(self.brd.get_height()/10)):
-				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10, y * 10))
-		self.scr = [pygame.Surface((200,150)), pygame.Surface((400,300), pygame.SRCALPHA)]
-		self.fnt = {'MEDIUM': pygame.font.SysFont('Calibri', 40), 'SMALL': pygame.font.SysFont('Calibri', 20)}
-		self.ingame = 0
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
-		
-	def inside_events(self,pressed):
-		if pressed[2][0]: self.page = 0; self.sfx.play(res.SOUND['PAGE_FLIP'])
-		if pressed[3][0]: self.page = 1; self.sfx.play(res.SOUND['PAGE_FLIP'])
-		
-	def outside_events(self,pressed):
-		pass
-		
-	def draw(self,doll,data):
-		sz = self.scr[0].get_width() #button width
-		for i in self.scr: i.fill((0,0,0,0))
-		self.scr[0].fill((100,200,100))
-		pygame.draw.rect(self.scr[0],(10,40,10),pygame.Rect(0,0,400,300),10)
-		
-		if self.page == 0:
-			img = pygame.image.load(res.SPRITES_PATH + 'pht_' + str(self.who) + '.png')
-			pygame.draw.rect(self.scr[0],(250,250,250),pygame.Rect(15,15,img.get_rect().width,img.get_rect().height))
-			self.scr[0].blit(img, (15, 15))
-		if self.page == 1:
-			self.scr[1].blit(self.fnt['SMALL'].render('REGISTRO', True, (10,40,10)), (15, 15))
-			
-		return self.scr
 		
 class PhoneBar:
 	def __init__(self,bt):
