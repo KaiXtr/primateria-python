@@ -198,15 +198,222 @@ while True: m.test()'''
 
 class Avatar:
 	def __init__(self):
+		self.window = pygame.display.set_mode((600, 600))
+		self.surface = pygame.Surface((400, 600))
 		self.brd = pygame.Surface((200,150))
 		for x in range(math.ceil(self.brd.get_width()/10)):
 			for y in range(math.ceil(self.brd.get_height()/10)):
 				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10, y * 10))
 		self.scr = [pygame.Surface((200,150)), pygame.Surface((400,300), pygame.SRCALPHA)]
 		self.fnt = {'MEDIUM': pygame.font.SysFont('Calibri', 40), 'SMALL': pygame.font.SysFont('Calibri', 20)}
+		self.inv = GUI.Inventory((0,0),0)
 		self.ingame = 0
 		self.sfx = pygame.mixer.Channel(0)
 		self.sfx.set_volume(res.SFX)
+		self.player = {'RECT': pygame.Rect(res.PX,res.PY,20,20),'SPEED': 0,'ACC': 0,'SPEEDLOCK': False,'JUMP': 0,'GRAVITY': -5,'STEP': 10,
+			'SWIM': None,'HEAT': res.TEMPERATURE,'HEAD': 'D','SPRITE': 'STANDD','SCORE': 0,'DRIVING': None,'SLEEP': False,'POSTURE': 1,
+			'HAIR': res.CHARACTERS[0]['HAIR'],'SKIN': res.CHARACTERS[0]['SKIN'],
+			'ACCESORIES': self.inv.find(0,['head'],'position'),'COSTUME': self.inv.find(0,['clth'],'position'),
+			'GIF': 0.0,'BLINK': 100,'INVFRM': 0,'DMGTIM': 100,'SHK': 0,'DIRECTION': 3,'PAUSE': 0,
+			'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','PLAYING': False,'NODES': [],'HOLD': None}
+		self.donesprites = {}
+		res.spr()
+
+	def people(self,i,t):
+		doll = None
+		#ANIMATION
+		if i['PAUSE'] < 2: i['GIF'] += 0.5
+		if i['GIF'] >= len(res.SPRITES[i['SPRITE']]): i['GIF'] = 0
+		if i['PAUSE'] < 2: i['BLINK'] -= 1
+		if i['BLINK'] < 0: i['BLINK'] = round(random.randint(30,90))
+		#JUMP
+		if i['GRAVITY'] > -5:
+			i['JUMP'] += i['GRAVITY']
+			i['GRAVITY'] -= 0.5
+		if i['SPRITE'].startswith('SLEEP') == False:
+			visible = True
+			if t:
+				if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] == 23: visible = False
+				if i['INVFRM'] > 0:
+					visible = not bool(i['INVFRM']%2)
+					i['INVFRM'] -= 1
+					if i['INVFRM'] == 0: self.sttsy = 0
+			#MAP ICON
+			if res.MAP == 'rodoviary':
+				self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'mp_player.png'), (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y))
+			else:
+				#DONE SPRITE
+				sprstr = str(i['HAIR'][0]) + str(i['HAIR'][1]) + str(i['HAIR'][2]) + i['HEAD'] + str(math.floor(i['BLINK'])) + \
+				'_' + i['SPRITE'] + str(i['SKIN']) + str(math.floor(i['GIF']))
+				if sprstr in self.donesprites: doll = self.donesprites[sprstr]
+				else:
+					#EXTRA SPACEMENT
+					if i['SPRITE'].startswith('STAND'): lst = [0,1,1,0]
+					elif i['SPRITE'].startswith('TIREDSTAND'): lst = [0,1]
+					elif i['SPRITE'].startswith('JUMP'): lst = [0,1]
+					elif i['SPRITE'].startswith('WALK'): lst = [0,1,1,1,0,1,1,1]
+					elif i['SPRITE'].startswith('RUN'): lst = [0,1,2,1,0,1,2,1]
+					else: lst = [0]
+					try: xsp = lst[math.floor(i['GIF'])]
+					except: xsp = 0
+					if i['SPRITE'].endswith('L') or i['SPRITE'].endswith('R'): xsp += 1
+					if i['JUMP'] > 0: xsp = 1
+					if i['HEAD'].startswith('DD'): xsp += 1
+					#HEAD
+					if i['HAIR'][1] >= 10: nb = str(i['HAIR'][1] - 1)
+					else: nb = '0' + str(i['HAIR'][1] - 1)
+					if nb == '0-1': nb = '00'
+					dd = False
+					if i['HEAD'] == 'L':
+						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_H.png')
+						head_img = pygame.image.load(res.TEMP_PATH + 'headH.png')
+					elif i['HEAD'] == 'LU':
+						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_U.png')
+						head_img = pygame.image.load(res.TEMP_PATH + 'headU.png')
+					elif i['HEAD'] == 'LD':
+						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_LD.png')
+						head_img = pygame.image.load(res.TEMP_PATH + 'headHD.png')
+					elif i['HEAD'] == 'R':
+						hair_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_H.png'),True,False)
+						head_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'headH.png'),True,False)
+					elif i['HEAD'] == 'RU':
+						hair_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_U.png'),True,False)
+						head_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'headU.png'),True,False)
+					elif i['HEAD'] == 'RD':
+						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_RD.png')
+						head_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'headHD.png'),True,False)
+					elif i['HEAD'] == 'DD':
+						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_D.png')
+						head_img = pygame.image.load(res.TEMP_PATH + 'headD.png')
+						dd = True
+					else:
+						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_' + i['HEAD'] + '.png')
+						head_img = pygame.image.load(res.TEMP_PATH + 'head' + i['HEAD'] + '.png')
+					if i['HAIR'][1] > 0:
+						hair_img.fill((res.PALETTES[1][int(i['HAIR'][0])]),None,pygame.BLEND_RGBA_MULT)
+						hair_rect = hair_img.get_rect()
+					else:
+						hair_rect = head_img.get_rect()
+						hair_img = pygame.Surface((hair_rect.width,hair_rect.height),pygame.SRCALPHA)
+					head_img.fill((res.PALETTES[0][int(i['SKIN'])]),None,pygame.BLEND_RGBA_MULT)
+					head_rect = head_img.get_rect()
+					eye_img = None
+					mouth_img = None
+					fh_img = None
+					acc_img = []
+					if int(i['DIRECTION']) < 6:
+						#EYES
+						if i['BLINK'] < 2 and i['GRAVITY'] == -5 and i['JUMP'] == 0: eye_img = 'eye_1'
+						else: eye_img = 'eye_0'
+						eye_img = pygame.image.load(res.TEMP_PATH + eye_img + '.png')
+						#MOUTH
+						if True: #self.dlg['CAMERA'] == i['RECT']:
+							mouth_img = pygame.image.load(res.TEMP_PATH + 'mouth_' + str(math.floor(i['GIF'])) + '.png')
+							mouth_rect = mouth_img.get_rect()
+						#FACIAL HAIR
+						if i['HAIR'][2] > 0:
+							if i['HAIR'][2] >= 10: nb = str(i['HAIR'][2] - 1)
+							else: nb = '0' + str(i['HAIR'][2] - 1)
+							if i['HEAD'] == 'L':
+								fh_img = pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_H.png')
+							elif i['HEAD'] == 'LD':
+								fh_img = pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_HD.png')
+							elif i['HEAD'] == 'R':
+								fh_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_H.png'),True,False)
+							elif i['HEAD'] == 'RD':
+								fh_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_HD.png'),True,False)
+							elif i['HEAD'] == 'DD':
+								fh_img = pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_D.png')
+								dd = True
+							else:
+								fh_img = pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_D.png')
+							fh_img.fill((res.PALETTES[1][int(i['HAIR'][0])]),None,pygame.BLEND_RGBA_MULT)
+						#ACCESORIES
+						if t and i['ACCESORIES'] != []:
+							for acc in i['ACCESORIES']:
+								it = res.INVENTORY[acc[0]][acc[1]][acc[2]][acc[3]]
+								if it != 'head_hairclip':
+									acc_img.append(pygame.image.load(res.TEMP_PATH + it + '.png'))
+					#FACE
+					if i['DIRECTION'] == 1: xx = 4
+					elif i['DIRECTION'] == 2: xx = 1
+					elif i['DIRECTION'] == 4: xx = -1
+					elif i['DIRECTION'] == 5: xx = -4
+					else: xx = 0
+					if dd: yy = 1
+					else: yy = 0
+					if eye_img != None:
+						head_img.blit(eye_img,(1 + xx,4 + yy))
+					if mouth_img != None:
+						head_img.blit(mouth_img,(2 + xx,7 + yy))
+					if acc_img != []:
+						for acc in acc_img:
+							head_img.blit(acc,(xx,5 + yy))
+					face_srf = pygame.Surface((hair_rect.width,hair_rect.height),pygame.SRCALPHA)
+					face_srf.blit(head_img,(int(hair_rect.width/2) - int(head_rect.width/2),1 + int(hair_rect.height/2) - int(head_rect.height/2)))
+					face_srf.blit(hair_img,(0,0))
+					if fh_img != None:
+						face_srf.blit(fh_img,(int(hair_rect.width/2) - int(head_rect.width/2),7 + int(hair_rect.height/2) - int(head_rect.height/2)))
+					#HOLDING ITEM
+					if i['HOLD'] != None:
+						xx = -5; yy = -20
+						if i['DIRECTION'] in [1,2,8]: xx = 10
+						if i['DIRECTION'] in [4,5,6]: xx = -20
+						if i['DIRECTION'] in [2,3,4]: yy = 5
+						if i['DIRECTION'] in [6,7,8]: yy = -30
+						self.tilrect[2][i['HOLD']][1].x = i['RECT'].x + xx
+						self.tilrect[2][i['HOLD']][1].y = i['RECT'].y + yy
+					#BODY
+					if i['SWIM'] == None:
+						if t and i['SLEEP']: body_img = res.SPRITES['REST'][0].copy()
+						else: body_img = res.SPRITES[i['SPRITE']][math.floor(i['GIF'])].copy()
+						body_img.fill((res.PALETTES[0][int(i['SKIN'])]),None,pygame.BLEND_RGBA_MULT)
+						#CLOTHES
+						'''clth_img = []
+						if t and i['COSTUME'] != [] and int(i['DIRECTION']) < 6:
+							for clth in i['COSTUME']:
+								it = res.INVENTORY[clth[0]][clth[1]][clth[2]][clth[3]]
+								cc = pygame.image.load(res.TEMP_PATH + it[0:-2] + '_' + i['SPRITE'] + '.png')
+								cc.fill((res.PALETTES[1][dtb.ITEMS[it][5]]),None,pygame.BLEND_RGBA_MULT)
+								clth_img.append(cc)
+						if clth_img != []:
+							for clth in clth.img:
+								body_img.blit(clth,(0,0))'''
+					#SWIMMING
+					else:
+						xsp += 21
+						i['SWIM'] += 0.1
+						if i['SWIM'] > 1.5: i['SWIM'] = 0.0
+						body_img = pygame.image.load(res.SPRITES_PATH + 'water_' + str(math.floor(i['SWIM'])) + '.png')
+					#DRAW
+					fsz = face_srf.get_rect()
+					bsz = body_img.get_rect()
+					if bsz.width > fsz.width: wd = bsz.width
+					else: wd = fsz.width
+					doll = pygame.Surface((wd,fsz.height + bsz.height),pygame.SRCALPHA)
+					doll.blit(body_img,(int(wd/2) - int(bsz.width/2),fsz.height))
+					doll.blit(face_srf,(int(wd/2) - int(fsz.width/2),xsp))
+					#doll = pygame.transform.scale(doll,(wd * 2,(fsz.height + bsz.height) * 2))
+					self.donesprites[sprstr] = doll
+				#SHADE
+				xxx = False
+				if xxx:# i['SPRITE'].startswith('SEAT') == False or i['SPRITE'].startswith('DRIVE') == False:
+					if res.TIME[0] < 12:
+						tms = (12 - res.TIME[0]) * 2
+						sxx = i['RECT'].x - self.cam.x - tms + 5
+					else:
+						tms = (res.TIME[0] - 12) * 2
+						sxx = i['RECT'].x - self.cam.x
+					if tms < 5: tms = 5
+					shd = pygame.transform.scale(pygame.transform.rotate(doll,90),(tms,7))
+					shd.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
+					shd.set_alpha(100)
+					self.display[0].blit(shd, (sxx,i['RECT'].y - self.cam.y + 5))
+				if visible:
+					img = doll.copy()
+					#if self.turn == -6: img.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
+					#self.display[0].blit(img,(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y - i['RECT'].height - i['JUMP']))
+		return doll
 		
 	def inside_events(self,pressed):
 		if pressed[2][0]: self.page = 0; self.sfx.play(res.SOUND['PAGE_FLIP'])
@@ -215,20 +422,28 @@ class Avatar:
 	def outside_events(self,pressed):
 		pass
 		
-	def draw(self,doll,data):
-		sz = self.scr[0].get_width() #button width
-		for i in self.scr: i.fill((0,0,0,0))
-		self.scr[0].fill((100,200,100))
-		pygame.draw.rect(self.scr[0],(10,40,10),pygame.Rect(0,0,400,300),10)
-		
-		if self.page == 0:
-			img = pygame.image.load(res.SPRITES_PATH + 'pht_' + str(self.who) + '.png')
-			pygame.draw.rect(self.scr[0],(250,250,250),pygame.Rect(15,15,img.get_rect().width,img.get_rect().height))
-			self.scr[0].blit(img, (15, 15))
-		if self.page == 1:
-			self.scr[1].blit(self.fnt['SMALL'].render('REGISTRO', True, (10,40,10)), (15, 15))
+	def menu(self):
+		scr = pygame.Surface((400,300))
+
+		scr.fill((0,0,0))
 			
 		return self.scr
+
+	def test(self):
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				exit()
+		self.surface.fill((100,100,100))
+		#self.surface.blit(self.overworld_draw(),(self.rect.x - 50,self.rect.y))
+		self.surface.blit(self.people(self.player,False),(20,20))
+		sz = (self.surface.get_width() * res.GSCALE * 4,self.surface.get_height() * res.GSCALE * 4)
+		self.window.blit(pygame.transform.scale(self.surface,sz),(0,0))
+		pygame.display.flip()
+		pygame.time.Clock().tick(res.FPS)
+
+a = Avatar()
+while True: a.test()
 
 class NPC:
 	def __init__(self,index,pos):
@@ -545,7 +760,7 @@ class MapHandler(xml.sax.ContentHandler):
 			parser = xml.sax.make_parser()
 			parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 			tls = {}
-			gid = 1
+			gid = 0
 			for t in os.listdir(res.TILESETS_PATH):
 				tset = TileHandler(self.tileset,gid)
 				parser.setContentHandler(tset)
@@ -699,6 +914,7 @@ class TileHandler(xml.sax.ContentHandler):
 		self.tilani = []
 		self.first = first
 		self.gid = 0
+		self.cor = [0,0]
 
 		self.rows = None
 		self.columns = None
@@ -713,15 +929,14 @@ class TileHandler(xml.sax.ContentHandler):
 			self.img = pygame.image.load(res.TILESETS_PATH + attributes['source'])
 			self.width = self.img.get_width(); self.height = self.img.get_height()
 		if tag == 'tile':
-			#if int(attributes['id']) + self.first in self.tileset:
-			if True:
+			self.cor[0] += 1
+			if self.cor[0] >= self.columns:
+				self.cor[0] = 0
+				self.cor[1] += 1
+			if int(attributes['id']) + self.first in self.tileset:
 				lid = int(attributes['id'])
 				self.gid = int(attributes['id']) + self.first
-				xx = (lid - (math.floor(lid/self.columns) * self.columns)) * self.tilewidth
-				yy = 0
-				rct = (xx,yy,self.tilewidth,self.tileheight)
-				print(lid)
-				print(rct)
+				rct = (self.cor[0] * self.tilewidth,self.cor[1] * self.tileheight,self.tilewidth,self.tileheight)
 				self.tiles[self.gid] = {'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0)}
 				for x in attributes.items(): self.tiles[self.gid][x[0].upper()] = x[1]
 		if tag == 'properties': self.tilprp = {}
@@ -1370,202 +1585,7 @@ class Game:
 			parser.setContentHandler(self.map)
 			parser.parse(res.MAPS_PATH + 'savetest.tmx')
 			self.tilmap = [[i,i] for i in self.map.surfaces]
-
-	def people(self,i,t):
-		doll = None
-		#ANIMATION
-		if i['PAUSE'] < 2: i['GIF'] += 0.5
-		if i['GIF'] >= len(res.SPRITES[i['SPRITE']]): i['GIF'] = 0
-		if i['PAUSE'] < 2: i['BLINK'] -= 1
-		if i['BLINK'] < 0: i['BLINK'] = round(random.randint(30,90))
-		#JUMP
-		if i['GRAVITY'] > -5:
-			i['JUMP'] += i['GRAVITY']
-			i['GRAVITY'] -= 0.5
-		if i['SPRITE'].startswith('SLEEP') == False:
-			visible = True
-			if t:
-				if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] == 23: visible = False
-				if i['INVFRM'] > 0:
-					visible = not bool(i['INVFRM']%2)
-					i['INVFRM'] -= 1
-					if i['INVFRM'] == 0: self.sttsy = 0
-			#MAP ICON
-			if res.MAP == 'rodoviary':
-				self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'mp_player.png'), (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y))
-			else:
-				#DONE SPRITE
-				sprstr = str(i['HAIR'][0]) + str(i['HAIR'][1]) + str(i['HAIR'][2]) + i['HEAD'] + str(math.floor(i['BLINK'])) + \
-				'_' + i['SPRITE'] + str(i['SKIN']) + str(math.floor(i['GIF']))
-				if sprstr in self.donesprites: doll = self.donesprites[sprstr]
-				else:
-					#EXTRA SPACEMENT
-					if i['SPRITE'].startswith('STAND'): lst = [0,1,1,0]
-					elif i['SPRITE'].startswith('TIREDSTAND'): lst = [0,1]
-					elif i['SPRITE'].startswith('JUMP'): lst = [0,1]
-					elif i['SPRITE'].startswith('WALK'): lst = [0,1,1,1,0,1,1,1]
-					elif i['SPRITE'].startswith('RUN'): lst = [0,1,2,1,0,1,2,1]
-					else: lst = [0]
-					try: xsp = lst[math.floor(i['GIF'])]
-					except: xsp = 0
-					if i['SPRITE'].endswith('L') or i['SPRITE'].endswith('R'): xsp += 1
-					if i['JUMP'] > 0: xsp = 1
-					if i['HEAD'].startswith('DD'): xsp += 1
-					#HEAD
-					if i['HAIR'][1] >= 10: nb = str(i['HAIR'][1] - 1)
-					else: nb = '0' + str(i['HAIR'][1] - 1)
-					if nb == '0-1': nb = '00'
-					dd = False
-					if i['HEAD'] == 'L':
-						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_H.png')
-						head_img = pygame.image.load(res.TEMP_PATH + 'headH.png')
-					elif i['HEAD'] == 'LU':
-						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_U.png')
-						head_img = pygame.image.load(res.TEMP_PATH + 'headU.png')
-					elif i['HEAD'] == 'LD':
-						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_LD.png')
-						head_img = pygame.image.load(res.TEMP_PATH + 'headHD.png')
-					elif i['HEAD'] == 'R':
-						hair_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_H.png'),True,False)
-						head_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'headH.png'),True,False)
-					elif i['HEAD'] == 'RU':
-						hair_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_U.png'),True,False)
-						head_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'headU.png'),True,False)
-					elif i['HEAD'] == 'RD':
-						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_RD.png')
-						head_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'headHD.png'),True,False)
-					elif i['HEAD'] == 'DD':
-						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_D.png')
-						head_img = pygame.image.load(res.TEMP_PATH + 'headD.png')
-						dd = True
-					else:
-						hair_img = pygame.image.load(res.TEMP_PATH + 'hair_' + nb + '_' + i['HEAD'] + '.png')
-						head_img = pygame.image.load(res.TEMP_PATH + 'head' + i['HEAD'] + '.png')
-					if i['HAIR'][1] > 0:
-						hair_img.fill((res.PALETTES[1][int(i['HAIR'][0])]),None,pygame.BLEND_RGBA_MULT)
-						hair_rect = hair_img.get_rect()
-					else:
-						hair_rect = head_img.get_rect()
-						hair_img = pygame.Surface((hair_rect.width,hair_rect.height),pygame.SRCALPHA)
-					head_img.fill((res.PALETTES[0][int(i['SKIN'])]),None,pygame.BLEND_RGBA_MULT)
-					head_rect = head_img.get_rect()
-					eye_img = None
-					mouth_img = None
-					fh_img = None
-					acc_img = []
-					if int(i['DIRECTION']) < 6:
-						#EYES
-						if i['BLINK'] < 2 and i['GRAVITY'] == -5 and i['JUMP'] == 0: eye_img = 'eye_1'
-						else: eye_img = 'eye_0'
-						eye_img = pygame.image.load(res.TEMP_PATH + eye_img + '.png')
-						#MOUTH
-						if self.dlg['CAMERA'] == i['RECT']:
-							mouth_img = pygame.image.load(res.TEMP_PATH + 'mouth_' + str(math.floor(i['GIF'])) + '.png')
-							mouth_rect = mouth_img.get_rect()
-						#FACIAL HAIR
-						if i['HAIR'][2] > 0:
-							if i['HAIR'][2] >= 10: nb = str(i['HAIR'][2] - 1)
-							else: nb = '0' + str(i['HAIR'][2] - 1)
-							if i['HEAD'] == 'L':
-								fh_img = pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_H.png')
-							elif i['HEAD'] == 'LD':
-								fh_img = pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_HD.png')
-							elif i['HEAD'] == 'R':
-								fh_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_H.png'),True,False)
-							elif i['HEAD'] == 'RD':
-								fh_img = pygame.transform.flip(pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_HD.png'),True,False)
-							elif i['HEAD'] == 'DD':
-								fh_img = pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_D.png')
-								dd = True
-							else:
-								fh_img = pygame.image.load(res.TEMP_PATH + 'fhair_' + nb + '_D.png')
-							fh_img.fill((res.PALETTES[1][int(i['HAIR'][0])]),None,pygame.BLEND_RGBA_MULT)
-						#ACCESORIES
-						if t and i['ACCESORIES'] != []:
-							for acc in i['ACCESORIES']:
-								it = res.INVENTORY[acc[0]][acc[1]][acc[2]][acc[3]]
-								if it != 'head_hairclip':
-									acc_img.append(pygame.image.load(res.TEMP_PATH + it + '.png'))
-					#FACE
-					if i['DIRECTION'] == 1: xx = 4
-					elif i['DIRECTION'] == 2: xx = 1
-					elif i['DIRECTION'] == 4: xx = -1
-					elif i['DIRECTION'] == 5: xx = -4
-					else: xx = 0
-					if dd: yy = 1
-					else: yy = 0
-					if eye_img != None:
-						head_img.blit(eye_img,(1 + xx,4 + yy))
-					if mouth_img != None:
-						head_img.blit(mouth_img,(2 + xx,7 + yy))
-					if acc_img != []:
-						for acc in acc_img:
-							head_img.blit(acc,(xx,5 + yy))
-					face_srf = pygame.Surface((hair_rect.width,hair_rect.height),pygame.SRCALPHA)
-					face_srf.blit(head_img,(int(hair_rect.width/2) - int(head_rect.width/2),1 + int(hair_rect.height/2) - int(head_rect.height/2)))
-					face_srf.blit(hair_img,(0,0))
-					if fh_img != None:
-						face_srf.blit(fh_img,(int(hair_rect.width/2) - int(head_rect.width/2),7 + int(hair_rect.height/2) - int(head_rect.height/2)))
-					#HOLDING ITEM
-					if i['HOLD'] != None:
-						xx = -5; yy = -20
-						if i['DIRECTION'] in [1,2,8]: xx = 10
-						if i['DIRECTION'] in [4,5,6]: xx = -20
-						if i['DIRECTION'] in [2,3,4]: yy = 5
-						if i['DIRECTION'] in [6,7,8]: yy = -30
-						self.tilrect[2][i['HOLD']][1].x = i['RECT'].x + xx
-						self.tilrect[2][i['HOLD']][1].y = i['RECT'].y + yy
-					#BODY
-					if i['SWIM'] == None:
-						if t and i['SLEEP']: body_img = res.SPRITES['REST'][0].copy()
-						else: body_img = res.SPRITES[i['SPRITE']][math.floor(i['GIF'])].copy()
-						body_img.fill((res.PALETTES[0][int(i['SKIN'])]),None,pygame.BLEND_RGBA_MULT)
-						#CLOTHES
-						'''clth_img = []
-						if t and i['COSTUME'] != [] and int(i['DIRECTION']) < 6:
-							for clth in i['COSTUME']:
-								it = res.INVENTORY[clth[0]][clth[1]][clth[2]][clth[3]]
-								cc = pygame.image.load(res.TEMP_PATH + it[0:-2] + '_' + i['SPRITE'] + '.png')
-								cc.fill((res.PALETTES[1][dtb.ITEMS[it][5]]),None,pygame.BLEND_RGBA_MULT)
-								clth_img.append(cc)
-						if clth_img != []:
-							for clth in clth.img:
-								body_img.blit(clth,(0,0))'''
-					#SWIMMING
-					else:
-						xsp += 21
-						i['SWIM'] += 0.1
-						if i['SWIM'] > 1.5: i['SWIM'] = 0.0
-						body_img = pygame.image.load(res.SPRITES_PATH + 'water_' + str(math.floor(i['SWIM'])) + '.png')
-					#DRAW
-					fsz = face_srf.get_rect()
-					bsz = body_img.get_rect()
-					if bsz.width > fsz.width: wd = bsz.width
-					else: wd = fsz.width
-					doll = pygame.Surface((wd,fsz.height + bsz.height),pygame.SRCALPHA)
-					doll.blit(body_img,(int(wd/2) - int(bsz.width/2),fsz.height))
-					doll.blit(face_srf,(int(wd/2) - int(fsz.width/2),xsp))
-					#doll = pygame.transform.scale(doll,(wd * 2,(fsz.height + bsz.height) * 2))
-					self.donesprites[sprstr] = doll
-				#SHADE
-				if i['SPRITE'].startswith('SEAT') == False or i['SPRITE'].startswith('DRIVE') == False:
-					if res.TIME[0] < 12:
-						tms = (12 - res.TIME[0]) * 2
-						sxx = i['RECT'].x - self.cam.x - tms + 5
-					else:
-						tms = (res.TIME[0] - 12) * 2
-						sxx = i['RECT'].x - self.cam.x
-					if tms < 5: tms = 5
-					shd = pygame.transform.scale(pygame.transform.rotate(doll,90),(tms,7))
-					shd.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
-					shd.set_alpha(100)
-					self.display[0].blit(shd, (sxx,i['RECT'].y - self.cam.y + 5))
-				if visible:
-					img = doll.copy()
-					if self.turn == -6: img.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
-					self.display[0].blit(img,(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y - i['RECT'].height - i['JUMP']))
-		return doll
-					
+			
 	def pet(self, i):
 		#ANIMATION
 		if self.player[0]['PAUSE'] < 2: i['GIF'] += 0.5

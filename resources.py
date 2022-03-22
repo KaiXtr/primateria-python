@@ -678,9 +678,9 @@ def spr():
 	movs = [('STAND',[0,1,2,3]),('TIREDSTAND',[0,0,1,1]),('SEAT',[0]),('DRIVE',[0]),
 	('JUMP',[0,1]),('WALK',[0,1,2,1,0,3,4,3]),('RUN',[0,1,2,1,0,3,4,3])]
 	
-	SPRITES['PHONE'] = [pygame.image.load(TEMP_PATH + 'body_phone.png').convert()]
-	SPRITES['CALL'] = [pygame.image.load(TEMP_PATH + 'body_call.png').convert()]
-	SPRITES['REST'] = [pygame.image.load(TEMP_PATH + 'body_rest.png').convert()]
+	SPRITES['PHONE'] = [pygame.image.load(TEMP_PATH + 'body_phone.png').convert_alpha()]
+	SPRITES['CALL'] = [pygame.image.load(TEMP_PATH + 'body_call.png').convert_alpha()]
+	SPRITES['REST'] = [pygame.image.load(TEMP_PATH + 'body_rest.png').convert_alpha()]
 	
 	for m in movs:
 		for d in dirs:
@@ -691,13 +691,13 @@ def spr():
 				for f in m[1]:
 					if m[1] == [0]: fn = ''
 					else: fn = '_' + str(f)
-					if d == 'LU': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HU' + fn + '.png').convert()
-					elif d == 'L': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'H' + fn + '.png').convert()
-					elif d == 'LD': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HD' + fn + '.png').convert()
-					elif d == 'RU': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HU' + fn + '.png').convert(),True,False)
-					elif d == 'R': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'H' + fn + '.png').convert(),True,False)
-					elif d == 'RD': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HD' + fn + '.png').convert(),True,False)
-					else: spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + d + fn + '.png').convert()
+					if d == 'LU': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HU' + fn + '.png').convert_alpha()
+					elif d == 'L': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'H' + fn + '.png').convert_alpha()
+					elif d == 'LD': spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HD' + fn + '.png').convert_alpha()
+					elif d == 'RU': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HU' + fn + '.png').convert_alpha(),True,False)
+					elif d == 'R': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'H' + fn + '.png').convert_alpha(),True,False)
+					elif d == 'RD': spr = pygame.transform.flip(pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + 'HD' + fn + '.png').convert_alpha(),True,False)
+					else: spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + d + fn + '.png').convert_alpha()
 					SPRITES[m[0] + d].append(spr)
 	
 def animals():

@@ -2,7 +2,7 @@
 <map version="1.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="9" height="9" tilewidth="30" tileheight="30" infinite="0" nextlayerid="14" nextobjectid="77">
 	<floor>
 		<layer id="0" width="9" height="9">
-			581,581,580,577,582,577,580,581,581
+			575,576,577,578,579,580,581,582,583
 			581,581,580,577,581,577,580,581,581
 			580,580,580,578,578,578,580,580,580
 			577,577,579,577,577,577,579,577,577
