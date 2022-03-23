@@ -2130,7 +2130,7 @@ MENU = {'new_file': 'nova sessão','load_file': 'iniciar sessão','save_file': '
 'armor': 'proteção','duration': 'duração','damage': 'dano','recharge': 'recarga','cadency': 'cadência','capacity': 'capacidade',
 'gauge': 'calibre','vitality': 'vitalidade','hunger': 'fome','thirst': 'sede','storage': 'depositar',
 'success': 'sucesso','fail': 'falha','touche': 'touché','strike': 'strike','ko': 'nocaute','one_more': 'oitra vez','miss': 'errou...','victory': 'vitória','perfect': 'perfeito','lost': 'derrota','level_up': 'foi promovido para',
-'GPS': 'mapa','Contacts': 'contatos','Email': 'emails','Newspaper': 'notícias','Radio': 'música','Camera': 'galeria','Bestiary': 'bestiário',
+'GPS': 'mapa','Contacts': 'contatos','Email': 'emails','Newspaper': 'notícias','Radio': 'música','Camera': 'galeria','Bestiary': 'bestiário','Calendar': 'calendário',
 'Tasks': 'tarefas','Status': 'ficha','Tactics': 'táticas','Achievements': 'conquistas','Rank': 'placar','Help': 'ajuda','Settings': 'ajustes','About': 'sobre',
 'no_signal': 'sem sinal','no_credit': 'sem saldo','no_freaks': 'nenhuma anomalia registrada','empty': 'nada por aqui','calling': 'chamando',
 'to_do': 'fazer','done': 'feitas','all': 'todas','unread': 'novas','read': 'lidas','groups': 'grupos','history': 'histórico',

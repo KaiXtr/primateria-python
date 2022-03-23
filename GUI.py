@@ -5,7 +5,6 @@ import random
 import pygame
 import plyer
 import math
-import sys
 import os
 
 from PIL import Image
@@ -24,7 +23,7 @@ class Test:
 		#self.font = pygame.font.Font(res.FONTS_PATH + 'reglisse/Reglisse.otf', 30)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Popup('Status',(0,0),miniature=True),Popup('Storage',(400,0),miniature=True)]#,Popup('Storage',(100,200)),Popup('Products',(50,200)),Popup('Basket',(100,100))]
+		self.menu = [Popup('Calendar',(0,0),miniature=True),Popup('Storage',(100,200))]#,,Popup('Products',(50,200)),Popup('Basket',(100,100))]
 		self.files = None#Files((800,1280))
 		self.guitools = Guitools()
 		self.tsrf = None
@@ -35,7 +34,6 @@ class Test:
 			pressed, click = self.guitools.get_pressed(event)
 			if event.type == pygame.QUIT:
 				pygame.quit()
-				sys.exit()
 				exit()
 			if event.type == pygame.VIDEORESIZE:
 				self.display = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE | pygame.SRCALPHA)
@@ -55,110 +53,7 @@ class Test:
 		if self.tsrf: self.display.blit(self.tsrf,(0,0))
 		pygame.display.flip()
 		self.clock.tick(60)
-		
-class Popup:
-	def __init__(self,gui,rect=(100,100),msg=None,miniature=None,deletable=True):
-		self.fnt = {'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40),'MESSAGE': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE)}
-		self.bdsz = 10
-		self.top = 50
-		self.btrects = []
-		if gui not in ['conf','info']:
-			sz = (400,300)
-			if gui == 'Inventory': self.gui = eval('Inventory')(sz,0)
-			elif gui == 'Trash': self.gui = eval('Inventory')(sz,1)
-			elif gui == 'Storage': self.gui = eval('Inventory')(sz,2)
-			elif gui == 'Products': self.gui = eval('Inventory')(sz,3)
-			elif gui == 'Basket': self.gui = eval('Inventory')(sz,4)
-			else: self.gui = eval(gui)()
-			self.ratio = [self.gui.scr[1].get_width() + (self.bdsz * 2),self.gui.scr[1].get_height() + (self.bdsz * 2) + self.top]
-		else:
-			self.gui = gui
-			self.ratio = [350 + (self.bdsz * 2),100 + (self.bdsz * 2) + self.top]
-			if gui == 'conf': rg = 2
-			else: rg = 1
-			for i in range(rg): self.btrects.append(pygame.Rect(self.bdsz + 40 + (100 * i),self.bdsz + self.top + 50,80,40))
-
-		self.title = gui
-		self.surface = pygame.Surface(tuple(self.ratio))
-		self.brd = pygame.Surface(tuple(self.ratio))
-		self.brd.fill(res.COLOR)
-		for x in range(int(self.ratio[0]/10)):
-			for y in range(int(self.ratio[1]/10)):
-				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
-		self.brd.blit(self.fnt['TITLE'].render(dtb.MENU[self.title], True, (0, 0, 0)), (10, 10))
-
-		self.msg = msg
-		self.rect = pygame.Rect(rect[0],rect[1],self.surface.get_width(),self.surface.get_height())
-		self.optrects = [pygame.Rect(self.bdsz,self.bdsz,30,30),pygame.Rect(self.surface.get_width() - self.bdsz - 30,self.bdsz,30,30)]
-		if miniature != None: self.optrects.append(pygame.Rect(self.surface.get_width() - self.bdsz - 70,self.bdsz,30,30))
-		self.phnbr = PhoneBar(35)
-		self.show = True
-		self.min = False
-		self.deletable = deletable
-		
-	def inside_events(self,pressed):
-		mp = pygame.mouse.get_pos()
-		mr1 = pygame.Rect(int((mp[0] - self.rect.x)/res.GSCALE),int((mp[1] - self.rect.y)/res.GSCALE),20,20)
-		mr2 = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),20,20)
-		if self.title not in ['conf','info']: self.gui.inside_events(pressed,mr2)
-		elif pressed[4][0]:
-			if pygame.Rect.colliderect(self.btrects[0],mr2): self.gui = None; return True
-			elif pygame.Rect.colliderect(self.btrects[1],mr2): self.gui = None; return False
-		if pressed[4][0]:
-			if self.min == False:
-				if pygame.Rect.colliderect(self.optrects[1],mr2):
-					if self.deletable: self.gui = None
-					else: self.show = False
-				if len(self.optrects) > 2 and pygame.Rect.colliderect(self.optrects[2],mr2): self.min = not self.min
-	
-	def outside_events(self,pressed):
-		mp = pygame.mouse.get_pos()
-		mr1 = pygame.Rect(int((mp[0] - self.rect.x)/res.GSCALE),int((mp[1] - self.rect.y)/res.GSCALE),20,20)
-		mr2 = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),20,20)
-		if self.title not in ['conf','info']: self.gui.outside_events(pressed)
-		if pygame.Rect.colliderect(self.optrects[0],mr2): self.rect.x = mp[0] - 10; self.rect.y = mp[1] - 10
-	
-	def draw(self):
-		#DISPLAY UI
-		if self.title not in ['conf','info']:
-			sz = (self.gui.scr[1].get_width() + (self.bdsz * 2),self.gui.scr[1].get_height() + (self.bdsz * 2) + self.top)
-			#MINIMIZED WINDOW
-			if self.min:
-				self.surface.fill((0,0,0))
-				if (round(self.ratio[0]),round(self.ratio[1])) != self.gui.ratio[1]:
-					for i in range(2): self.ratio[i] -= (sz[i] - self.gui.ratio[1][i])/10
-					self.surface = pygame.Surface((round(self.ratio[0]),round(self.ratio[1])))
-				else:
-					if self.title in ['Inventory','Storage','Products','Basket','Trash']: self.surface.blit(self.gui.bar(0,4,(0,4),'horizontal'),(0,0))
-					else: self.surface.blit(self.gui.miniature(),(0,0))
-			#MAXIMIZED WINDOW
-			else:
-				if (round(self.ratio[0]),round(self.ratio[1])) != sz:
-					for i in range(2): self.ratio[i] += (self.gui.ratio[0][i] - self.gui.ratio[1][i])/10
-					self.surface = pygame.Surface((round(self.ratio[0]),round(self.ratio[1])))
-				else:
-					self.surface.blit(self.brd,(0,0))
-					for i in self.optrects[1:]: pygame.draw.rect(self.surface,(200,100,100),i)
-					self.gui.draw()
-					self.surface.blit(pygame.transform.scale(self.gui.scr[0],(self.gui.scr[0].get_width() * res.GSCALE,self.gui.scr[0].get_height() * res.GSCALE)),(self.bdsz,self.bdsz + self.top))
-					self.surface.blit(self.gui.scr[1],(self.bdsz,self.bdsz + self.top))
-			'''srf = self.phnbr.draw()
-			self.surface.blit(pygame.transform.scale(srf[0],(srf[0].get_width() * res.GSCALE,srf[0].get_height() * res.GSCALE)),(self.bdsz,self.bdsz + self.top))
-			self.surface.blit(srf[1],(self.bdsz,self.bdsz + self.top))'''
-		#POPUP MESSAGE
-		else:
-			self.surface.blit(self.brd,(0,0))
-			for i in self.optrects[1:]: pygame.draw.rect(self.surface,(200,100,100),i)
 			
-			pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(self.bdsz,self.bdsz + self.top,350,100))
-			for i in self.btrects: pygame.draw.rect(self.surface,(100,100,100),i)
-			xx = int((350 - (self.bdsz * 2))/2) - int(self.fnt['MESSAGE'].size(self.msg)[0]/2)
-			self.surface.blit(self.fnt['MESSAGE'].render(self.msg, True, (200, 200, 200)), (xx,self.bdsz + self.top + 5))
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),2,2)
-		pygame.draw.rect(self.surface,(200,200,200),mr)
-		return self.surface
-
 class Guitools:
 	def digitstring(self,number,digits):
 		value = ''
@@ -429,6 +324,250 @@ class Guitools:
 					else: t += ' ' + w
 		txt.append(t)
 		return txt
+	
+class Popup:
+	def __init__(self,gui,rect=(100,100),msg=None,miniature=None,deletable=True):
+		self.fnt = {'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40),'MESSAGE': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE)}
+		self.bdsz = 10
+		self.top = 50
+		self.btrects = []
+		if gui not in ['conf','info']:
+			sz = (400,300)
+			if gui == 'Inventory': self.gui = eval('Inventory')(sz,0)
+			elif gui == 'Trash': self.gui = eval('Inventory')(sz,1)
+			elif gui == 'Storage': self.gui = eval('Inventory')(sz,2)
+			elif gui == 'Products': self.gui = eval('Inventory')(sz,3)
+			elif gui == 'Basket': self.gui = eval('Inventory')(sz,4)
+			else: self.gui = eval(gui)()
+			self.ratio = [self.gui.scr[1].get_width() + (self.bdsz * 2),self.gui.scr[1].get_height() + (self.bdsz * 2) + self.top]
+		else:
+			self.gui = gui
+			self.ratio = [350 + (self.bdsz * 2),100 + (self.bdsz * 2) + self.top]
+			if gui == 'conf': rg = 2
+			else: rg = 1
+			for i in range(rg): self.btrects.append(pygame.Rect(self.bdsz + 40 + (100 * i),self.bdsz + self.top + 50,80,40))
+
+		self.title = gui
+		self.surface = pygame.Surface(tuple(self.ratio))
+		self.brd = pygame.Surface(tuple(self.ratio))
+		self.brd.fill(res.COLOR)
+		for x in range(int(self.ratio[0]/10)):
+			for y in range(int(self.ratio[1]/10)):
+				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
+		self.brd.blit(self.fnt['TITLE'].render(dtb.MENU[self.title], True, (0, 0, 0)), (10, 10))
+
+		self.msg = msg
+		self.rect = pygame.Rect(rect[0],rect[1],self.surface.get_width(),self.surface.get_height())
+		self.optrects = [pygame.Rect(self.bdsz,self.bdsz,30,30),pygame.Rect(self.surface.get_width() - self.bdsz - 30,self.bdsz,30,30)]
+		if miniature != None: self.optrects.append(pygame.Rect(self.surface.get_width() - self.bdsz - 70,self.bdsz,30,30))
+		self.phnbr = PhoneBar(35)
+		self.show = True
+		self.min = False
+		self.deletable = deletable
+		
+	def inside_events(self,pressed):
+		mp = pygame.mouse.get_pos()
+		mr1 = pygame.Rect(int((mp[0] - self.rect.x)/res.GSCALE),int((mp[1] - self.rect.y)/res.GSCALE),20,20)
+		mr2 = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),20,20)
+		if self.title not in ['conf','info']: self.gui.inside_events(pressed,mr2)
+		#POPUP MESSAGE OPTIONS
+		elif pressed[4][0]:
+			if pygame.Rect.colliderect(self.btrects[0],mr2): self.gui = None; return True
+			elif pygame.Rect.colliderect(self.btrects[1],mr2): self.gui = None; return False
+		#EXIT AND MINIMIZE BUTTONS
+		if pressed[4][0]:
+			if self.min == False:
+				if pygame.Rect.colliderect(self.optrects[1],mr2):
+					if self.deletable: self.gui = None
+					else: self.show = False
+				if len(self.optrects) > 2 and pygame.Rect.colliderect(self.optrects[2],mr2): self.min = not self.min
+	
+	def outside_events(self,pressed):
+		mp = pygame.mouse.get_pos()
+		mr1 = pygame.Rect(int((mp[0] - self.rect.x)/res.GSCALE),int((mp[1] - self.rect.y)/res.GSCALE),20,20)
+		mr2 = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),20,20)
+		if self.title not in ['conf','info']: self.gui.outside_events(pressed)
+		if pygame.Rect.colliderect(self.optrects[0],mr2): self.rect.x = mp[0] - 10; self.rect.y = mp[1] - 10
+	
+	def draw(self):
+		#DISPLAY UI
+		if self.title not in ['conf','info']:
+			sz = (self.gui.scr[1].get_width() + (self.bdsz * 2),self.gui.scr[1].get_height() + (self.bdsz * 2) + self.top)
+			#MINIMIZED WINDOW
+			if self.min:
+				self.surface.fill((0,0,0))
+				if (round(self.ratio[0]),round(self.ratio[1])) != self.gui.ratio[1]:
+					for i in range(2): self.ratio[i] -= (sz[i] - self.gui.ratio[1][i])/10
+					self.surface = pygame.Surface((round(self.ratio[0]),round(self.ratio[1])))
+				else:
+					if self.title in ['Inventory','Storage','Products','Basket','Trash']: self.surface.blit(self.gui.bar(0,4,(0,4),'horizontal'),(0,0))
+					else: self.surface.blit(self.gui.miniature(),(0,0))
+			#MAXIMIZED WINDOW
+			else:
+				if (round(self.ratio[0]),round(self.ratio[1])) != sz:
+					for i in range(2): self.ratio[i] += (self.gui.ratio[0][i] - self.gui.ratio[1][i])/10
+					self.surface = pygame.Surface((round(self.ratio[0]),round(self.ratio[1])))
+				else:
+					self.surface.blit(self.brd,(0,0))
+					for i in self.optrects[1:]: pygame.draw.rect(self.surface,(200,100,100),i)
+					self.gui.draw()
+					self.surface.blit(pygame.transform.scale(self.gui.scr[0],(self.gui.scr[0].get_width() * res.GSCALE,self.gui.scr[0].get_height() * res.GSCALE)),(self.bdsz,self.bdsz + self.top))
+					self.surface.blit(self.gui.scr[1],(self.bdsz,self.bdsz + self.top))
+			'''srf = self.phnbr.draw()
+			self.surface.blit(pygame.transform.scale(srf[0],(srf[0].get_width() * res.GSCALE,srf[0].get_height() * res.GSCALE)),(self.bdsz,self.bdsz + self.top))
+			self.surface.blit(srf[1],(self.bdsz,self.bdsz + self.top))'''
+		#POPUP MESSAGE
+		else:
+			self.surface.blit(self.brd,(0,0))
+			for i in self.optrects[1:]: pygame.draw.rect(self.surface,(200,100,100),i)
+			
+			pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(self.bdsz,self.bdsz + self.top,350,100))
+			for i in self.btrects: pygame.draw.rect(self.surface,(100,100,100),i)
+			xx = int((350 - (self.bdsz * 2))/2) - int(self.fnt['MESSAGE'].size(self.msg)[0]/2)
+			self.surface.blit(self.fnt['MESSAGE'].render(self.msg, True, (200, 200, 200)), (xx,self.bdsz + self.top + 5))
+		mp = pygame.mouse.get_pos()
+		mr = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),2,2)
+		pygame.draw.rect(self.surface,(200,200,200),mr)
+		return self.surface
+
+class Vkeyboard:
+	def __init__(self,size,type='QWERTY',display=False):
+		type = type.upper()
+		if type == 'NUMPAD': cl = 3
+		elif type == 'CALC': cl = 4
+		else: cl = 10
+		sz = int((size[0] - (cl * 12))/cl)
+		sp = 10 + sz
+		self.display = display
+		self.surface = pygame.Surface((size[0],sp * 5.5))
+		self.font = pygame.font.SysFont("Arial", 44)
+		self.sfx = pygame.mixer.Channel(0)
+		self.sfx.set_volume(res.SFX)
+		self.type = type
+		self.size = size
+		self.active = False
+		self.caps = 1
+		self.page = 0
+		self.hold = 0
+		self.opt = 0
+		self.output = ''
+		self.pos = 0
+		
+		if type == 'QWERTY': lst = '1234567890qwertyuiopasdfghjklzxcvbnm, .'
+		elif type == 'DVORAK': lst = "1234567890',.pyfgcrlaoeuidhtnsjkxbmwvq z"
+		elif type == 'NUMPAD': lst = '123456789#0*'
+		elif type == 'CALC': lst = '123+456-789÷0=.×'
+			
+		acclst = [('a','äåæªáãàâ'),('c','ćçč'),('e','ëėēèéêę'),('o','ºōœøöòôóõ'),
+		('u','ūùúüû')]
+		
+		letters = [[],[]]
+		for i in lst: letters[0].append(str(i))
+		for i in '~`|•√π÷×¶∆@#$_&-+()/*"'+"':;!?,.<>={}[]%©®": letters[1].append(i)
+		for i in letters:
+			i.insert(29,1)
+			i.insert(37,0)
+			i.insert(38,2)
+			i.append(3)
+		for i in range(len(letters[0])):
+			for a in acclst:
+				if letters[0][i] == a[0]: letters[0][i] = a[0] + a[1]
+		self.buttons = [[],[]]
+		for p in range(2):
+			x = 0
+			rws = 5
+			dsy = 0
+			if type in ['NUMPAD','CALC']: rws = 4
+			if display: dsy = 1
+			for i in range(rws):
+				rr = 10
+				add = 0
+				if type == 'QWERTY' and i in [2,3]: rr = 9
+				if type == 'NUMPAD': rr = 3
+				if type == 'CALC': rr = 4
+				for j in range(rr):
+					if x >= len(letters[p]): break
+					pp = 1
+					if letters[p][x] == ' ': pp = 6
+					if letters[p][x] in [0,1,2,3]: pp = 1.5
+					self.buttons[p].append([pygame.Rect(add + 20 + (j * sp), 20 + ((i + dsy) * sp),sz * pp,sz),letters[p][x],3])
+					if letters[p][x] == ' ': add += sz * 5
+					if letters[p][x] in [1,2]: add += sz * 0.5
+					x += 1
+	
+	def events(self):
+		#if self.pos == 0: self.output = ''
+		mp = pygame.mouse.get_pos()
+		mr = pygame.Rect(mp[0],mp[1] - self.pos,2,2)
+		for i in self.buttons[self.page]:
+			if pygame.Rect.colliderect(mr,i[0]):
+				#BACKSPACE
+				if i[1] == 0:
+					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['DELETE'])
+					else: self.sfx.play(res.SOUND['MENU_BACK'])
+					self.output = self.output[0:-1]
+				#CAPS
+				elif i[1] == 1:
+					self.caps += 1
+					if self.caps > 2: self.caps = 0
+					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['CAPS' + str(self.caps + 1)])
+					else: self.sfx.play(res.SOUND['MENU_GO'])
+					self.sfx.play(res.SOUND['MENU_GO'])
+				#NEXT PAGE
+				elif i[1] == 2:
+					self.page += 1
+					if self.page > 1: self.page = 0
+					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['PAGE'] + ' ' + str(self.page + 1))
+					else: self.sfx.play(res.SOUND['MENU_GO'])
+				#ENTER
+				elif i[1] == 3:
+					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['CONFIRM'])
+					else: self.sfx.play(res.SOUND['MENU_GO'])
+					self.active = False
+				else:
+					if res.TTS:
+						if i[1][self.opt] in dtb.TTSTEXT: vv = dtb.TTSTEXT[i[1][self.opt]]
+						else: vv = i[1][self.opt]
+						plyer.tts.speak(vv)
+					else: self.sfx.play(res.SOUND['TEXT_INPUT'])
+					#OPERATIONS
+					if self.type == 'CALC' and i[1][self.opt] in '+-÷×=':
+						if i[1][self.opt] == '=': self.output = str(eval(self.output.replace('÷','/').replace('×','*')))
+						else: self.output += i[1][self.opt]
+					#TEXT INPUT
+					else:
+						if len(i[1]) > 1: self.hold += 1
+						if self.caps == 0: self.output += i[1][self.opt]
+						else:
+							self.output += i[1][self.opt].upper()
+							if self.caps == 1: self.caps = 0
+				i[2] = 0
+	
+	def scroll(self):
+		if self.active and self.pos < self.surface.get_height(): self.pos += 10
+		if self.active == False and self.pos > 0: self.pos -= 10
+
+	def draw(self):
+		self.surface.fill((0,0,0))
+		
+		if self.display: self.surface.blit(self.font.render(self.output,1,res.COLOR),(10,10))
+		r = 0
+		for i in self.buttons[self.page]:
+			add = 0
+			if self.type == 'QWERTY' and r > 19 and r < 29: add = 20
+			pygame.draw.rect(self.surface,res.COLOR,pygame.Rect(add + i[0].x,i[0].y,i[0].width,i[0].height),i[2])
+			if i[1] == 0: self.surface.blit(self.font.render('<X>',1,res.COLOR),(add + i[0].x + 8,i[0].y))
+			elif i[1] == 1: self.surface.blit(self.font.render(str(self.caps) + '^',1,res.COLOR),(add + i[0].x + 8,i[0].y))
+			elif i[1] == 2: self.surface.blit(self.font.render(str(self.page + 1) + '/2',1,res.COLOR),(add + i[0].x + 8,i[0].y))
+			elif i[1] == 3: self.surface.blit(self.font.render('&',1,res.COLOR),(add + i[0].x + 8,i[0].y))
+			else:
+				if self.caps == 0: txt = i[1][0]
+				else: txt = i[1][0].upper()
+				self.surface.blit(self.font.render(txt,1,res.COLOR),(add + i[0].x + 8,i[0].y))
+			i[2] = 3
+			r += 1
+		
+		return self.surface
 
 class Backgrounds:
 	def __init__(self):
@@ -1600,146 +1739,64 @@ class Inventory:
 		elif self.shake < 0: self.shake = -self.shake - 1
 		
 		return self.scr
-		
-class Vkeyboard:
-	def __init__(self,size,type='QWERTY',display=False):
-		type = type.upper()
-		if type == 'NUMPAD': cl = 3
-		elif type == 'CALC': cl = 4
-		else: cl = 10
-		sz = int((size[0] - (cl * 12))/cl)
-		sp = 10 + sz
-		self.display = display
-		self.surface = pygame.Surface((size[0],sp * 5.5))
-		self.font = pygame.font.SysFont("Arial", 44)
+
+class Levelup:
+	def __init__(self):
+		self.scr = [pygame.Surface((160,160)), pygame.Surface((160 * res.GSCALE,160 * res.GSCALE), pygame.SRCALPHA)]
+		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 12 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25)}
 		self.sfx = pygame.mixer.Channel(0)
 		self.sfx.set_volume(res.SFX)
-		self.type = type
-		self.size = size
-		self.active = False
-		self.caps = 1
-		self.page = 0
-		self.hold = 0
-		self.opt = 0
-		self.output = ''
-		self.pos = 0
+		self.scroll = 0
+		self.optrects = []
+		dvd3 = math.floor((160 * res.GSCALE)/3)
+		for i in range(3): self.optrects.append(pygame.Rect(dvd3 * i,0,dvd3,40))
+		self.opt = [0,0]
+		self.mnu = 0
 		
-		if type == 'QWERTY': lst = '1234567890qwertyuiopasdfghjklzxcvbnm, .'
-		elif type == 'DVORAK': lst = "1234567890',.pyfgcrlaoeuidhtnsjkxbmwvq z"
-		elif type == 'NUMPAD': lst = '123456789#0*'
-		elif type == 'CALC': lst = '123+456-789÷0=.×'
-			
-		acclst = [('a','äåæªáãàâ'),('c','ćçč'),('e','ëėēèéêę'),('o','ºōœøöòôóõ'),
-		('u','ūùúüû')]
-		
-		letters = [[],[]]
-		for i in lst: letters[0].append(str(i))
-		for i in '~`|•√π÷×¶∆@#$_&-+()/*"'+"':;!?,.<>={}[]%©®": letters[1].append(i)
-		for i in letters:
-			i.insert(29,1)
-			i.insert(37,0)
-			i.insert(38,2)
-			i.append(3)
-		for i in range(len(letters[0])):
-			for a in acclst:
-				if letters[0][i] == a[0]: letters[0][i] = a[0] + a[1]
-		self.buttons = [[],[]]
-		for p in range(2):
-			x = 0
-			rws = 5
-			dsy = 0
-			if type in ['NUMPAD','CALC']: rws = 4
-			if display: dsy = 1
-			for i in range(rws):
-				rr = 10
-				add = 0
-				if type == 'QWERTY' and i in [2,3]: rr = 9
-				if type == 'NUMPAD': rr = 3
-				if type == 'CALC': rr = 4
-				for j in range(rr):
-					if x >= len(letters[p]): break
-					pp = 1
-					if letters[p][x] == ' ': pp = 6
-					if letters[p][x] in [0,1,2,3]: pp = 1.5
-					self.buttons[p].append([pygame.Rect(add + 20 + (j * sp), 20 + ((i + dsy) * sp),sz * pp,sz),letters[p][x],3])
-					if letters[p][x] == ' ': add += sz * 5
-					if letters[p][x] in [1,2]: add += sz * 0.5
-					x += 1
-	
-	def events(self):
-		#if self.pos == 0: self.output = ''
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1] - self.pos,2,2)
-		for i in self.buttons[self.page]:
-			if pygame.Rect.colliderect(mr,i[0]):
-				#BACKSPACE
-				if i[1] == 0:
-					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['DELETE'])
-					else: self.sfx.play(res.SOUND['MENU_BACK'])
-					self.output = self.output[0:-1]
-				#CAPS
-				elif i[1] == 1:
-					self.caps += 1
-					if self.caps > 2: self.caps = 0
-					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['CAPS' + str(self.caps + 1)])
-					else: self.sfx.play(res.SOUND['MENU_GO'])
-					self.sfx.play(res.SOUND['MENU_GO'])
-				#NEXT PAGE
-				elif i[1] == 2:
-					self.page += 1
-					if self.page > 1: self.page = 0
-					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['PAGE'] + ' ' + str(self.page + 1))
-					else: self.sfx.play(res.SOUND['MENU_GO'])
-				#ENTER
-				elif i[1] == 3:
-					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['CONFIRM'])
-					else: self.sfx.play(res.SOUND['MENU_GO'])
-					self.active = False
-				else:
-					if res.TTS:
-						if i[1][self.opt] in dtb.TTSTEXT: vv = dtb.TTSTEXT[i[1][self.opt]]
-						else: vv = i[1][self.opt]
-						plyer.tts.speak(vv)
-					else: self.sfx.play(res.SOUND['TEXT_INPUT'])
-					#OPERATIONS
-					if self.type == 'CALC' and i[1][self.opt] in '+-÷×=':
-						if i[1][self.opt] == '=': self.output = str(eval(self.output.replace('÷','/').replace('×','*')))
-						else: self.output += i[1][self.opt]
-					#TEXT INPUT
-					else:
-						if len(i[1]) > 1: self.hold += 1
-						if self.caps == 0: self.output += i[1][self.opt]
-						else:
-							self.output += i[1][self.opt].upper()
-							if self.caps == 1: self.caps = 0
-				i[2] = 0
-	
-	def scroll(self):
-		if self.active and self.pos < self.surface.get_height(): self.pos += 10
-		if self.active == False and self.pos > 0: self.pos -= 10
+	def inside_events(self,pressed,mouse):
+		for i in range(len(self.optrects)):
+			if pygame.Rect.colliderect(mouse,self.optrects[i]): self.opt[0] = i
+		if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[2][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+
+		if self.opt[0] < 0: self.opt[0] = 2
+		if self.opt[0] > 2: self.opt[0] = 0
+		if self.opt[1] < 0: self.opt[1] = len(res.TASKS) - 1
+		if self.opt[1] > len(res.TASKS) - 1: self.opt[1] = 0
+					
+	def outside_events(self,pressed):
+		pass
 
 	def draw(self):
-		self.surface.fill((0,0,0))
+		sz = self.scr[0].get_width() #button width
+
+		if self.opt[1] > 2:
+			if self.scroll < (self.opt[1] - 2) * 31:
+				self.scroll += 6.2
+		elif self.opt[1] > 0 and self.opt[1] < len(em) - 1:
+			if self.scroll > (self.opt[1] - 1) * 31:
+				self.scroll -= 6.2
+		elif self.opt[1] == 0 and self.scroll > 0:
+			self.scroll -= 6.2
+			
+		for i in self.scr: i.fill((10,10,10,0))
+		lst = ['to_do','done','all']
+		for i in range(3):
+			if self.opt[0] == i: col = (10,10,10); pygame.draw.rect(self.scr[1], (200, 200, 200), self.optrects[i])
+			else: col = (200,200,200)
+			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[lst[i]], True, col), (self.optrects[i].x + 10, self.optrects[i].y + 10))
+		lst = [[x for x in res.TASKS if x[1] < 100],[x for x in res.TASKS if x[1] == 100],res.TASKS]
+		for i in range(len(lst[self.opt[0]])):
+			if self.opt[1] != i: col = (200, 200, 200)
+			else: col = (255, 123, 0)
+			pygame.draw.rect(self.scr[1], col, pygame.Rect(0,40 + (i * 81) - self.scroll,sz * res.GSCALE,80))
+			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.TASKINDEX[lst[self.opt[0]][i][0]][0][0], True, (10, 10, 10)), (20, 50 + (i * 81) - self.scroll))
+		if len(lst[self.opt[0]]) == 0: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU['no_tasks'], True, (200, 200, 200)), (80, 280))
 		
-		if self.display: self.surface.blit(self.font.render(self.output,1,res.COLOR),(10,10))
-		r = 0
-		for i in self.buttons[self.page]:
-			add = 0
-			if self.type == 'QWERTY' and r > 19 and r < 29: add = 20
-			pygame.draw.rect(self.surface,res.COLOR,pygame.Rect(add + i[0].x,i[0].y,i[0].width,i[0].height),i[2])
-			if i[1] == 0: self.surface.blit(self.font.render('<X>',1,res.COLOR),(add + i[0].x + 8,i[0].y))
-			elif i[1] == 1: self.surface.blit(self.font.render(str(self.caps) + '^',1,res.COLOR),(add + i[0].x + 8,i[0].y))
-			elif i[1] == 2: self.surface.blit(self.font.render(str(self.page + 1) + '/2',1,res.COLOR),(add + i[0].x + 8,i[0].y))
-			elif i[1] == 3: self.surface.blit(self.font.render('&',1,res.COLOR),(add + i[0].x + 8,i[0].y))
-			else:
-				if self.caps == 0: txt = i[1][0]
-				else: txt = i[1][0].upper()
-				self.surface.blit(self.font.render(txt,1,res.COLOR),(add + i[0].x + 8,i[0].y))
-			i[2] = 3
-			r += 1
-		
-		return self.surface
-		
+		return self.scr
+
 class PhoneBar:
 	def __init__(self,bt):
 		self.scr = [pygame.Surface((180,18)),pygame.Surface((360,50), pygame.SRCALPHA)]
@@ -1868,6 +1925,62 @@ class Apps:
 			
 			return self.scr
 		else: self.scr = self.app.draw()
+
+class Calendar:
+	def __init__(self):
+		self.scr = [pygame.Surface((160,160)), pygame.Surface((160 * res.GSCALE,160 * res.GSCALE), pygame.SRCALPHA)]
+		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 12 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25)}
+		self.sfx = pygame.mixer.Channel(0)
+		self.sfx.set_volume(res.SFX)
+		self.scroll = 0
+		self.optrects = []
+		dvd3 = math.floor((160 * res.GSCALE)/3)
+		for i in range(10):
+			self.optrects.append([])
+			for y in range(7):
+				for x in range(7):
+					self.optrects[i].append(pygame.Rect(20 + (x * 41),60 + (y * 31),40,30))
+		self.opt = [0,0,0]
+		self.mnu = 0
+		
+	def inside_events(self,pressed,mouse):
+		'''for i in range(len(self.optrects[self.mnu])):
+			if pygame.Rect.colliderect(mouse,self.optrects[self.mnu][i]): self.opt[0] = i'''
+		if pressed[0][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[2][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+
+		if self.opt[0] < 0: self.opt[0] = len(res.CALENDAR) - 1; self.opt[1] = 0
+		if self.opt[0] > len(res.CALENDAR) - 1: self.opt[0] = 0; self.opt[1] = 0
+		if self.opt[1] < 0: self.opt[0] -= 1; self.opt[1] = len(res.CALENDAR[self.opt[0]]) - 1
+		if self.opt[1] > len(res.CALENDAR[self.opt[0]]) - 1: self.opt[0] += 1; self.opt[1] = 0
+		if self.opt[2] < 0: self.opt[1] -= 1; self.opt[2] = len(res.CALENDAR[self.opt[0]][self.opt[1]]) - 1
+		if self.opt[2] > len(res.CALENDAR[self.opt[0]][self.opt[1]]) - 1: self.opt[1] += 1; self.opt[2] = 0
+					
+	def outside_events(self,pressed):
+		pass
+
+	def draw(self):
+		sz = self.scr[0].get_width() #button width
+					
+		for i in self.scr: i.fill((10,10,10,0))
+		if self.mnu == 0:
+			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MONTHS[self.opt[1]].capitalize() + ' ' + str(2005 + self.opt[0]), True, (200,200,200)), (20, 10))
+			lst = ['D','S','T','Q','Q','S','S']
+			for i in range(7):
+				rct = pygame.Rect(self.optrects[self.opt[0]][i].x,self.optrects[self.opt[0]][i].y - 20,self.optrects[self.opt[0]][i].width,20)
+				pygame.draw.rect(self.scr[1],(100,100,100),rct)
+				self.scr[1].blit(self.fnt['CALIBRI'].render(lst[i], True, (10,10,10)), (rct.x + 10, rct.y))
+			col = (200,200,200)
+			dd = res.CALENDAR[self.opt[0]][self.opt[1]][self.opt[2]]
+			for d in range(7):
+				for i in range(7):
+					pygame.draw.rect(self.scr[1],col,self.optrects[self.opt[0]][i + (d * 7)])
+					if i + (d * 7) - dd >= 0 and i + (d * 7) - dd < len(res.CALENDAR[self.opt[0]][self.opt[1]]):
+						self.scr[1].blit(self.fnt['CALIBRI'].render(str(i + (d * 7) - dd + 1), True, (10,10,10)), (self.optrects[self.opt[0]][i + (d * 7)].x + 5, self.optrects[self.opt[0]][i + (d * 7)].y + 5))
+
+		return self.scr
 
 class GPS:
 	def __init__(self, mn, rm, tl, pl, en, sig):
@@ -2954,7 +3067,42 @@ class Tactics:
 								
 	def outside_events(self,pressed):
 		pass
-		
+	
+	def miniature(self):
+		x = 0
+		if self.displayzw < self.displayzh: brdx = (35 * 4) + 46
+		else: brdx = (35 * 9) + 46
+		brdx = int(self.displayzw/2) - int(brdx/2)
+		for i in res.INVENTORY[itind][4][1:]:
+			if self.equip[self.fig[self.turn]['N']] == x: pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + (x * 35),(self.displayzh + dwyy) - wbrh,30,30))
+			else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(brdx + (x * 35),(self.displayzh + dwyy) - wbrh,30,30))
+			if res.INVENTORY[itind][4][x + 1][0] != '_':
+				self.display[0].blit(self.inv.itimg(res.INVENTORY[itind][4][x + 1][0]), (brdx + 2 + (x * 35), (self.displayzh + dwyy) - wbrh))
+			x += 1
+		if wbrh == self.winbar * 2: wbrh -= 35
+		if self.displayzw < self.displayzh: brdx -= (35 * 4) + 46
+		if self.equip[self.fig[self.turn]['N']] == 4:
+			pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + 186,(self.displayzh + dwyy) - wbrh,30,30))
+			self.hpctrl = dtb.HINTS['BATTLE_TACTICS']
+		else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(brdx + 186,(self.displayzh + dwyy) - wbrh,30,30))
+		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_tactical.png'), (brdx + 186, (self.displayzh + dwyy) - wbrh))
+		if self.equip[self.fig[self.turn]['N']] == 5:
+			pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + 221,(self.displayzh + dwyy) - wbrh,30,30))
+			self.hpctrl = dtb.HINTS['BATTLE_DIALOG']
+		else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(brdx + 221,(self.displayzh + dwyy) - wbrh,30,30))
+		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_talk.png'), (brdx + 221, (self.displayzh + dwyy) - wbrh))
+		if self.equip[self.fig[self.turn]['N']] == 6:
+			pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + 256,(self.displayzh + dwyy) - wbrh,30,30))
+			self.hpctrl = dtb.HINTS['BATTLE_GUARD']
+		else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(brdx + 256,(self.displayzh + dwyy) - wbrh,30,30))
+		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_guard.png'), (brdx + 256, (self.displayzh + dwyy) - wbrh))
+		if self.equip[self.fig[self.turn]['N']] == 7:
+			pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + 291,(self.displayzh + dwyy) - wbrh,30,30))
+			self.hpctrl = dtb.HINTS['BATTLE_RUN']
+		else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(brdx + 291,(self.displayzh + dwyy) - wbrh,30,30))
+		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_run.png'), (brdx + 291, (self.displayzh + dwyy) - wbrh))
+		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_invphn.png'), (brdx + 324, (self.displayzh + dwyy) - wbrh))
+
 	def draw(self):
 		self.scroll = 0
 		sz = self.scr[0].get_width() #button width

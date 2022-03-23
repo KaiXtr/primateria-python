@@ -2,20 +2,33 @@
 <map version="1.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="9" height="9" tilewidth="30" tileheight="30" infinite="0" nextlayerid="14" nextobjectid="77">
 	<floor>
 		<layer id="0" width="9" height="9">
-			575,576,577,578,579,580,581,582,583
-			581,581,580,577,581,577,580,581,581
-			580,580,580,578,578,578,580,580,580
-			577,577,579,577,577,577,579,577,577
-			582,582,579,577,580,577,579,582,582
-			577,577,579,577,577,577,579,577,577
-			580,580,580,578,578,578,580,580,580
-			581,581,580,577,631,577,580,581,581
-			581,581,580,577,631,577,580,581,581
+			576,576,579,576,591,576,579,583,584
+			581,581,579,576,591,576,579,581,581
+			579,579,579,577,577,577,579,579,579
+			576,576,578,576,576,576,578,576,576
+			604,604,578,576,619,576,578,604,604
+			576,576,578,576,576,576,578,576,576
+			579,579,579,577,577,577,579,579,579
+			581,581,579,576,591,576,579,581,581
+			581,581,579,576,591,576,579,581,581
 		</layer>
+		<!--
 		<layer id="1" width="3" height="3" offsetx="3" offsety="3">
 			581,581,581,
 			581,000,581,
 			581,581,581,
 		</layer>
+		-->
 	</floor>
+	<objects>
+		<!--objetos empurráveis, destrutíveis e carregáveis são na verdade tiles-->
+		<object x="2" y="3" img="sfs" destroy="0" weight="2"/>
+		<object x="2" y="3" img="sfs" destroy="0" weight="10"/>
+		<item />
+		<portal x="3" y="3" gotox="1" gotoy="1" gotoroom="savetest.xml" open="00:00" close="00:00" key="331"/>
+		<sign x="4" y="4" width="2" height="1" text="Hello World!"/>
+		<roadprop type='toll' />
+		<roadprop type='radar' />
+		<roadprop type='blitz' />
+	</objects>
 </map>

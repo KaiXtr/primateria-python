@@ -70,6 +70,25 @@ PY = 0
 SIGNAL = 1
 TIME = [0,0,0] #hour-minute-second
 DATE = [0,0,0,1,1] #day-month-year-week-moon
+CALENDAR = []
+ss = 6
+for y in range(10):
+	CALENDAR.append([])
+	for m in range(12):
+		CALENDAR[y].append([])
+		if m == 1:
+			if (y + 2005)%4 == 0: dd = 29
+			else: dd = 28
+		elif m < 6:
+			if m%2 == 0: dd = 31
+			else: dd = 30
+		else:
+			if m%2 == 0: dd = 30
+			else: dd = 31
+		for d in range(dd):
+			CALENDAR[y][m].append(ss)
+			ss += 1
+			if ss >= 7: ss = 0
 TEMPERATURE = 25
 WEATHER = 0
 CHAPTER = 0

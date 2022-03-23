@@ -33,6 +33,9 @@
  <tile id="29" type="street"/>
  <tile id="30" type="sidewalk"/>
  <tile id="31" type="brick"/>
+ <tile id="32" type="brick"/>
+ <tile id="33" type="brick"/>
+ <tile id="34" type="brick"/>
  <tile id="35" type="wall"/>
  <tile id="36" type="wall"/>
  <tile id="37" type="wall"/>
@@ -40,7 +43,13 @@
  <tile id="39" type="street"/>
  <tile id="40" type="street"/>
  <tile id="41" type="street"/>
- <tile id="48" type="wall"/>
+ <tile id="42" type="street"/>
+ <tile id="43" type="trafficlight"/>
+ <tile id="44" type="street"/>
+ <tile id="45" type="street"/>
+ <tile id="46" type="street"/>
+ <tile id="47" type="wall"/>
+ <tile id="48" type="street"/>
  <tile id="49" type="wall"/>
  <tile id="50" type="wall"/>
  <tile id="51" type="wall"/>
@@ -58,6 +67,10 @@
  <tile id="64" type="none"/>
  <tile id="65" type="street"/>
  <tile id="66" type="manhole"/>
+ <tile id="67" type="manhole"/>
+ <tile id="68" type="manhole"/>
+ <tile id="69" type="manhole"/>
+ <tile id="70" type="manhole"/>
  <tile id="71" type="none"/>
 
  <animation tile="7">
@@ -87,5 +100,9 @@
  <animation tile="35">
   <frame tile="35" duration="400"/>
   <frame tile="34" duration="400"/>
+ </animation>
+ <animation tile="43">
+  <frame tile="43" duration="400"/>
+  <frame tile="45" duration="400"/>
  </animation>
 </tileset>
