@@ -697,13 +697,161 @@ e = NPC('4.1.1',(50,50))
 while True: e.test()
 '''
 
+class TileHandler(xml.sax.ContentHandler):
+	def __init__(self,file,lst=None,first=0):
+		self.guitools = GUI.Guitools()
+		self.window = pygame.display.set_mode((400,300))
+		self.name = file[:-4]
+		self.first = first
+		self.ind = ''
+		self.img = None
+		self.imgpath = None
+		self.tileset = lst
+		self.tiles = {}
+		self.tilprp = {} #for old tiled tileset versions
+		self.tilani = {}
+		self.tilidx = 0
+		self.terrains = {}
+		self.content = ''
+		self.gid = 0
+		self.cor = [0,0]
+
+		self.rows = None
+		self.columns = None
+
+		parser = xml.sax.make_parser()
+		parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+		parser.setContentHandler(self)
+		parser.parse(res.TILESETS_PATH + file)
+
+	def startElement(self, tag, attributes):
+		if tag == 'tileset':
+			for i in [i[0] for i in attributes.items() if i[0] not in ['version','tiledversion','name']]:
+				setattr(self, i, int(attributes[i]))
+			if self.rows == None: self.rows = int(self.tilecount/self.columns)
+			self.length = self.rows * self.columns
+		if tag in ['img','image']:
+			self.img = pygame.image.load(res.TILESETS_PATH + attributes['source'])
+			self.imgpath = attributes['source']
+			self.width = self.img.get_width(); self.height = self.img.get_height()
+		if tag == 'tile':
+			if self.img:
+				if self.tileset:
+					if int(attributes['id']) + self.first in self.tileset: do = True
+					else: do = False
+				else: do = True
+				if do:
+					lid = int(attributes['id'])
+					self.gid = int(attributes['id']) + self.first
+					self.tilidx = int(attributes['id']) + self.first
+					rct = (self.cor[0] * self.tilewidth,self.cor[1] * self.tileheight,self.tilewidth,self.tileheight)
+					self.tiles[self.gid] = {'ID': lid,'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0)}
+					for x in attributes.items(): self.tiles[self.gid][x[0].upper()] = x[1]
+				self.cor[0] += 1
+				if self.cor[0] >= self.columns:
+					self.cor[0] = 0
+					self.cor[1] += 1
+			else: print(dtb.ERROR['img_noload'])
+		if tag == 'properties': self.tilprp = {}
+		if tag == 'property': self.tilprp[attributes['name']] = attributes['value']
+		if tag == 'animation':
+			if 'tile' in attributes.keys(): self.tilidx = int(attributes['tile']) + self.first
+			self.tilani[self.tilidx] = []
+		if tag == 'frame':
+			if 'tileid' in attributes.keys():
+				self.tilani[self.tilidx].append({'TILE': int(attributes['tileid']) + self.first,'DURATION': int(attributes['duration'])})
+			else: self.tilani[self.tilidx].append({'TILE': int(attributes['tile']) + self.first,'DURATION': int(attributes['duration'])})
+		if tag == 'terrain':
+			if 'id' in attributes.keys(): self.terrains[int(attributes['id'])] = {i[0].upper(): i[1] for i in attributes.keys() if i[0] != 'id'}
+			else: self.terrains[len(self.terrains)] = {'NAME': attributes['name']}
+		self.ind = tag
+
+	def characters(self, content):
+		content = content.lower()
+		if self.ind == 'terrain' and content:
+			tt = content
+			for i in ['\n',' ','	',',']:
+				tt = tt.replace(i,'')
+			self.content += tt
+
+	def endElement(self, tag):
+		if tag == 'tile' and self.gid > 0:
+			for i in self.tilprp.items(): self.tiles[self.gid][i[0]] = i[1]
+		if tag == 'animation':
+			if self.tileset:
+				if self.tilidx in self.tileset: do = True
+				else: do = False
+			else: do = True
+			if do: self.tiles[self.tilidx]['ANIMATION'] = self.tilani[self.tilidx]
+		if tag == 'terrain' and self.content:
+			for t in range(len(self.content[::3])):
+				self.terrains[len(self.terrains) - 1]['DATA'].append(int(self.content[t * 3:(t + 1) * 3]))
+		self.ind = ''
+	
+	def save(self, name=None):
+		if self.tileset == None:
+			contents = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
+			'<tileset version="1.2" name="{}" first="{}" tilewidth="{}" tileheight="{}" rows="{}" columns="{}">\n'.format(self.name,self.first,self.tilewidth,self.tileheight,self.rows,self.columns)
+			contents += ' <img source="{}" width="{}" height="{}" length="{}"/>\n'.format(self.imgpath,self.width,self.height,self.length)
+			for i in self.tiles:
+				tt = ' <tile id="{}"'.format(self.tiles[i]['ID'])
+				for p in self.tiles[i].keys():
+					if p not in ['ID','IMG','RECT','ANIMATION','TERRAIN'] and self.tiles[i][p]: tt += ' {}="{}"'.format(p.lower(),self.tiles[i][p])
+				contents += tt + '/>\n'
+			if self.tilani:
+				contents += '\n'
+				for i in self.tilani:
+					contents += ' <animation tile="{}">\n'.format(i - self.first)
+					for f in self.tilani[i]:
+						contents += '  <frame tile="{}" duration="{}"/>\n'.format(f['TILE'] - self.first,f['DURATION'])
+					contents += ' </animation>\n'
+			if self.terrains:
+				contents += '\n'
+				for i in self.terrains:
+					if self.terrains[i]:
+						contents += ' <terrain id="{}">\n'.format(i)
+						dd = ''
+						for d in range(4):
+							dd += '			'
+							for t in range(4):
+								dd += self.guitools.digitstring(self.terrains[i][(d * 4) + t],3) + ','
+							dd += '\n'
+						contents += dd + '		</terrain>\n'
+			contents += '</tileset>'
+			
+			if name: fn = name + '.xml'
+			else: fn = self.name
+			file = open(res.TILESETS_PATH + fn,'w')
+			file.write(contents)
+			file.close()
+		else: print(dtb.ERROR['tileset_save'])
+
+	def test(self):
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				exit()
+		self.window.fill((100,100,100))
+		pos = [0,0]
+		for i in self.tiles:
+			self.window.blit(self.tiles[i]['IMG'],(pos[0] * self.tilewidth,pos[1] * self.tileheight))
+			pos[0] += 1
+			if pos[0] >= self.columns:
+				pos[0] = 0
+				pos[1] += 1
+				
+		pygame.display.flip()
+		pygame.time.Clock().tick(res.FPS)
+
 class MapHandler(xml.sax.ContentHandler):
 	def __init__(self,file):
+		self.guitools = GUI.Guitools()
+		self.name = file[:-4]
 		self.window = pygame.display.set_mode((400,300))
 		self.surfaces = [None for i in range(5)]
 		self.layers = [[] for i in range(5)]
 		self.tileset = []
-		self.objects = []
+		self.objects = {}
 		self.srflvl = 0
 		self.current = None
 		self.content = ''
@@ -725,7 +873,7 @@ class MapHandler(xml.sax.ContentHandler):
 		parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 		parser.setContentHandler(self)
 		parser.parse(res.MAPS_PATH + file)
-   
+
 	def startElement(self, tag, attributes):
 		tag = tag.lower()
 		lst = ['floor','walls','ceil']
@@ -741,6 +889,48 @@ class MapHandler(xml.sax.ContentHandler):
 			dct['data'] = []
 			dct['surface'] = pygame.Surface((int(attributes['width']) * self.tilewidth,int(attributes['height']) * self.tileheight),pygame.SRCALPHA)
 			self.layers[self.srflvl].append(dct)
+
+		#ITEMS
+		if tag == 'item':
+			sz = [0,0]
+			if 'width' in attributes.keys(): sz[0] = int(attributes['width']) * self.tilewidth
+			if 'height' in attributes.keys(): sz[1] = int(attributes['height']) * self.tileheight
+			obj = {'INDEX': attributes['index'],'RECT': pygame.Rect(int(attributes['x']) * self.tilewidth,int(attributes['y']) * self.tileheight,sz[0],sz[1]),
+				'FLOAT': 0,'ACC': 3,'DIRECTION': False,'DESTROY': False}
+			if 'ITEMS' not in self.objects.keys(): self.objects['ITEMS'] = []
+			self.objects['ITEMS'].append(obj)
+		#PORTALS
+		if tag == 'portal':
+			sz = [0,0]
+			g = [int(attributes['gotox']) * self.tilewidth,int(attributes['gotoy']) * self.tileheight]
+			if 'width' in attributes.keys(): sz[0] = int(attributes['width']) * self.tilewidth
+			if 'height' in attributes.keys(): sz[1] = int(attributes['height']) * self.tileheight
+			if 'gotoroom' in attributes.keys(): g.append(attributes['gotoroom'])
+			obj = {'RECT': pygame.Rect(int(attributes['x']) * self.tilewidth,int(attributes['y']) * self.tileheight,sz[0],sz[1]),'GOTO': g}
+			for i in ['open','close','key']:
+				if i in attributes.keys(): obj[i.upper()] = attributes[i]
+			if 'PORTALS' not in self.objects.keys(): self.objects['PORTALS'] = []
+			self.objects['PORTALS'].append(obj)
+		#SIGNS
+		if tag == 'sign':
+			sz = [0,0]
+			if 'width' in attributes.keys(): sz[0] = int(attributes['width']) * self.tilewidth
+			if 'height' in attributes.keys(): sz[1] = int(attributes['height']) * self.tileheight
+			obj = {'RECT': pygame.Rect(int(attributes['x']) * self.tilewidth,int(attributes['y']) * self.tileheight,sz[0],sz[1]),'TEXT': attributes['text']}
+			for i in ['font','size']:
+				if i in attributes.keys(): obj[i.upper()] = attributes[i]
+			if 'SIGNS' not in self.objects.keys(): self.objects['SIGNS'] = []
+			self.objects['SIGNS'].append(obj)
+		#ROADPROPS
+		if tag == 'roadprop':
+			sz = [0,0]
+			if 'width' in attributes.keys(): sz[0] = int(attributes['width']) * self.tilewidth
+			if 'height' in attributes.keys(): sz[1] = int(attributes['height']) * self.tileheight
+			obj = {'RECT': pygame.Rect(int(attributes['x']) * self.tilewidth,int(attributes['y']) * self.tileheight,sz[0],sz[1]),'TYPE': attributes['type']}
+			for i in ['price','speed']:
+				if i in attributes.keys(): obj[i.upper()] = int(attributes[i])
+			if 'ROADPROPS' not in self.objects.keys(): self.objects['ROADPROPS'] = []
+			self.objects['ROADPROPS'].append(obj)
 		self.current = tag
 
 	def characters(self, content):
@@ -787,56 +977,47 @@ class MapHandler(xml.sax.ContentHandler):
 		self.current = None
 		self.content = ''
 
-	def save(self, mp=None):
+	def save(self, name=None):
 		contents = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
 		'<map version="1.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="{}" height="{}" '.format(self.width,self.height)
-		contents += 'tilewidth="{}" tileheight="{}" infinite="0" nextlayerid="14" nextobjectid="77">\n'.format(self.tilewidth,self.tileheight)
-		if len(self.mapdata['PROPERTIES']) > 0:
-			contents += '	<properties>\n'
-			for p in self.mapdata['PROPERTIES'].items():
-				contents += '		<property name="{}" type="{}" value="{}"/>\n'.format(p[0],type(p[1]).__name__,p[1])
-			contents += '	</properties>\n'
-		'''
-		gid = 1
-		for i in tilset:
-			tst = pytmx.load_pygame(res.TILESETS_PATH + i)
-			gid += tst.tilecount
-			contents += '	<tileset firstgid="{}" source="../{}"/>\n'.format(gid,res.TILESETS_PATH + i)'''
-		id = 1
-		tid = 0
-		oid = 1
-		for i in self.tileset:
-			contents += '	<layer id="{}" name="TILE LAYER {}" width="{}" height="{}">\n'.format(id,tid + 1,self.width,self.height)
-			contents += '		<data encoding="csv">\n'
-			dd = ''
-			for d in i: dd += self.guitools.digitstring(d,3) + ','
-			for d in range(self.map['width']):
-				contents += '			' + str(dd[d * (self.width) * 4:(d + 1) * (self.height) * 4]) + '\n'
-			contents = contents[0:-2] + '\n		</data>\n	</layer>\n'
-			tid += 1
-
-		for i in self.layers:
-			nol = False
-			if i.name.startswith('Camada'): nol = True
-			elif i.name.startswith('TILE LAYER'): nol = True
-			if nol: continue
-			else:
-				contents += '	<objectgroup id="{}" name="{}">'.format(id,i.name)
-				for j in i:
-					contents += '		<object id="{}" name="{}" type="{}" x="{}" y="{}">'.format(oid,j.name,j.type,j.x,j.y)
-					if len(j.properties) > 0:
-						contents += '			<properties>'
-						for p in j.properties.items():
-							contents += '				<property name="{}" type="{}" value="{}"/>'.format(p[0],type(p[1]).__name__,p[1])
-						contents += '			</properties>'
-					contents += '		</object>'
-					oid += 1
-				contents += '	</objectgroup>'
-			id += 1
+		contents += 'tilewidth="{}" tileheight="{}" infinite="0">\n'.format(self.tilewidth,self.tileheight)
+		lst = ['floor','walls','ceil']
+		for l in range(len(lst)):
+			if len(self.layers[l]) > 0:
+				contents += '	<{}>\n'.format(lst[l])
+				for i in self.layers[l]:
+					exprp = ''
+					for p in ['offsetx','offsety']:
+						if p in i.keys(): exprp += ' {}="{}"'.format(p,i[p])
+					contents += '		<layer id="{}" width="{}" height="{}"{}>\n'.format(i['id'],i['width'],i['height'],exprp)
+					dd = ''
+					for d in range(len(i['data'][::int(i['width'])])):
+						dd += '			'
+						for t in range(int(i['width'])):
+							dd += self.guitools.digitstring(i['data'][(d * int(i['width'])) + t],3) + ','
+						dd += '\n'
+					contents += dd + '		</layer>\n'
+				contents += '	</{}>\n'.format(lst[l])
+		lst = ['ITEMS','PORTALS','SIGNS','ROADPROPS']
+		if len(self.objects) > 0:
+			contents += '	<objects>\n'
+			for o in lst:
+				for i in self.objects[o]:
+					prp = 'x="{}" y="{}"'.format(int(i['RECT'].x/self.tilewidth),int(i['RECT'].y/self.tileheight))
+					if i['RECT'].width > 0: prp += ' width="{}"'.format(int(i['RECT'].width/self.tilewidth))
+					if i['RECT'].height > 0: prp += ' height="{}"'.format(int(i['RECT'].height/self.tileheight))
+					if o == 'PORTALS':
+						prp += ' gotox="{}" gotoy="{}"'.format(int(i['GOTO'][0]/self.tilewidth),int(i['GOTO'][1]/self.tileheight))
+						if len(i['GOTO']) > 2: prp += ' gotoroom="{}"'.format(i['GOTO'][2])
+					for p in i.keys():
+						if p not in ['RECT','GOTO','FLOAT','ACC','DESTROY']: prp += ' {}="{}"'.format(p.lower(),i[p])
+					contents += '		<{} {}/>\n'.format(o[:-1].lower(),prp)
+			contents += '	</objects>\n'
 		contents += '</map>'
-		if mp == None: nn = res.MAP
-		else: nn = mp
-		file = open(res.MAPS_PATH + nn + '.tmx','w')
+
+		if name: fn = name[:-4]
+		else: fn = self.name
+		file = open(res.MAPS_PATH + fn + '.xml','w')
 		file.write(contents)
 		file.close()
 		
@@ -902,127 +1083,10 @@ class MapHandler(xml.sax.ContentHandler):
 		pygame.display.flip()
 		pygame.time.Clock().tick(res.FPS)
 
-class TileHandler(xml.sax.ContentHandler):
-	def __init__(self,file,lst=None,first=0):
-		self.window = pygame.display.set_mode((400,300))
-		self.name = file
-		self.ind = ''
-		self.img = None
-		self.imgpath = None
-		self.tileset = lst
-		self.tiles = {}
-		self.tilprp = {} #for old tiled tileset versions
-		self.tilani = {}
-		self.tilidx = 0
-		self.first = first
-		self.gid = 0
-		self.cor = [0,0]
-
-		self.rows = None
-		self.columns = None
-
-		parser = xml.sax.make_parser()
-		parser.setFeature(xml.sax.handler.feature_namespaces, 0)
-		parser.setContentHandler(self)
-		parser.parse(res.TILESETS_PATH + file)
-   
-	def startElement(self, tag, attributes):
-		if tag == 'tileset':
-			for i in [i[0] for i in attributes.items() if i[0] not in ['version','tiledversion','name']]:
-				setattr(self, i, int(attributes[i]))
-			if self.rows == None: self.rows = int(self.tilecount/self.columns)
-			self.length = self.rows * self.columns
-		if tag in ['img','image']:
-			self.img = pygame.image.load(res.TILESETS_PATH + attributes['source'])
-			self.imgpath = attributes['source']
-			self.width = self.img.get_width(); self.height = self.img.get_height()
-		if tag == 'tile':
-			if self.img:
-				if self.tileset:
-					if int(attributes['id']) + self.first in self.tileset: do = True
-					else: do = False
-				else: do = True
-				if do:
-					lid = int(attributes['id'])
-					self.gid = int(attributes['id']) + self.first
-					self.tilidx = int(attributes['id']) + self.first
-					rct = (self.cor[0] * self.tilewidth,self.cor[1] * self.tileheight,self.tilewidth,self.tileheight)
-					self.tiles[self.gid] = {'ID': lid,'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0)}
-					for x in attributes.items(): self.tiles[self.gid][x[0].upper()] = x[1]
-				self.cor[0] += 1
-				if self.cor[0] >= self.columns:
-					self.cor[0] = 0
-					self.cor[1] += 1
-			else: print(dtb.ERROR['img_noload'])
-		if tag == 'properties': self.tilprp = {}
-		if tag == 'property': self.tilprp[attributes['name']] = attributes['value']
-		if tag == 'animation':
-			if 'tile' in attributes.keys(): self.tilidx = int(attributes['tile']) + self.first
-			self.tilani[self.tilidx] = []
-		if tag == 'frame':
-			if 'tileid' in attributes.keys(): self.tilani[self.tilidx].append(int(attributes['tileid']) + self.first)
-			else: self.tilani[self.tilidx].append(int(attributes['tile']) + self.first)
-		self.ind = tag
-
-	def characters(self, content): pass
-
-	def endElement(self, tag):
-		if tag == 'tile' and self.gid > 0:
-			for i in self.tilprp.items(): self.tiles[self.gid][i[0]] = i[1]
-		if tag == 'animation':
-			if self.tileset:
-				if self.tilidx in self.tileset: do = True
-				else: do = False
-			else: do = True
-			if do: self.tiles[self.tilidx]['ANIMATION'] = self.tilani[self.tilidx]
-		self.ind = ''
-	
-	def save(self, f=None):
-		if self.tileset == None:
-			contents = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
-			'<tileset version="1.2" name="{}" first="{}" tilewidth="{}" tileheight="{}" rows="{}" columns="{}">\n'.format(self.name,self.first,self.tilewidth,self.tileheight,self.rows,self.columns)
-			contents += '	<img source="{}" width="{}" height="{}"/>\n'.format(self.imgpath,self.width,self.height)
-			for i in self.tiles:
-				tt = '	<tile id="{}" '.format(self.tiles[i]['ID'])
-				if 'TYPE' in self.tiles[i].keys() and self.tiles[i]['TYPE']: tt += 'type="{}"'.format(self.tiles[i]['TYPE'])
-				contents += tt + '/>\n'
-			contents += '</tilset>'
-			
-			if f: ff = f + '.xml'
-			else: ff = self.name
-			file = open(res.TILESETS_PATH + ff,'w')
-			file.write(contents)
-			file.close()
-
-	def test(self):
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				exit()
-		self.window.fill((100,100,100))
-		pos = [0,0]
-		for i in self.tiles:
-			self.window.blit(self.tiles[i]['IMG'],(pos[0] * self.tilewidth,pos[1] * self.tileheight))
-			pos[0] += 1
-			if pos[0] >= self.columns:
-				pos[0] = 0
-				pos[1] += 1
-				
-		pygame.display.flip()
-		pygame.time.Clock().tick(res.FPS)
-
-#m = MapHandler('savetest.tmx')
-gid = 0
-for t in os.listdir(res.TILESETS_PATH):
-	tset = TileHandler(t,first=gid)
-	tset.save(tset.name)
-	gid += tset.length
-#while True: m.test()
+m = MapHandler('savetest.tmx')
+while True: m.test()
 
 class Map:
-	def __init__(self):
-		pass
-			
 	def loadmap(self, mp=None):
 		tilimg = {}
 		self.tilmap = [[],[],[],[],[],[],[]]
@@ -1039,7 +1103,6 @@ class Map:
 		self.cam.x = int(self.cam.x - pcam[0] - (self.displayzw/2))
 		self.cam.y = int(self.cam.y - pcam[1] - (self.displayzh/2))
 		#rects 1,rects 2,carry/hold,walls,hide,water
-		self.tilrect = [[],[],[],[],[],[],[]]
 		self.enemies = []
 		self.foe = []
 		self.npcs = []

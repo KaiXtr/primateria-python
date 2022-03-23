@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.2" tiledversion="1.3.0" name="carpets" tilewidth="30" tileheight="30" tilecount="96" columns="10">
  <image source="../carpets.png" width="300" height="270"/>
- <terraintypes>
-  <terrain name="red carpet" tile="11"/>
-  <terrain name="orange carpet" tile="16"/>
-  <terrain name="cyan carpet" tile="41"/>
-  <terrain name="blue carpet" tile="46"/>
-  <terrain name="green carpet" tile="71"/>
-  <terrain name="pink carpet" tile="76"/>
- </terraintypes>
  <tile id="0" terrain=",,,0">
   <properties>
    <property name="TYPE" value="cloth"/>
@@ -283,29 +275,29 @@
    <property name="TYPE" value="cloth"/>
   </properties>
  </tile>
- <tile id="60" terrain=",,,4"/>
- <tile id="61" terrain=",,4,4"/>
- <tile id="62" terrain=",,4,"/>
+ <tile id="70" terrain=",4,,4"/>
+ <tile id="82" terrain="4,,,"/>
+ <tile id="81" terrain="4,4,,"/>
+ <tile id="72" terrain="4,,4,"/>
  <tile id="63" terrain="4,4,4,"/>
  <tile id="64" terrain="4,4,,4"/>
+ <tile id="71" terrain="4,4,4,4"/>
+ <tile id="74" terrain=",4,4,4"/>
+ <tile id="61" terrain=",,4,4"/>
+ <tile id="73" terrain="4,,4,4"/>
+ <tile id="80" terrain=",4,,"/>
+ <tile id="62" terrain=",,4,"/>
+ <tile id="60" terrain=",,,4"/>
  <tile id="65" terrain=",,,5"/>
  <tile id="66" terrain=",,5,5"/>
  <tile id="67" terrain=",,5,"/>
  <tile id="68" terrain="5,5,5,"/>
  <tile id="69" terrain="5,5,,5"/>
- <tile id="70" terrain=",4,,4"/>
- <tile id="71" terrain="4,4,4,4"/>
- <tile id="72" terrain="4,,4,"/>
- <tile id="73" terrain="4,,4,4"/>
- <tile id="74" terrain=",4,4,4"/>
  <tile id="75" terrain=",5,,5"/>
  <tile id="76" terrain="5,5,5,5"/>
  <tile id="77" terrain="5,,5,"/>
  <tile id="78" terrain="5,,5,5"/>
  <tile id="79" terrain=",5,5,5"/>
- <tile id="80" terrain=",4,,"/>
- <tile id="81" terrain="4,4,,"/>
- <tile id="82" terrain="4,,,"/>
  <tile id="85" terrain=",5,,"/>
  <tile id="86" terrain="5,5,,"/>
  <tile id="87" terrain="5,,,"/>

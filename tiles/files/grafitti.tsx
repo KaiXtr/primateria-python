@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" name="grafitti" tilewidth="30" tileheight="30" rows="6" columns="8">
+<tileset version="1.2" name="grafitti" tilewidth="30" tileheight="30" rows="8" columns="6">
  <img source="../grafitti.png" width="180" height="240"/>
- <tile id="0" type="street"/>
- <tile id="1" type="crossing"/>
- <tile id="2" type="crossing"/>
- <tile id="3" type="sidewalk"/>
- <tile id="4" type="sidewalk"/>
- <tile id="5" type="brick"/>
- <tile id="6" type="brick"/>
- <tile id="7" type="wall"/>
- <tile id="8" type="wall"/>
- <tile id="9" type="wall"/>
- <tile id="10" type="wall"/>
- <tile id="11" type="wall"/>
- <tile id="12" type="wall"/>
- <tile id="13" type="street"/>
- <tile id="14" type="street"/>
- <tile id="15" type="street"/>
- <tile id="16" type="sidewalk"/>
- <tile id="17" type="sidewalk"/>
- <tile id="18" type="brick"/>
- <tile id="19" type="brick"/>
- <tile id="20" type="wall"/>
- <tile id="21" type="wall"/>
- <tile id="22" type="wall"/>
- <tile id="23" type="wall"/>
- <tile id="24" type="wall"/>
- <tile id="25" type="wall"/>
- <tile id="26" type="street"/>
- <tile id="27" type="street"/>
- <tile id="28" type="street"/>
- <tile id="29" type="street"/>
- <tile id="30" type="sidewalk"/>
- <tile id="31" type="brick"/>
- <tile id="35" type="wall"/>
- <tile id="36" type="wall"/>
- <tile id="37" type="wall"/>
- <tile id="38" type="wall"/>
- <tile id="39" type="street"/>
- <tile id="40" type="street"/>
- <tile id="41" type="street"/>
- <tile id="42" type="street"/>
- <tile id="43" type="street"/>
- <tile id="44" type="street"/>
- <tile id="45" type="street"/>
- <tile id="46" type="street"/>
- <tile id="47" type="street"/>
+ <tile id="0"/>
+ <tile id="1"/>
+ <tile id="2"/>
+ <tile id="3"/>
+ <tile id="4"/>
+ <tile id="5"/>
+ <tile id="6"/>
+ <tile id="7"/>
+ <tile id="8"/>
+ <tile id="9"/>
+ <tile id="10"/>
+ <tile id="11"/>
+ <tile id="12"/>
+ <tile id="13"/>
+ <tile id="14"/>
+ <tile id="15"/>
+ <tile id="16"/>
+ <tile id="17"/>
+ <tile id="18"/>
+ <tile id="19"/>
+ <tile id="20"/>
+ <tile id="21"/>
+ <tile id="22"/>
+ <tile id="23"/>
+ <tile id="24"/>
+ <tile id="25"/>
+ <tile id="26"/>
+ <tile id="27"/>
+ <tile id="28"/>
+ <tile id="29"/>
+ <tile id="30"/>
+ <tile id="31"/>
+ <tile id="35"/>
+ <tile id="36"/>
+ <tile id="37"/>
+ <tile id="38"/>
+ <tile id="39"/>
+ <tile id="40"/>
+ <tile id="41"/>
+ <tile id="42"/>
+ <tile id="43"/>
+ <tile id="44"/>
+ <tile id="45"/>
+ <tile id="46"/>
+ <tile id="47"/>
 </tileset>

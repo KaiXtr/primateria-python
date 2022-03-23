@@ -21,14 +21,11 @@
 		-->
 	</floor>
 	<objects>
-		<!--objetos empurráveis, destrutíveis e carregáveis são na verdade tiles-->
-		<object x="2" y="3" img="sfs" destroy="0" weight="2"/>
-		<object x="2" y="3" img="sfs" destroy="0" weight="10"/>
-		<item />
+		<item x="3" y="3" index="pow_regular"/>
 		<portal x="3" y="3" gotox="1" gotoy="1" gotoroom="savetest.xml" open="00:00" close="00:00" key="331"/>
 		<sign x="4" y="4" width="2" height="1" text="Hello World!"/>
-		<roadprop type='toll' />
-		<roadprop type='radar' />
-		<roadprop type='blitz' />
+		<roadprop x="0" y="0" type='toll' price="10"/>
+		<roadprop x="0" y="0" type='radar' speed="30"/>
+		<roadprop x="0" y="0" type='blitz'/>
 	</objects>
 </map>
