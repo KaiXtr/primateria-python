@@ -1487,6 +1487,17 @@ CRAFTING = [
 
 EXAMINE = ['sellcard','credit_card1','credit_card2','credit_card3','credit_card4','id_card0','id_card1','id_card2','id_card3','id_card4','id_card5']
 
+TRICKS = {
+'1.0': {'NAME': 'Instinto','DESCRIPTION': 'O usuário percebe uma presença estranha.','BONUS': [5,0,0,0,0]},
+'1.1': {'NAME': 'Fúria','DESCRIPTION': 'Um ataque fulminante.','BONUS': [5,0,0,0,0]},
+'2.0': {'NAME': 'Impulso','DESCRIPTION': 'Aumento de velocidade','BONUS': [5,0,0,0,0]},
+'3.0': {'NAME': 'Terremoto','DESCRIPTION': 'O chão treme.','BONUS': [5,0,0,0,0]},
+'4.0': {'NAME': 'Furacão','DESCRIPTION': 'Os oponentes giram.','BONUS': [5,0,0,0,0]},
+'5.0': {'NAME': 'Atração','DESCRIPTION': 'Itens próximos chegam mais perto de você.','BONUS': [5,0,0,0,0]},
+'6.0': {'NAME': 'Adivinhação','DESCRIPTION': 'O usuário prevê os movimentos do oponente.','BONUS': [5,0,0,0,0]},
+'7.0': {'NAME': 'Indomado','DESCRIPTION': 'Invencível temporariamente.','BONUS': [5,0,0,0,0]},
+}
+
 VEHICLES = {
 #BICYCLES
 'bike_0': {'SPEED': 8, 'ACCELERATION': 0.5, 'CAPACITY': 100, 'GAS': 0.075, 'LIGHTS': 2},
@@ -2163,7 +2174,8 @@ ABOUT = [res.GNAME.upper(),res.AUTHOR + ' (2020)','Source code por Matt Kai','Fe
 DISCLAIMER = ['Esta é uma obra de ficção,','e quaisquer semelhanças com','acontecimentos reais são','mera coincidência.','',
 'Uma certa porcentagem da','população sofre de condições','como eplepsia e convulsões,','por isso sempre consulte','seu médico antes de jogar']
 
-ERROR = ['Oops! Alguma coisa deu errado... =(','Aperte qualquer botão para fechar','Arquivo','linha','em','Reiniciando...']
+ERROR = {'crash': 'Oops! Alguma coisa deu errado... =(','press': 'Aperte qualquer botão para fechar','file': 'Arquivo','line': 'linha','in': 'em','restart': 'Reiniciando...',
+	'img_noload': 'ATENÇÃO! imagem não foi carregada.'}
 
 MINIGAMES = {
 'Pinball': 'Pinball','Tetris': 'Tetris','Minesweeper': 'Campo Minado','Pong': 'Pong','Differences': '7 Erros','Jigsaw': 'Quebra-cabeça','Maze': 'Labirinto','Pool': 'Sinuca','MusicTiles': 'Guitarrero',

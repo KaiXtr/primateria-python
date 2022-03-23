@@ -23,11 +23,11 @@ class Test:
 		#self.font = pygame.font.Font(res.FONTS_PATH + 'reglisse/Reglisse.otf', 30)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Popup('Calendar',(0,0),miniature=True),Popup('Storage',(100,200))]#,,Popup('Products',(50,200)),Popup('Basket',(100,100))]
+		self.menu = [Popup('Inventory',(0,0),miniature=True),Popup('Status',(100,0),miniature=True),Popup('Tactics',(100,200),miniature=True)]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
 		self.files = None#Files((800,1280))
 		self.guitools = Guitools()
 		self.tsrf = None
-		for i in self.guitools.transiction((800,600),1,-100,'fade'): self.tsrf = i; self.run()
+		for i in self.guitools.transiction((800,600),100,100,'aim'): self.tsrf = i; self.run()
 		
 	def run(self):
 		for event in pygame.event.get():
@@ -351,6 +351,11 @@ class Popup:
 		self.surface = pygame.Surface(tuple(self.ratio))
 		self.brd = pygame.Surface(tuple(self.ratio))
 		self.brd.fill(res.COLOR)
+		for r in range(3):
+			col = [res.COLOR[0] - int(120/(r + 1)),res.COLOR[1] - int(120/(r + 1)),res.COLOR[2] - int(120/(r + 1))]
+			for i in range(len(col)):
+				if col[i] < 0: col[i] = 0
+			pygame.draw.rect(self.brd,tuple(col),pygame.Rect(r,r,self.ratio[0] - (r * 2),self.ratio[1] - (r * 2)),1)
 		for x in range(int(self.ratio[0]/10)):
 			for y in range(int(self.ratio[1]/10)):
 				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
@@ -369,18 +374,20 @@ class Popup:
 		mp = pygame.mouse.get_pos()
 		mr1 = pygame.Rect(int((mp[0] - self.rect.x)/res.GSCALE),int((mp[1] - self.rect.y)/res.GSCALE),20,20)
 		mr2 = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),20,20)
-		if self.title not in ['conf','info']: self.gui.inside_events(pressed,mr2)
-		#POPUP MESSAGE OPTIONS
-		elif pressed[4][0]:
-			if pygame.Rect.colliderect(self.btrects[0],mr2): self.gui = None; return True
-			elif pygame.Rect.colliderect(self.btrects[1],mr2): self.gui = None; return False
-		#EXIT AND MINIMIZE BUTTONS
-		if pressed[4][0]:
-			if self.min == False:
-				if pygame.Rect.colliderect(self.optrects[1],mr2):
-					if self.deletable: self.gui = None
-					else: self.show = False
-				if len(self.optrects) > 2 and pygame.Rect.colliderect(self.optrects[2],mr2): self.min = not self.min
+		if pygame.Rect.colliderect(self.rect,pygame.Rect(mp[0],mp[1],2,2)):
+			if self.title not in ['conf','info']:
+				self.gui.inside_events(pressed,mr2)
+			#POPUP MESSAGE OPTIONS
+			elif pressed[4][0]:
+				if pygame.Rect.colliderect(self.btrects[0],mr2): self.gui = None; return True
+				elif pygame.Rect.colliderect(self.btrects[1],mr2): self.gui = None; return False
+			#EXIT AND MINIMIZE BUTTONS
+			if pressed[4][0]:
+				if self.min == False:
+					if pygame.Rect.colliderect(self.optrects[1],mr2):
+						if self.deletable: self.gui = None
+						else: self.show = False
+					if len(self.optrects) > 2 and pygame.Rect.colliderect(self.optrects[2],mr2): self.min = not self.min
 	
 	def outside_events(self,pressed):
 		mp = pygame.mouse.get_pos()
@@ -1821,10 +1828,6 @@ class Apps:
 		self.scr = [pygame.Surface((180,232)), pygame.Surface((360,464), pygame.SRCALPHA)]
 		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 30), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
 			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
-		self.scrpos = (44,93)
-		self.rqst = True
-		self.ingame = 0
-		self.nb = None
 		self.sfx = pygame.mixer.Channel(0)
 		self.sfx.set_volume(res.SFX)
 		self.scroll = 0
@@ -2920,7 +2923,6 @@ class Status:
 		dvd3 = math.floor((180 * res.GSCALE)/3)
 		for i in range(len(res.PARTY[res.FORMATION])): self.optrects.append(pygame.Rect(i * dvd3,0,dvd3,40))
 		self.opt = 0
-		self.equip = 1
 		self.bars = []
 		for i in range(3): self.bars.append([100,100])
 	
@@ -2940,11 +2942,12 @@ class Status:
 		
 		sz = self.mnsrf.get_width()
 		ch = res.CHARACTERS[res.PARTY[res.FORMATION][self.opt]]
-		eq = res.INVENTORY[res.PARTY[res.FORMATION][self.opt]][4][self.equip]
+		eq = res.INVENTORY[res.PARTY[res.FORMATION][self.opt]][4][res.EQUIP[self.opt]]
 		nn = ch['NICK']
 		if nn == None: nn = ch['NAME']
 		self.mnsrf.blit(self.fnt['TITLE'].render(nn.lower(), True, (255, 255, 255)), (20, 20))
 		
+		low = 0
 		lst = [(ch['HP'],dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']])]
 		if eq[0].startswith('gun'): lst.append((dtb.ITEMS[eq[0]][5]['CAPACITY'],eq[1]))
 		else: lst.append((ch['SANITY'],100))
@@ -3013,134 +3016,60 @@ class Status:
 
 class Tactics:
 	def __init__(self):
-		self.scr = [pygame.Surface((360,464)), pygame.Surface((360,464), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 30), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
-			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
-		self.ingame = 0
+		self.scr = [pygame.Surface((180,232)), pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)]
+		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 15 * res.GSCALE),'DESCRIPTION': pygame.font.SysFont('Calibri', 10 * res.GSCALE)}
 		self.sfx = pygame.mixer.Channel(0)
 		self.sfx.set_volume(res.SFX)
+		self.ratio = [(180 * res.GSCALE,232 * res.GSCALE),(210,50)]
 		self.scroll = 0
 		self.optrects = []
-		self.opt = [0,0]
+		for i in range(20): self.optrects.append(pygame.Rect(0,i * 41 * res.GSCALE,180 * res.GSCALE,40 * res.GSCALE))
+		self.btrects = []
+		for i in range(4): self.btrects.append(pygame.Rect(10 + (i * 40),10,30,30))
+		self.opt = [0,0,0]
 		self.mnu = 0
 		
 	def inside_events(self,pressed,mouse):
-		#CHOOSING TACTICS
-		if self.mnu == 0:
-			if pressed[4][0]:
-				self.sfx.play(res.SOUND['MENU_GO'])
-				if self.opt[1] == len(res.TACTICAL):
-					res.TACTICAL.append([0,0,0,0])
-				self.mnu = 1
-				self.opt[0] = res.TACTICAL[self.opt[1]][self.mnu - 1]
+		if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[2][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
 
-			if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-			if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-
-			if self.opt[1] < 0: self.opt[1] = len(res.TACTICAL)
-			if self.opt[1] > len(res.TACTICAL): self.opt[1] = 0
-		#MANAGING TACTICS
-		elif self.mnu > 0:
-			if pressed[4][0]:
-				self.sfx.play(res.SOUND['MENU_BACK'])
-				if self.mnu < 5:
-					self.mnu = 0
-				else:
-					del res.TACTICAL[self.opt[1]]
-					self.mnu = 0
-
-			if pressed[0][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-			if pressed[1][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-			if pressed[2][0]: self.mnu -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-			if pressed[3][0]: self.mnu += 1; self.sfx.play(res.SOUND['MENU_HOR'])
-
-			if self.mnu > 0:
-				if self.mnu < 1: self.mnu = 5
-				if self.mnu > 5: self.mnu = 1
-				if self.opt[0] < 0: self.opt[0] = 7
-				if self.opt[0] > 7: self.opt[0] = 0
-				
-				if pressed[2][0] or pressed[3][0]:
-					if self.mnu < 5 and len(res.TACTICAL) > 0: self.opt = res.TACTICAL[self.opt[1]][self.mnu - 1]
-				else:
-					if self.mnu < 5 and len(res.TACTICAL) > 0: res.TACTICAL[self.opt[1]][self.mnu - 1] = self.opt[0]
+		if self.opt[0] < 0: self.opt[0] = len(res.PARTY[res.FORMATION])
+		if self.opt[0] > len(res.PARTY[res.FORMATION]): self.opt[0] = 0
+		if self.opt[1] < 0: self.opt[1] = len(res.TACTICAL[res.PARTY[res.FORMATION][self.opt[0]]])
+		if self.opt[1] > len(res.TACTICAL[res.PARTY[res.FORMATION][self.opt[0]]]): self.opt[1] = 0
 								
 	def outside_events(self,pressed):
 		pass
 	
 	def miniature(self):
-		x = 0
-		if self.displayzw < self.displayzh: brdx = (35 * 4) + 46
-		else: brdx = (35 * 9) + 46
-		brdx = int(self.displayzw/2) - int(brdx/2)
-		for i in res.INVENTORY[itind][4][1:]:
-			if self.equip[self.fig[self.turn]['N']] == x: pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + (x * 35),(self.displayzh + dwyy) - wbrh,30,30))
-			else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(brdx + (x * 35),(self.displayzh + dwyy) - wbrh,30,30))
-			if res.INVENTORY[itind][4][x + 1][0] != '_':
-				self.display[0].blit(self.inv.itimg(res.INVENTORY[itind][4][x + 1][0]), (brdx + 2 + (x * 35), (self.displayzh + dwyy) - wbrh))
-			x += 1
-		if wbrh == self.winbar * 2: wbrh -= 35
-		if self.displayzw < self.displayzh: brdx -= (35 * 4) + 46
-		if self.equip[self.fig[self.turn]['N']] == 4:
-			pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + 186,(self.displayzh + dwyy) - wbrh,30,30))
-			self.hpctrl = dtb.HINTS['BATTLE_TACTICS']
-		else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(brdx + 186,(self.displayzh + dwyy) - wbrh,30,30))
-		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_tactical.png'), (brdx + 186, (self.displayzh + dwyy) - wbrh))
-		if self.equip[self.fig[self.turn]['N']] == 5:
-			pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + 221,(self.displayzh + dwyy) - wbrh,30,30))
-			self.hpctrl = dtb.HINTS['BATTLE_DIALOG']
-		else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(brdx + 221,(self.displayzh + dwyy) - wbrh,30,30))
-		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_talk.png'), (brdx + 221, (self.displayzh + dwyy) - wbrh))
-		if self.equip[self.fig[self.turn]['N']] == 6:
-			pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + 256,(self.displayzh + dwyy) - wbrh,30,30))
-			self.hpctrl = dtb.HINTS['BATTLE_GUARD']
-		else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(brdx + 256,(self.displayzh + dwyy) - wbrh,30,30))
-		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_guard.png'), (brdx + 256, (self.displayzh + dwyy) - wbrh))
-		if self.equip[self.fig[self.turn]['N']] == 7:
-			pygame.draw.rect(self.display[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(brdx + 291,(self.displayzh + dwyy) - wbrh,30,30))
-			self.hpctrl = dtb.HINTS['BATTLE_RUN']
-		else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(brdx + 291,(self.displayzh + dwyy) - wbrh,30,30))
-		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_run.png'), (brdx + 291, (self.displayzh + dwyy) - wbrh))
-		self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_invphn.png'), (brdx + 324, (self.displayzh + dwyy) - wbrh))
+		srf = pygame.Surface((210,50))
+		srf.fill((0,0,0))
+
+		lst = ['tactical','talk','guard','run']
+		for i in range(len(self.btrects)):
+			if self.opt[2] == i: col = res.COLOR
+			else: col = (200,200,200)
+			pygame.draw.rect(srf,col,self.btrects[i])
+			srf.blit(pygame.image.load(res.SPRITES_PATH + 'e_' + lst[i] + '.png'), (self.btrects[i].x,self.btrects[i].y))
+		srf.blit(pygame.image.load(res.SPRITES_PATH + 'e_invphn.png'), (srf.get_width() - 40, 10))
+
+		return srf
 
 	def draw(self):
-		self.scroll = 0
 		sz = self.scr[0].get_width() #button width
-		if opt[1] > 2: self.scroll += (opt[1] - 2) * 51
-
 		for i in self.scr: i.fill((10,10,10,0))
-		if res.SIGNAL > 0:
-			y = 0
-			for i in res.TACTICAL:
-				if i != [] and len(i) == 4:
-					if opt[1] != y/51: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,41 + y - self.scroll,sz,50))
-					else: pygame.draw.rect(self.scr[0], (33, 75, 127), pygame.Rect(0,41 + y - self.scroll,sz,50))
+		if self.opt[1] > 2: self.scroll += (self.opt[1] - 2) * 51
 
-					if self.mnu > 0 and opt[1] == y/51:
-						if self.mnu < 5:
-							pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(8 + (mnu - 1) * 22,49 + y - self.scroll,24,24))
-							if i[self.mnu - 1] == 1: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[54], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
-							if i[self.mnu - 1] == 2: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[55], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
-							if i[self.mnu - 1] == 3: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[56], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
-							if i[self.mnu - 1] == 4: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[57], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
-							if i[self.mnu - 1] == 5: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[58], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
-							if i[self.mnu - 1] == 6: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[59], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
-							if i[self.mnu - 1] == 7: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[60], True, (0, 0, 0)), (20, (75 + y - self.scroll) * 2))
-						else: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 42,49 + y - self.scroll,24,24))
-						self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'tc_8.png'), (sz - 40, 51 + y - self.scroll))
-					for b in range(4):
-						self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'tc_' + str(i[b]) + '.png'), (10 + (22 * b), 51 + y - self.scroll))
-				y += 51
-
-			if self.opt[1] != y/51: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,41 + y - self.scroll,sz,50))
-			else: pygame.draw.rect(self.scr[0], (33, 75, 127), pygame.Rect(0,41 + y - self.scroll,sz,50))
-			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[36], True, (0, 0, 0)), (100, (60 + y - self.scroll) * 2))
-
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[15], True, (255, 255, 255)), (50, 280))
-
-		pygame.draw.rect(self.scr[1], (33, 75, 127), pygame.Rect(0,0,sz * 2,80))
-		self.scr[1].blit(self.fnt['TITLE'].render(dtb.MENU[9], True, (0, 0, 0)), (10, 10))
-
+		for i in range(len(res.TACTICAL[res.PARTY[res.FORMATION][self.opt[0]]])):
+			if self.opt[1] == i: col = (33, 75, 127)
+			else: col = (200,200,200)
+			pygame.draw.rect(self.scr[1], col, self.optrects[i])
+			j = dtb.TRICKS[res.TACTICAL[res.PARTY[res.FORMATION][self.opt[0]]][i]]
+			self.scr[1].blit(self.fnt['CALIBRI'].render(j['NAME'], True, (10, 10, 10)), (self.optrects[i].x + 10, self.optrects[i].y + 10))
+			self.scr[1].blit(self.fnt['DESCRIPTION'].render(j['DESCRIPTION'], True, (10, 10, 10)), (self.optrects[i].x + 10, self.optrects[i].y + 40))
+	
 		return self.scr
 		
 class Achievements:

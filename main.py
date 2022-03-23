@@ -541,14 +541,11 @@ class NPC:
 					self.time = 20
 			#MOVING
 			if self.path != 'stay':
-				if self.direction == 1: self.rect.x += self.agility - 1
-				if self.direction == 2: self.rect.x += self.agility - 1; self.rect.y += self.agility - 1
-				if self.direction == 3: self.rect.y += self.agility - 1
-				if self.direction == 4: self.rect.x -= self.agility - 1; self.rect.y += self.agility - 1
-				if self.direction == 5: self.rect.x -= self.agility - 1
-				if self.direction == 6: self.rect.x -= self.agility - 1; self.rect.y -= self.agility - 1
-				if self.direction == 7: self.rect.y -= self.agility - 1
-				if self.direction == 8: self.rect.x += self.agility - 1; self.rect.y -= self.agility - 1
+				chk = []
+				lst = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]]
+				for c in lst:
+					if self.direction == c + 1: self.rect.x += chk[0] * self.agility; self.rect.y += chk[1] * self.agility
+					chk.append([rct.x + (lst[c][0] * 30),rct.y + (lst[c][1] * 30)])
 				self.time -= 1
 				
 	def interact(self):
@@ -706,6 +703,7 @@ class MapHandler(xml.sax.ContentHandler):
 		self.surfaces = [None for i in range(5)]
 		self.layers = [[] for i in range(5)]
 		self.tileset = []
+		self.objects = []
 		self.srflvl = 0
 		self.current = None
 		self.content = ''
@@ -770,7 +768,7 @@ class MapHandler(xml.sax.ContentHandler):
 			for t in os.listdir(res.TILESETS_PATH):
 				tset = TileHandler(t,self.tileset,gid)
 				tls = {**tls,**tset.tiles}
-				gid += tset.lenght
+				gid += tset.length
 			for i in range(5):
 				for ldx in range(len(self.layers[i])):
 					#DRAW LAYERS
@@ -887,17 +885,11 @@ class MapHandler(xml.sax.ContentHandler):
 				cl = [(100,100,200),(200,100,100)]
 				pygame.draw.ellipse(self.window,cl[l],rct)
 
-				if lst[l][i]['DIRECTION'] == 1: chk = [1,0]
-				if lst[l][i]['DIRECTION'] == 2: chk = [1,1]
-				if lst[l][i]['DIRECTION'] == 3: chk = [0,1]
-				if lst[l][i]['DIRECTION'] == 4: chk = [-1,1]
-				if lst[l][i]['DIRECTION'] == 5: chk = [-1,0]
-				if lst[l][i]['DIRECTION'] == 6: chk = [-1,-1]
-				if lst[l][i]['DIRECTION'] == 7: chk = [0,-1]
-				if lst[l][i]['DIRECTION'] == 8: chk = [1,-1]
 				chk = []
-				for c in [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]]:
-					chk.append([rct.x + (c[0] * 30),rct.y + (c[1] * 30)])
+				cors = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]]
+				for c in range(len(cors)):
+					if lst[l][i]['DIRECTION'] == c + 1: rct.x += cors[c][0] * 1; rct.y += cors[c][1] * 1
+					chk.append([rct.x + (cors[c][0] * 30),rct.y + (cors[c][1] * 30)])
 
 				if l == 0: ls = self.paths['STREET']; eq = 'self.traflight < 120'
 				else: ls = self.paths['SIDEWALK']; eq = 'self.traflight >= 120'
@@ -906,16 +898,6 @@ class MapHandler(xml.sax.ContentHandler):
 				dirs = [x for x in [1,3,5,7] if x not in ntil]
 				if len(dirs) == 0: lst[l][i]['DIRECTION'] = 0
 				elif lst[l][i]['DIRECTION'] not in dirs: lst[l][i]['DIRECTION'] = dirs[random.randint(0,len(dirs) - 1)]
-
-				spd = 1
-				if lst[l][i]['DIRECTION'] == 1: rct.x += spd
-				if lst[l][i]['DIRECTION'] == 2: rct.x += spd; rct.y += spd
-				if lst[l][i]['DIRECTION'] == 3: rct.y += spd
-				if lst[l][i]['DIRECTION'] == 4: rct.x -= spd; rct.y += spd
-				if lst[l][i]['DIRECTION'] == 5: rct.x -= spd
-				if lst[l][i]['DIRECTION'] == 6: rct.x -= spd; rct.y -= spd
-				if lst[l][i]['DIRECTION'] == 7: rct.y -= spd
-				if lst[l][i]['DIRECTION'] == 8: rct.x += spd; rct.y -= spd
 				
 		pygame.display.flip()
 		pygame.time.Clock().tick(res.FPS)
@@ -923,8 +905,10 @@ class MapHandler(xml.sax.ContentHandler):
 class TileHandler(xml.sax.ContentHandler):
 	def __init__(self,file,lst=None,first=0):
 		self.window = pygame.display.set_mode((400,300))
+		self.name = file
 		self.ind = ''
 		self.img = None
+		self.imgpath = None
 		self.tileset = lst
 		self.tiles = {}
 		self.tilprp = {} #for old tiled tileset versions
@@ -947,58 +931,68 @@ class TileHandler(xml.sax.ContentHandler):
 			for i in [i[0] for i in attributes.items() if i[0] not in ['version','tiledversion','name']]:
 				setattr(self, i, int(attributes[i]))
 			if self.rows == None: self.rows = int(self.tilecount/self.columns)
-			self.lenght = self.rows * self.columns
+			self.length = self.rows * self.columns
 		if tag in ['img','image']:
 			self.img = pygame.image.load(res.TILESETS_PATH + attributes['source'])
+			self.imgpath = attributes['source']
 			self.width = self.img.get_width(); self.height = self.img.get_height()
 		if tag == 'tile':
-			if self.tileset:
-				if int(attributes['id']) + self.first in self.tileset: do = True
-				else: do = False
-			else: do = True
-			if do:
-				lid = int(attributes['id'])
-				self.gid = int(attributes['id']) + self.first
-				rct = (self.cor[0] * self.tilewidth,self.cor[1] * self.tileheight,self.tilewidth,self.tileheight)
-				self.tiles[self.gid] = {'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0)}
-				for x in attributes.items(): self.tiles[self.gid][x[0].upper()] = x[1]
-			self.cor[0] += 1
-			if self.cor[0] >= self.columns:
-				self.cor[0] = 0
-				self.cor[1] += 1
+			if self.img:
+				if self.tileset:
+					if int(attributes['id']) + self.first in self.tileset: do = True
+					else: do = False
+				else: do = True
+				if do:
+					lid = int(attributes['id'])
+					self.gid = int(attributes['id']) + self.first
+					self.tilidx = int(attributes['id']) + self.first
+					rct = (self.cor[0] * self.tilewidth,self.cor[1] * self.tileheight,self.tilewidth,self.tileheight)
+					self.tiles[self.gid] = {'ID': lid,'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0)}
+					for x in attributes.items(): self.tiles[self.gid][x[0].upper()] = x[1]
+				self.cor[0] += 1
+				if self.cor[0] >= self.columns:
+					self.cor[0] = 0
+					self.cor[1] += 1
+			else: print(dtb.ERROR['img_noload'])
 		if tag == 'properties': self.tilprp = {}
 		if tag == 'property': self.tilprp[attributes['name']] = attributes['value']
-		if tag == 'animation' and 'tile' in attributes.keys(): self.tilani[attributes['tile']] = []
+		if tag == 'animation':
+			if 'tile' in attributes.keys(): self.tilidx = int(attributes['tile']) + self.first
+			self.tilani[self.tilidx] = []
 		if tag == 'frame':
-			if 'tileid' in attributes.keys(): self.tilani[] = attributes['tileid']
-			else: self.tilani[] = attributes['tile']
+			if 'tileid' in attributes.keys(): self.tilani[self.tilidx].append(int(attributes['tileid']) + self.first)
+			else: self.tilani[self.tilidx].append(int(attributes['tile']) + self.first)
 		self.ind = tag
+
+	def characters(self, content): pass
 
 	def endElement(self, tag):
 		if tag == 'tile' and self.gid > 0:
 			for i in self.tilprp.items(): self.tiles[self.gid][i[0]] = i[1]
 		if tag == 'animation':
-			self.tiles[self.tilani.keys()[-1]]['ANIMATION'] = self.tilani[self.tilani.keys()[-1]]
+			if self.tileset:
+				if self.tilidx in self.tileset: do = True
+				else: do = False
+			else: do = True
+			if do: self.tiles[self.tilidx]['ANIMATION'] = self.tilani[self.tilidx]
 		self.ind = ''
-
-	def characters(self, content): pass
 	
 	def save(self, f=None):
-		contents = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
-		'<tileset version="1.2" name="{}" tilewidth="{}" tileheight="{}" rows="{}" columns="{}">\n'.format(self.properties['tilewidth'],self.properties['tileheight'],self.properties['rows'],self.properties['columns'])
-		contents += '	<img source="{}" width="{}" height="{}"/>\n'.format(self.mapdata['WIDTH'],self.mapdata['HEIGHT'])
-		id = 1
-		for i in tilset:
-			gid += tst.tilecount
-			contents += '	<tile id="{}" mask="{}" type="{}">\n'.format(id,(0,0,30,30),0)
-			id += 1
-		contents += '</tilset>'
-		
-		if f: ff = self.name
-		else: ff = f
-		file = open(res.MAPS_PATH + ff + '.xml','w')
-		file.write(contents)
-		file.close()
+		if self.tileset == None:
+			contents = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
+			'<tileset version="1.2" name="{}" first="{}" tilewidth="{}" tileheight="{}" rows="{}" columns="{}">\n'.format(self.name,self.first,self.tilewidth,self.tileheight,self.rows,self.columns)
+			contents += '	<img source="{}" width="{}" height="{}"/>\n'.format(self.imgpath,self.width,self.height)
+			for i in self.tiles:
+				tt = '	<tile id="{}" '.format(self.tiles[i]['ID'])
+				if 'TYPE' in self.tiles[i].keys() and self.tiles[i]['TYPE']: tt += 'type="{}"'.format(self.tiles[i]['TYPE'])
+				contents += tt + '/>\n'
+			contents += '</tilset>'
+			
+			if f: ff = f + '.xml'
+			else: ff = self.name
+			file = open(res.TILESETS_PATH + ff,'w')
+			file.write(contents)
+			file.close()
 
 	def test(self):
 		for event in pygame.event.get():
@@ -1017,9 +1011,13 @@ class TileHandler(xml.sax.ContentHandler):
 		pygame.display.flip()
 		pygame.time.Clock().tick(res.FPS)
 
-m = MapHandler('savetest.tmx')
-#m = TileHandler('streets.tsx')
-while True: m.test()
+#m = MapHandler('savetest.tmx')
+gid = 0
+for t in os.listdir(res.TILESETS_PATH):
+	tset = TileHandler(t,first=gid)
+	tset.save(tset.name)
+	gid += tset.length
+#while True: m.test()
 
 class Map:
 	def __init__(self):
@@ -2635,14 +2633,11 @@ class Game:
 			else:
 				#POSITION UPDATE
 				if i['SPEED'] > 0 and i['JUMP'] == 0 and i['PLAYING']:
-					if i['DIRECTION'] == 1: i['RECT'].x += int(i['SPEED'])
-					elif i['DIRECTION'] == 2: i['RECT'].x += int(i['SPEED']); i['RECT'].y += int(i['SPEED'])
-					elif i['DIRECTION'] == 3: i['RECT'].y += int(i['SPEED'])
-					elif i['DIRECTION'] == 4: i['RECT'].x -= int(i['SPEED']); i['RECT'].y += int(i['SPEED'])
-					elif i['DIRECTION'] == 5: i['RECT'].x -= int(i['SPEED'])
-					elif i['DIRECTION'] == 6: i['RECT'].x -= int(i['SPEED']); i['RECT'].y -= int(i['SPEED'])
-					elif i['DIRECTION'] == 7: i['RECT'].y -= int(i['SPEED'])
-					elif i['DIRECTION'] == 8: i['RECT'].x += int(i['SPEED']); i['RECT'].y -= int(i['SPEED'])
+					chk = []
+					lst = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]]
+					for c in lst:
+						if i['DIRECTION'] == c + 1: i['RECT'].x += chk[0] * int(i['SPEED']); i['RECT'].y += chk[1] * int(i['SPEED'])
+						chk.append([rct.x + (lst[c][0] * 30),rct.y + (lst[c][1] * 30)])
 					#ALIGN
 					algn = 30
 					if i['DIRECTION'] in [3,7]: i['RECT'].x = (round(i['RECT'].x/algn) * algn) + int(algn/2) - int(i['RECT'].width/2)
@@ -2675,24 +2670,12 @@ class Game:
 					elif i['POSTURE'] == 2: spr = 'DRIVE'
 					elif res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HP'] > dtb.CLASSES[res.CHARACTERS[res.PARTY[res.FORMATION][p]]['CLASS']]['RESISTANCE'][res.CHARACTERS[res.PARTY[res.FORMATION][p]]['LEVEL']]/5: spr = 'STAND'
 					else: spr = 'TIREDSTAND'
-					if i['SPEED'] > 0 or i['FOLLEND'] == 'head':
-						if i['DIRECTION'] == 1: i['HEAD'] = 'R'
-						elif i['DIRECTION'] == 2: i['HEAD'] = 'RD'
-						elif i['DIRECTION'] == 3: i['HEAD'] = 'D'
-						elif i['DIRECTION'] == 4: i['HEAD'] = 'LD'
-						elif i['DIRECTION'] == 5: i['HEAD'] = 'L'
-						elif i['DIRECTION'] == 6: i['HEAD'] = 'LU'
-						elif i['DIRECTION'] == 7: i['HEAD'] = 'U'
-						elif i['DIRECTION'] == 8: i['HEAD'] = 'RU'
-					if self.phone == 0:
-						if i['DIRECTION'] == 1: i['SPRITE'] = spr + 'R'
-						elif i['DIRECTION'] == 2: i['SPRITE'] = spr + 'RD'
-						elif i['DIRECTION'] == 3: i['SPRITE'] = spr + 'D'
-						elif i['DIRECTION'] == 4: i['SPRITE'] = spr + 'LD'
-						elif i['DIRECTION'] == 5: i['SPRITE'] = spr + 'L'
-						elif i['DIRECTION'] == 6: i['SPRITE'] = spr + 'LU'
-						elif i['DIRECTION'] == 7: i['SPRITE'] = spr + 'U'
-						elif i['DIRECTION'] == 8: i['SPRITE'] = spr + 'RU'
+
+					lst = ['R','RD','D','LD','L','LU','U','RU']
+					for c in lst:
+						if i['DIRECTION'] == c + 1:
+							if i['SPEED'] > 0 or i['FOLLEND'] == 'head': i['HEAD'] = lst[c]
+							if self.phone == 0: i['SPRITE'] = spr + lst[c]
 			if res.GAS < 1.0: i['DIRECTION'] = 0
 			if i['SPEED'] < 0: i['SPEED'] = 0
 			p += 1
@@ -4257,13 +4240,9 @@ class Game:
 					self.objects.insert(i, self.objects[i + 1])
 					del self.objects[i + 2]
 		#DELETE OBJECTS
-		for i in range(len(self.enemies)):
-			if self.enemies[i].hp <= 0: del self.enemies[i]; break
-		for i in range(len(self.npcs)):
-			if self.npcs[i]['DIRECTION'] == 0: del self.npcs[i]; break
-		for i in range(len(self.objects)):
-			if self.objects[i][0] in ['item','move','click'] and self.objects[i][1]['DESTROY']:
-				del self.objects[i]; break
+		self.npcs = [i for i in self.npcs if i['DIRECTION'] == 0]
+		self.enemies = [i for i in self.enemies if i.hp <= 0]
+		self.objects = [i for i in self.objects if i[0] in ['item','move','click'] and i[1]['DESTROY']]
 		#OVERWORLD
 		if self.battle == False and self.editing == False:
 			#OBJECTS
@@ -5086,11 +5065,6 @@ class Game:
 			if self.phofa > 0:
 				pass
 				#self.display[1].blit(img, (imgh - (self.dev.scrpos[0] * scl2),self.phofa - (self.dev.scrpos[1] * scl2)))
-		#READING
-		if self.read != None:
-			srf = self.read.draw()
-			self.display[0].blit(srf[0], (int(self.displayzw/2) - int(srf[0].get_rect().width/2), int(self.displayzh/2) - int(srf[0].get_rect().height/2)))
-			self.display[1].blit(srf[1], (int(self.windoww/2) - int(srf[1].get_rect().width/2), int(self.windowh/2) - int(srf[1].get_rect().height/2)))
 		#DIALOG
 		if self.dlg['FADE'] < 500 and res.SCENE != -1:
 			if self.dlg['TEXT'] != []:
@@ -5429,18 +5403,18 @@ class Game:
 		#self.screen.fill((0,0,0))
 		et, ev, eb = sys.exc_info()
 		err = str(et.__name__) + ': ' + str(ev) + ''
-		tlist = [dtb.ERROR[2] + ' "' + str(i[0]) + '", ' + dtb.ERROR[3] + ' ' + str(i[1]) + ' ' + dtb.ERROR[4] + ' ' + str(i[2]) + ': ' + str(i[3]) for i in extract_tb(eb)]
+		tlist = [dtb.ERROR['file'] + ' "' + str(i[0]) + '", ' + dtb.ERROR['line'] + ' ' + str(i[1]) + ' ' + dtb.ERROR['in'] + ' ' + str(i[2]) + ': ' + str(i[3]) for i in extract_tb(eb)]
 
 		fnt = pygame.font.SysFont('Calibri', 26)
-		self.screen.blit(fnt.render(dtb.ERROR[0],True,(10,250,10)),(10,20))
+		self.screen.blit(fnt.render(dtb.ERROR['crash'],True,(10,250,10)),(10,20))
 		fnt = pygame.font.SysFont('Calibri', 22)
 		self.screen.blit(fnt.render(err,True,(10,250,10)),(10,60))
 		for i in range(len(tlist)): self.screen.blit(fnt.render(str(tlist[i]),True,(10,250,10)),(10,100 + (i * 20)))
-		self.screen.blit(fnt.render(dtb.ERROR[1],True,(10,250,10)),(10,140 + (i * 20)))
+		self.screen.blit(fnt.render(dtb.ERROR['press'],True,(10,250,10)),(10,140 + (i * 20)))
 		pygame.display.flip()
 
-		self.log += '\n ' + dtb.ERROR[0] + '\n' + err
-		print('\n' + dtb.ERROR[0])
+		self.log += '\n ' + dtb.ERROR['crash'] + '\n' + err
+		print('\n' + dtb.ERROR['crash'])
 		print(err)
 		for i in tlist: print('	' + i)
 			
@@ -5465,7 +5439,7 @@ class Game:
 				if do:
 					#self.loadmap()
 					lp = False
-					print(dtb.ERROR[5])
+					print(dtb.ERROR['restart'])
 
 	def run(self,tr=True):
 		if tr:

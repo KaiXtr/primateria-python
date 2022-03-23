@@ -29,6 +29,8 @@ FONTS_PATH = 'fonts/'
 #None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip
 CLICK = [None,None]
 ACTION = ['walk','walk','walk','walk','equip','run','inventory','pause']
+EQUIP = [0,0,0]
+SHORTCUT = [1,0,1]
 
 SPRITES = {}
 SOUND = {}
@@ -125,7 +127,7 @@ CALLHIST = []
 CONTACTS = []
 INBOX = []
 TASKS = [['CH10',2]]
-TACTICAL = []
+TACTICAL = [['1.0','1.1'],['2.0'],[],[],[],[]]
 BESTIARY = [{'N': '4.1.1','ID': '1','DATE': (3,3,2007),'SEEN': 2},{'N': '2.1.1','ID': '2','DATE': (3,3,2007),'SEEN': 2}]
 INVENTORY = []
 for u in range(6):
@@ -148,10 +150,6 @@ BASKET = []
 for i in range(25): BASKET.append(['_','0000'])
 WASH = []
 RANK = []
-EQUIP = [0,0,0]
-
-GAS = 100.0
-SHORTCUT = [1,0,1]
 
 TASKPIN = False
 MINIMAP = False
@@ -770,9 +768,7 @@ def battlesprites():
 			except: break
 
 def sfx(j):
-	global SOUND
 	if j.endswith('.wav'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
-
 
 if FILES != []:
 	dtb = __import__('database_' + FILES[0][4])
