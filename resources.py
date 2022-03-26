@@ -116,8 +116,8 @@ HINT = True #tutorials and hints along the game
 HELP = True #display instructions on bottom of screen
 CURSOR = 0 #custom cursor
 TMNU = False #option to start on title screen or jump right into the first file
-TTS = False #text-to-speech
-CC = False #close caption
+TTS = True #text-to-speech
+CC = True #close caption
 DISLEXIC = False #spaced font
 BTYPE = 2 #1=turns,2=dynamic,3=action
 
@@ -148,6 +148,7 @@ PRODUCTS = []
 for i in range(25): PRODUCTS.append(['_',1])
 BASKET = []
 for i in range(25): BASKET.append(['_','0000'])
+CHAT = ['@kaixtr: batatinha','@kanbz: quando nasce']
 WASH = []
 RANK = []
 

@@ -2175,7 +2175,8 @@ DISCLAIMER = ['Esta é uma obra de ficção,','e quaisquer semelhanças com','ac
 'Uma certa porcentagem da','população sofre de condições','como eplepsia e convulsões,','por isso sempre consulte','seu médico antes de jogar']
 
 ERROR = {'crash': 'Oops! Alguma coisa deu errado... =(','press': 'Aperte qualquer botão para fechar','file': 'Arquivo','line': 'linha','in': 'em','restart': 'Reiniciando...',
-	'img_noload': 'ATENÇÃO! imagem não foi carregada.','tileset_save': 'Não foi possível salvar a tileset: está sendo utilizada.'}
+	'img_noload': 'ATENÇÃO! imagem não foi carregada.','tileset_save': 'Não foi possível salvar a tileset: está sendo utilizada.','dialog_key': 'ATENÇÃO: Não foi possível carregar o diálogo. Chave inexistente: ',
+	}
 
 MINIGAMES = {
 'Pinball': 'Pinball','Tetris': 'Tetris','Minesweeper': 'Campo Minado','Pong': 'Pong','Differences': '7 Erros','Jigsaw': 'Quebra-cabeça','Maze': 'Labirinto','Pool': 'Sinuca','MusicTiles': 'Guitarrero',

@@ -24,6 +24,10 @@ class Initialize:
 		print(osinfo.system + ' ' + osinfo.machine + ' ' + osinfo.node + ' ' + osinfo.release + ' ' + osinfo.version)
 		pygame.init()
 		pygame.mixer.init()
+		res.spr()
+		res.battlesprites()
+		res.animals()
+		for j in os.listdir(res.SFX_PATH[:-1]): res.sfx(j)
 		pygame.display.set_caption(res.GNAME)
 		pygame.display.set_icon(pygame.image.load('icon.ico'))
 		pygame.mouse.set_visible(False)
@@ -74,12 +78,6 @@ class Initialize:
 		#self.guitools.gradient((self.windoww,200),(0,0,0,200),(0,0,0,0))]
 		
 		if res.GAMETIME > 0: self.msc.play(pygame.mixer.Sound(res.MUSIC_PATH + 'alchimera.mp3'))
-		res.spr()
-		res.battlesprites()
-		res.animals()
-		for j in os.listdir(res.SFX_PATH[:-1]):
-			res.sfx(j)
-			self.run()
 		print('Boot time: ' + str(float(self.lspd/1000)) + 's')
 	
 	def intro(self):
@@ -1083,8 +1081,792 @@ class MapHandler(xml.sax.ContentHandler):
 		pygame.display.flip()
 		pygame.time.Clock().tick(res.FPS)
 
+'''
 m = MapHandler('savetest.tmx')
-while True: m.test()
+while True: m.test()'''
+
+class Dialog(xml.sax.ContentHandler):
+	def __init__(self,key,mainclass):
+		self.guitools = GUI.Guitools()
+		self.main = mainclass
+		self.window = pygame.display.set_mode((600,700))
+		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 12 * res.GSCALE)}
+		self.sfx = pygame.mixer.Channel(0)
+		self.sfx.set_volume(res.SFX)
+		self.key = key
+		self.current = ''
+		self.content = ''
+		self.emote = None
+		self.text = ['']
+		self.choices = []
+		self.idx = 0
+		self.stidx = 0
+		self.speaker = False
+		self.rects = [pygame.Rect(30,200,0,50)]
+		self.optrects = []
+		self.opt = None
+		self.scroll = 0
+		self.read = False
+		self.speed = res.SPEED
+		self.shake = False
+		self.censor = 0
+		self.voice = 1
+		self.curfnt = 'DEFAULT'
+		self.type = res.DTYPE
+
+		if key in ['chat','CHAT']:
+			self.read = True
+			self.text = res.CHAT.copy()
+			for i in self.text: self.characters(i)
+			self.idx = len(res.CHAT) - 1
+			while True: self.test()
+		elif key in ['debug','DEBUG']: pass
+		else:
+			parser = xml.sax.make_parser()
+			parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+			parser.setContentHandler(self)
+			parser.parse('dialogs_{}.xml'.format(res.LANG))
+
+	def startElement(self, tag, attributes):
+		tag = tag.lower()
+		if tag == 'dialog' and attributes['key'] == self.key: self.read = True
+		if self.read:
+			#DIALOG SETTINGS
+			if tag == 'voice': self.voice = int(attributes['value'])
+			if tag == 'type': self.type = attributes['value']
+			if tag == 'font': self.font = attributes['value']
+			if tag == 'shake': self.shake = True
+
+			if len(self.choices) > 0: txt = self.choices[len(self.choices)-1]
+			else: txt = self.text
+
+			#TALK BALLONS
+			if tag in ['spk','speaker','answer']: self.speaker = not self.speaker
+			if tag in ['br','input','spk','answer','get']:
+				if tag in ['input','answer']:
+					while self.guitools.wait(): self.test()
+					self.sfx.play(res.SOUND['MENU_GO'])
+				self.idx += 1
+				txt.append('')
+				self.rects.append(pygame.Rect(30,200 + (self.idx * 60),0,50))
+			if tag == 'option':
+				self.opt = 0
+				if 'text' in attributes.keys():
+					sz = self.fnt[self.curfnt].size(attributes['text'])[0] + 10
+					self.optrects.append(pygame.Rect(self.window.get_width() - 30 - sz,200 + (self.idx * 60),sz,50))
+					self.choices.append([attributes['text'],''])
+					self.stidx = self.idx
+					self.idx = 1
+
+			#MOVE THROUGH DIALOG
+			if tag == 'sleep':
+				ds = txt.copy()
+				#self.text = []
+				#if len(txt[tid]) > 2 and txt[tid][2] == 'TWNN': self.cityname = 'TWNN'
+				for i in range(int(attributes['time'])): self.test()
+				#if len(txt[tid]) > 2 and txt[tid][2] == 'TWNN': self.cityname = ''
+				txt = ds
+			if tag == 'go': self.idx += 1
+			if tag == 'return': self.idx = self.stidx
+			if tag in ['jump','jmp']: res.DLGSAV[self.key] += 1
+			if tag in ['cls','clear']: self.idx = 0; self.text = ['']; self.rects = [pygame.Rect(0,0,0,0)]
+
+			#PROTOCOLS
+			if tag == 'get': pass
+			if tag == 'queue': pass#self.main.waitlst.append([attributes['type'],self.waitime + int(attributes['time']),attributes['who']])
+
+			#ADD AND CHANGE TEXT
+			if tag == 'add':
+				cc = ''
+				if attributes['type'] == 'name': cc += dtb.NAMES[int(attributes['value']) * 2]
+				if attributes['type'] == 'time':
+					if res.TIME[0] < 18: add = 'good afternoon'
+					elif res.TIME[0] >= 6: add = 'good morning'
+					else: add = 'good evening'
+					cc += dtb.DTALKS[add]
+				if attributes['type'] == 'pronoun': cc += dtb.DTALKS[res.CHARACTERS[res.PARTY[res.FORMATION][0]]['PRONOUN'] + '1']
+				if attributes['type'] == 'deaths': cc += str(res.CHARACTERS[res.PARTY[res.FORMATION][0]]['DEATHS'])
+				self.characters(cc)
+			if tag == 'chance':
+				self.choices.append([attributes['text'],''])
+				prb = random.randint(0,100)
+				for i in txt[tid][1:]:
+					if prb > i[0] - 100:
+						txt.insert(tid + 1, i[1:])
+			if tag in ['censor','censorship']:
+				if res.CENSORSHIP:
+					if 'alt' in attributes.keys(): txt[self.idx] = attributes['alt']; self.censor = 1
+					else: self.censor = 2
+			if tag == 'insert':
+				self.__init__(attributes['index'],None)
+
+			#RESOURCES
+			if tag == 'playz':
+				lp = 0
+				if 'loop' in attributes.keys(): lp = attributes['loop']
+				if attributes['src'] in res.SOUND:
+					self.ch_sfx.play(res.SOUND[attributes['src']],lp)
+				else:
+					pygame.mixer.music.load(res.MUSIC_PATH + attributes['src'] + '.mp3')
+					pygame.mixer.music.play(-1)
+
+			#GUIS AND DATA
+			if tag == 'mail':
+				self.sfx.play(res.SOUND['NOTIFICATION'])
+				res.INBOX.append(attributes['index'])
+				res.inbx_save(len(res.INBOX)-1,0)
+				#self.notification.append({'TEXT': dtb.MENU['not_email'], 'COLOR': (255, 221, 0), 'HALIGN': 'left','X': 0})
+			if tag == 'contact':
+				self.sfx.play(res.SOUND['NOTIFICATION'])
+				dtb.CONTACTS.append(dtb.NUMBERS[attributes['index']].copy())
+				dtb.call_save(len(dtb.CONTACTS)-1)
+				#self.notification.append({'TEXT': dtb.MENU['not_contact'], 'COLOR': (165, 255, 0), 'HALIGN': 'left','X': 0})
+			if tag == 'achievement':
+				self.sfx.play(res.SOUND['ACHIEVEMENT'])
+				dtb.ACHIEVEMENTS[int(attributes['index'])][2] = True
+				#self.notification.append({'TEXT': dtb.ACHIEVEMENTS[txt[tid][1]][0], 'COLOR': (255, 191, 0), 'HALIGN': 'right','X': 0})
+		self.current = tag
+
+	def characters(self, content):
+		if len(self.choices) > 0: txt = self.choices[len(self.choices)-1]
+		else: txt = self.text
+		if self.read and content:
+			for i in ['\n','\t']: content = content.replace(i,'')
+			if self.current == 'cc' and not res.CC: content = False
+			wrp = self.guitools.wrap([content],self.fnt[self.curfnt],self.window.get_width())
+			print(content)
+			print(wrp)
+			for tt in [i[1:] for i in wrp]:
+				if len(self.choices) > 0: self.choices[len(self.choices)-1][self.idx] += tt
+				else:
+					#SOUND
+					snd = False
+					#if res.TTS: plyer.tts.speak(tt)
+					if snd: self.sfx.play(res.SOUND['TTS' + str(self.voice)])
+					for i in range(len(tt)):
+						if not res.TTS and not snd: self.sfx.play(res.SOUND['TEXT_INPUT'])
+						#EMOTICONS
+						if self.emote != None:
+							self.emote += tt[i]
+							if tt[i] == ':': pass#character show emote ballon
+						elif tt[i] == ':': self.emote = ''
+
+						#TEXT ADAPTATIONS
+						if self.censor == 2 and tt[i] not in [' ','!','?']: txt[self.idx] += '*'
+						elif self.censor == 0: txt[self.idx] += tt[i]
+						if res.DISLEXIC: txt[self.idx] += ' '
+
+						halign = 60
+						if self.speaker: halign = self.window.get_width() - self.fnt[self.curfnt].size(self.text[self.idx])[0]
+						self.rects[-1].x = halign - 30
+						self.rects[-1].width = self.fnt[self.curfnt].size(self.text[self.idx])[0] + 10
+						self.test()
+					#self.sfx.stop()
+				#the word wrapping is causing unecessary text ballons to be created WORK ON IT
+				if len(wrp) > 1:
+					self.idx += 1
+					txt.append('')
+					self.rects.append(pygame.Rect(30,200 + (self.idx * 60),0,50))
+
+	def endElement(self, tag):
+		if tag == 'data' and self.text == ['']: print(dtb.ERROR['dialog_key'] + self.key)
+		if tag == 'dialog' and self.read: self.read = False; print(self.text)
+		if self.read:
+			if tag == 'shake': self.shake = False
+			if tag in ['censor','censorship']: self.censor = 0
+			if len(self.choices) > 0:
+				if tag == 'option' and self.choices[len(self.choices)-1][-1] == '': del self.choices[len(self.choices)-1][-1]
+				if tag == 'select':
+					while self.guitools.wait(): self.test()
+					self.sfx.play(res.SOUND['MENU_GO'])
+					lst = self.choices[self.opt].copy()
+					for i in lst: self.characters(i)
+					self.choices = []
+					self.opt = None
+					self.idx = self.stidx
+		self.current = ''
+	
+	def dialog(self, txt, wh=0):
+		self.dlg = {'CAMERA': 0}
+		self.player[0]['PAUSE'] = 1
+		self.player[0]['SPEED'] = 0
+		while tid < len(txt):
+			#TEXT
+			if isinstance(txt[tid], str):
+				while self.dlg['FADE'] > 0:
+					if self.winbar < 50 and self.battle == False:
+						self.winbar += 5
+					self.dlg['FADE'] -= 50
+					self.run(False)
+			#DIALOG PROTOCOLS
+			else:
+				#CHAPTER INTRO
+				if txt[tid] == 3:
+					res.SCENE = -1
+					self.ch_msc.pause()
+					self.ch_ton.play(res.SOUND['BAUM'])
+					self.player[0]['PAUSE'] = 3
+					for i in range(100): self.run()
+					res.SCENE = 0
+					self.player[0]['PAUSE'] = 1
+					self.ch_msc.unpause()
+				#CHAPTER END
+				elif txt[tid] in [4,5]:
+					pygame.mixer.stop()
+					self.player[0]['PAUSE'] = 3
+					self.ch_ton.play(res.SOUND['CHAPTER_END'])
+					spdacc = 0
+					for i in range(120):
+						spdacc += 2
+						self.displayy += spdacc
+						if self.displayy > self.windowh: self.displayy = 0
+						self.run()
+					if txt[tid] == 5:
+						res.CHAPTER += 1
+						res.DATE = dtb.CHAPTERS[res.CHAPTER][3]
+						res.TIME = dtb.CHAPTERS[res.CHAPTER][4]
+						res.MAP = dtb.CHAPTERS[res.CHAPTER][5][0]
+						res.PX = dtb.CHAPTERS[res.CHAPTER][5][1]
+						res.PY = dtb.CHAPTERS[res.CHAPTER][5][2]
+					pygame.mixer.stop()
+					self.title.ton.play(res.SOUND['NOISE'],-1)
+					self.title.classrun = True
+					self.title.winbar = 50
+					self.title.wait = 100
+					self.title.mnu = 7
+					self.title.tv = 0
+					self.classrun = 2
+				#ITEM GET
+				elif txt[tid][0] == 1:
+					if isinstance(txt[tid][1],int):
+						mny = None
+						for it in ['credit_card','wallet']:
+							if mny == None: mny = self.inv.find(None,it,'value')
+						if mny != None:
+							mny[1] += txt[tid][1]
+							res.INVENTORY[mny[0][0]][mny[0][1]][mny[0][2]][mny[0][3]] = str(mny[1])
+							self.ch_sfx.play(res.SOUND['CASH_GET'])
+							self.notification.append({'TEXT': 'Adquiriu $' + str(txt[tid][1]), 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
+					elif txt[tid][1] == 'greenblood':
+						gb = self.inv.find(None,'tube','value')
+						if gb != None:
+							if gb[1] > 150: self.dialog(dtb.DIALOGS['REWARD'][3].copy(),i['RECT'])
+							elif gb[1] > 90: self.dialog(dtb.DIALOGS['REWARD'][2].copy(),i['RECT'])
+							elif gb[1] > 0: self.dialog(dtb.DIALOGS['REWARD'][1].copy(),i['RECT'])
+							else: self.dialog(dtb.DIALOGS['REWARD'][0].copy(),i['RECT'])
+							if gb[1] > 0 and self.notification['X'] == 0:
+								mny = None
+								for m in ['credit_card','wallet']:
+									if mny == None: mny = self.inv.find(None,m,'value')
+								if mny!= None:
+									res.INVENTORY[mny[0][0]][mny[0][1]][mny[0][2]][mny[0][3]] = str(mny[1] + gb[1])
+									self.ch_sfx.play(res.SOUND['CASH_GET'])
+									self.notification.append({'TEXT': 'Adquiriu $' + str(gb[1]), 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
+									self.dlg['TEXT'] = []
+									res.INVENTORY[gb[0][0]][gb[0][1]][gb[0][2]][gb[0][3]] = '000'
+								else: self.dialog(dtb.DIALOGS['REWARD'][4].copy(),i['RECT'])
+						else: self.dialog(dtb.DIALOGS['REWARD'][0].copy(),i['RECT'])
+					else:
+						if txt[tid][1] not in dtb.ITEMS: print('CAUTION: No item ' + txt[tid][1] + ' in database!')
+						else:
+							gt = True
+							if len(txt[tid]) > 2 and txt[tid][2] != 0:
+								mny = self.inv.find(None,'credit_card','value')
+								if mny[1] < txt[tid][2]: gt = False
+							if len(txt[tid]) > 3:
+								if res.DLGSAV[txt[tid][3]] == 0:
+									res.DLGSAV[txt[tid][3]] = 1
+								else: gt = False
+							if len(txt[tid]) > 4: prp = txt[tid][4]
+							else: prp = '0000'
+							if gt:
+								if len(txt[tid]) > 2 and txt[tid][2] != 0:
+									mny[1] -= txt[tid][2]
+									res.INVENTORY[mny[0][0]][mny[0][1]][mny[0][2]][mny[0][3]] = str(mny[1])
+								self.inv.add(res.PARTY[res.FORMATION][0],txt[tid][1],prp)
+								self.ch_sfx.play(res.SOUND['ITEM_GET'])
+								self.notification.append({'TEXT': dtb.ITEMS[txt[tid][1]][0], 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': -180,'IMAGE': pygame.image.load(res.ITEMS_PATH + txt[tid][1] + '.png')})
+				#MORALITY
+				elif txt[tid][0] == 2:
+					if txt[tid][3] == 0:
+						res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] += txt[tid][2]
+					else:
+						if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] >= txt[tid][2]:
+							for i in txt[tid][3]:
+								txt.insert(tid + 1, i)
+						else:
+							for i in txt[tid][4]:
+								txt.insert(tid + 1, i)
+				#INSERT TEXT
+				elif txt[tid][0] == 3:
+					if isinstance(txt[tid][1],tuple):
+						adtxt = pygame.key.name(self.pressed[txt[tid][1][0]][txt[tid][1][1]]).lower()
+				#CALLING
+				elif txt[tid][0] == 4:
+					if txt[tid][1] != 'stop':
+						self.ch_ton.play(res.SOUND['CALLING'],-1)
+						self.ch_rng.play(res.SOUND['RINGTONE_' + str(res.PARTY[res.FORMATION][0])])
+						if self.rad.onoff: pygame.mixer.music.pause()
+						tw = 0
+						cl = False
+						while tw < 2000 and cl == False:
+							pygame.time.wait(10)
+							for event in pygame.event.get():
+								if event.type == pygame.KEYUP:
+									cl = True
+							tw += 1
+						self.ch_ton.stop()
+						self.ch_rng.stop()
+						self.ch_sfx.play(res.SOUND['EQUIP'])
+						if cl:
+							self.phone = 1
+							self.mnu = 1
+							txt.insert(tid + 1, [2,'stop'])
+							txt.insert(tid + 1, 0)
+							for i in self.dev.call(str(dtb.CONTACTS[txt[tid][1]][1]),0,False,False)[-1:0:-1]:
+								txt.insert(tid + 1, i)
+					else:
+						self.phone = 0
+						self.mnu = 0
+				#TASKS
+				elif txt[tid][0] == 6:
+					self.ch_sfx.play(res.SOUND['NOTIFICATION'])
+					if txt[tid][1] in dtb.TASKINDEX:
+						res.TASKS.append([txt[tid][1], 0])
+						if 'TIME' in dtb.TASKINDEX[txt[tid][1]][0]:
+							res.TIME = dtb.TASKINDEX[txt[tid][1]][0]['TIME']
+						if 'MARKER' in dtb.TASKINDEX[txt[tid][1]][0]:
+							res.MARKER.append(dtb.TASKINDEX[txt[tid][1]][0]['MARKER'])
+						#res.task_save(txt[tid][1],0)
+						self.notification.append({'TEXT': dtb.TASKINDEX[txt[tid][1]][0]['NAME'], 'COLOR': (255, 123, 0), 'HALIGN': 'left','X': 0})
+					elif self.inv.find(res.PARTY[res.FORMATION][0],txt[tid][1]):
+						self.ch_ton.play(res.SOUND['ITEM_GET'])
+						for j in txt[tid][3][::-1]:
+							txt.insert(tid + 1, j)
+					else:
+						for j in txt[tid][2][::-1]:
+							txt.insert(tid + 1, j)
+				#RELATIONS
+				elif txt[tid][0] == 9:
+					if txt[tid][3] == 0: res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] += txt[tid][2]
+					elif txt[tid][3] == 1: res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] -= txt[tid][2]
+					else:
+						if res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] >= txt[tid][2]:
+							for i in txt[tid][3]:
+								txt.insert(tid + 1, i)
+						else:
+							for i in txt[tid][4]:
+								txt.insert(tid + 1, i)
+				#GUI CLASS
+				elif txt[tid][0] == 12:
+					if txt[tid][1] in ['storage','wash','trash','cashier','products','mercator']:
+						if txt[tid][1] in ['products','mercator']:
+							res.PRODUCTS = []
+							for p in txt[tid][2]:
+								add = [p[0],1]
+								if len(p) > 1:
+									if res.DATE[3] == p[1]:
+										add[1] = int(add[1] * p[2])
+								res.PRODUCTS.append(add)
+							while len(res.PRODUCTS) < 25: res.PRODUCTS.append(['_',1])
+						self.ch_sfx.play(res.SOUND['INVENTORY_OPEN'])
+						if txt[tid][1] == 'storage': self.inv.type = 2
+						if txt[tid][1] == 'cashier': self.inv.type = 3
+						if txt[tid][1] == 'wash': self.inv.type = 4
+						if txt[tid][1] == 'trash': self.inv.type = 5
+						if txt[tid][1] == 'products': self.inv.type = 6
+						if txt[tid][1] == 'mercator': self.inv.type = 7
+						self.player[0]['PAUSE'] = 1
+						self.inv.fade = 0
+						self.opt = 0
+						self.lopt = 0
+						self.mnu = 0
+					elif txt[tid][1].startswith('minigames.'):
+						self.transiction(True,100)
+						self.minigame = eval(txt[tid][1])
+						self.transiction(False,0)
+					else:
+						dv = self.inv.dev(txt[tid][1])
+						self.dev = dv[0]
+						if self.dev == 'radio': self.dev = self.rad
+						self.dev.battery = 9999
+						self.phone = 1
+				#BATTLE
+				elif txt[tid][0] == 13:
+					self.dlg['TEXT'] = []
+					pygame.mixer.music.stop()
+					if len(txt[tid]) > 2: rpt = txt[tid][2]
+					else: rpt = 1
+					x = 0
+					for k in range(rpt):
+						for f in txt[tid][1]:
+							i = Enemy(f,(0,0))
+							if i.type == 'mercenary': self.mrc.append(i)
+							else: self.foe.append(i)
+							x += 1
+					txt = []
+					tid = 0
+					if self.battle == False:
+						self.mnu = 0
+						self.turn = -4
+						self.fight()
+				#CHANGE PARTY
+				elif txt[tid][0] == 18:
+					ap = []
+					p = 0
+					for i in txt[tid][1:]:
+						if i[1] != None:
+							for n in range(len(self.npcs)):
+								if i[1] == self.npcs[n]['N']:
+									player = self.player[p].copy()
+									xx = player['RECT'].x
+									yy = player['RECT'].y
+									dd = player['DIRECTION']
+									cc = res.CHARACTERS[res.PARTY[res.FORMATION][p]].copy()
+									ii = player['HAIR'] + player['COSTUME'] + cc['SKIN']
+									npc = self.npcs[n].copy()
+									self.player[p]['RECT'].x = npc['RECT'].x
+									self.player[p]['RECT'].y = npc['RECT'].y
+									self.player[p]['DIRECTION'] = npc['DIRECTION']
+									self.player[p]['FOLLEND'] = 'head'
+									self.player[p]['SPEED'] = 0
+									self.npcs[n]['RECT'].x = xx
+									self.npcs[n]['RECT'].y = yy
+									self.npcs[n]['INDEX'] = ii
+									self.npcs[n]['DIRECTION'] = dd
+									self.npcs[n]['MOVE'] = 'stand'
+									if len(i) > 2: self.npcs[n]['WHO'] = i[2]
+						ap.append(i[0])
+						p += 1
+					res.PARTY[res.FORMATION] = ap
+				#DATETIME
+				elif txt[tid][0] == 19:
+					ds = self.dlg['TEXT'].copy()
+					self.dlg['TEXT'] = [] 
+					self.dlg['TYPE'] = 3
+					self.transiction(True,250,10,'fade')
+					if txt[tid][1] != None: res.TIME = txt[tid][1]
+					if txt[tid][2] != None: res.DATE = txt[tid][2]
+					for i in range(10): self.run()
+					tt = str(res.TIME[0]) + ':' + str(res.TIME[1]) + ':' + str(res.TIME[2])
+					dd = str(res.DATE[0]) + '/' + str(res.DATE[1]) + '/' + str(res.DATE[2])
+					self.dialog([(0,1,3),tt,dd,1])
+					self.transiction(False,0,10,'fade')
+					self.dlg['TEXT'] = ds
+					self.dlg['TYPE'] = res.DTYPE
+				#INCREASE/DECREASE STATUS
+				elif txt[tid][0] == 20:
+					if txt[tid][2] < 2:
+						for i in self.foe + self.mrc:
+							prb = round(random.randint(0,20))
+							if prb > 10:
+								self.ch_sfx.play(res.SOUND['ATTRIBUTE_LOSS'])
+								if i['TYPE'] == 'spirit': tst = self.fig[self.turn]['SPIRITS']
+								else: tst = self.fig[self.turn]['INTIMIDATION']
+								if txt[tid][1] == 0:
+									i['STRENGHT'] -= txt[tid][2] + tst
+									self.hitisplay(0, self.aim, '-' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['STRENGHT'].lower(), (200, 20, 20))
+								if txt[tid][1] == 1:
+									i['AGILITY'] -= txt[tid][2] + tst
+									self.hitisplay(0, self.aim, '-' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['AGILITY'].lower(), (20, 200, 20))
+								if txt[tid][1] == 2:
+									i['RESISTANCE'] -= txt[tid][2] + tst
+									self.hitisplay(0, self.aim, '-' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['RESISTANCE'].lower(), (20, 20, 200))
+					if txt[tid][2] > 2:
+						prb = round(random.randint(0,20))
+						if prb > 10:
+							self.ch_sfx.play(res.SOUND['ATTRIBUTE_GAIN'])
+							if txt[tid][1] == 0:
+								self.fig[self.turn]['STRENGHT'] += txt[tid][2] + self.fig[self.turn]['INSPIRATION']
+								self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['STRENGHT'].lower(), (200, 20, 20))
+							if txt[tid][1] == 1:
+								self.fig[self.turn]['AGILITY'] += txt[tid][2] + self.fig[self.turn]['INSPIRATION']
+								self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['AGILITY'].lower(), (20, 200, 20))
+							if txt[tid][1] == 2:
+								self.fig[self.turn]['RESISTANCE'] += txt[tid][2] + self.fig[self.turn]['INSPIRATION']
+								self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['RESISTANCE'].lower(), (20, 20, 200))
+				#KEYBOARD INPUT
+				elif txt[tid][0] == 22:
+					snd = self.ch_msc.get_sound()
+					self.ch_msc.stop()
+					yy = 0
+					self.dlg['TEXT'].append(0)
+					self.dlg['TEXT'].append('')
+					txtsz = math.floor(self.fnt['DEFAULT'].size(self.dlg['TEXT'][-1])[0]/res.GSCALE) + 10
+					self.dlgrct.append(pygame.Rect((self.displayzw - 22) - txtsz,self.displayzh - 100 + self.dlg['Y'] - yy,5 + txtsz,25))
+					self.dlg['Y'] += 40
+					self.vkb.active = True
+					while self.vkb.active:
+						self.dlg['TEXT'][-1] = self.vkb.output
+						txtsz = math.floor(self.fnt['DEFAULT'].size(self.dlg['TEXT'][-1])[0]/res.GSCALE) + 10
+						self.dlgrct[-1].x = self.displayzw - 22 - txtsz
+						self.dlgrct[-1].width = 5 + txtsz
+						self.run(False)
+						if self.vkb.active == False:
+							#CHAT MESSAGING
+							if txt[tid][1] == 'chat':
+								self.chat.append(0)
+								self.chat.append(self.vkb.output)
+								self.chat.append(0)
+								if self.pressed[6][0] == False:
+									self.vkb.output = False
+									self.vkb.active = True
+							#COMMAND LINE
+							elif txt[tid][1] == 'debug':
+								cmd = self.vkb.output.split(' ')
+								if cmd[0].lower() == 'help':
+									txt.insert(tid + 1,'mute pacify rectdebug disdbg player character \
+									loadmap chapter time date dialog item battle inventory')
+								if cmd[0].lower() == 'mute':
+									pygame.mixer.stop()
+									pygame.mixer.music.stop()
+								if cmd[0].lower() == 'pacify':
+									self.enemies = []
+								if cmd[0].lower() == 'rectdebug':
+									self.rectdebug = not self.rectdebug
+								if cmd[0].lower() == 'disdbg':
+									self.disdbg = not self.disdbg
+								if cmd[0].lower() == 'editing':
+									self.editing = not self.editing
+								if cmd[0].lower() == 'python':
+									try: txt.insert(tid + 1,str(eval(self.vkb.output.replace('python ',''))))
+									except Exception as e: txt.insert(tid + 1,str(e))
+								if cmd[0].lower() == 'player':
+									if len(cmd) > 3:
+										if cmd[3] in ['True','False']: vl = bool(cmd[3])
+										elif abs(cmd[3]).isdigit(): vl = int(cmd[3])
+										else: vl = str(cmd[3])
+										self.player[int(cmd[1])][cmd[2].upper()] = vl
+									else: txt.insert(tid + 1,'missing arguments in "player": (index, key, value)')
+								if cmd[0].lower() == 'character':
+									if len(cmd) > 3:
+										if cmd[3] in ['True','False']: vl = bool(cmd[3])
+										elif abs(cmd[3]).isdigit(): vl = int(cmd[3])
+										else: vl = str(cmd[3])
+										res.CHARACTER[int(cmd[1])][cmd[2].upper()] = vl
+									else: txt.insert(tid + 1,'missing arguments in "character": (index, key, value)')
+								if cmd[0].lower() == 'loadmap':
+									if len(cmd) > 1: self.loadmap(cmd[1])
+									else: txt.insert(tid + 1,'missing arguments in "loadmap": (file)')
+								if cmd[0].lower() == 'chapter':
+									if len(cmd) > 1: res.CHAPTER = int(cmd[1])
+									else: txt.insert(tid + 1,'missing arguments in "chapter": (value)')
+								if cmd[0].lower() == 'time':
+									if len(cmd) > 2: res.TIME = [int(cmd[1]),int(cmd[2]),0]
+									else: txt.insert(tid + 1,'missing arguments in "time": (hour,minute)')
+								if cmd[0].lower() == 'date':
+									if len(cmd) > 2: res.DATE = [int(cmd[1]),int(cmd[2]),2007,1,1]
+									else: txt.insert(tid + 1,'missing arguments in "date": (day,month)')
+								if cmd[0].lower() == 'dialog':
+									if len(cmd) > 2: txt.insert(tid + 1,(23,cmd[1].upper(),int(cmd[2])))
+									else: txt.insert(tid + 1,'missing arguments in "dialog": (key, index)')
+								if cmd[0].lower() == 'item':
+									if len(cmd) > 1: txt.insert(tid + 1,(1,cmd[1]))
+									else: txt.insert(tid + 1,'missing arguments in "item": (key)')
+								if cmd[0].lower() == 'battle':
+									if len(cmd) > 1: txt.insert(tid + 1,(13,[cmd[1].lower()]))
+									else: txt.insert(tid + 1,'missing arguments in "battle": (key)')
+								if cmd[0].lower() == 'inventory':
+									if len(cmd) > 1: self.inv.type = int(cmd[1])
+									else: txt.insert(tid + 1,'missing arguments in "inventory": (value)')
+								if cmd[0].lower() == 'gui':
+									if len(cmd) > 1: txt.insert(tid + 1,(12,cmd[1]))
+									else: txt.insert(tid + 1,'missing arguments in "gui": (class)')
+					if txt[tid][1] in [0,1,2,3,4,5]:
+						res.CHARACTERS[txt[tid][1]]['NAME'] = self.vkb.output
+					if snd != None: self.ch_msc.play(snd,-1)
+					self.dlg['TEXT'].append(0)
+					did = len(self.dlg['TEXT'])
+				#GET OTHER DIALOG
+				elif txt[tid][0] == 23:
+					dlg = txt[tid][1]
+					if dlg not in dtb.DIALOGS: print('CAUTION: No dialog ' + dlg + ' in database!')
+					else:
+						idx = None
+						if len(txt[tid]) > 2: idx = txt[tid][2]
+						if self.battle:
+							if dlg == None: dlg = self.foe[self.opt]['FILE']
+							if dlg.upper() not in dtb.DIALOGS:
+								dlg = 'IRRATIONAL'
+							else: dlg = self.foe[self.opt]['FILE'].upper()
+						if idx == None:
+							for j in dtb.DIALOGS[dlg].copy()[::-1]:
+								txt.insert(tid + 1, j)
+						else:
+							for j in dtb.DIALOGS[dlg][idx].copy()[::-1]:
+								txt.insert(tid + 1, j)
+						did = len(self.dlg['TEXT'])
+				#MOVE CHARACTER
+				elif txt[tid][0] == 24:
+					px = txt[tid][2][0]
+					py = txt[tid][2][1]
+					if isinstance(px,str): px = self.player[0]['RECT'].x + int(px[2:])
+					if isinstance(py,str): py = self.player[0]['RECT'].y + int(py[2:])
+					if txt[tid][1] == None:
+						if txt[tid][2] != (None,None):
+							self.player[0]['FOLLOW'] = pygame.Rect(px,py,10,10)
+						else: self.player[0]['FOLLOW'] = (None,None)
+						self.player[0]['FOLLEND'] = txt[tid][3]
+						if len(txt[tid]) > 4: self.player[0]['FOLLMOV'] = txt[tid][4]
+					else:
+						if txt[tid][1] == 'n':
+							n = 0
+							for i in self.npcs:
+								if i['N'] > n: n = i['N']
+						else: n = txt[tid][1]
+						for i in self.npcs:
+							if i['N'] == n:
+								if txt[tid][2] != (None,None):
+									i['FOLLOW'] = pygame.Rect(px,py,10,10)
+								else: i['FOLLOW'] = (None,None)
+								i['FOLLEND'] = txt[tid][3]
+								if len(txt[tid]) > 4: i['FOLLMOV'] = txt[tid][4]
+				#CHARACTER EMOTION
+				elif txt[tid][0] == 25:
+					if txt[tid][1] == None:
+						self.player[0]['HEAD'] = txt[tid][2]
+					else:
+						for i in self.npcs:
+							if i['N'] == txt[tid][1]:
+								i['HEAD'] = txt[tid][2]
+				#CAMERA
+				elif txt[tid][0] == 26:
+					if isinstance(txt[tid][1],int):
+						for i in self.npcs:
+							if i['N'] == txt[tid][1]:
+								self.dlg['CAMERA'] = i['RECT']
+					else: self.dlg['CAMERA'] = pygame.Rect(txt[tid][1][0],txt[tid][1][1],1,1)
+				#ANOTHER PLACE
+				elif txt[tid][0] == 29:
+					ds = self.dlg['TEXT'].copy()
+					self.dlg['TEXT'] = []
+					self.transiction(True, 210, 10)
+					self.loadmap(txt[tid][1])
+					self.player[0]['RECT'].x = txt[tid][2]
+					self.player[0]['RECT'].y = txt[tid][3]
+					self.transiction(False, 50, 10)
+					self.dlg['TEXT'] = ds
+				#PUT CHARACTER
+				elif txt[tid][0] == 30:
+					ind = 0
+					for n in self.npcs:
+						if n['N'] > ind: ind = n['N']
+					ind += 1
+					self.npcs.append({'N': ind, 'RECT': pygame.Rect(txt[tid][1][0], txt[tid][1][1], 0, 0), 'TYPE': txt[tid][4], 'INDEX': txt[tid][2], 'WHO': txt[tid][3],
+					'GIF': 0.0,'BLINK': 100,'HEAD': 'D','SPRITE': 'STANDD','MOVE': 'fixed','DIRECTION': 3,'SPEED': 0,
+					'JUMP': 0,'GRAVITY': -5,'TIME': 20,'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','TALKING': False,'SWIM': None,'HOLD': None,'PAUSE': 0})
+					self.objects.append(['npc',ind,txt[tid][1][1]])
+
+	def events(self,event,mouse):
+		if event.type == pygame.QUIT: pygame.quit(); exit()
+		for i in range(len(self.optrects)):
+			rct = self.optrects[i].copy()
+			rct.y -= self.scroll
+			if pygame.Rect.colliderect(mouse,rct): self.opt
+		if event.type == pygame.MOUSEBUTTONDOWN: pass
+			
+		if pygame.mouse.get_pressed()[0]: self.speed = 3
+		else: self.speed = res.SPEED
+
+	def draw(self):
+		#print(self.choices)
+		#print(self.idx)
+		if self.scroll < (self.idx * 60): self.scroll += 4
+		lst = [self.rects,self.optrects]
+		for r in range(len(lst)):
+			for i in range(len(lst[r])):
+				rct = lst[r][i].copy()
+				rct.y -= self.scroll
+				if self.shake: shk = (random.randint(-5,5),random.randint(-5,5))
+				else: shk = (0,0)
+				if r == 1 and self.opt == i: col = ((10,10,10),res.COLOR)
+				else: col = (res.COLOR,(10,10,10))
+				for l in [0,rct.width]:
+					pygame.draw.ellipse(self.window,col[1],pygame.Rect(rct.x + l - (rct.height/2),rct.y + 10,rct.height,rct.height))
+					pygame.draw.ellipse(self.window,col[0],pygame.Rect(rct.x + l - (rct.height/2),rct.y,rct.height,rct.height))
+				pygame.draw.rect(self.window,col[0],rct)
+				pygame.draw.rect(self.window,col[1],pygame.Rect(rct.x,rct.y + rct.height,rct.width,10))
+				if r == 0: txt = self.text
+				else: txt = self.choices[len(self.choices)-1]
+				self.window.blit(self.fnt[self.curfnt].render(txt[i],True,col[1]),(rct.x + 5 + shk[0],rct.y + shk[1]))
+
+		#DIALOG
+		'''if self.dlg['FADE'] < 500 and res.SCENE != -1:
+			if self.dlg['TEXT'] != []:
+				opt = 1
+				ln = 1
+				#DIALOG BOX
+				if self.dlg['TYPE'] == 0:
+					srf = pygame.Surface((self.windoww,self.winbar * res.GSCALE))
+					srf.fill((0,0,0))
+					yyax = 20 + self.windowh - (self.winbar * res.GSCALE)
+				elif self.dlg['TYPE'] == 3:
+					srf = pygame.Surface((self.windoww,40 * res.GSCALE))
+					srf.fill((200,0,0))
+					yyax = int(self.windowh/2)
+				else: yyax = self.displayzh - 100
+				if self.vkb.active: yyax = int((self.vkb.size[1] - self.vkb.pos - 100)/res.GSCALE)
+				#DIALOG SCROLL
+				if self.dlg['Y'] > (self.lopt * 40):
+					self.dlg['Y'] -= int((40 * ln)/10)
+					if self.dlg['Y'] < (self.lopt * 40): self.dlg['Y'] = (self.lopt * 40)
+				if self.dlg['Y'] < (self.lopt * 40):
+					self.dlg['Y'] += int((40 * ln)/10)
+					if self.dlg['Y'] > (self.lopt * 40): self.dlg['Y'] = (self.lopt * 40)
+				sd = False
+				yy = 0
+				ind = 0
+				for i in self.dlg['TEXT']:
+					if i == 0: sd = not sd
+					if isinstance(i,str):
+						if sd:
+							self.dlgrct[ind].y = yyax + self.dlg['Y'] - yy
+							ind += 1
+						yy += 40
+				yy = 0
+				for i in self.dlg['TEXT'][::-1]:
+					if isinstance(i,str):
+						txt = self.fnt[self.dlg['FONT']].render(i, True, (255, 255, 255))
+						txtsz = math.floor(self.fnt[self.dlg['FONT']].size(i)[0]/res.GSCALE) + 10
+						if txtsz < 30: txtsz = 30
+					if self.dlg['TYPE'] in [1,2] and i != 1 and i != 0 and len(i) != 0: ballons
+					if i == 0:
+						if sd == False: sd = True
+						elif sd: sd = False
+					elif isinstance(i, str):
+						else: shkx = 0; shky = 0
+						if self.dlg['TYPE'] in [0,3]:
+							if sd == False: srf.blit(txt, (shkx + (30 * res.GSCALE), shky + (((self.winbar - 30 + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
+							else: srf.blit(txt, (shkx + (((self.displayzw - 12) - txtsz) * res.GSCALE), shky + (((self.winbar - 30 + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
+							yy += 20
+						elif self.dlg['TYPE'] == 1:
+							if sd == False: self.display[1].blit(txt, (shkx + (30 * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
+							else: self.display[1].blit(txt, (shkx + (((self.displayzw - 12) - txtsz) * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
+							yy += 40
+						else:
+							if sd == False: self.display[1].blit(txt, (shkx + (30 * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
+							else: self.display[1].blit(txt, (shkx + (((self.displayzw - 12) - txtsz) * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
+							yy += 40
+				if self.dlg['TYPE'] in [0,3]:
+					self.display[1].blit(srf,(0,yyax))'''
+
+	def test(self):
+		mp = pygame.mouse.get_pos()
+		mr = pygame.Rect(mp[0],mp[1],2,2)
+		for event in pygame.event.get():
+			self.events(event,mr)
+		self.window.fill((100,100,100))
+		self.draw()
+		pygame.display.flip()
+		pygame.time.Clock().tick(res.FPS)
+
+d = Dialog('CHAT',None)
+d = Dialog('CH7MRKITE',None)
+d = Dialog('CH1IAGO',None)
+d = Dialog('CH1BLUEBULLDOG',None)
+d = Dialog('23778988',None)
+d = Dialog('POPCORN_KART',None)
+d = Dialog('FARMACEUTIC',None)
 
 class Map:
 	def loadmap(self, mp=None):
@@ -2742,718 +3524,7 @@ class Game:
 			if res.GAS < 1.0: i['DIRECTION'] = 0
 			if i['SPEED'] < 0: i['SPEED'] = 0
 			p += 1
-		#DIALOG SPEED
-		if self.dlg['FADE'] == 0:
-			self.dlg['SPEED'] = res.SPEED
-			if self.pressed[4][0]: self.dlg['SPEED'] = 1
-
-	def dialog(self, txt, wh=0):
-		self.dlg = {'TEXT': [], 'FADE': 500, 'Y': 0, 'CAMERA': 0,
-		'SPEED': res.SPEED, 'VOICE': 1, 'FONT': 'DEFAULT', 'TYPE': res.DTYPE}
-		self.dlgrct = []
-		self.lopt = 0
-		self.player[0]['PAUSE'] = 1
-		self.player[0]['SPEED'] = 0
-		tid = 0
-		did = 0
-		spd = 10
-		while tid < len(txt):
-			#TEXT
-			if isinstance(txt[tid], str):
-				while self.dlg['FADE'] > 0:
-					if self.winbar < 50 and self.battle == False:
-						self.winbar += 5
-					self.dlg['FADE'] -= 50
-					self.run(False)
-				else:
-					self.dlg['TEXT'].append('')
-					if res.TTS: plyer.tts.speak(txt[tid])
-					if self.dlg['TYPE'] == 0: self.dlg['Y'] += 30
-					else: self.dlg['Y'] += 40
-					for i in txt[tid]:
-						while True:
-							if spd > 0: spd -= 10/self.dlg['SPEED']
-							else:
-								if res.TTS == False:
-									if self.dlg['TYPE'] == 3: vv = 'TEXT_INPUT'
-									else: vv = 'TTS' + str(self.dlg['VOICE'])
-									self.soundplay(vv)
-								self.dlg['TEXT'][did] += i
-								if res.DISLEXIC:
-									self.dlg['TEXT'][did] += ' '
-								spd = 10
-								break
-							self.run(False)
-					did += 1
-			#DIALOG PROTOCOLS
-			else:
-				#SIDE MESSAGE
-				if txt[tid] == 0:
-					self.dlg['TEXT'].append(0)
-					did += 1
-				#WAIT FOR PRESS
-				elif txt[tid] == 1:
-					self.dlg['TEXT'].append(1)
-					self.ch_sfx.stop()
-					self.wait()
-					self.ch_ton.play(res.SOUND['MENU_GO'])
-					did += 1
-				#DIALOG NAME
-				elif txt[tid] == 2:
-					pass
-				#CHAPTER INTRO
-				elif txt[tid] == 3:
-					res.SCENE = -1
-					self.ch_msc.pause()
-					self.ch_ton.play(res.SOUND['BAUM'])
-					self.player[0]['PAUSE'] = 3
-					for i in range(100): self.run()
-					res.SCENE = 0
-					self.player[0]['PAUSE'] = 1
-					self.ch_msc.unpause()
-				#CHAPTER END
-				elif txt[tid] in [4,5]:
-					pygame.mixer.stop()
-					self.player[0]['PAUSE'] = 3
-					self.ch_ton.play(res.SOUND['CHAPTER_END'])
-					spdacc = 0
-					for i in range(120):
-						spdacc += 2
-						self.displayy += spdacc
-						if self.displayy > self.windowh: self.displayy = 0
-						self.run()
-					if txt[tid] == 5:
-						res.CHAPTER += 1
-						res.DATE = dtb.CHAPTERS[res.CHAPTER][3]
-						res.TIME = dtb.CHAPTERS[res.CHAPTER][4]
-						res.MAP = dtb.CHAPTERS[res.CHAPTER][5][0]
-						res.PX = dtb.CHAPTERS[res.CHAPTER][5][1]
-						res.PY = dtb.CHAPTERS[res.CHAPTER][5][2]
-					pygame.mixer.stop()
-					self.title.ton.play(res.SOUND['NOISE'],-1)
-					self.title.classrun = True
-					self.title.winbar = 50
-					self.title.wait = 100
-					self.title.mnu = 7
-					self.title.tv = 0
-					self.classrun = 2
-				#DIALOG SETTINGS
-				elif txt[tid][0] == 0:
-					if txt[tid][1] == 0: self.dlg['VOICE'] = txt[tid][2]
-					if txt[tid][1] == 1: self.dlg['TYPE'] = txt[tid][2]
-					if txt[tid][1] == 2: self.dlg['FONT'] = txt[tid][2]
-				#ITEM GET
-				elif txt[tid][0] == 1:
-					if isinstance(txt[tid][1],int):
-						mny = None
-						for it in ['credit_card','wallet']:
-							if mny == None: mny = self.inv.find(None,it,'value')
-						if mny != None:
-							mny[1] += txt[tid][1]
-							res.INVENTORY[mny[0][0]][mny[0][1]][mny[0][2]][mny[0][3]] = str(mny[1])
-							self.ch_sfx.play(res.SOUND['CASH_GET'])
-							self.notification.append({'TEXT': 'Adquiriu $' + str(txt[tid][1]), 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
-					elif txt[tid][1] == 'greenblood':
-						gb = self.inv.find(None,'tube','value')
-						if gb != None:
-							if gb[1] > 150: self.dialog(dtb.DIALOGS['REWARD'][3].copy(),i['RECT'])
-							elif gb[1] > 90: self.dialog(dtb.DIALOGS['REWARD'][2].copy(),i['RECT'])
-							elif gb[1] > 0: self.dialog(dtb.DIALOGS['REWARD'][1].copy(),i['RECT'])
-							else: self.dialog(dtb.DIALOGS['REWARD'][0].copy(),i['RECT'])
-							if gb[1] > 0 and self.notification['X'] == 0:
-								mny = None
-								for m in ['credit_card','wallet']:
-									if mny == None: mny = self.inv.find(None,m,'value')
-								if mny!= None:
-									res.INVENTORY[mny[0][0]][mny[0][1]][mny[0][2]][mny[0][3]] = str(mny[1] + gb[1])
-									self.ch_sfx.play(res.SOUND['CASH_GET'])
-									self.notification.append({'TEXT': 'Adquiriu $' + str(gb[1]), 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': 0})
-									self.dlg['TEXT'] = []
-									res.INVENTORY[gb[0][0]][gb[0][1]][gb[0][2]][gb[0][3]] = '000'
-								else: self.dialog(dtb.DIALOGS['REWARD'][4].copy(),i['RECT'])
-						else: self.dialog(dtb.DIALOGS['REWARD'][0].copy(),i['RECT'])
-					else:
-						if txt[tid][1] not in dtb.ITEMS: print('CAUTION: No item ' + txt[tid][1] + ' in database!')
-						else:
-							gt = True
-							if len(txt[tid]) > 2 and txt[tid][2] != 0:
-								mny = self.inv.find(None,'credit_card','value')
-								if mny[1] < txt[tid][2]: gt = False
-							if len(txt[tid]) > 3:
-								if res.DLGSAV[txt[tid][3]] == 0:
-									res.DLGSAV[txt[tid][3]] = 1
-								else: gt = False
-							if len(txt[tid]) > 4: prp = txt[tid][4]
-							else: prp = '0000'
-							if gt:
-								if len(txt[tid]) > 2 and txt[tid][2] != 0:
-									mny[1] -= txt[tid][2]
-									res.INVENTORY[mny[0][0]][mny[0][1]][mny[0][2]][mny[0][3]] = str(mny[1])
-								self.inv.add(res.PARTY[res.FORMATION][0],txt[tid][1],prp)
-								self.ch_sfx.play(res.SOUND['ITEM_GET'])
-								self.notification.append({'TEXT': dtb.ITEMS[txt[tid][1]][0], 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': -180,'IMAGE': pygame.image.load(res.ITEMS_PATH + txt[tid][1] + '.png')})
-				#MORALITY
-				elif txt[tid][0] == 2:
-					if txt[tid][3] == 0:
-						res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] += txt[tid][2]
-					else:
-						if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] >= txt[tid][2]:
-							for i in txt[tid][3]:
-								txt.insert(tid + 1, i)
-						else:
-							for i in txt[tid][4]:
-								txt.insert(tid + 1, i)
-				#INSERT TEXT
-				elif txt[tid][0] == 3:
-					if isinstance(txt[tid][1],int):
-						adtxt = res.CHARACTERS[txt[tid][1]]['NAME']
-					elif txt[tid][1] == 'self':
-						adtxt = res.CHARACTERS[res.PARTY[res.FORMATION][0]]['NAME']
-					elif txt[tid][1] == 'chat':
-						adtxt = self.chat.copy()
-					elif txt[tid][1] == 'CC':
-						if res.CC: adtxt = txt[tid][2]
-						else: adtxt = ''
-					elif txt[tid][1].startswith('pronoun'):
-						if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['PRONOUN'] == 'he':
-							adtxt = dtb.DTALKS['he' + txt[tid][1][-1]]
-						if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['PRONOUN'] == 'she':
-							adtxt = dtb.TALKS['she' + txt[tid][1][-1]]
-					elif txt[tid][1] == 'time':
-						if res.TIME[0] < 6:
-							adtxt = dtb.DTALKS['good night']
-						elif res.TIME[0] < 12:
-							adtxt = dtb.DTALKS['good morning']
-						elif res.TIME[0] < 18:
-							adtxt = dtb.DTALKS['good afternoon']
-						elif res.TIME[0] < 24:
-							adtxt = dtb.DTALKS['good evening']
-					elif txt[tid][1] == 'deaths':
-						adtxt = str(res.CHARACTERS[res.PARTY[res.FORMATION][0]]['DEATHS'])
-					elif isinstance(txt[tid][1],tuple):
-						adtxt = pygame.key.name(self.pressed[txt[tid][1][0]][txt[tid][1][1]]).lower()
-					else:
-						adtxt = dtb.DTALKS[txt[tid][1]]
-					if isinstance(adtxt,str):
-						if len(txt[tid]) > 2:
-							adtxt += txt[tid][2]
-						txt.insert(tid + 1, adtxt)
-					else:
-						for i in adtxt:
-							txt.insert(tid + 1, '')
-							self.dlg['TEXT'].append(i)
-							did += 1
-				#CALLING
-				elif txt[tid][0] == 4:
-					if txt[tid][1] != 'stop':
-						self.ch_ton.play(res.SOUND['CALLING'],-1)
-						self.ch_rng.play(res.SOUND['RINGTONE_' + str(res.PARTY[res.FORMATION][0])])
-						if self.rad.onoff: pygame.mixer.music.pause()
-						tw = 0
-						cl = False
-						while tw < 2000 and cl == False:
-							pygame.time.wait(10)
-							for event in pygame.event.get():
-								if event.type == pygame.KEYUP:
-									cl = True
-							tw += 1
-						self.ch_ton.stop()
-						self.ch_rng.stop()
-						self.ch_sfx.play(res.SOUND['EQUIP'])
-						if cl:
-							self.phone = 1
-							self.mnu = 1
-							txt.insert(tid + 1, [2,'stop'])
-							txt.insert(tid + 1, 0)
-							for i in self.dev.call(str(dtb.CONTACTS[txt[tid][1]][1]),0,False,False)[-1:0:-1]:
-								txt.insert(tid + 1, i)
-					else:
-						self.phone = 0
-						self.mnu = 0
-				#NEW EMAIL
-				elif txt[tid][0] == 5:
-					self.ch_sfx.play(res.SOUND['NOTIFICATION'])
-					mail = dtb.EMAILS[txt[tid][1]].copy()
-					mail.append(0)
-					res.INBOX.append(mail)
-					res.inbx_save(len(res.INBOX)-1,0)
-					self.notification.append({'TEXT': dtb.MENU['not_email'], 'COLOR': (255, 221, 0), 'HALIGN': 'left','X': 0})
-				#TASKS
-				elif txt[tid][0] == 6:
-					self.ch_sfx.play(res.SOUND['NOTIFICATION'])
-					if txt[tid][1] in dtb.TASKINDEX:
-						res.TASKS.append([txt[tid][1], 0])
-						if 'TIME' in dtb.TASKINDEX[txt[tid][1]][0]:
-							res.TIME = dtb.TASKINDEX[txt[tid][1]][0]['TIME']
-						if 'MARKER' in dtb.TASKINDEX[txt[tid][1]][0]:
-							res.MARKER.append(dtb.TASKINDEX[txt[tid][1]][0]['MARKER'])
-						#res.task_save(txt[tid][1],0)
-						self.notification.append({'TEXT': dtb.TASKINDEX[txt[tid][1]][0]['NAME'], 'COLOR': (255, 123, 0), 'HALIGN': 'left','X': 0})
-					elif self.inv.find(res.PARTY[res.FORMATION][0],txt[tid][1]):
-						self.ch_ton.play(res.SOUND['ITEM_GET'])
-						for j in txt[tid][3][::-1]:
-							txt.insert(tid + 1, j)
-					else:
-						for j in txt[tid][2][::-1]:
-							txt.insert(tid + 1, j)
-				#NEW CONTACT
-				elif txt[tid][0] == 7:
-					self.ch_sfx.play(res.SOUND['NOTIFICATION'])
-					dtb.CONTACTS.append(dtb.NUMBERS[txt[tid][1]].copy())
-					dtb.call_save(len(dtb.CONTACTS)-1)
-					self.notification.append({'TEXT': dtb.MENU['not_contact'], 'COLOR': (165, 255, 0), 'HALIGN': 'left','X': 0})
-				#ACHIEVEMENT
-				elif txt[tid][0] == 8:
-					self.ch_sfx.play(res.SOUND['ACHIEVEMENT'])
-					dtb.ACHIEVEMENTS[txt[tid][1]][2] = True
-					self.notification.append({'TEXT': dtb.ACHIEVEMENTS[txt[tid][1]][0], 'COLOR': (255, 191, 0), 'HALIGN': 'right','X': 0})
-				#RELATIONS
-				elif txt[tid][0] == 9:
-					if txt[tid][3] == 0: res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] += txt[tid][2]
-					elif txt[tid][3] == 1: res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] -= txt[tid][2]
-					else:
-						if res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] >= txt[tid][2]:
-							for i in txt[tid][3]:
-								txt.insert(tid + 1, i)
-						else:
-							for i in txt[tid][4]:
-								txt.insert(tid + 1, i)
-				#DIALOG CHOICES
-				elif txt[tid][0] == 10:
-					while self.dlg['FADE'] > 0:
-						if self.winbar < 50 and self.battle == False: self.winbar += 5
-						self.dlg['FADE'] -= 50
-						self.run()
-					else:
-						self.dlg['CAMERA'] = 0
-						self.dlg['TEXT'].append(0)
-						yy = 0
-						for j in txt[tid][-1:0:-1]:
-							if res.DISLEXIC:
-								out = ''
-								for t in j[0]:
-									out += t + ' '
-							else: out = j[0]
-							self.dlg['TEXT'].append(out)
-							txtsz = math.floor(self.fnt['DEFAULT'].size(out)[0]/res.GSCALE) + 10
-							yyax = self.displayzh - 100
-							self.dlgrct.append(pygame.Rect((self.displayzw - 22) - txtsz,yyax + self.dlg['Y'] - yy,5 + txtsz,25))
-							self.dlg['Y'] += 40
-							yy += 40
-						self.dlg['TEXT'].append(0)
-						self.lopt = 1
-						ln = len(txt[tid][1:])
-						trigger = True
-						yy = 0
-						while trigger:
-							if self.pressed[0][0]:
-								if self.lopt < ln: self.ch_sfx.play(res.SOUND['MENU_HOR']); self.lopt += 1
-							if self.pressed[1][0]:
-								if self.lopt > 1: self.ch_sfx.play(res.SOUND['MENU_VER']); self.lopt -= 1
-							do = False
-							if self.pressed[4][0]: do = True
-							for i in range(len(self.dlgrct)):
-								mp = pygame.mouse.get_pos()
-								if self.colide(self.dlgrct[i],pygame.Rect(int(mp[0]/res.GSCALE),int(mp[1]/res.GSCALE),2,2)):
-									self.lopt = i
-									do = True
-							if do:
-								self.ch_ton.play(res.SOUND['MENU_GO'])
-								trigger = False
-								crg = -1
-								rctsv = self.dlgrct[self.lopt - 1].copy()
-								self.dlgrct = [rctsv]
-								i = 1
-								while i <= ln + 1:
-									if i != self.lopt:
-										del self.dlg['TEXT'][crg - i]
-										crg += 1
-										ln -= 1
-									i += 1
-							self.run(False)
-						self.dlg['CAMERA'] = wh
-						for j in txt[tid][self.lopt][-1:0:-1]:
-							txt.insert(tid + 1, j)
-						self.lopt = 0
-						did = len(self.dlg['TEXT'])
-				#SKIP DIALOGS
-				elif txt[tid][0] == 11:
-					tid += txt[tid][1]
-				#GUI CLASS
-				elif txt[tid][0] == 12:
-					if txt[tid][1] in ['storage','wash','trash','cashier','products','mercator']:
-						if txt[tid][1] in ['products','mercator']:
-							res.PRODUCTS = []
-							for p in txt[tid][2]:
-								add = [p[0],1]
-								if len(p) > 1:
-									if res.DATE[3] == p[1]:
-										add[1] = int(add[1] * p[2])
-								res.PRODUCTS.append(add)
-							while len(res.PRODUCTS) < 25: res.PRODUCTS.append(['_',1])
-						self.ch_sfx.play(res.SOUND['INVENTORY_OPEN'])
-						if txt[tid][1] == 'storage': self.inv.type = 2
-						if txt[tid][1] == 'cashier': self.inv.type = 3
-						if txt[tid][1] == 'wash': self.inv.type = 4
-						if txt[tid][1] == 'trash': self.inv.type = 5
-						if txt[tid][1] == 'products': self.inv.type = 6
-						if txt[tid][1] == 'mercator': self.inv.type = 7
-						self.player[0]['PAUSE'] = 1
-						self.inv.fade = 0
-						self.opt = 0
-						self.lopt = 0
-						self.mnu = 0
-					elif txt[tid][1].startswith('minigames.'):
-						self.transiction(True,100)
-						self.minigame = eval(txt[tid][1])
-						self.transiction(False,0)
-					else:
-						dv = self.inv.dev(txt[tid][1])
-						self.dev = dv[0]
-						if self.dev == 'radio': self.dev = self.rad
-						self.dev.battery = 9999
-						self.phone = 1
-				#BATTLE
-				elif txt[tid][0] == 13:
-					self.dlg['TEXT'] = []
-					pygame.mixer.music.stop()
-					if len(txt[tid]) > 2: rpt = txt[tid][2]
-					else: rpt = 1
-					x = 0
-					for k in range(rpt):
-						for f in txt[tid][1]:
-							i = Enemy(f,(0,0))
-							if i.type == 'mercenary': self.mrc.append(i)
-							else: self.foe.append(i)
-							x += 1
-					txt = []
-					tid = 0
-					if self.battle == False:
-						self.mnu = 0
-						self.turn = -4
-						self.fight()
-				#PROBABILITY
-				elif txt[tid][0] == 14:
-					prb = random.randint(0,100)
-					for i in txt[tid][1:]:
-						if prb > i[0] - 100:
-							txt.insert(tid + 1, i[1:])
-				#PLAY SFX/MUSIC
-				elif txt[tid][0] == 15:
-					if txt[tid][2] == 0:
-						if len(txt[tid]) > 2: lp = txt[tid][2]
-						else: lp = 0
-						self.ch_sfx.play(res.SOUND[txt[tid][1]],lp)
-					if txt[tid][2] == 1:
-						pygame.mixer.music.load(res.MUSIC_PATH + txt[tid][1] + '.mp3')
-						pygame.mixer.music.play(-1)
-				#CHECK CHARACTER/DEATHS
-				elif txt[tid][0] == 16:
-					if txt[tid][1] == 'DEATHS':
-						if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['DEATHS'] < 10: lst = txt[tid][2][0]
-						elif res.CHARACTERS[res.PARTY[res.FORMATION][0]]['DEATHS'] < 20: lst = txt[tid][2][1]
-						elif res.CHARACTERS[res.PARTY[res.FORMATION][0]]['DEATHS'] < 30: lst = txt[tid][2][2]
-						elif res.CHARACTERS[res.PARTY[res.FORMATION][0]]['DEATHS'] < 40: lst = txt[tid][2][3]
-						elif res.CHARACTERS[res.PARTY[res.FORMATION][0]]['DEATHS'] < 50: lst = txt[tid][2][4]
-						else: lst = txt[tid][2][5]
-						for j in lst[::-1]:
-							txt.insert(tid + 1, j)
-					else:
-						if res.PARTY[res.FORMATION][0] == txt[tid][1]:
-							for j in txt[tid][2][::-1]:
-								txt.insert(tid + 1, j)
-				#DELIVERY
-				elif txt[tid][0] == 17:
-					self.waitlst.append(['delivery',self.waitime + txt[tid][2],txt[tid][3]])
-				#CHANGE PARTY
-				elif txt[tid][0] == 18:
-					ap = []
-					p = 0
-					for i in txt[tid][1:]:
-						if i[1] != None:
-							for n in range(len(self.npcs)):
-								if i[1] == self.npcs[n]['N']:
-									player = self.player[p].copy()
-									xx = player['RECT'].x
-									yy = player['RECT'].y
-									dd = player['DIRECTION']
-									cc = res.CHARACTERS[res.PARTY[res.FORMATION][p]].copy()
-									ii = player['HAIR'] + player['COSTUME'] + cc['SKIN']
-									npc = self.npcs[n].copy()
-									self.player[p]['RECT'].x = npc['RECT'].x
-									self.player[p]['RECT'].y = npc['RECT'].y
-									self.player[p]['DIRECTION'] = npc['DIRECTION']
-									self.player[p]['FOLLEND'] = 'head'
-									self.player[p]['SPEED'] = 0
-									self.npcs[n]['RECT'].x = xx
-									self.npcs[n]['RECT'].y = yy
-									self.npcs[n]['INDEX'] = ii
-									self.npcs[n]['DIRECTION'] = dd
-									self.npcs[n]['MOVE'] = 'stand'
-									if len(i) > 2: self.npcs[n]['WHO'] = i[2]
-						ap.append(i[0])
-						p += 1
-					res.PARTY[res.FORMATION] = ap
-				#DATETIME
-				elif txt[tid][0] == 19:
-					ds = self.dlg['TEXT'].copy()
-					self.dlg['TEXT'] = [] 
-					self.dlg['TYPE'] = 3
-					self.transiction(True,250,10,'fade')
-					if txt[tid][1] != None: res.TIME = txt[tid][1]
-					if txt[tid][2] != None: res.DATE = txt[tid][2]
-					for i in range(10): self.run()
-					tt = str(res.TIME[0]) + ':' + str(res.TIME[1]) + ':' + str(res.TIME[2])
-					dd = str(res.DATE[0]) + '/' + str(res.DATE[1]) + '/' + str(res.DATE[2])
-					self.dialog([(0,1,3),tt,dd,1])
-					self.transiction(False,0,10,'fade')
-					self.dlg['TEXT'] = ds
-					self.dlg['TYPE'] = res.DTYPE
-				#INCREASE/DECREASE STATUS
-				elif txt[tid][0] == 20:
-					if txt[tid][2] < 2:
-						for i in self.foe + self.mrc:
-							prb = round(random.randint(0,20))
-							if prb > 10:
-								self.ch_sfx.play(res.SOUND['ATTRIBUTE_LOSS'])
-								if i['TYPE'] == 'spirit': tst = self.fig[self.turn]['SPIRITS']
-								else: tst = self.fig[self.turn]['INTIMIDATION']
-								if txt[tid][1] == 0:
-									i['STRENGHT'] -= txt[tid][2] + tst
-									self.hitisplay(0, self.aim, '-' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['STRENGHT'].lower(), (200, 20, 20))
-								if txt[tid][1] == 1:
-									i['AGILITY'] -= txt[tid][2] + tst
-									self.hitisplay(0, self.aim, '-' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['AGILITY'].lower(), (20, 200, 20))
-								if txt[tid][1] == 2:
-									i['RESISTANCE'] -= txt[tid][2] + tst
-									self.hitisplay(0, self.aim, '-' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['RESISTANCE'].lower(), (20, 20, 200))
-					if txt[tid][2] > 2:
-						prb = round(random.randint(0,20))
-						if prb > 10:
-							self.ch_sfx.play(res.SOUND['ATTRIBUTE_GAIN'])
-							if txt[tid][1] == 0:
-								self.fig[self.turn]['STRENGHT'] += txt[tid][2] + self.fig[self.turn]['INSPIRATION']
-								self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['STRENGHT'].lower(), (200, 20, 20))
-							if txt[tid][1] == 1:
-								self.fig[self.turn]['AGILITY'] += txt[tid][2] + self.fig[self.turn]['INSPIRATION']
-								self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['AGILITY'].lower(), (20, 200, 20))
-							if txt[tid][1] == 2:
-								self.fig[self.turn]['RESISTANCE'] += txt[tid][2] + self.fig[self.turn]['INSPIRATION']
-								self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['RESISTANCE'].lower(), (20, 20, 200))
-				#NEXT SCENE
-				elif txt[tid][0] == 21:
-					if isinstance(txt[tid][1],str): res.DLGSAV[txt[tid][1]] = txt[tid][2]
-					else: res.SCENE = txt[tid][1]
-				#KEYBOARD INPUT
-				elif txt[tid][0] == 22:
-					snd = self.ch_msc.get_sound()
-					self.ch_msc.stop()
-					yy = 0
-					self.dlg['TEXT'].append(0)
-					self.dlg['TEXT'].append('')
-					txtsz = math.floor(self.fnt['DEFAULT'].size(self.dlg['TEXT'][-1])[0]/res.GSCALE) + 10
-					self.dlgrct.append(pygame.Rect((self.displayzw - 22) - txtsz,self.displayzh - 100 + self.dlg['Y'] - yy,5 + txtsz,25))
-					self.dlg['Y'] += 40
-					self.vkb.active = True
-					while self.vkb.active:
-						self.dlg['TEXT'][-1] = self.vkb.output
-						txtsz = math.floor(self.fnt['DEFAULT'].size(self.dlg['TEXT'][-1])[0]/res.GSCALE) + 10
-						self.dlgrct[-1].x = self.displayzw - 22 - txtsz
-						self.dlgrct[-1].width = 5 + txtsz
-						self.run(False)
-						if self.vkb.active == False:
-							#CHAT MESSAGING
-							if txt[tid][1] == 'chat':
-								self.chat.append(0)
-								self.chat.append(self.vkb.output)
-								self.chat.append(0)
-								if self.pressed[6][0] == False:
-									self.vkb.output = False
-									self.vkb.active = True
-							#COMMAND LINE
-							elif txt[tid][1] == 'debug':
-								cmd = self.vkb.output.split(' ')
-								if cmd[0].lower() == 'help':
-									txt.insert(tid + 1,'mute pacify rectdebug disdbg player character \
-									loadmap chapter time date dialog item battle inventory')
-								if cmd[0].lower() == 'mute':
-									pygame.mixer.stop()
-									pygame.mixer.music.stop()
-								if cmd[0].lower() == 'pacify':
-									self.enemies = []
-								if cmd[0].lower() == 'rectdebug':
-									self.rectdebug = not self.rectdebug
-								if cmd[0].lower() == 'disdbg':
-									self.disdbg = not self.disdbg
-								if cmd[0].lower() == 'editing':
-									self.editing = not self.editing
-								if cmd[0].lower() == 'python':
-									try: txt.insert(tid + 1,str(eval(self.vkb.output.replace('python ',''))))
-									except Exception as e: txt.insert(tid + 1,str(e))
-								if cmd[0].lower() == 'player':
-									if len(cmd) > 3:
-										if cmd[3] in ['True','False']: vl = bool(cmd[3])
-										elif abs(cmd[3]).isdigit(): vl = int(cmd[3])
-										else: vl = str(cmd[3])
-										self.player[int(cmd[1])][cmd[2].upper()] = vl
-									else: txt.insert(tid + 1,'missing arguments in "player": (index, key, value)')
-								if cmd[0].lower() == 'character':
-									if len(cmd) > 3:
-										if cmd[3] in ['True','False']: vl = bool(cmd[3])
-										elif abs(cmd[3]).isdigit(): vl = int(cmd[3])
-										else: vl = str(cmd[3])
-										res.CHARACTER[int(cmd[1])][cmd[2].upper()] = vl
-									else: txt.insert(tid + 1,'missing arguments in "character": (index, key, value)')
-								if cmd[0].lower() == 'loadmap':
-									if len(cmd) > 1: self.loadmap(cmd[1])
-									else: txt.insert(tid + 1,'missing arguments in "loadmap": (file)')
-								if cmd[0].lower() == 'chapter':
-									if len(cmd) > 1: res.CHAPTER = int(cmd[1])
-									else: txt.insert(tid + 1,'missing arguments in "chapter": (value)')
-								if cmd[0].lower() == 'time':
-									if len(cmd) > 2: res.TIME = [int(cmd[1]),int(cmd[2]),0]
-									else: txt.insert(tid + 1,'missing arguments in "time": (hour,minute)')
-								if cmd[0].lower() == 'date':
-									if len(cmd) > 2: res.DATE = [int(cmd[1]),int(cmd[2]),2007,1,1]
-									else: txt.insert(tid + 1,'missing arguments in "date": (day,month)')
-								if cmd[0].lower() == 'dialog':
-									if len(cmd) > 2: txt.insert(tid + 1,(23,cmd[1].upper(),int(cmd[2])))
-									else: txt.insert(tid + 1,'missing arguments in "dialog": (key, index)')
-								if cmd[0].lower() == 'item':
-									if len(cmd) > 1: txt.insert(tid + 1,(1,cmd[1]))
-									else: txt.insert(tid + 1,'missing arguments in "item": (key)')
-								if cmd[0].lower() == 'battle':
-									if len(cmd) > 1: txt.insert(tid + 1,(13,[cmd[1].lower()]))
-									else: txt.insert(tid + 1,'missing arguments in "battle": (key)')
-								if cmd[0].lower() == 'inventory':
-									if len(cmd) > 1: self.inv.type = int(cmd[1])
-									else: txt.insert(tid + 1,'missing arguments in "inventory": (value)')
-								if cmd[0].lower() == 'gui':
-									if len(cmd) > 1: txt.insert(tid + 1,(12,cmd[1]))
-									else: txt.insert(tid + 1,'missing arguments in "gui": (class)')
-					if txt[tid][1] in [0,1,2,3,4,5]:
-						res.CHARACTERS[txt[tid][1]]['NAME'] = self.vkb.output
-					if snd != None: self.ch_msc.play(snd,-1)
-					self.dlg['TEXT'].append(0)
-					did = len(self.dlg['TEXT'])
-				#GET OTHER DIALOG
-				elif txt[tid][0] == 23:
-					dlg = txt[tid][1]
-					if dlg not in dtb.DIALOGS: print('CAUTION: No dialog ' + dlg + ' in database!')
-					else:
-						idx = None
-						if len(txt[tid]) > 2: idx = txt[tid][2]
-						if self.battle:
-							if dlg == None: dlg = self.foe[self.opt]['FILE']
-							if dlg.upper() not in dtb.DIALOGS:
-								dlg = 'IRRATIONAL'
-							else: dlg = self.foe[self.opt]['FILE'].upper()
-						if idx == None:
-							for j in dtb.DIALOGS[dlg].copy()[::-1]:
-								txt.insert(tid + 1, j)
-						else:
-							for j in dtb.DIALOGS[dlg][idx].copy()[::-1]:
-								txt.insert(tid + 1, j)
-						did = len(self.dlg['TEXT'])
-				#MOVE CHARACTER
-				elif txt[tid][0] == 24:
-					px = txt[tid][2][0]
-					py = txt[tid][2][1]
-					if isinstance(px,str): px = self.player[0]['RECT'].x + int(px[2:])
-					if isinstance(py,str): py = self.player[0]['RECT'].y + int(py[2:])
-					if txt[tid][1] == None:
-						if txt[tid][2] != (None,None):
-							self.player[0]['FOLLOW'] = pygame.Rect(px,py,10,10)
-						else: self.player[0]['FOLLOW'] = (None,None)
-						self.player[0]['FOLLEND'] = txt[tid][3]
-						if len(txt[tid]) > 4: self.player[0]['FOLLMOV'] = txt[tid][4]
-					else:
-						if txt[tid][1] == 'n':
-							n = 0
-							for i in self.npcs:
-								if i['N'] > n: n = i['N']
-						else: n = txt[tid][1]
-						for i in self.npcs:
-							if i['N'] == n:
-								if txt[tid][2] != (None,None):
-									i['FOLLOW'] = pygame.Rect(px,py,10,10)
-								else: i['FOLLOW'] = (None,None)
-								i['FOLLEND'] = txt[tid][3]
-								if len(txt[tid]) > 4: i['FOLLMOV'] = txt[tid][4]
-				#CHARACTER EMOTION
-				elif txt[tid][0] == 25:
-					if txt[tid][1] == None:
-						self.player[0]['HEAD'] = txt[tid][2]
-					else:
-						for i in self.npcs:
-							if i['N'] == txt[tid][1]:
-								i['HEAD'] = txt[tid][2]
-				#CAMERA
-				elif txt[tid][0] == 26:
-					if isinstance(txt[tid][1],int):
-						for i in self.npcs:
-							if i['N'] == txt[tid][1]:
-								self.dlg['CAMERA'] = i['RECT']
-					else: self.dlg['CAMERA'] = pygame.Rect(txt[tid][1][0],txt[tid][1][1],1,1)
-				#WAIT
-				elif txt[tid][0] == 27:
-					ds = self.dlg['TEXT'].copy()
-					self.dlg['TEXT'] = []
-					if len(txt[tid]) > 2 and txt[tid][2] == 'TWNN': self.cityname = 'TWNN'
-					for i in range(txt[tid][1]): self.run()
-					if len(txt[tid]) > 2 and txt[tid][2] == 'TWNN': self.cityname = ''
-					self.dlg['TEXT'] = ds
-				#TUTORIAL
-				elif txt[tid][0] == 28:
-					if res.HELP:
-						self.ch_ton.play(res.SOUND['NOTIFICATION'])
-						self.tutorial = {'TEXT': dtb.TUTORIALS[txt[tid][1]].copy(), 'OUTPUT': [], 'FADE': 0, 'TIME': 0, 'WAIT': 300, 'NEXT': '','GO': 0}
-						for j in self.tutorial['TEXT']:
-							if isinstance(j,list):
-								if j[0] == 'phone':
-									self.tutorial['GO'] = j[1]
-									if len(j) > 2: self.tutorial['NEXT'] = j[2]
-								if j[0] == 'wait':
-									self.tutorial['WAIT'] = j[1]
-									if len(j) > 2: self.tutorial['NEXT'] = j[2]
-								if j[0] == 'image':
-									self.tutorial['OUTPUT'].append(j)
-							else: self.tutorial['OUTPUT'].append(j)
-				#ANOTHER PLACE
-				elif txt[tid][0] == 29:
-					ds = self.dlg['TEXT'].copy()
-					self.dlg['TEXT'] = []
-					self.transiction(True, 210, 10)
-					self.loadmap(txt[tid][1])
-					self.player[0]['RECT'].x = txt[tid][2]
-					self.player[0]['RECT'].y = txt[tid][3]
-					self.transiction(False, 50, 10)
-					self.dlg['TEXT'] = ds
-				#PUT CHARACTER
-				elif txt[tid][0] == 30:
-					ind = 0
-					for n in self.npcs:
-						if n['N'] > ind: ind = n['N']
-					ind += 1
-					self.npcs.append({'N': ind, 'RECT': pygame.Rect(txt[tid][1][0], txt[tid][1][1], 0, 0), 'TYPE': txt[tid][4], 'INDEX': txt[tid][2], 'WHO': txt[tid][3],
-					'GIF': 0.0,'BLINK': 100,'HEAD': 'D','SPRITE': 'STANDD','MOVE': 'fixed','DIRECTION': 3,'SPEED': 0,
-					'JUMP': 0,'GRAVITY': -5,'TIME': 20,'FOLLOW': None,'FOLLEND': 0,'FOLLMOV': '','TALKING': False,'SWIM': None,'HOLD': None,'PAUSE': 0})
-					self.objects.append(['npc',ind,txt[tid][1][1]])
-				#CENSORSHIP
-				elif txt[tid][0] == 31:
-					if res.CENSORSHIP == False: txt.insert(tid + 1, txt[tid][2])
-					elif res.CENSORSHIP: txt.insert(tid + 1, txt[tid][1])
-			tid += 1
-		#FINISH DIALOG
-		self.dlg = {'TEXT': [], 'FADE': 0, 'Y': 0, 'CAMERA': 0,
-		'SPEED': res.SPEED, 'VOICE': 1, 'FONT': 'DEFAULT', 'TYPE': res.DTYPE}
-		self.player[0]['PAUSE'] = 0
-		while self.dlg['FADE'] < 500:
-			self.dlg['FADE'] += 50
-			if self.winbar > 0 and self.battle == False:
-				self.winbar -= 5
-				self.run()
-				
+		
 	def audioedit(self,snd,function,value):
 		import numpy
 		snd = pygame.sndarray.array(snd)
@@ -5128,86 +5199,7 @@ class Game:
 			if self.phofa > 0:
 				pass
 				#self.display[1].blit(img, (imgh - (self.dev.scrpos[0] * scl2),self.phofa - (self.dev.scrpos[1] * scl2)))
-		#DIALOG
-		if self.dlg['FADE'] < 500 and res.SCENE != -1:
-			if self.dlg['TEXT'] != []:
-				opt = 1
-				ln = 1
-				#DIALOG BOX
-				if self.dlg['TYPE'] == 0:
-					srf = pygame.Surface((self.windoww,self.winbar * res.GSCALE))
-					srf.fill((0,0,0))
-					yyax = 20 + self.windowh - (self.winbar * res.GSCALE)
-				elif self.dlg['TYPE'] == 3:
-					srf = pygame.Surface((self.windoww,40 * res.GSCALE))
-					srf.fill((200,0,0))
-					yyax = int(self.windowh/2)
-				else: yyax = self.displayzh - 100
-				if self.vkb.active: yyax = int((self.vkb.size[1] - self.vkb.pos - 100)/res.GSCALE)
-				#DIALOG SCROLL
-				if self.dlg['Y'] > (self.lopt * 40):
-					self.dlg['Y'] -= int((40 * ln)/10)
-					if self.dlg['Y'] < (self.lopt * 40): self.dlg['Y'] = (self.lopt * 40)
-				if self.dlg['Y'] < (self.lopt * 40):
-					self.dlg['Y'] += int((40 * ln)/10)
-					if self.dlg['Y'] > (self.lopt * 40): self.dlg['Y'] = (self.lopt * 40)
-				sd = False
-				yy = 0
-				ind = 0
-				for i in self.dlg['TEXT']:
-					if i == 0: sd = not sd
-					if isinstance(i,str):
-						if sd:
-							self.dlgrct[ind].y = yyax + self.dlg['Y'] - yy
-							ind += 1
-						yy += 40
-				yy = 0
-				for i in self.dlg['TEXT'][::-1]:
-					if isinstance(i,str):
-						txt = self.fnt[self.dlg['FONT']].render(i, True, (255, 255, 255))
-						txtsz = math.floor(self.fnt[self.dlg['FONT']].size(i)[0]/res.GSCALE) + 10
-						if txtsz < 30: txtsz = 30
-					if self.dlg['TYPE'] in [1,2] and i != 1 and i != 0 and len(i) != 0:
-						#DIALOG BALOONS
-						if sd == False:
-							pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(20,yyax + self.dlg['Y'] - yy,5 + txtsz,25))
-							pygame.draw.rect(self.display[0], res.COLOR, pygame.Rect(20,(yyax + 25) + self.dlg['Y'] - yy,5 + txtsz,5))
-							pygame.draw.polygon(self.display[0], res.COLOR, ((25,(yyax + 25) + self.dlg['Y'] - yy),(45,(yyax + 25) + self.dlg['Y'] - yy),(25,(yyax + 35) + self.dlg['Y'] - yy)))
-							pygame.draw.polygon(self.display[0], (0, 0, 0), ((25,(yyax + 21) + self.dlg['Y'] - yy),(45,(yyax + 21) + self.dlg['Y'] - yy),(25,(yyax + 31) + self.dlg['Y'] - yy)))
-						else:
-							if self.lopt == opt:
-								col1 = res.COLOR
-								col2 = (10,10,10)
-							else:
-								col1 = (10,10,10)
-								col2 = res.COLOR
-							pygame.draw.rect(self.display[0], col1, self.dlgrct[opt - 1])
-							pygame.draw.rect(self.display[0], col2, pygame.Rect(self.dlgrct[opt - 1].x,self.dlgrct[opt - 1].y + 25,self.dlgrct[opt - 1].width,self.dlgrct[opt - 1].height - 25))
-							pygame.draw.polygon(self.display[0], col2, (((self.displayzw - 42),(yyax + 25) + self.dlg['Y'] - yy),((self.displayzw - 22),(yyax + 25) + self.dlg['Y'] - yy),((self.displayzw - 22),(yyax + 35) + self.dlg['Y'] - yy)))
-							pygame.draw.polygon(self.display[0], col1, (((self.displayzw - 42),(yyax + 21) + self.dlg['Y'] - yy),((self.displayzw - 22),(yyax + 21) + self.dlg['Y'] - yy),((self.displayzw - 22),(yyax + 31) + self.dlg['Y'] - yy)))
-							opt += 1
-					if i == 0:
-						if sd == False: sd = True
-						elif sd: sd = False
-					elif isinstance(i, str):
-						if self.dlg['FONT'] == 'ANGER':
-							shkx = int(random.randint(-5,5))
-							shky = int(random.randint(-5,5))
-						else: shkx = 0; shky = 0
-						if self.dlg['TYPE'] in [0,3]:
-							if sd == False: srf.blit(txt, (shkx + (30 * res.GSCALE), shky + (((self.winbar - 30 + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							else: srf.blit(txt, (shkx + (((self.displayzw - 12) - txtsz) * res.GSCALE), shky + (((self.winbar - 30 + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							yy += 20
-						elif self.dlg['TYPE'] == 1:
-							if sd == False: self.display[1].blit(txt, (shkx + (30 * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							else: self.display[1].blit(txt, (shkx + (((self.displayzw - 12) - txtsz) * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							yy += 40
-						else:
-							if sd == False: self.display[1].blit(txt, (shkx + (30 * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							else: self.display[1].blit(txt, (shkx + (((self.displayzw - 12) - txtsz) * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							yy += 40
-				if self.dlg['TYPE'] in [0,3]:
-					self.display[1].blit(srf,(0,yyax))
+		
 		#EASTER EGG
 		if self.cityname == 'TWNN': self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'TWNN.png'), (35,0))
 		#NOTIFICATIONS
@@ -5729,6 +5721,7 @@ class Game:
 			res.GAMETIME += self.glock.get_rawtime()
 
 Initialize()
+'''
 g = Game()
 while g.running:
 	try: g.run()
@@ -5736,6 +5729,6 @@ while g.running:
 
 f = open('log.txt','w')
 f.write(g.log)
-f.close()
+f.close()'''
 pygame.quit()
 exit()

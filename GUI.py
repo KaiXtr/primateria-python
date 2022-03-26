@@ -4,6 +4,7 @@ import resources as res
 import random
 import pygame
 import plyer
+import numpy
 import math
 import os
 
@@ -23,11 +24,12 @@ class Test:
 		#self.font = pygame.font.Font(res.FONTS_PATH + 'reglisse/Reglisse.otf', 30)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Popup('Inventory',(0,0),miniature=True),Popup('Status',(100,0),miniature=True),Popup('Tactics',(100,200),miniature=True)]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
+		self.menu = []#[Popup('Inventory',(0,0),miniature=True),Popup('Status',(100,0),miniature=True),Popup('Tactics',(100,200),miniature=True)]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
 		self.files = None#Files((800,1280))
 		self.guitools = Guitools()
+		self.battlemation = Battlemation()
 		self.tsrf = None
-		for i in self.guitools.transiction((800,600),100,100,'aim'): self.tsrf = i; self.run()
+		#for i in self.guitools.transiction((800,600),100,100,'aim'): self.tsrf = i; self.run()
 		
 	def run(self):
 		for event in pygame.event.get():
@@ -44,11 +46,13 @@ class Test:
 				i.inside_events(pressed)
 				self.menu = [x for x in self.menu if x.gui != None]
 			if self.files: self.files.inside_events(pressed)
+			if self.battlemation: self.battlemation.events(event)
 		pressed, click = self.guitools.get_pressed(None)
 		for i in self.menu: i.outside_events(pressed)
 		if self.files: self.files.outside_events(pressed)
 		self.display.fill((100,100,100))
 		for i in self.menu: self.display.blit(i.draw(),(i.rect.x,i.rect.y))
+		if self.battlemation: self.display.blit(self.battlemation.draw(),(0,0))
 		if self.files: self.display.blit(self.files.draw()[1],(0,0))
 		if self.tsrf: self.display.blit(self.tsrf,(0,0))
 		pygame.display.flip()
@@ -287,15 +291,15 @@ class Guitools:
 
 	def wait(self):
 		waiting = True
-		while waiting:
-			pressed = self.get_pressed(None)
-			for i in pressed:
-				for j in i:
-					if j: waiting = False
-			for event in pygame.event.get():
-				if event.type == pygame.MOUSEBUTTONDOWN: waiting = False
-				if event.type == pygame.KEYDOWN: waiting = False
-			self.run(False)
+		'''pressed = self.get_pressed(None)
+		for i in pressed:
+			for j in i:
+				if j: waiting = False'''
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT: pygame.quit(); exit()
+			if event.type == pygame.MOUSEBUTTONDOWN: waiting = False
+			if event.type == pygame.KEYDOWN: waiting = False
+		return waiting
 		
 	def dislexic(self,txt):
 		if res.DISLEXIC == True:
@@ -791,6 +795,98 @@ class Backgrounds:
 		if self.img > len(self.lst) - 1: self.img = 0
 		self.blink += 0.02
 		if self.blink >= random.randint(1.0,2.0): self.blink = 0.0
+		
+		return self.surface
+
+class Battlemation:
+	def __init__(self):
+		sz = pygame.display.Info()
+		self.surface = pygame.Surface((sz.current_w,sz.current_h))
+		self.font = pygame.font.SysFont("Arial", 64)
+		self.type = 'wave'
+		self.index = 8
+		self.wait = 0
+		self.gif = 1 
+		self.crc = 0
+	
+	def events(self,event):
+		mp = pygame.mouse.get_pos()
+		mr = pygame.Rect(mp[0],mp[1],2,2)
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			pass
+		
+	def draw(self):
+		self.surface.fill((50,50,50))
+		
+		sz = 50
+		cc = 300
+		col = (200,200,200)
+		self.crc += 0
+		if self.crc >= 360: self.crc = 0
+		if self.gif < 100: self.gif += 2
+		elif self.wait < 50: self.wait += 1
+		elif self.index < 17: self.index += 1; self.gif = 0; self.wait = 0
+		else: self.index = 0; self.gif = 0; self.wait = 0
+
+		if self.type == 'wave':
+			aa = 50
+			ff = 4
+			w = self.surface.get_width() * 2
+			for i in range(w):
+				if self.index < 8: y = (aa * math.cos(((i/w) * 4 * math.pi) * ff)) + 300
+				elif self.index == 8: y = (aa * math.tan(((i/w) * 2 * math.pi) * ff)) + 300
+				else: y = (aa * int((i/w) * 2 * math.pi * ff) * 2) + 300
+				if i > 0: pygame.draw.aaline(self.surface,col,prv,(i - self.gif, y))
+				prv = (i - self.gif, y)
+
+		if self.type == 'symbol':
+			#FOUR ELEMENTS
+			if self.index == 0: vrtx = [(3,1),(1,5),(5,5),(3,1)]
+			if self.index == 1: vrtx = [(1,1),(5,1),(3,5),(1,1)]
+			if self.index == 2: vrtx = [(3,1),(1,5),(5,5),(3,1),None,(1,3),(5,3),None]
+			if self.index == 3: vrtx = [(1,1),(5,1),(3,5),(1,1),None,(1,3),(5,3),None]
+			#PENTAGRAM AND HEXAGRAMS
+			if self.index == 4: vrtx = [(3,1),(2,5),(5,3),(1,3),(4,5),(3,1)]
+			if self.index == 5: vrtx = [(3,1),(1,4),(5,4),(3,1),None,(3,5),(1,2),(5,2),(3,5)]
+			if self.index == 6: vrtx = [(3,1),(1,4),(5,2),(3,5),(1,2),(5,4),(3,1)]
+			if self.index == 7: vrtx = [(3,1),(1,4),(5,4),(3,1),None,(4,2),(1,3),(2,5),(2,2),(5,3),(4,5),(4,2)]
+			if self.index == 8: vrtx = [(3,1),(5,5),(4,2),(1,4),(5,4),(2,2),(4,5),(3,1)]
+			if self.index == 9: vrtx = [(2,1),(2,5),(5,2),(1,2),(4,5),(4,1),(1,4),(5,4),(2,1)]
+			#TRISKLE
+			if self.index == 10: vrtx = [(3,3,5,100),(1,1,5,400,25),(5,1,5,400,50),(3,5,5,400,75),(0,0,0,0)]
+			#CROSSES
+			if self.index == 11: vrtx = [(3,1),(3,5),None,(1,2),(5,2),None]
+			if self.index == 12: vrtx = [(3,1),(3,5),None,(1,4),(5,4),None]
+			if self.index == 13: vrtx = [(3,1,3,100),(3,2),(3,5),None,(1,3),(5,3),None]
+			#TRIA PRIMA
+			if self.index == 14: vrtx = [(3,3,5,200),(1,3),(5,3),None]
+			if self.index == 15: vrtx = [(3,1,3,200),(3,3,3,100),(3,3),(3,5),None,(2,4),(4,4),None]
+			if self.index == 16: vrtx = [(3,3,5,200),(3,4),(3,1),None,(2,2),(4,2),None]
+			#SACRED GEOMETRY
+			if self.index == 17: vrtx = [(3,1,3,100),(2,2,3,100),(2,4,3,100),(3,4,3,100),(4,5,3,100),(4,2,3,100),(2,0,3,100)]
+			for i in range(len(vrtx)):
+				if vrtx[i] != None:
+					if len(vrtx[i]) == 4: vrtx[i] = (vrtx[i][0] * sz,vrtx[i][1] * sz,vrtx[i][2] * sz,vrtx[i][3])
+					else: vrtx[i] = (vrtx[i][0] * sz,vrtx[i][1] * sz)
+			for i in range(len(vrtx) - 1):
+				if vrtx[i] and vrtx[i + 1] != None:
+					if len(vrtx[i]) >= 4:
+						if len(vrtx[i]) > 4: ang = vrtx[i][4]
+						else: ang = 1
+						pygame.draw.ellipse(self.surface,col,(cc,cc,10,10))
+						pygame.draw.arc(self.surface,col,(cc - vrtx[i][0],cc - vrtx[i][1],vrtx[i][2],vrtx[i][2]),((2 * 3.14)/ang),((2 * 3.14)/(ang + vrtx[i][3])) * self.gif,3)
+					else:
+						nxt = (vrtx[i][0] + int(((vrtx[i + 1][0] - vrtx[i][0])/100) * self.gif),
+								vrtx[i][1] + int(((vrtx[i + 1][1] - vrtx[i][1])/100) * self.gif))
+						rd = ((2 * 3.14)/360) * self.crc
+						cor1 = (((vrtx[i][0] - (sz * 3)) * math.cos(rd) + (vrtx[i][1] - (sz * 3)) * math.sin(rd)) + cc,
+							(-(vrtx[i][0] - (sz * 3)) * math.sin(rd) + (vrtx[i][1] - (sz * 3)) * math.cos(rd)) + cc)
+						cor2 = (((nxt[0] - (sz * 3)) * math.cos(rd) + (nxt[1] - (sz * 3)) * math.sin(rd)) + cc,
+							(-(nxt[0] - (sz * 3)) * math.sin(rd) + (nxt[1] - (sz * 3)) * math.cos(rd)) + cc)
+
+						pygame.draw.line(self.surface,col,cor1,cor2,2)
+						pygame.draw.circle(self.surface,col,cor1,10)
+						pygame.draw.circle(self.surface,col,cor2,10)
 		
 		return self.surface
 
