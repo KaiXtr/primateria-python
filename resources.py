@@ -69,9 +69,9 @@ CHAPTER = 0
 MAP = None
 PX = 0
 PY = 0
-SIGNAL = 1
-TIME = [0,0,0] #hour-minute-second
-DATE = [0,0,0,1,1] #day-month-year-week-moon
+SIGNAL = 4
+TIME = [14,30,0] #hour-minute-second
+DATE = [25,12,2007,1,1] #day-month-year-week-moon
 CALENDAR = []
 ss = 6
 for y in range(10):
@@ -120,8 +120,9 @@ TTS = True #text-to-speech
 CC = True #close caption
 DISLEXIC = False #spaced font
 BTYPE = 2 #1=turns,2=dynamic,3=action
+AUTOSAVE = 10#in minutes
 
-PARTY = [[0]]
+PARTY = [[0,1]]
 FORMATION = 0
 CALLHIST = []
 CONTACTS = []
@@ -148,12 +149,10 @@ PRODUCTS = []
 for i in range(25): PRODUCTS.append(['_',1])
 BASKET = []
 for i in range(25): BASKET.append(['_','0000'])
-CHAT = ['@kaixtr: batatinha','@kanbz: quando nasce']
+CHAT = ['@kaixtr: batatinha','@kanbz: quando nasce','@kaixtr: se esparrama','@kanbz: pelo chão.',
+'@kaixtr: meninha','@kanbz: quando dorme','@kaixtr: põe a mão','@kanbz: no coração.']
 WASH = []
 RANK = []
-
-TASKPIN = False
-MINIMAP = False
 
 CHARACTERS = [
 {'NAME': 'Sidney','LASTNAME': 'Barreto','NICK': 'Sid','PRONOUN': 'he','BIRTH': (3,3,1985),'HOMETOWN': 'ITATIAIA/RJ','BLOOD': 'A+','CLASS': 'mercenary','SUBCLASS': 'gunslinger',
@@ -210,8 +209,10 @@ for i in range(len(CHARACTERS)):
 	CHARACTERS[i]['SANITY'] = 100
 	CHARACTERS[i]['RACE'] = 'human'
 	CHARACTERS[i]['HP'] = 100
+	CHARACTERS[i]['XP'] = 50
+	CHARACTERS[i]['LEVEL'] = 1
 	CHARACTERS[i]['HEALTH'] = []
-	for j in ['LEVEL','BLESS','XP','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
+	for j in ['BLESS','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
 	'ACROBATICS','FURTIVITY','PERCEPTION','MEDICINE','IMUNITY','INFANTRY','INVESTIGATION','CRAFTING','CULINARY','DEATHS']:
 		CHARACTERS[i][j] = 0
 

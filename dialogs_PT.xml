@@ -4,9 +4,8 @@ speaker (who) - change speaker
 getch - wait for input
 answer - wait for input and change speaker
 2 - dialog name
-3 - chapter beginning
-prologue - exit chapter
-epilogue - chapter ending
+prologue - start chapter
+epilogue - exit chapter/chapter ending
 
 DIALOG PROTOCOLS IN TUPLE
 set - dialog settings (voice/type/font,value)
@@ -23,7 +22,7 @@ select-option - dialog choices ([text]...)
 go-return - walk in dialog (quantity)
 gui - gui class (gui class)
 battle - battle (enemies,(repeat))
-prb - probabiliy ([probability,text],...)
+probability-chance - probabiliy ([probability,text],...)
 play - play sfx/music (sound/song)
 if - if character in party (party index, text)
 queue - waitlist (name,time,{type,who,index})
@@ -44,7 +43,9 @@ censor - censorship (original, censored)
 -->
 
 <data lang="PT">
+	<!--CHAPTERS-->
 	<chapter id="0">
+		<dialog key="HHINTRO"><sleep time="100"/>Quem está aí?<input/><prologue/><goto room="hauntedhouse_0" x="0" y="0"></dialog>
 		<dialog key="DALIBOR">
 			<select>
 				<option>
@@ -83,11 +84,6 @@ censor - censorship (original, censored)
 				<option text="'Eu tô com pressa">Que isso.<input/>Se acalma.<input/>Bebe um copo de água.<input/>Você vai ter bastante tempo quando falar com o Senhor Dalibor.<input/></option>
 			</select>
 		</dialog>
-
-
-		#PROLOGUE DIALOG
-		'HHINTRO': [[(27,100),0,'Quem está aí?',1,2,(29,'hauntedhouse_0',0,0)]],
-
 		<dialog key="HHSIDNEY">
 			<select>
 				<option>
@@ -113,10 +109,16 @@ censor - censorship (original, censored)
 				<option>...<input/>A lua está mesmo linda.<input/>Tem algo de estranho nessa lua. Não é possível...<input/></option>
 			</select>
 		</dialog>
-
-		'HHJANE': [['Por favor vê onde',1,'O ',(3,0,' foi.'),1],
-		[(24,None,(None,None),2),(30,(150,220),'011014','HHJANE'),(15,'DOOR_KICK',0),(27,60),0,'Você sabe bater a porta?',1,0,'Desculpa aí.','Achei que tinha ninguém',1,(21,'HHJANE',2),(18,[1,9]),(28,'SIGNALI')],
-		['Melhor você entrar',1,'Estão te esperando',1,'Ainda mais o ',(3,3)]],
+		<dialog key="HHJANE">
+			<select type="scene">
+				<option>Por favor, vê onde o <add type="name"/> foi.<gecth/></option>
+			</select>
+			<option>
+				<move/><add char><play src="DOOR_KICK"/><sleep time="60"/>Você sabe bater a porta?<answer/>
+				Desculpa aí. Achei que tinha ninguém.<input/><jmp/><party value="1#9"/>
+			</option>
+			<option>Melhor você entrar, estão te esperando.<input/>Ainda mais o <add type="name" value="3"/></option>
+		</dialog>
 
 		'HHRENAN': [[0,'Onde será que está esse miserável?',1,(29,'highway040',1160,360),0,(31,'Puta que pariu','Que merda'),'espero não estar atrasado!',1,(21,'HHRENAN',1),(18,[2,None])],
 		['Finalmente',1,(24,None,(390,160),6),(26,2),0,'Eu demorei muito?',1,0,'Tá todo mundo lá dentro','esperando você.',1,0,'Putz...',1,'Tive que resolver uma parada','antes de vir pra cá.',1,'Mas pra quê me chamaram?',1,0,'Detetives',1,0,
@@ -155,8 +157,6 @@ censor - censorship (original, censored)
 		'Eu posso até não acreditar,','Mas sejam dias de luta ou','dias de glória eu vou','continuar meus negócios.',1,'Não quer descolar nada não?',1,0,'Agora não véi',0,'Sabe que te considero muito né?','Você é meu mano né não?',0,
 		'Sim mas-',0,'Ajuda o parça aqui pô','Vai me deixar na mão?',0,'AGORA NÃO DESGRAÇA!',1,0,(3,2,'?'),(24,None,(None,None),3),(30,(260,200),'051011','HHLUCY'),0,'Ah, oi',(3,5),'Tava te procurando',1,0,'Mesmo?',1,
 		'Todo mundo tá procurando você!',1,0,'Sério?',1,0,'Sim! o que tá fazendo aí?',1,0,'Tava só-',0,'Vai logo pra sala!',(21,'HHRENAN',3),(18,[5,10,'HHRENAN'])]],
-
-		'HHCLIFFS': [[(28,'CLIFFS')]],
 	</chapter>
 	<chapter id="1">
 		<dialog key="CH1BLUEBULLDOG">
@@ -238,8 +238,48 @@ censor - censorship (original, censored)
 		</dialog>
 	</chapter>
 	<chapter id="2">
+		<!--
+		'CH2PIETRA': [[0,'Olá?',1,(27,100),'Eu tô apertada sabe?',1,0,'j-já vou sair!',1,0,'Eu espero...',(27,100),'Finalmente...',1,0,'...',1,0,'...você tá bem?',1,0,'não.',1,(27,20),'ah...desculpa...',1,0,'Você não tem culpa de nada','Por que você tá chorando?',1,0,
+		'Nada demais','sério não precisa se preocupar',1,0,'...tá bom então...',1,0,'Só um desgraçado que não liga','pra ninguém e só se importa','com ele mesmo!','Nunca tem tempo pra nada!',1,'E ainda cobra de mim!',1,0,'...é um cara?',1,0,
+		'A gente não se vê faz meses,',1,'só conseguimos se falar por telefone.',1,'Ele sempre diz que vai','voltar algum dia mas nunca vem!',1,'Bom...pelo menos ele se importa...',1,'...',1,0,'...não?',1,0,'Ele finge que se importa,','fica fazendo falsas promessas','e me fazendo de otária!',1,0,
+		'É seu namorado?',1,0,'Não...','Quer dizer...','Não mais...','Ele era...','É complicado...',1,'Você acha que deveria esquecer?',1,0,'Honestamente...',0,'...',1,0,'Sim, você deveria',1,0,'Mas eu ainda gosto dele!',1,0,
+		'Problema seu','Você tem que parar de','se prender á pessoas que','não te fazem feliz,','a vida é assim',1,0,'Nossa que duro',1,0,'Que nem sua cara bateu no muro',1,0,'Afe, para!',1,0,'Tá bom, mas é sério,',1,'vai fazer bem pra você.',1,'Uma hora isso passa',1,0,
+		'...entendi',1,0,'ok?',1,0,'ok',1,0,'Então tira essa lágrima do rosto','e vai se divertir.',1,'Se quiser posso ir contigo,','tá sozinha?',1,0,'Não, mas pode vir',1,0,'Ah, obrigada!',1,0,'Você DEVE vir',1,0,'Eu sei menina, relaxa!','Como se chama?',1,0,
+		'A menina que veio te caçar.',1,0,'Que isso garota pera aí...',1,(26,1),(24,None,(None,None),5),(27,300),0,'...Te caçei',1,0,'Ah fala sério!',1,0,'Obrigada por me escutar,','Mas preciso ir direto para','o que interessa',1,0,'Caramba, eu achei que tinha','criado um laço de amizade aqui!',1,0,
+		'Olha','Não tem nada a ver comigo,','me pediram para fazer isso,','tá bom?',1,0,'Fala logo o que você quer!',1,0,'Preciso das suas amostras.',1,0,'Elas estão no laboratório.',1,0,'Eu sei que estão no laboratório.','Você vai me levar até a sala onde','estão guardados e entragar para mim',1,0,
+		'Eu não faria isso!',1,0,'Olha','Eu não sou burra e','sei que se eu atirar','aqui dentro vão me prender,','mas eu posso muito bem te','fazer ir para meu carro com','a pistola nas suas costas!',1,0,'Você não faria isso.',1,0,'Não mesmo',1,'Mas adivinha?',1,'Eu tenho que fazer!',1,0,
+		'Ei pera!',1,(27,100),'Tá vindo alguém!',0,'Rápido se escon-',(13,['pietra'])]],
+		-->
 	</chapter>
 	<chapter id="3">
+		<!--
+		'CH3PROLOGUE': [['Hey?','...','Está me ouvindo?','hm?','Você entendeu o que eu disse?','Pra ser sincera, não','...','Estava pensando, com a cabeça em outro lugar...','...sobre o quê você estava pensando?','...eu...eu fiz\
+		 coisas...','...','...eu fiz coisas que...tantas coisas...que não...pensei direito','...','...eu me arrependo tanto, nada disso deveria ter acontecido, foi tudo por causa de uma briga, e eu trouxe essa desgraça\
+		 pra minha vida...eu achei que poderia ajudar nós dois, achei que eu seria aquela que iria nos tirar do buraco...','...','...mas no final eu só afundei ainda mais....','é natural pensar coisas assim, mas tente sempre\
+		 se lembrar que o que você fez você não fez por mal, você estava querendo ajudar, achar uma solução','...sim...','isso não te anima?','nem um pouco...porque eu atrapalhei ao invés de ajudar...não fui inteligente','é\
+		 difícil','muito...mesmo...','...','você está fazendo atitutes inteligentes agora, está procurando ajuda, reconhecendo seu erro, se afastando daquilo que te traz problema','...sim...','você precisa\
+		 continuar assim','...','ei','?','me prometa de que você nunca mais vai voltar a pegar em uma arma, certo?','certo! certo!','nem que um monstro apareça no mato ou um bandido invada sua casa, nunca, NUNCA MAIS, encoste\
+		 em nenhum arma!','...','está me ouvindo?','sim','ótimo...','...','já está na hora de ir','não pode ficar mais um pouco?','desculpa, mas pode continuar amanhã, eu também tenho sanidade mental','claro, \
+		desculpa...',[2,'990435671',True]]],
+		    
+		'CH3MAICON': [['Então...',1,'Como tá o trampo?',1,0,'Que trampo?',1,0,'Você sabe,','o de mercenário',1,(27,60),'Tá muito puxado?',1,0,'...bastante.',1,0,'Acho que já ouviu','alguns comentários sobre eles.',1,0,'Sim...',1,'Até demais, mas nem ligo.',1,0,
+		'Como não?',1,0,'Mano, foi graças á essa vida','que tô onde tô agora.',1,'Não vou deixar que alguns comentários','mudem minha cabeça.',1,'Eu gosto do que faço',1,0,'Sim, mas seria melhor você arranjar','alguma outra coisa né?',1,0,'Isso até eu quero né?',1,0,'Então por que você',' não sai dessa?',1,0,'Porque não dá cara!','Não vão contratar alguém','com ficha suja',1,0,'Ah, é mesmo...',1,0,'Além do mais eu já','me garanto onde eu tô,','se eu trocar de emprego ','posso ser demitido de novo',1,0,'Já passou perrengue demais, não é?',1,0,'Sim',1,0,'...sei não.','Ainda acho melhor você fazer','alguma outra coisa.',1,'Esse negócio de matar e','arriscar a própria vida...',1,0,'Que vida?',(27,300),0,'Ficou parecendo aqueles','adolescentes sadboys.',1,0,'É eu sei...',1,
+		'Eu já tô indo',1,0,'Deixa que eu pago essa',1,0,'Sério?',1,0,'Sim','É por minha conta',1,0,'Você é demais cara',(6,None,False)]],
+
+		'CH3JANE': [[0,'Teria sido melhor','ficar lá no bar',1,(27,300),0,'BORA LOGO!',1,'NÃO TENHO O DIA TODO!',1,'Que saco...',1,'Que demora',1,'Pra você ver né,','Até pra isso tem','toda essa baboseira',1,0,'Hã?','Ah, sim, sim, sim...',1,0,'Era pra ser um negócio rapidinho...','tranquilo, de boa, mas não!','Eu sou obrigada a ficar','aqui esperando!',1,0,'Eu já tô até acostumado',1,0,'Ai não ia me acostumar nunquinha,','deus me livre',1,0,'É que já é coisa da rotina,','todo ano tem isso.',1,0,
+		'É?',1,0,'Ahã...','só que agora saiu mais cedo,','geralmente é só lá pra setembro',1,0,'Você é mercenário?',1,0,'Sou.',1,0,'Ah...','Pra saber dessas coisas...',1,0,'Por que?','Você não é?',1,0,'Não, mas daqui a pouco','já tô virando uma!',1,0,'Mas aqui não é onde','renova a carteira?',1,0,'Não, disseram que o registro','é aqui também',1,0,'onde?',1,0,'no último guinchê',1,0,'Ah sim, agora eu vi',1,0,'Vem cá, e como é essa coisa','toda de mercenário, matar pessoas...',1,0,'A gente não mata pessoas',1,0,'Ah sim, desculpa...',1,0,'Não, tudo bem, é normal',1,0,'Então o que vocês fazem exatamente?',1,0,'Olha, a primeira coisa que','você deve saber se quiser','virar mercenária, é que certas','coisas são totalmente confidenciais',1,0,
+		'Uh! sério?',1,0,'Sim, sigiloso',1,0,'Tipo homens de preto né?',1,0,'Não é pra tanto,','Mas é tipo',1,0,'Mas eu achava que era só','matar e ganhar dinheiro!',1,0,'ihhhh...',1,'Vai sonhando, é um bicho chato',1,0,'Sério?',1,0,'Quer dizer, tirando toda a diversão,','ainda é um trabalho, tem que','estar sempre disposto, te chamam na','hora que querem, é cansativo,','tem os chefes, a gente recebe pouco...',0,'QUÊ?',0,'fala baixo!',0,'desculpa',1,(27,120),'...recebe pouco?',1,0,'depende do quanto você caça.',1,0,'Ah...então se eu','caço bastante...',0,'ganha bastante, isso aí',1,0,'Mas o que vocês caçam exatamente?',1,0,'segredo',1,0,'Ah! deixa disso!','Fala logo!',1,0,'Se quiser saber mesmo,','Vai ter que esperar até lá dentro',1,0,'tá bom então...',1,'Ô agente G',1,'Beleza James Bond',1,0,'tá já chega',1,0,'ei já tá na sua vez',1,0,'ah sim',1],
+		['Então esse é seu nome?',1,0,'Sim...',(3,0,0),1,0,
+		'Prazer, ',(3,1,1),1,0,'Prazer',1,0,'Então...o que tem que fazer agora?',1,0,'Bom, agora você pode','pegar sua primeira arma ali.',1,'E se quiser já pode treinar','Um pouco de tiro',1,0,'Você vem comigo?',1,0,
+		'Não...eu já tenho que ir',0,'Ah por favor!','Eu não entendo das coisas aqui!',1,'please!',1,(10,['Tá bom','YASS',0,'Não se empolga, tá.',1,0,'Então tá,','Onde que pega o brinquedinho?',1,0,'Me segue',(11,1)],['Agora não','Tudo bem então...',1,'A gente se vê por aí',1,0,'Eu tô aqui todo dia',1,0,'Beleza!',1,(27,180),'Ah! eu só posso vir','aqui nos sábados!',1,0,'Beleza!',1,0,'Tchau!',1,(27,210),0,'Essa garota tá querendo alguma coisa comigo...',(11,3)])],
+		['É aqui que faz o treinamento?',1,0,'exatamente',1,0,'Ok...',1,(27,60),'me ensina a atirar?',1,0,'Tudo bem',1,(9,2),'Primeiro põe esses óculos aí',1,0,'esses?',1,0,'sim, agora mira','Não põe muito perto','senão machuca o olho',1,0,'Já sei disso',1,0,'e...aperta o gatilho',1,(13,['target'])],
+		['Nossa!',1,'Mandou muito!',1,0,'Eu sou demais!',1,0,'Não sério,','Você já atirou antes?',1,0,'Um pouquinho',1,0,'Um pouquinho?!',1,0,'Tá, eu sei atirar',1,0,'Se você já sabia atirar,','por que pediu minha ajuda?',1,0,
+		'Ai,ai...','Faz muito tempo já,',1, 'Começei quando...',(5,0),0,'Pera aí rapidinho',1,0,'O que foi?',1,0,'Chegou email',1,(27,200),'Desculpa ',(3,1,', eu tenho que ir!'),1,0,'De novo?',1,0,
+		'É um caso pra resolver',1,0,'Agora?',1,0,'É o que eu te falei antes',1,0,'Posso ir com você?',1,0,'Vai devagar querida,','Eu tô em outro nível',1,0,'Por que não posso ir?',1,0,'Muita coisa ainda, muita coisa,','Te explico depois',1,0,'Pera aí! Mizera...']],
+
+		'CH3VINICIUS': [[(15,'battle_incoming',1),'O que tá fazendo aqui?',1,0,'Quem pergunta sou eu!','O que VOCÊ tá fazendo aqui?',1,0,'Com certeza não é deixar você','roubar minha recompensa',1,0,'E quem disse que ela é sua?',1,0,'Garoto,melhor sair do meio,','ou vai dar muito mal','pra nós dois',1,0,'que assim seja então!',1,(13,['madladcat','vinicius'])],
+		['Lembra de mim, filho da mãe?',1,0,'você!',1,0,'Essa é pra aprender a não mexer comigo!',(9,2),'???','O que você estava fazendo?',(10,[],[])]],
+		-->
 	</chapter>
 	<chapter id="4">
 		<dialog key="CH4PAUL">Vocês já estão chegando no local?<answer/>Não se preocupe. Nós estamos a caminho.<input/></dialog>
@@ -248,6 +288,13 @@ censor - censorship (original, censored)
 		<dialog key="CH5RENAN"><play src="BATTLE_DIALOG" loop="true"/>Você mexeu com a turma errada, cara!<input/>Tá na hora de aprender uma lição!<input/><battle index="pietra#thug1"/></dialog>
 	</chapter>
 	<chapter id="6">
+		<!--
+		'CH6VINICIUS': [[0,'FIOCRUZ?',1,0,'Pois é.',1,0,'Por que a gente assaltaria','um lugar desses?',1,0,'Ele falou que lá dentro','tem uma coisa muito importante.',1,'Ao que parece são','amostras de sangue.',1,(27,20),0,
+		'...ele quer fraldar um teste de DNA?',0,'Eu lá vou saber cara!',1,'Mas parece que ele vai',' pagar bastante pra gente fazer isso.',1,'E a gente também tem algumas','informações pra nos ajudar.',1,
+		'Vocês estão sabendo da festa','que vai ter lá na Cinelândia, certo?',1,0,'ahã.',0,'então,','lá vai estar uma pesquisadora','que é a quem manda nas amostras.',1,'É só a gente ir atrás dela!',1,0,'Ah, vai ser moleza!']],
+		'CH6BIANCA': [['O QUE VOCÊS QUEREM?!',1,'Bora logo, ',(3,2,'!'),'Atrás dela!',1,(27,30),0,'Hã?',1,(27,20),'Sai da frente!',1,0,(3,2,'!'),'É uma emboscada!',1,'Não!','Eles estão malucos!',1],
+		[0,'Ela tá escapando!',1],['Quem foi que deu','Açúcar mascavo pra eles?',1]],
+		-->
 	</chapter>
 	<chapter id="7">
 		<dialog key="CH7MRKITE">
@@ -258,6 +305,13 @@ censor - censorship (original, censored)
 		</dialog>
 	</chapter>
 	<chapter id="8">
+		<!--
+		'CH8PIETRA': [['Isso tudo é muito estranho, cara.',1,'Semana passada o cleitinho disse','que não podia ir pro rolé','porque estava numa ressaca braba.',1,'Alguns dias depois a','Larissa fala que','tá sentindo uma cólica terrível.',1,
+		'E ontem o Breno estava','espirrando tanto que','desmaiou!',1,'O que é que está havendo?!',(10,['Deve ser coincidência','Ou deve ser muito azar, né?','Foi todo mundo','de uma vez só!',1],['Eu não sei','Eu também não...','admito que estou com','um pouco de medo.',1,'E se eu for','a próxima?',1,
+		(10,['Deus me livre, Pietra','Eu só to falando',1,'Pode ser que aconteça','comigo e eu não sei','o que fazer!',1],['Para de falar besteira!','Calma aí!','Tá bom!',1,'É que todo mundo','tá ficando desse jeito.'])]),(27,100),'Poucas idéias...',1,'Tudo isso tem que','ter alguma ligação!',1,0,'Estão espalhando por aí','que deve ser alguma doença.',1,'Tipo uma dengue,','só que muito pior.',1,0,'Meu Deus',(27,20),'É sério?',1,0,'Sim.','Deve ser por causa','desses pombos mortos','no meio das ruas!',1,0,
+		'Verdade.',(27,30),'Agora que você falou...','Eu não tenho mais','visto pombos vivos.','Só mortos.',1,(27,100),'Mas era trabalho','da prefeitura',(27,20),'cuidar disso daí!',(27,50),'Fica um fedor horrível','também!',(27,100),
+		(10,['Amor, você está bem?','Tô bem','Só tô com a','garganta seca.',1,(27,200),0,'Você tá tossindo','pra caramba!',1,0,'Eu vou',(27,20),'melhorar!',(27,30),'Tenho que',(27,200),'Tenho que ir pra',(27,300),0,(31,'Puta que pariu!','Meu Deus!'),'Vou chamar uma','Ambulância!',1],['Quer beber uma água?','bem queria','você tem aí com você?',1])]],
+		-->
 	</chapter>
 	<chapter id="9">
 	</chapter>
@@ -329,138 +383,114 @@ censor - censorship (original, censored)
 		</dialog>
 	</chapter>
 	<chapter id="13">
+		<dialog key="CH13PIETRA">
+			<shake>VOCÊ É INSUPORTÁVEL!<spk/>O QUE FOI QUE EU FIZ?!<spk/>EU VOU TE MATAR!!<answer/>
+			Pietra! Aguenta firme! <add/></shake>Mete bala logo! Só não me acerta!<answer/>Você tem demência mulher?<answer/>
+			Não pedi sua ajuda também!<input/><sleep time="60"/>Amor! Me ajuda!!<answer/>Me espera!<input/>
+		</dialog>
+		<dialog key="CH13SIDNEY">
+			<spk/>O que é que eu estou olhando?<answer/>Parece um dragão, cara.<answer/>Não pode ser. A gente tá chapando, né?
+			<answer/>Se fosse isso estaríamos chapados desde ano passado.<answer/>Como assim velho...<answer/>Ok...<input/>
+			Ele só tá voando, né?<input/>Pelo menos ele não tá...<sleep time="100"/>...merda.<answer/>
+			Ele tá destruindo a cidade?<answer/>É o que você tá vendo, né?<answer/>Não quero acreditar nos meus olhos.<answer/>
+			E o que a gente deveria fazer agora?<slep time="100"/>Vou lá saber. Dá não. Vamo simbora. Puxar o carro e já era.
+			<answer/>Vocês não estão nem aí pra isso?<sleep time="100"/>Desculpe, <add type="name"/>.
+			É que realmente não temos mais o que fazer!<answer/>Eu vou rezar<spk/>Eu também.<spk/>Boa.<answer/>Olha gente...
+			Eu sei que parece uma tarefa difícil.<input/>Mas não podemos deixar que o tamanho dos nossos problemas sejam maiores 
+			do que nossa força de vencê-los!<input/>Os gigantes da vida estão apenas nas aparências! Com força e união nós-<spk/>
+			Tá bom já entendi, psiquiatra da facul! Vamos se armar e ir para o centro!<input/>Estou pensando em usar os prédios para 
+			atirar, mas seria muito arriscado.<input/>Precisamos achar a fraqueza dele primeiro!<input/>De repente seria-<spk/>
+			Subam!<answer/>Eu tava falan-<spk/>Não enrolem seus molengas! Tem um dragão na cidade! Subam logo!<spk/>
+			Vamos logo gente!<spk/>Eu tô com medo mas tô empolgado!<spk/>Sei nem mais o que tô sentindo!<input/>
+		</dialog>
 	</chapter>
 
+	<!--WARNINGS-->
 	<dialog key="INVSHIRT">Não é uma boa idéia tirar a camisa aqui.<input/>Se eu tivesse ao menos um provador...<input/></dialog>
 	<dialog key="INVPANTS">Não é uma boa idéia tirar a calça aqui.<input/>Se eu tivesse ao menos um provador...<input/></dialog>
-
-	<dialog key="DOCTOR">Você sofreu várias fraturas no corpo. A conta dos cuidados foi de $100 por pessoa.<input/></dialog>
-	<dialog key="WORRIED_NURSE">Você deveria se cuidar mais. É muito comum te ver por aqui.<input/></dialog>
-	<dialog key="HINT_NURSE">Tome cuidado com sua vida!<input/>Não digo por causa da saúde, mas pelo dinheiro.<br/>Se não tiver dinheiro da próxima vez, pode entrar em prejuízo.<input/>Mas se quiser dar mais lucro para nós, se quebre á vontade!<input/></dialog>
-	<dialog key="DEATH_COUNTS">Você já parou no hospital <add type="deaths"/> vezes.<gecth/>
-	<select type="death">
-		<option value="10">Mas isso nem é nada.<br/>O que você está passando é só o começo.</option>
-		<option value="20">Já está normal ver você por aqui.</option>
-		<option value="30">Devia fazer amizade com as enfermeiras. É o paciente número 1 delas.</option>
-		<option value="40">Coitado...Você quer morar aqui, né?</option>
-		<option value="50">Mano...Tá tudo bem? Você tá vindo muitas e muitas vezes aqui!<getch/>Com certeza você tá todo rachado!</option>
-		<option value=">50">Estou impressionado.<getch/>Nunca vi ninguém parar no hospital mais de 50 vezes na vida.</option>
-	</select>
-
-	<dialog key="OLD_MAN">É bom você sempre tirar dúvidas com o entendido do assunto.<input/>Minha filha comprou um antibiótico e pensou que era pra beber.<br/>Agora ela tá no hospital...<input/>Essa menina...<input/></dialog>
-	<dialog key="INJURED_DAUGHTER">É bem vergonhoso dizer o motivo...<br/>Mas estou internada porque bebi antibiótico.<input/>Devia ter escutado meu pai...<input/></dialog>
-	<dialog key="PATIENT1">Eu quero ir pra casa logo! A comida daqui é horrível!<input/></dialog>
-	<dialog key="IMPATIENT_PATIENT">Eu tô na fila desde anteontem. Parece até que nunca anda!<input/></dialog>
-
-	<dialog key="PRETTY_MOM">Minha filha tá me pertubando pra levar alguns doces pra ela.<input/>É assim toda hora, ela vai parar já já.<input/></dialog>
-	<dialog key="PRESSING_CHILD">Mãe! Tem tantos doces aqui!<br/>Eu quero!<br/>Eu quero!<br/>EU QUERO!<input/></dialog>
-	<dialog key="SKEPTICAL_MAN">Estão falando que tem uma anomalia solta na rodovia.<br/>Sendo honesto, eu não acredito que existam anomalias.<input/></dialog>
-
-	<dialog key="HHBEDROOMCHEST"><get item="key_bedroom" key="HHBEDROOMCHEST" property="0001"/></dialog>
-	<dialog key="SIDNEY_NIGHTSTAND">
-		<select type="character">
-			<option><get item="food_peanut_candy" key="SIDNEY_NIGHTSTAND"/></option>
-			<option>Não deveria mexer nas coisas dos outros<input/></option>
-		</select>
-	</dialog>
-	<dialog key="HH_FRIDGE">
-		<select type="character">
-			<option><get item="drink_beer" key="HH_FRIDGE"/></option>
-			<option>Não deveria mexer nas coisas dos outros<input/></option>
-		</select>
-	</dialog>
-	<dialog key="TRASH_CAN"><get item="melee_bottle" key="TRASH_CAN"/></dialog>
-
-	<dialog key="TAROT_POSTER">BÚZIOS E CARTAS<br/>Trago seu amor aos seus pés!<br/>CONTATO: 978543322<input/></dialog>
-	<dialog key="MISSING_POSTER1">'PROCURA-SE Talita Manhães<br/>Se você a viu, favor ligue para: 992120342<input/></dialog>
-
-	<dialog key="POPCORN_KART">
-		<add type="time"/>, <add type="pronoun"/>!
+	<dialog key="OVERPLAY">
+		Desculpe interromper. Mas é uma história muito longa para se contar de uma só vez.<input/>
+		Não vai querer continuar amanhã? Nós gravamos tudo o que você falou.<input/>E então?
 		<select>
-			<option text="Quanto é a pipoca?">A pipoca salgada é 5$<br/>e a pipoca doce é 6$<input/><return/></option>
-			<option text="Gostaria de uma pipoca salgada">Aqui está!<get item="food_popcorn" price="5"/>Obrigado.</option>
-			<option text="Gostaria de uma pipoca doce">Aqui está!<get item="food_popcorn_candy" price="5"/>Obrigado.</option>
-			<option text="Estou só olhando"></option>
+			<option text="Tudo bem">Ótimo.<br/>Rapazes, guardem suas coisas.<exit/></option>
+			<option text="Espere um pouco">Tá bom então...Vamos prosseguir.<input/></option>
 		</select>
 	</dialog>
-	<dialog key="CHURROS_KART">
-		<add type="time"/>, <add type="pronoun"/>!
+
+	<!--ENEMIES-->
+	<dialog key="BATTLEDIALOG">
 		<select>
-			<option text="Quanto é um churros?">O churros é 5$<input/><return/></option>
-			<option text="Gostaria de um churros">Aqui está!<get item="food_churros" price="5"/>Obrigado.</option>
-			<option text="Estou só olhando."></option>
+			<option text="Motivar"></option>
+			<option text="Ameaçar"></option>
+			<option text="Negociar"></option>
+			<option text="Misericórdia"></option>
 		</select>
 	</dialog>
-
-	<dialog key="BLOOD_BANK">
-		<select type="blood">
-			<option value="0">Ei! Você não tem sangue nenhum! Volte quando tiver pego alguma coisa!</option>
-			<option value="20">Só isso? Vou dar sua recompensa, mas poderia ter se esforçado mais.</option>
-			<option value="50">Você conseguiu bastante sangue. Aqui está sua recompensa.</option>
-			<option value="100">Uau! isso é muito sangue! Aqui está sua recompensa pelo seu trabalho duro!</option>
-		</select>
-		<nomoney>Não tem carteira? Nem cartão? E como é que vou te pagar?</nomoney>
-		<get money="blood"/>
-		<input/>
-	</dialog>
-
-	<dialog key="PIZZA_DELIVERY_MUSSARELLA">Aqui está.<get item="food_pizza_mussarella" price="20"/><move direction="7"/></dialog>
-	<dialog key="PIZZA_DELIVERY_SHAGGY">Aqui está.<get item="food_pizza_shaggy" price="20"/><move direction="7"/></dialog>
-	<dialog key="PIZZA_DELIVERY_CHICKEN">Aqui está.<get item="food_pizza_chicken" price="20"/><move direction="7"/></dialog>
-	<dialog key="PIZZA_DELIVERY_4CHEESE">Aqui está.<get item="food_pizza_4cheese" price="20"/><move direction="7"/></dialog>
-
-	<dialog key="BANK_GUARD">Ponha qualquer objeto de metal que tiver na caixa ao lado.<input/></dialog>
-	<dialog key="UNLUCKY_MAN">Não é possível uma coisa dessas!<input/>O caixa acabou de entrar em manutenção!<input/>ERA MINHA VEZ!<input/></dialog>
-	<dialog key="OLD_WOMAN">Como que faz pra tirar a telesena aqui?<input/></dialog>
-	<dialog key="FARMACEUTIC">
-		Não sabe que remédios comprar?
+	<dialog key="IRRATIONAL">Impossível estabelecer comunicação com uma criatura irracional.<input/></dialog>
+	<dialog key="4.1.1">Miau.<input/></dialog>
+	<dialog key="EMOHIPSTER">
 		<select>
-			<option text="Não">
-				O que você quer tratar?
+			<option text="O que você escuta?">
+				Conhece Santos Baianos? Aquela banda?
 				<select>
-					<option text="Resfriados e alergias">Se você estiver sentindo algum resfriado, gripe, tontura ou fraqueza,<br/>um simples xarope já basta.</option>
-					<option text="Infecções e hemorragias">Esses são problemas fortes, mas não muito graves. Para infecções, use o antibiótico correspondente ao tipo de contaminação.<input/>Se tiver hemorragias, primeiro cicatrize a ferida e depois ponha um band-aid para evitar mais saída de sangue.</option>
-					<option text="Contaminação e Mal-estar">Caso se sinta alguma coisa parecida, pode ser sinal de envenenamento ou intoxicação.<input/>Existem várias pílulas para diversos tipos de tóxicos.</option>
-				</select>
-				<input/>Mais alguma pergunta?<return/>
-			</option>
-			<option text="Tô de boa">Tudo bem.<br/>Se tiver alguma dúvida é só perguntar. Fique á vontade.</option>
-		</select>
-		<input/>
-	</dialog>
-
-	<dialog key="BUS_WAITER">Esse ônibus demora mesmo.<br/>Pego ele todo dia pra descer a serra até a capital.<input/><emote value="anger"/>São só 4h de viagem!<input/></dialog>
-	<dialog key="SQUARE_OLD_MAN">
-		Eu adoro alimentar os pombinhos. Ainda mais aqueles que tem um monte de penas lindas no rabo.
-		<select>
-			<option text="Como assim?">Elas chegam a hipnotizar...<br/>Eu fico olhando e perco a noção do tempo.</option>
-			<option text="Legal">São adoráveis.</option>
-		</select>
-		<input/>
-	</dialog>
-	<dialog key="HOMELESS_MAN">
-		Pode me dar um trocado por favor?
-		<select>
-			<option text="...">É sempre assim...</option>
-			<option text="Tudo bem">Deus te abençoe!<get money="-1"/></option>
-		</select>
-		<input/>
-	</dialog>
-	<dialog key="HOTEL_ATENDANT">
-		<add type="time"/>! O que deseja?
-		<select>
-			<option text="Uma noite apenas">
-				O custo é de 20 por pessoa.
-				<select>
-					<option text="Ok">Aqui, seu quarto é o N° 902.<get item="key" price="20"/></option>
-					<option text="Deixa pra lá">Volte sempre.</option>
+					<option text="Eu também gosto!">Sério?! Ai meu deus! Que legal!</option>
+					<option text="Já ouvi falar.">É muito boa cara, você tem que escutar!</option>
 				</select>
 			</option>
-			<option text="Estou apenas olhando">Sinta-se á vontade</option>
+			<option text="Se manda daqui, barbudo!">
+				Como é que é? O que você tem contra barba?
+				<select>
+					<option text="Nada oxe">É bom mesmo...</option>
+					<option text="Isso não é barba!">M-mas...eu cuido tanto dela...</option>
+				</select>
+			</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="HOTMAN">
+		<select>
+			<option text="Cê tá bem mano?">Claro que não né?? Estou queimando feito palha nessa desgraça!</option>
+			<option text="Vaza ou meto chumbo">Eu não tenho medo de você!</option>
+			<option text="A gente não quer nada contigo">Mas eu quero! Preciso de sangue!!</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="EDMOTO">
+		<select>
+			<option text="ED MOTA??">Não!<input/>Meu nome não é mais Ed Mota! De agora em diante meu nome será...<input/>ED MOTO!</option>
+		</select>
+	</dialog>
+
+	<!--BOSSES-->
+	<dialog key="MRKITE">
+		<select>
+			<option text="Pra quê está fazendo isso?">Eu não vou deixar vocês fazerem palhaçada aqui! Não vão estragar meu show!</option>
+			<option text="Deixa a gente te ajudar!">
+				Eu não preciso da ajuda de ninguém!<input/>Com quem pensa que está falando? Eu sou o grande empresário MR.KITE!
+				<select>
+					<option text="Você vai cavar a própria cova!">Besteiras! Vocês não entendem!</option>
+					<option text="Você vai estragar a própria carreira!">
+						Do que está falando, criança insolente?
+						<select>
+							<option text="Eu não sou uma criança!">Comparados á mim, não passam de jovens imaturos!</option>
+							<option text="Imagine o que irá acontecer se descobrirem o que aconteceu!">
+								Não seja pessimista! É isso que o público quer, afinal!<input/>
+								Os teatros abertos! Pessoas fantasiadas por aí! Monstros para se combater!<input/>
+								Eu serei o apresentador do circo do caos! Farei o que ninguém mais fez!
+								<select>
+									<option text="Você é louco!">Os maiores gênios também foram os maiores loucos!</option>
+									<option text="Dragunok também faz isso">NÃO OUSE FALAR ESSE NOME!!!</option>
+								</select>
+							</option>
+						</select>
+					</option>
+				</select>
+			</option>
 		</select>
 		<input/>
 	</dialog>
 
+	<!--STRANGER-->
 	<dialog key="STNPC">
 		<select type="random">
 			<option id="1">Oi...eu te conheço?</option>
@@ -489,6 +519,185 @@ censor - censorship (original, censored)
 		<input/>
 	</dialog>
 
+	<!--CITIZENS-->
+	<dialog key="PRETTY_MOM">Minha filha tá me pertubando pra levar alguns doces pra ela.<input/>É assim toda hora, ela vai parar já já.<input/></dialog>
+	<dialog key="PRESSING_CHILD">Mãe! Tem tantos doces aqui!<br/>Eu quero!<br/>Eu quero!<br/>EU QUERO!<input/></dialog>
+	<dialog key="SKEPTICAL_MAN">Estão falando que tem uma anomalia solta na rodovia.<br/>Sendo honesto, eu não acredito que existam anomalias.<input/></dialog>
+	<dialog key="BUS_WAITER">Esse ônibus demora mesmo.<br/>Pego ele todo dia pra descer a serra até a capital.<input/><emote value="anger"/>São só 4h de viagem!<input/></dialog>
+	<dialog key="SQUARE_OLD_MAN">
+		Eu adoro alimentar os pombinhos. Ainda mais aqueles que tem um monte de penas lindas no rabo.
+		<select>
+			<option text="Como assim?">Elas chegam a hipnotizar...<br/>Eu fico olhando e perco a noção do tempo.</option>
+			<option text="Legal">São adoráveis.</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="HOMELESS_MAN">
+		Pode me dar um trocado por favor?
+		<select>
+			<option text="...">É sempre assim...</option>
+			<option text="Tudo bem">Deus te abençoe!<get money="-1"/></option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="YOUNG_MON">
+		Meu filho adora brincar nesse monte de areia.<input/>Também gosto porque o sinal da praça é muito bom.
+		<select>
+			<option text="o quão bom?">
+				Quê?
+				<select>
+					<option text="O quão bom?">
+						Ah...Dá pra ver as notícias e mexer na internet.<input/>Não é muita coisa porque meu celular é de tecla.
+						<input/>mal posso esperar ter um daqueles celulares novos que você pode tocar na tela.
+					</option>
+					<option text="Esquece">Ah tá.</option>
+				</select>
+			</option>
+			<option text="Não é pra tanto">É o que você pensa.<input/>Pelo menos é melhor do que em outras cidades.</option>
+			<option text="Mas é só aqui?">Meio que sim.<input/>O sinal só é bom mesmo na praça.<input/>Mas dá pra usar o sinal em outros lugares também.</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="FUNNY_KID">Iaaaaaaá!<answer/>Que fofo.<input/></dialog>
+	<dialog key="INFORMED_MAN">
+		Eu sempre vejo as notícias na televisão. Mas quando a internet está boa eu vejo no celular também.
+		<select>
+			<option text="Deveria ver mais jornais">
+				Vai por mim, hoje em dia é mais que necessário.<input/>Ainda mais com essa onda de crimes por causa dos mercenários.
+				<input/>Eles avisam quando tá tendo caça na região.
+			</option>
+			<option text="Não gosto muito de notícias">
+				Mas por que?
+				<select>
+					<option text="É muita violência">
+						Eu também acho.<input/>Mas é a vida. Se não se informar, pode perder muita coisa importante.
+					</option>
+					<option text="Não tenho tempo pra isso">
+						Ler um artigo não faz mal cara.<input/>Não demora muito, é bom parar a correria do dia pra ler alguma coisa.
+					</option>
+					<option text="É tudo mentira">
+						Eu concordo. Mas sei lá, quem não mente hoje?<input/>Eu faço assim, leio a matéria, mas com uma certa 
+						desconfiança.<input/>Eu preciso me informar, mas se eu sair acreditando em tudo que vejo, aí eu posso 
+						acabar espalhando mentiras.
+					</option>
+				</select>
+			</option>
+		</select>
+	</dialog>
+
+	<!--CHESTS-->
+	<dialog key="EMPTY_CHEST">Não tem nada aqui...<input/></dialog>
+	<dialog key="HHBEDROOMCHEST"><get item="key_bedroom" key="HHBEDROOMCHEST" property="0001"/></dialog>
+	<dialog key="SIDNEY_NIGHTSTAND">
+		<select type="character">
+			<option><get item="food_peanut_candy" key="SIDNEY_NIGHTSTAND"/></option>
+			<option>Não deveria mexer nas coisas dos outros<input/></option>
+		</select>
+	</dialog>
+	<dialog key="HH_FRIDGE">
+		<select type="character">
+			<option><get item="drink_beer" key="HH_FRIDGE"/></option>
+			<option>Não deveria mexer nas coisas dos outros<input/></option>
+		</select>
+	</dialog>
+	<dialog key="TRASH_CAN"><get item="melee_bottle" key="TRASH_CAN"/></dialog>
+
+	<!--POSTERS-->
+	<dialog key="TAROT_POSTER">BÚZIOS E CARTAS<br/>Trago seu amor aos seus pés!<br/>CONTATO: 978543322<input/></dialog>
+	<dialog key="MISSING_POSTER1">'PROCURA-SE Talita Manhães<br/>Se você a viu, favor ligue para: 992120342<input/></dialog>
+
+	<!--SHOPPING-->
+	<dialog key="POPCORN_KART">
+		<add type="time"/>, <add type="pronoun"/>!
+		<select>
+			<option text="Quanto é a pipoca?">A pipoca salgada é 5$<br/>e a pipoca doce é 6$<input/><return/></option>
+			<option text="Gostaria de uma pipoca salgada">Aqui está!<get item="food_popcorn" price="5"/>Obrigado.</option>
+			<option text="Gostaria de uma pipoca doce">Aqui está!<get item="food_popcorn_candy" price="5"/>Obrigado.</option>
+			<option text="Estou só olhando"></option>
+		</select>
+	</dialog>
+	<dialog key="CHURROS_KART">
+		<add type="time"/>, <add type="pronoun"/>!
+		<select>
+			<option text="Quanto é um churros?">O churros é 5$<input/><return/></option>
+			<option text="Gostaria de um churros">Aqui está!<get item="food_churros" price="5"/>Obrigado.</option>
+			<option text="Estou só olhando."></option>
+		</select>
+	</dialog>
+	<dialog key="BLOOD_BANK">
+		<select type="blood">
+			<option value="0">Ei! Você não tem sangue nenhum! Volte quando tiver pego alguma coisa!</option>
+			<option value="20">Só isso? Vou dar sua recompensa, mas poderia ter se esforçado mais.</option>
+			<option value="50">Você conseguiu bastante sangue. Aqui está sua recompensa.</option>
+			<option value="100">Uau! isso é muito sangue! Aqui está sua recompensa pelo seu trabalho duro!</option>
+		</select>
+		<nomoney>Não tem carteira? Nem cartão? E como é que vou te pagar?</nomoney>
+		<get money="blood"/>
+		<input/>
+	</dialog>
+	<dialog key="PIZZA_DELIVERY_MUSSARELLA">Aqui está.<get item="food_pizza_mussarella" price="20"/><move direction="7"/></dialog>
+	<dialog key="PIZZA_DELIVERY_SHAGGY">Aqui está.<get item="food_pizza_shaggy" price="20"/><move direction="7"/></dialog>
+	<dialog key="PIZZA_DELIVERY_CHICKEN">Aqui está.<get item="food_pizza_chicken" price="20"/><move direction="7"/></dialog>
+	<dialog key="PIZZA_DELIVERY_4CHEESE">Aqui está.<get item="food_pizza_4cheese" price="20"/><move direction="7"/></dialog>
+
+	<!--BANK-->
+	<dialog key="BANK_GUARD">Ponha qualquer objeto de metal que tiver na caixa ao lado.<input/></dialog>
+	<dialog key="UNLUCKY_MAN">Não é possível uma coisa dessas!<input/>O caixa acabou de entrar em manutenção!<input/>ERA MINHA VEZ!<input/></dialog>
+	<dialog key="OLD_WOMAN">Como que faz pra tirar a telesena aqui?<input/></dialog>
+
+	<!--HOSPITAL-->
+	<dialog key="DOCTOR">Você sofreu várias fraturas no corpo. A conta dos cuidados foi de $100 por pessoa.<input/></dialog>
+	<dialog key="WORRIED_NURSE">Você deveria se cuidar mais. É muito comum te ver por aqui.<input/></dialog>
+	<dialog key="HINT_NURSE">Tome cuidado com sua vida!<input/>Não digo por causa da saúde, mas pelo dinheiro.<br/>Se não tiver dinheiro da próxima vez, pode entrar em prejuízo.<input/>Mas se quiser dar mais lucro para nós, se quebre á vontade!<input/></dialog>
+	<dialog key="DEATH_COUNTS">Você já parou no hospital <add type="deaths"/> vezes.<gecth/>
+	<select type="death">
+		<option value="10">Mas isso nem é nada.<br/>O que você está passando é só o começo.</option>
+		<option value="20">Já está normal ver você por aqui.</option>
+		<option value="30">Devia fazer amizade com as enfermeiras. É o paciente número 1 delas.</option>
+		<option value="40">Coitado...Você quer morar aqui, né?</option>
+		<option value="50">Mano...Tá tudo bem? Você tá vindo muitas e muitas vezes aqui!<getch/>Com certeza você tá todo rachado!</option>
+		<option value=">50">Estou impressionado.<getch/>Nunca vi ninguém parar no hospital mais de 50 vezes na vida.</option>
+	</select>
+	<dialog key="OLD_MAN">É bom você sempre tirar dúvidas com o entendido do assunto.<input/>Minha filha comprou um antibiótico e pensou que era pra beber.<br/>Agora ela tá no hospital...<input/>Essa menina...<input/></dialog>
+	<dialog key="INJURED_DAUGHTER">É bem vergonhoso dizer o motivo...<br/>Mas estou internada porque bebi antibiótico.<input/>Devia ter escutado meu pai...<input/></dialog>
+	<dialog key="PATIENT1">Eu quero ir pra casa logo! A comida daqui é horrível!<input/></dialog>
+	<dialog key="IMPATIENT_PATIENT">Eu tô na fila desde anteontem. Parece até que nunca anda!<input/></dialog>
+
+	<!--DRUGSTORE-->
+	<dialog key="FARMACEUTIC">
+		Não sabe que remédios comprar?
+		<select>
+			<option text="Não">
+				O que você quer tratar?
+				<select>
+					<option text="Resfriados e alergias">Se você estiver sentindo algum resfriado, gripe, tontura ou fraqueza,<br/>um simples xarope já basta.</option>
+					<option text="Infecções e hemorragias">Esses são problemas fortes, mas não muito graves. Para infecções, use o antibiótico correspondente ao tipo de contaminação.<input/>Se tiver hemorragias, primeiro cicatrize a ferida e depois ponha um band-aid para evitar mais saída de sangue.</option>
+					<option text="Contaminação e Mal-estar">Caso se sinta alguma coisa parecida, pode ser sinal de envenenamento ou intoxicação.<input/>Existem várias pílulas para diversos tipos de tóxicos.</option>
+				</select>
+				<input/>Mais alguma pergunta?<return/>
+			</option>
+			<option text="Tô de boa">Tudo bem.<br/>Se tiver alguma dúvida é só perguntar. Fique á vontade.</option>
+		</select>
+		<input/>
+	</dialog>
+
+	<!--HOTEL-->
+	<dialog key="HOTEL_ATENDANT">
+		<add type="time"/>! O que deseja?
+		<select>
+			<option text="Uma noite apenas">
+				O custo é de 20 por pessoa.
+				<select>
+					<option text="Ok">Aqui, seu quarto é o N° 902.<get item="key" price="20"/></option>
+					<option text="Deixa pra lá">Volte sempre.</option>
+				</select>
+			</option>
+			<option text="Estou apenas olhando">Sinta-se á vontade</option>
+		</select>
+		<input/>
+	</dialog>
+
+	<!--ELECTRONICS-->
 	<dialog key="BALANCE">
 		<select type="character">
 			<option>PESO: 65kg</option>
@@ -515,7 +724,23 @@ censor - censorship (original, censored)
 		</select>
 		<input/><jmp/>
 	</dialog>
-
+	<dialog key="PS2"><play src="BOOTPS2"/></dialog>
+	<dialog key="MAICONSPS2">
+		<select type="queue">
+			<option id="1">O Maicon tava jogando Bully.</option>
+			<option id="2">Droga!<input/>Esse CD do GTA San Andreas veio com um jogo nada a ver!</option>
+			<option id="3">Se não funcionar, a gente bota de ponta-cabeça.<input/>Nunca falha.</option>
+		</select>
+		<input/><jmp/>
+	</dialog>
+	<dialog key="PLUG">
+		Eu posso encaixar um carregador aqui.
+		<if item="charger">
+			O celular carregou. Foi rápido!
+		</if>
+		<input/>
+	</dialog>
+	<dialog key="OLDTVSID">O Maicon precisa trocar logo essa TV velha.<input/></dialog>
 	<dialog key="TV1">
 		<select type="queue">
 			<option id="1"><play src="TVSHOW1"/>Aí carinha que mora logo ali! Passa um dólar!</option>
@@ -529,8 +754,7 @@ censor - censorship (original, censored)
 		</select>
 		<input/><jmp/>
 	</dialog>
-
-	<dialog key="EMPTY_CHEST">Não tem nada aqui...<input/></dialog>
+	<dialog key="ATM1">Hora da bufunfa...<input/><gui value="ATM"/></dialog>
 
 	<dialog key="FORTUNE_TELLER">
 		Seja bem vindo!<br/>Está a procura de respostas? Não consegue encontrar seu rumo? Gostaria de conhecer seu destino?
@@ -549,6 +773,7 @@ censor - censorship (original, censored)
 		<input/>
 	</dialog>
 
+	<!--PHONE NUMBERS-->
 	<dialog key="69686766">
 		Olá cliente, em que posso ajudar? você está a procura de meus serviços?
 		<select>
@@ -558,7 +783,7 @@ censor - censorship (original, censored)
 		<wait>Alô? É tu? Pera aí doido eu já tô chegando.<input/></wait>
 	</dialog>
 	<dialog key="53478809">
-		<add type="time"/>! Em que posso ajudar?]
+		<add type="time"/>! Em que posso ajudar?
 		<select>
 			<option text="Uma pizza de mussarela">Já estamos á caminho.<input/><queue type="delivery" time="600" who="PIZZA_DELIVERY_MUSSARELLA"/></option>
 			<option text="Uma pizza de calabresa">Já estamos á caminho.<input/><queue type="delivery" time="600" who="PIZZA_DELIVERY_SHAGGY"/></option>
@@ -641,23 +866,16 @@ censor - censorship (original, censored)
 	</dialog>
 	<dialog key="66666666"><play src="mystery"/>Você vai morrer em sete dias.<input/></dialog>
 
+	<!--EASTER EGGS-->
 	<dialog key="MATRIX_GUY">Você nunca se questionou sobre nossa existência dentro do universo?<input/><play src="THE_X_FILES" loop="true"/>E se nada disso for real? E se tudo for apenas uma enorme simulação? É tudo ilusão da nossa mente? Ou vivemos dentro de uma matrix como dizia Platão?<input/>E SE TUDO ISSO FOR APENAS UM JOGO???<sleep time="100"/><input/></dialog>
 	<dialog key="TWNN">Você tem a hora certa?<input/><play src="TWMN" wait="true"/><spk/>Não.<input/></dialog>
 	<dialog key="KONAMI_GUY">Hey, sabe o que acontece se você apertar cima, cima, baixo, baixo, esquerda, direita, esquerda, direita, B, A e START?<input/>Merda nenhuma!<input/></dialog>
 	<dialog key="MATT_KAI">EU AMO PINK FLOYD<br/>EU AMO PINK FLOYD<br/>EU AMO PINK FLOYD<br/><spk/>Esse é o criador do jogo?<answer/>Ele mesmo.<answer/>Sem nexo.<answer/>Mó fita.<input/></dialog>
 
-	<dialog key="OVERPLAY">
-		Desculpe interromper. Mas é uma história muito longa para se contar de uma só vez.<input/>
-		Não vai querer continuar amanhã? Nós gravamos tudo o que você falou.<input/>E então?
-		<select>
-			<option text="Tudo bem">Ótimo.<br/>Rapazes, guardem suas coisas.<exit/></option>
-			<option text="Espere um pouco">Tá bom então...Vamos prosseguir.<input/></option>
-		</select>
-	</dialog>
-
 	<!--#ADVICES
 	'TEST': [['Queria jogar cartas...',1,(6,'playingcards',['Você tem algumas?',1],['Que conveniente! Você tem cartas!',1,'Que acha de jogar?',(10,['Por que não?',(12,'minigames.TicTacToe()')],['Não, obrigado'])]),(3,'CC','<ele anda pelo quarto.>'),'O que vai acontecer em outro dia?',1,(19,[14,35,0],[15,3,2007,1,1])]],-->
 
+	<!--PRODUCTS-->
 	<dialog key="PRODUCTS1">
 		<products>
 			<product name="food_peanut_candy"/>
@@ -701,26 +919,6 @@ censor - censorship (original, censored)
 	'JANE FRIDGE': [['A visão do paraíso.',1],['O Iago comprou um monte de sorvete.',1,'Esse idiota me conhece.',1]],
 	'TRASH': [[(12,'TRASH')]],
 
-
-	#DEVICES
-	'PC GAMER': [['O teclado LED brilhando me deixa','ma',1,'lu',1,'co.',1]],
-	'OLD TV': [['O Maicon precisa trocar logo essa TV.',1]],
-	'MAICON PS2': [['O Maicon tava jogando Bully.',1,(21,'MAICON PS2',1)],['Droga!',1,'Esse CD do GTA San Andreas','veio com um jogo','nada a ver!',(21,'MAICON PS2',2)],['Se não funcionar','A gente bota de ponta-cabeça.',1,'Nunca falha.',1,(21,'MAICON PS2',0)]],
-	'PLUG': [['Eu posso encaixar um carregador aqui.',1],['O celular carregou.','Foi rápido!',1]],
-
-	'ATM': [[(12,'ATM')]],
-
-	#ENEMIES
-	'BATTLEDIALOG': [(10,['Motivar',(20,2,2)],['Ameaçar',(20,2,-2)],['Negociar',(23,None)])],
-	'IRRATIONAL': ['A anomalia não entende nada do que você tá falando',1],
-	'MADLADCAT': ['Miau miau','miau miau miau','miau.',1,(10,['Sábias palavras.','miau.',1],['Magnífico.',0,(31,'Não ajudou em porra nenhuma.','Não me ajudou em nada.'),1])],
-	'TARGET': ['Parece bobo, eu sei','Mas é bom já pegar o jeito da coisa.','Ás vezes você pode negociar com o oponente','E assim poupar sua vida.','Também pode obter informações','Importantes dele',
-	'Ou mesmo convencê-lo a parar de lutar'],
-	'EMOHIPSTER': [(10,['O que você escuta?','conhece aquela banda?','HUG','muito boa',(10,['eu também gosto de HUG!','sério?!','ai meu deus! que legal!'],['já ouvi falar','é muito boa cara','você tem que escutar'])],['se manda daqui ô barbudo!','como é que é?','o que você tem contra barba?',(10,['Nada oxe','é bom mesmo'],['Isso não é barba','mas...eu cuido tanto dela...'])])],
-	'HOTMAN': [(10,['Cê tá bem mano?','Claro que não né?? Estou queimando feito palha nessa desgraça!'],['Vaza ou meto chumbo','Eu não tenho medo de você'],['A gente não quer nada contigo',
-	'Mas eu quero','Preciso de sangue!!'])],
-	'EDMOTO': [(10,['ED MOTA??','Não!','Meu nome não é mais Ed Mota!',1,'De agora em diante...',1,'Meu nome será...',1,'ED MOTO!',1],[])],
-
 	#MERCENARIES
 	'VINICIUS': [(10,['Eu não quero brigar contigo','Eu também não quero','Mas é preciso'],['Você pode ficar com a recompensa','Você está blefando?',(10,['Vai pegar?','É claro que vou!','...assim que acabar com você!'],['Esqueçe','Agora estou mais invocado!'])])],
 
@@ -735,82 +933,7 @@ censor - censorship (original, censored)
 
 	'DRITHR SANDRA': [['Licença, aqui é o Drive Thru',1],['Você tá sem dinheiro.',1],['Você tá sem espaço',1]]
 
-	#CITY ONE
-
 	'STREET SWEEPER': [['Hey mano',1,'Posso te falar uma coisa?',1,(10,['É claro','Se estiver com lixo nos','bolsos ou na mochila...',1,'por favor...',1,'...jogue na lixeira',1,
 	'Não custa nada',1,'Tem uma em cada esquina da cidade',1,'Fechou?',1],['Agora não...','Tá bom então...',1,'não é como se fosse','te dar uma informação','importante que fosse',
-	'mudar sua vida e seu','jeito de agir',1,'bola pra frente',1])]],
-
-	'YOUNG MOM': [['Meu filho adora brincar','nesse monte de areia',1,'Também gosto porque','o sinal da praça é','muito bom',1,(10,['o quão bom?','quê?',1,(10,['o quão bom?','ah...',
-	'dá pra ver as notícias','e mexer na internet',1,'não é muita coisa porque','meu celular é de tecla',1,'mal posso esperar ter','um daqueles celulares novos','que você pode tocar',
-	'na tela',1],['esquece','ah tá',1])],['não é pra tanto','é o que você pensa',1,'pelo menos é melhor','do que em outras cidades',1],['mas é só aqui?','meio que sim',1,'o sinal só é bom',
-	'mesmo na praça',1,'mas dá pra usar o sinal','em outros lugares também',1])]],
-	'FUNNY KID': [['Iaaaaaaá!',1,0,'que fofo',1]],
-	'INFORMED MAN': [['Eu sempre vejo as','notícias na televisão',1,'mas quando a internet está','boa eu vejo no celular','também',1,(10,['deveria ver mais jornais','vai por mim, hoje em',
-	'dia é mais que necessário',1,'ainda mais com essa onda','de crimes por causa dos mercenários',1,'eles avisam quando tá tendo','caça na região',1],['não gosto muito de notícias',
-	'mas por que?',1,(10,['É muita violência','eu também acho',1,'mas é a vida',1,'se não se informar, pode','perder muita coisa importante',1],['Não tenho tempo pra isso','Ler um artigo não',
-	'faz mal cara',1,'não demora muito, é bom','parar a correria do dia','pra ler alguma coisa',1],['É tudo mentira','eu concordo',1,'mas sei lá','quem não mente hoje?','eu faço assim, leio a matéria',
-	'mas com uma certa desconfiança',1,'eu preciso me informar,','mas se eu sair acreditando','em tudo que vejo,','aí eu posso acabar','espalhando mentiras',1])])]],
-	 
-	 #HOSPITAL
-
-
-	#DUPLO ANDANTES
-	#SANGUE VERDE
-	'CH2PIETRA': [[0,'Olá?',1,(27,100),'Eu tô apertada sabe?',1,0,'j-já vou sair!',1,0,'Eu espero...',(27,100),'Finalmente...',1,0,'...',1,0,'...você tá bem?',1,0,'não.',1,(27,20),'ah...desculpa...',1,0,'Você não tem culpa de nada','Por que você tá chorando?',1,0,
-	'Nada demais','sério não precisa se preocupar',1,0,'...tá bom então...',1,0,'Só um desgraçado que não liga','pra ninguém e só se importa','com ele mesmo!','Nunca tem tempo pra nada!',1,'E ainda cobra de mim!',1,0,'...é um cara?',1,0,
-	'A gente não se vê faz meses,',1,'só conseguimos se falar por telefone.',1,'Ele sempre diz que vai','voltar algum dia mas nunca vem!',1,'Bom...pelo menos ele se importa...',1,'...',1,0,'...não?',1,0,'Ele finge que se importa,','fica fazendo falsas promessas','e me fazendo de otária!',1,0,
-	'É seu namorado?',1,0,'Não...','Quer dizer...','Não mais...','Ele era...','É complicado...',1,'Você acha que deveria esquecer?',1,0,'Honestamente...',0,'...',1,0,'Sim, você deveria',1,0,'Mas eu ainda gosto dele!',1,0,
-	'Problema seu','Você tem que parar de','se prender á pessoas que','não te fazem feliz,','a vida é assim',1,0,'Nossa que duro',1,0,'Que nem sua cara bateu no muro',1,0,'Afe, para!',1,0,'Tá bom, mas é sério,',1,'vai fazer bem pra você.',1,'Uma hora isso passa',1,0,
-	'...entendi',1,0,'ok?',1,0,'ok',1,0,'Então tira essa lágrima do rosto','e vai se divertir.',1,'Se quiser posso ir contigo,','tá sozinha?',1,0,'Não, mas pode vir',1,0,'Ah, obrigada!',1,0,'Você DEVE vir',1,0,'Eu sei menina, relaxa!','Como se chama?',1,0,
-	'A menina que veio te caçar.',1,0,'Que isso garota pera aí...',1,(26,1),(24,None,(None,None),5),(27,300),0,'...Te caçei',1,0,'Ah fala sério!',1,0,'Obrigada por me escutar,','Mas preciso ir direto para','o que interessa',1,0,'Caramba, eu achei que tinha','criado um laço de amizade aqui!',1,0,
-	'Olha','Não tem nada a ver comigo,','me pediram para fazer isso,','tá bom?',1,0,'Fala logo o que você quer!',1,0,'Preciso das suas amostras.',1,0,'Elas estão no laboratório.',1,0,'Eu sei que estão no laboratório.','Você vai me levar até a sala onde','estão guardados e entragar para mim',1,0,
-	'Eu não faria isso!',1,0,'Olha','Eu não sou burra e','sei que se eu atirar','aqui dentro vão me prender,','mas eu posso muito bem te','fazer ir para meu carro com','a pistola nas suas costas!',1,0,'Você não faria isso.',1,0,'Não mesmo',1,'Mas adivinha?',1,'Eu tenho que fazer!',1,0,
-	'Ei pera!',1,(27,100),'Tá vindo alguém!',0,'Rápido se escon-',(13,['pietra'])]],
-
-	#NÃO SE META COM A GANGUE
-	'CH3PROLOGUE': [['Hey?','...','Está me ouvindo?','hm?','Você entendeu o que eu disse?','Pra ser sincera, não','...','Estava pensando, com a cabeça em outro lugar...','...sobre o quê você estava pensando?','...eu...eu fiz\
-	 coisas...','...','...eu fiz coisas que...tantas coisas...que não...pensei direito','...','...eu me arrependo tanto, nada disso deveria ter acontecido, foi tudo por causa de uma briga, e eu trouxe essa desgraça\
-	 pra minha vida...eu achei que poderia ajudar nós dois, achei que eu seria aquela que iria nos tirar do buraco...','...','...mas no final eu só afundei ainda mais....','é natural pensar coisas assim, mas tente sempre\
-	 se lembrar que o que você fez você não fez por mal, você estava querendo ajudar, achar uma solução','...sim...','isso não te anima?','nem um pouco...porque eu atrapalhei ao invés de ajudar...não fui inteligente','é\
-	 difícil','muito...mesmo...','...','você está fazendo atitutes inteligentes agora, está procurando ajuda, reconhecendo seu erro, se afastando daquilo que te traz problema','...sim...','você precisa\
-	 continuar assim','...','ei','?','me prometa de que você nunca mais vai voltar a pegar em uma arma, certo?','certo! certo!','nem que um monstro apareça no mato ou um bandido invada sua casa, nunca, NUNCA MAIS, encoste\
-	 em nenhum arma!','...','está me ouvindo?','sim','ótimo...','...','já está na hora de ir','não pode ficar mais um pouco?','desculpa, mas pode continuar amanhã, eu também tenho sanidade mental','claro, \
-	desculpa...',[2,'990435671',True]]],
-	    
-	'CH3MAICON': [['Então...',1,'Como tá o trampo?',1,0,'Que trampo?',1,0,'Você sabe,','o de mercenário',1,(27,60),'Tá muito puxado?',1,0,'...bastante.',1,0,'Acho que já ouviu','alguns comentários sobre eles.',1,0,'Sim...',1,'Até demais, mas nem ligo.',1,0,
-	'Como não?',1,0,'Mano, foi graças á essa vida','que tô onde tô agora.',1,'Não vou deixar que alguns comentários','mudem minha cabeça.',1,'Eu gosto do que faço',1,0,'Sim, mas seria melhor você arranjar','alguma outra coisa né?',1,0,'Isso até eu quero né?',1,0,'Então por que você',' não sai dessa?',1,0,'Porque não dá cara!','Não vão contratar alguém','com ficha suja',1,0,'Ah, é mesmo...',1,0,'Além do mais eu já','me garanto onde eu tô,','se eu trocar de emprego ','posso ser demitido de novo',1,0,'Já passou perrengue demais, não é?',1,0,'Sim',1,0,'...sei não.','Ainda acho melhor você fazer','alguma outra coisa.',1,'Esse negócio de matar e','arriscar a própria vida...',1,0,'Que vida?',(27,300),0,'Ficou parecendo aqueles','adolescentes sadboys.',1,0,'É eu sei...',1,
-	'Eu já tô indo',1,0,'Deixa que eu pago essa',1,0,'Sério?',1,0,'Sim','É por minha conta',1,0,'Você é demais cara',(6,None,False)]],
-
-	'CH3JANE': [[0,'Teria sido melhor','ficar lá no bar',1,(27,300),0,'BORA LOGO!',1,'NÃO TENHO O DIA TODO!',1,'Que saco...',1,'Que demora',1,'Pra você ver né,','Até pra isso tem','toda essa baboseira',1,0,'Hã?','Ah, sim, sim, sim...',1,0,'Era pra ser um negócio rapidinho...','tranquilo, de boa, mas não!','Eu sou obrigada a ficar','aqui esperando!',1,0,'Eu já tô até acostumado',1,0,'Ai não ia me acostumar nunquinha,','deus me livre',1,0,'É que já é coisa da rotina,','todo ano tem isso.',1,0,
-	'É?',1,0,'Ahã...','só que agora saiu mais cedo,','geralmente é só lá pra setembro',1,0,'Você é mercenário?',1,0,'Sou.',1,0,'Ah...','Pra saber dessas coisas...',1,0,'Por que?','Você não é?',1,0,'Não, mas daqui a pouco','já tô virando uma!',1,0,'Mas aqui não é onde','renova a carteira?',1,0,'Não, disseram que o registro','é aqui também',1,0,'onde?',1,0,'no último guinchê',1,0,'Ah sim, agora eu vi',1,0,'Vem cá, e como é essa coisa','toda de mercenário, matar pessoas...',1,0,'A gente não mata pessoas',1,0,'Ah sim, desculpa...',1,0,'Não, tudo bem, é normal',1,0,'Então o que vocês fazem exatamente?',1,0,'Olha, a primeira coisa que','você deve saber se quiser','virar mercenária, é que certas','coisas são totalmente confidenciais',1,0,
-	'Uh! sério?',1,0,'Sim, sigiloso',1,0,'Tipo homens de preto né?',1,0,'Não é pra tanto,','Mas é tipo',1,0,'Mas eu achava que era só','matar e ganhar dinheiro!',1,0,'ihhhh...',1,'Vai sonhando, é um bicho chato',1,0,'Sério?',1,0,'Quer dizer, tirando toda a diversão,','ainda é um trabalho, tem que','estar sempre disposto, te chamam na','hora que querem, é cansativo,','tem os chefes, a gente recebe pouco...',0,'QUÊ?',0,'fala baixo!',0,'desculpa',1,(27,120),'...recebe pouco?',1,0,'depende do quanto você caça.',1,0,'Ah...então se eu','caço bastante...',0,'ganha bastante, isso aí',1,0,'Mas o que vocês caçam exatamente?',1,0,'segredo',1,0,'Ah! deixa disso!','Fala logo!',1,0,'Se quiser saber mesmo,','Vai ter que esperar até lá dentro',1,0,'tá bom então...',1,'Ô agente G',1,'Beleza James Bond',1,0,'tá já chega',1,0,'ei já tá na sua vez',1,0,'ah sim',1],
-	['Então esse é seu nome?',1,0,'Sim...',(3,0,0),1,0,
-	'Prazer, ',(3,1,1),1,0,'Prazer',1,0,'Então...o que tem que fazer agora?',1,0,'Bom, agora você pode','pegar sua primeira arma ali.',1,'E se quiser já pode treinar','Um pouco de tiro',1,0,'Você vem comigo?',1,0,
-	'Não...eu já tenho que ir',0,'Ah por favor!','Eu não entendo das coisas aqui!',1,'please!',1,(10,['Tá bom','YASS',0,'Não se empolga, tá.',1,0,'Então tá,','Onde que pega o brinquedinho?',1,0,'Me segue',(11,1)],['Agora não','Tudo bem então...',1,'A gente se vê por aí',1,0,'Eu tô aqui todo dia',1,0,'Beleza!',1,(27,180),'Ah! eu só posso vir','aqui nos sábados!',1,0,'Beleza!',1,0,'Tchau!',1,(27,210),0,'Essa garota tá querendo alguma coisa comigo...',(11,3)])],
-	['É aqui que faz o treinamento?',1,0,'exatamente',1,0,'Ok...',1,(27,60),'me ensina a atirar?',1,0,'Tudo bem',1,(9,2),'Primeiro põe esses óculos aí',1,0,'esses?',1,0,'sim, agora mira','Não põe muito perto','senão machuca o olho',1,0,'Já sei disso',1,0,'e...aperta o gatilho',1,(13,['target'])],
-	['Nossa!',1,'Mandou muito!',1,0,'Eu sou demais!',1,0,'Não sério,','Você já atirou antes?',1,0,'Um pouquinho',1,0,'Um pouquinho?!',1,0,'Tá, eu sei atirar',1,0,'Se você já sabia atirar,','por que pediu minha ajuda?',1,0,
-	'Ai,ai...','Faz muito tempo já,',1, 'Começei quando...',(5,0),0,'Pera aí rapidinho',1,0,'O que foi?',1,0,'Chegou email',1,(27,200),'Desculpa ',(3,1,', eu tenho que ir!'),1,0,'De novo?',1,0,
-	'É um caso pra resolver',1,0,'Agora?',1,0,'É o que eu te falei antes',1,0,'Posso ir com você?',1,0,'Vai devagar querida,','Eu tô em outro nível',1,0,'Por que não posso ir?',1,0,'Muita coisa ainda, muita coisa,','Te explico depois',1,0,'Pera aí! Mizera...']],
-
-	'CH3VINICIUS': [[(15,'battle_incoming',1),'O que tá fazendo aqui?',1,0,'Quem pergunta sou eu!','O que VOCÊ tá fazendo aqui?',1,0,'Com certeza não é deixar você','roubar minha recompensa',1,0,'E quem disse que ela é sua?',1,0,'Garoto,melhor sair do meio,','ou vai dar muito mal','pra nós dois',1,0,'que assim seja então!',1,(13,['madladcat','vinicius'])],
-	['Lembra de mim, filho da mãe?',1,0,'você!',1,0,'Essa é pra aprender a não mexer comigo!',(9,2),'???','O que você estava fazendo?',(10,[],[])]],
-
-	#VIDA LOKA
-	'CH6VINICIUS': [[0,'FIOCRUZ?',1,0,'Pois é.',1,0,'Por que a gente assaltaria','um lugar desses?',1,0,'Ele falou que lá dentro','tem uma coisa muito importante.',1,'Ao que parece são','amostras de sangue.',1,(27,20),0,
-	'...ele quer fraldar um teste de DNA?',0,'Eu lá vou saber cara!',1,'Mas parece que ele vai',' pagar bastante pra gente fazer isso.',1,'E a gente também tem algumas','informações pra nos ajudar.',1,
-	'Vocês estão sabendo da festa','que vai ter lá na Cinelândia, certo?',1,0,'ahã.',0,'então,','lá vai estar uma pesquisadora','que é a quem manda nas amostras.',1,'É só a gente ir atrás dela!',1,0,'Ah, vai ser moleza!']],
-	'CH6BIANCA': [['O QUE VOCÊS QUEREM?!',1,'Bora logo, ',(3,2,'!'),'Atrás dela!',1,(27,30),0,'Hã?',1,(27,20),'Sai da frente!',1,0,(3,2,'!'),'É uma emboscada!',1,'Não!','Eles estão malucos!',1],
-	[0,'Ela tá escapando!',1],['Quem foi que deu','Açúcar mascavo pra eles?',1]],
-
-	#DR. ESTANHO
-	'CH8PIETRA': [['Isso tudo é muito estranho, cara.',1,'Semana passada o cleitinho disse','que não podia ir pro rolé','porque estava numa ressaca braba.',1,'Alguns dias depois a','Larissa fala que','tá sentindo uma cólica terrível.',1,
-	'E ontem o Breno estava','espirrando tanto que','desmaiou!',1,'O que é que está havendo?!',(10,['Deve ser coincidência','Ou deve ser muito azar, né?','Foi todo mundo','de uma vez só!',1],['Eu não sei','Eu também não...','admito que estou com','um pouco de medo.',1,'E se eu for','a próxima?',1,
-	(10,['Deus me livre, Pietra','Eu só to falando',1,'Pode ser que aconteça','comigo e eu não sei','o que fazer!',1],['Para de falar besteira!','Calma aí!','Tá bom!',1,'É que todo mundo','tá ficando desse jeito.'])]),(27,100),'Poucas idéias...',1,'Tudo isso tem que','ter alguma ligação!',1,0,'Estão espalhando por aí','que deve ser alguma doença.',1,'Tipo uma dengue,','só que muito pior.',1,0,'Meu Deus',(27,20),'É sério?',1,0,'Sim.','Deve ser por causa','desses pombos mortos','no meio das ruas!',1,0,
-	'Verdade.',(27,30),'Agora que você falou...','Eu não tenho mais','visto pombos vivos.','Só mortos.',1,(27,100),'Mas era trabalho','da prefeitura',(27,20),'cuidar disso daí!',(27,50),'Fica um fedor horrível','também!',(27,100),
-	(10,['Amor, você está bem?','Tô bem','Só tô com a','garganta seca.',1,(27,200),0,'Você tá tossindo','pra caramba!',1,0,'Eu vou',(27,20),'melhorar!',(27,30),'Tenho que',(27,200),'Tenho que ir pra',(27,300),0,(31,'Puta que pariu!','Meu Deus!'),'Vou chamar uma','Ambulância!',1],['Quer beber uma água?','bem queria','você tem aí com você?',1])]],
-
-	#MP-XIII
-	'CH13PIETRA': [['VOCÊ É INSUPORTÁVEL!',1,'O QUE FOI QUE EU FIZ?!',1,'EU VOU TE MATAR!!',1,0,'Pietra!','Aguenta firme!',1,(23,2,'!'),'Mete bala logo!','Só não me acerta!',1,'Você tem demência mulher?',1,'Não pedi sua ajuda também!',1,(27,100),'Amor! Me ajuda!!',1,'Me espera!',1]],
-	'CH13SIDNEY': [[0,'O que é que eu','estou olhando?',1,0,'Parece um dragão, cara.',1,0,'Não pode ser.',1,'A gente tá chapando, né?',1,0,'Se fosse isso a gente','estaríamos chapados','desde ano passado.',1,0,'Como assim velho...',1,0,'Ok...',1,'Ele só tá voando, né?',1,'Pelo menos ele não tá...',(27,100),'...merda.',1,0,'Ele tá destruindo','a cidade?',1,0,'É o que você','tá vendo, né?',1,0,'Não quero acreditar','nos meus olhos.',1,0,'E o que a gente','deveria fazer agora?',1,(27,100),'Vou lá saber.','Dá não.','Vamo simbora.','Puxar o carro e já era.',1,0,'Vocês não estão','nem aí pra isso?',1,(27,100),'Desculpe',(3,1),'É que realmente','não temos mais','o que fazer!',1,0,'Eu vou rezar',0,'Eu também','Boa',1,0,'Olha gente...','Eu sei que parece','uma tarefa difícil.',1,'Mas não podemos deixar','que o tamanho dos nossos','problemas sejam maiores','do que nossa força de','vencê-los!',1,'Os gigantes da vida estão','apenas nas aparências!',1,'Com força e união nós',0,'Tá bom já entendi','psiquiatra da facul!',1,'Vamos se armar e ir','para o centro!',1,'Estou pensando em usar','os prédios para atirar','mas seria muito arriscado.',1,'Precisamos achar a','fraqueza dele primeiro!',1,'De repente seria',0,'Subam!',1,0,'Eu tava falan',0,'Não enrolem seus molengas!','Tem um dragão na cidade!','Subam logo!',0,'Vamos logo gente',0,'Eu tô com medo mas tô empolgado!',0,'Sei nem mais o que','tô sentindo!','Só deixo rolar!',1]],-->
+	'mudar sua vida e seu','jeito de agir',1,'bola pra frente',1])]],-->
 </data>

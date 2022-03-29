@@ -143,56 +143,6 @@ class Initialize:
 		except: self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE | pygame.DOUBLEBUF)
 		self.glock.tick(res.FPS)
 		self.lspd += pygame.time.get_ticks()
-			
-class ModeSeven:
-	def __init__(self,sz,til):
-		self.window = pygame.display.set_mode((600,600))
-		self.input = pygame.Surface(sz)
-		self.output = pygame.Surface(sz)
-		self.grid = (int(sz[0]/til),int(sz[1]/til))
-		self.angle = 0.25 #1/(90/x)
-		self.ball = 0
-		self.til = til
-	
-	def draw(self,srf):
-		self.output.fill((0,0,0))
-		
-		brd = self.angle * (self.output.get_height() * self.angle)
-		for i in range(self.grid[0]):
-			prp = int((i * self.til)/4) + int(self.output.get_width() * self.angle)
-			pygame.draw.line(self.output,(200,200,200),(i * self.til,self.output.get_height()),(prp,int(self.output.get_height() * self.angle)),1)
-		for i in range(self.grid[1]):
-			yy = self.output.get_height() - int((i * (self.til/((i + 1)/self.grid[1]))) * self.angle)
-			prp = int((i * self.til)/4) + int(self.output.get_width() * self.angle)
-			pygame.draw.line(self.output,(200,200,200),(0,yy),(prp,yy),1)
-		pygame.draw.polygon(self.output,(100,100,100),((0,self.output.get_height()),(brd,self.output.get_height() * self.angle),(self.output.get_width() - brd,self.output.get_height() * self.angle),(self.output.get_width(),self.output.get_height())),5)
-		pos = (int(math.sin(self.ball) * 20) + 100,int(math.cos(self.ball) * 20) + 100)
-		pygame.draw.circle(self.output,(200,10,10),pos,5)
-		
-		return self.output
-		
-	def test(self):
-		for event in pygame.event.get(): pass
-		self.window.fill((100,100,100))
-		self.input.fill((0,0,0))
-		for i in range(self.grid[0]): pygame.draw.line(self.input,(200,200,200),(i * self.til,0),(i * self.til,self.input.get_height()))
-		for i in range(self.grid[1]): pygame.draw.line(self.input,(200,200,200),(0,i * self.til),(self.input.get_width(),i * self.til))
-		
-		self.ball += 0.1
-		pos = (int(math.sin(self.ball) * 20) + 100,int(math.cos(self.ball) * 20) + 100)
-		pygame.draw.circle(self.input,(200,10,10),pos,5)
-		self.draw(self.input)
-		
-		sz = (self.output.get_width() * res.GSCALE,self.output.get_height() * res.GSCALE)
-		self.window.blit(pygame.transform.scale(self.output,sz),(0,0))
-		self.window.blit(pygame.transform.scale(self.input,sz),(0,sz[1]))
-		pygame.display.flip()
-		pygame.time.Clock().tick(60)
-
-'''
-m = ModeSeven((200,200),20)
-while True: m.test()'''
-		
 
 class Avatar:
 	def __init__(self):
@@ -446,7 +396,7 @@ while True: a.test()
 '''
 
 class NPC:
-	def __init__(self,index,pos):
+	def __init__(self,index,pos,who=None):
 		self.item = None
 		for i in dtb.FREAKS[index].items():
 			self.__dict__[i[0].lower()] = i[1]
@@ -454,9 +404,13 @@ class NPC:
 		self.surface = pygame.Surface((400, 600))
 		self.id = 0
 		self.file = index
+		if who: self.talk = who
+		else: self.talk = index
 		self.sprite = pygame.image.load(res.FREAKS_PATH + (self.file) + '_mini.png').convert()
 		self.rect = pygame.Rect(pos[0],pos[1],self.sprite.get_width(),self.sprite.get_height())
 		self.eyes = [0,0]
+		self.gif = 0.0
+		self.blink = 100
 		self.emote = 'regular'
 		self.hdpos = [0,0]
 		self.acc = 0
@@ -466,6 +420,7 @@ class NPC:
 		self.fighting = False
 		self.hp = self.vitality
 		self.condition = []
+					
 		self.time = 20
 		self.fade = 10
 		self.away = 0
@@ -698,7 +653,7 @@ while True: e.test()
 class TileHandler(xml.sax.ContentHandler):
 	def __init__(self,file,lst=None,first=0):
 		self.guitools = GUI.Guitools()
-		self.window = pygame.display.set_mode((400,300))
+		self.window = pygame.display.set_mode((600,600))
 		self.name = file[:-4]
 		self.first = first
 		self.ind = ''
@@ -845,7 +800,10 @@ class MapHandler(xml.sax.ContentHandler):
 	def __init__(self,file):
 		self.guitools = GUI.Guitools()
 		self.name = file[:-4]
-		self.window = pygame.display.set_mode((400,300))
+		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE)}
+		self.window = pygame.display.set_mode((600,600))
+		self.sfx = pygame.mixer.Channel(0)
+		self.sfx.set_volume(res.SFX)
 		self.surfaces = [None for i in range(5)]
 		self.layers = [[] for i in range(5)]
 		self.tileset = []
@@ -862,8 +820,9 @@ class MapHandler(xml.sax.ContentHandler):
 		self.city = 0
 		self.edit = False
 		
-		self.npcs = [{'RECT': pygame.Rect(x * 30,60,25,25), 'DIRECTION': 1} for x in range(3)]
-		self.cars = [{'RECT': pygame.Rect(x * 30,90,25,25), 'DIRECTION': 1} for x in range(3)]
+		self.listener = (150,150)
+		self.npcs = [{'RECT': pygame.Rect(x * 30,60,25,25), 'DIRECTION': 1} for x in range(0)]
+		self.cars = [{'RECT': pygame.Rect(x * 30,250,25,25), 'DIRECTION': 1} for x in range(1)]
 		self.paths = {'SIDEWALK': [],'STREET': [],'CROSSING': []}
 		self.traflight = 0
 
@@ -1049,7 +1008,7 @@ class MapHandler(xml.sax.ContentHandler):
 				pygame.quit()
 				exit()
 		self.window.fill((100,100,100))
-		for i in self.surfaces: self.window.blit(i,(0,0))
+		#for i in self.surfaces: self.window.blit(i,(0,0))
 		self.traflight += 1
 		if self.traflight > 240: self.traflight = 0
 		for i in self.paths['SIDEWALK']: pygame.draw.rect(self.window,(100,100,200),pygame.Rect(i[0],i[1],30,30),2)
@@ -1058,17 +1017,36 @@ class MapHandler(xml.sax.ContentHandler):
 			if self.traflight < 120: pygame.draw.rect(self.window,(200,100,100),pygame.Rect(i[0],i[1],30,30),2)
 			else: pygame.draw.rect(self.window,(100,100,200),pygame.Rect(i[0],i[1],30,30),2)
 		lst = [self.npcs,self.cars]
+		rr = 100
+		pygame.draw.circle(self.window,(200,200,200),self.listener,5)
+		pygame.draw.circle(self.window,(200,200,200),(self.listener[0],self.listener[1]),rr,2)
 		for l in range(len(lst)):
 			for i in range(len(lst[l])):
 				rct = lst[l][i]['RECT']
 				cl = [(100,100,200),(200,100,100)]
 				pygame.draw.ellipse(self.window,cl[l],rct)
+				pygame.draw.circle(self.window,cl[l],(rct.x,rct.y),rr,2)
 
 				chk = []
 				cors = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]]
 				for c in range(len(cors)):
-					if lst[l][i]['DIRECTION'] == c + 1: rct.x += cors[c][0] * 1; rct.y += cors[c][1] * 1
+					if lst[l][i]['DIRECTION'] == c + 1: rct.x += cors[c][0] * 0.5; rct.y += cors[c][1] * 0.5
 					chk.append([rct.x + (cors[c][0] * 30),rct.y + (cors[c][1] * 30)])
+
+				#SOUND
+				snd = pygame.mixer.Sound(res.SFX_PATH + 'step_motor.wav')
+				#dst = math.hypot(*(self.listener[0] - rct.x,self.listener[1] - rct.y))
+				cor = abs(self.listener[0] - rct.x) - abs(self.listener[1] - rct.y)
+
+				cor = [(rct.x + rr,rct.y + rr),
+
+					(self.listener[0] + rr,self.listener[1] + rr)]
+				rng = self.listener[0] + rr
+				#if dst > 0: dst = 2/dst
+				#snd.set_volume(dst)
+				#if self.sfx.get_busy() == False: self.sfx.play(snd)
+				self.window.blit(self.fnt['DEFAULT'].render(str(rng)[0:4],True,(10,10,10)),(rct.x,rct.y))
+				pygame.draw.line(self.window,(10,10,10),(rct.x,rct.y),cor[0],3)
 
 				if l == 0: ls = self.paths['STREET']; eq = 'self.traflight < 120'
 				else: ls = self.paths['SIDEWALK']; eq = 'self.traflight >= 120'
@@ -1081,12 +1059,12 @@ class MapHandler(xml.sax.ContentHandler):
 		pygame.display.flip()
 		pygame.time.Clock().tick(res.FPS)
 
-'''
 m = MapHandler('savetest.tmx')
-while True: m.test()'''
+while True: m.test()
 
 class Dialog(xml.sax.ContentHandler):
 	def __init__(self,key,mainclass):
+		self.inv = GUI.Inventory((0,0),0)
 		self.guitools = GUI.Guitools()
 		self.main = mainclass
 		self.window = pygame.display.set_mode((600,700))
@@ -1102,26 +1080,31 @@ class Dialog(xml.sax.ContentHandler):
 		self.idx = 0
 		self.stidx = 0
 		self.speaker = False
-		self.rects = [pygame.Rect(30,200,0,50)]
+		self.rects = []
 		self.optrects = []
 		self.opt = None
 		self.scroll = 0
 		self.read = False
 		self.speed = res.SPEED
 		self.shake = False
+		self.task = 0
 		self.censor = 0
 		self.voice = 1
 		self.curfnt = 'DEFAULT'
 		self.type = res.DTYPE
+		self.chapter = None
 
 		if key in ['chat','CHAT']:
 			self.read = True
 			self.text = res.CHAT.copy()
-			for i in self.text: self.characters(i)
+			for i in range(len(self.text)):
+				sz = self.fnt[self.curfnt].size(self.text[i])[0] + 10
+				self.rects.append(pygame.Rect(30,200 + (i * 60),sz,50))
 			self.idx = len(res.CHAT) - 1
 			while True: self.test()
 		elif key in ['debug','DEBUG']: pass
 		else:
+			self.rects.append(pygame.Rect(30,200,0,50))
 			parser = xml.sax.make_parser()
 			parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 			parser.setContentHandler(self)
@@ -1158,6 +1141,14 @@ class Dialog(xml.sax.ContentHandler):
 					self.stidx = self.idx
 					self.idx = 1
 
+			#PROLOGUE AND EPILOGUE
+			if tag == 'prologue':
+				pygame.mixer.music.pause()
+				self.sfx.play(res.SOUND['BAUM'])
+				for i in range(100): self.chapter = res.CHAPTER; self.test()
+				self.chapter = None
+				pygame.mixer.music.unpause()
+
 			#MOVE THROUGH DIALOG
 			if tag == 'sleep':
 				ds = txt.copy()
@@ -1171,8 +1162,23 @@ class Dialog(xml.sax.ContentHandler):
 			if tag in ['jump','jmp']: res.DLGSAV[self.key] += 1
 			if tag in ['cls','clear']: self.idx = 0; self.text = ['']; self.rects = [pygame.Rect(0,0,0,0)]
 
-			#PROTOCOLS
-			if tag == 'get': pass
+			#GET AND CHANGE VARIABLES
+			if tag == 'get':
+				if 'map' in attributes.keys(): res.MAP = attributes['map']
+				if 'time' in attributes.keys(): res.TIME[0] += int(attributes['time'])
+				if 'date' in attributes.keys(): res.DATE[0] += int(attributes['date'])
+				if 'item' in attributes.keys():
+					self.inv.add(attributes['item'])
+					self.sfx.play(res.SOUND['ITEM_GET'])
+				if 'money' in attributes.keys():
+					self.sfx.play(res.SOUND['CASH_GET'])
+				if 'ethic' in attributes.keys(): res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] += int(attributes['ethic'])
+				if 'relation' in attributes.keys(): res.RELATIONS[res.PARTY[res.FORMATION][0]][0] += int(attributes['relation'])
+				if ['strenght','agility','resistance','knowledge','charsisma'] in attributes.keys(): 
+					self.sfx.play(res.SOUND['ATTRIBUTE_GAIN'])
+					if attributes['index'] in dtb.FREAKS.keys(): pass#enemies var[attributes['index']] += int(attributes['value'])
+					else: res.CHARACTERS[res.PARTY[res.FORMATION][int(attributes['index'])]] += int(attributes['value'])
+					self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES[attributes[''].upper()].lower(), (20, 200, 20))
 			if tag == 'queue': pass#self.main.waitlst.append([attributes['type'],self.waitime + int(attributes['time']),attributes['who']])
 
 			#ADD AND CHANGE TEXT
@@ -1187,6 +1193,15 @@ class Dialog(xml.sax.ContentHandler):
 				if attributes['type'] == 'pronoun': cc += dtb.DTALKS[res.CHARACTERS[res.PARTY[res.FORMATION][0]]['PRONOUN'] + '1']
 				if attributes['type'] == 'deaths': cc += str(res.CHARACTERS[res.PARTY[res.FORMATION][0]]['DEATHS'])
 				self.characters(cc)
+			if tag == 'task':
+				if res.TASKS[attributes['index']][1] == 100: self.task = 1
+				else: self.task = 2
+			if tag == 'if':
+				add = False
+				if 'ethic' in attributes.keys() and res.CHARACTERS[res.PARTY[res.FORMATION][0]] >= int(attributes['ethic']): add = True
+				if 'relation' in attributes.keys() and res.RELATIONS[res.PARTY[res.FORMATION][0]][0] >= int(attributes['relation']): add = True
+				if 'char' in attributes.keys() and int(attributes['char']) in res.PARTY[res.FORMATION]: add = True
+				if 'char' in attributes.keys() and int(attributes['char']) in res.PARTY[res.FORMATION]: add = True
 			if tag == 'chance':
 				self.choices.append([attributes['text'],''])
 				prb = random.randint(0,100)
@@ -1197,8 +1212,7 @@ class Dialog(xml.sax.ContentHandler):
 				if res.CENSORSHIP:
 					if 'alt' in attributes.keys(): txt[self.idx] = attributes['alt']; self.censor = 1
 					else: self.censor = 2
-			if tag == 'insert':
-				self.__init__(attributes['index'],None)
+			if tag == 'insert': self.__init__(attributes['index'],None)
 
 			#RESOURCES
 			if tag == 'playz':
@@ -1211,6 +1225,7 @@ class Dialog(xml.sax.ContentHandler):
 					pygame.mixer.music.play(-1)
 
 			#GUIS AND DATA
+			if tag == 'gui': self.callback = attributes['value']
 			if tag == 'mail':
 				self.sfx.play(res.SOUND['NOTIFICATION'])
 				res.INBOX.append(attributes['index'])
@@ -1300,18 +1315,8 @@ class Dialog(xml.sax.ContentHandler):
 					self.run(False)
 			#DIALOG PROTOCOLS
 			else:
-				#CHAPTER INTRO
-				if txt[tid] == 3:
-					res.SCENE = -1
-					self.ch_msc.pause()
-					self.ch_ton.play(res.SOUND['BAUM'])
-					self.player[0]['PAUSE'] = 3
-					for i in range(100): self.run()
-					res.SCENE = 0
-					self.player[0]['PAUSE'] = 1
-					self.ch_msc.unpause()
 				#CHAPTER END
-				elif txt[tid] in [4,5]:
+				if txt[tid] in [4,5]:
 					pygame.mixer.stop()
 					self.player[0]['PAUSE'] = 3
 					self.ch_ton.play(res.SOUND['CHAPTER_END'])
@@ -1386,21 +1391,6 @@ class Dialog(xml.sax.ContentHandler):
 								self.inv.add(res.PARTY[res.FORMATION][0],txt[tid][1],prp)
 								self.ch_sfx.play(res.SOUND['ITEM_GET'])
 								self.notification.append({'TEXT': dtb.ITEMS[txt[tid][1]][0], 'COLOR': (255, 255, 255), 'HALIGN': 'left','X': -180,'IMAGE': pygame.image.load(res.ITEMS_PATH + txt[tid][1] + '.png')})
-				#MORALITY
-				elif txt[tid][0] == 2:
-					if txt[tid][3] == 0:
-						res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] += txt[tid][2]
-					else:
-						if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] >= txt[tid][2]:
-							for i in txt[tid][3]:
-								txt.insert(tid + 1, i)
-						else:
-							for i in txt[tid][4]:
-								txt.insert(tid + 1, i)
-				#INSERT TEXT
-				elif txt[tid][0] == 3:
-					if isinstance(txt[tid][1],tuple):
-						adtxt = pygame.key.name(self.pressed[txt[tid][1][0]][txt[tid][1][1]]).lower()
 				#CALLING
 				elif txt[tid][0] == 4:
 					if txt[tid][1] != 'stop':
@@ -1446,17 +1436,6 @@ class Dialog(xml.sax.ContentHandler):
 					else:
 						for j in txt[tid][2][::-1]:
 							txt.insert(tid + 1, j)
-				#RELATIONS
-				elif txt[tid][0] == 9:
-					if txt[tid][3] == 0: res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] += txt[tid][2]
-					elif txt[tid][3] == 1: res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] -= txt[tid][2]
-					else:
-						if res.RELATIONS[txt[tid][1][0]][txt[tid][1][1]] >= txt[tid][2]:
-							for i in txt[tid][3]:
-								txt.insert(tid + 1, i)
-						else:
-							for i in txt[tid][4]:
-								txt.insert(tid + 1, i)
 				#GUI CLASS
 				elif txt[tid][0] == 12:
 					if txt[tid][1] in ['storage','wash','trash','cashier','products','mercator']:
@@ -1469,28 +1448,6 @@ class Dialog(xml.sax.ContentHandler):
 										add[1] = int(add[1] * p[2])
 								res.PRODUCTS.append(add)
 							while len(res.PRODUCTS) < 25: res.PRODUCTS.append(['_',1])
-						self.ch_sfx.play(res.SOUND['INVENTORY_OPEN'])
-						if txt[tid][1] == 'storage': self.inv.type = 2
-						if txt[tid][1] == 'cashier': self.inv.type = 3
-						if txt[tid][1] == 'wash': self.inv.type = 4
-						if txt[tid][1] == 'trash': self.inv.type = 5
-						if txt[tid][1] == 'products': self.inv.type = 6
-						if txt[tid][1] == 'mercator': self.inv.type = 7
-						self.player[0]['PAUSE'] = 1
-						self.inv.fade = 0
-						self.opt = 0
-						self.lopt = 0
-						self.mnu = 0
-					elif txt[tid][1].startswith('minigames.'):
-						self.transiction(True,100)
-						self.minigame = eval(txt[tid][1])
-						self.transiction(False,0)
-					else:
-						dv = self.inv.dev(txt[tid][1])
-						self.dev = dv[0]
-						if self.dev == 'radio': self.dev = self.rad
-						self.dev.battery = 9999
-						self.phone = 1
 				#BATTLE
 				elif txt[tid][0] == 13:
 					self.dlg['TEXT'] = []
@@ -1539,21 +1496,6 @@ class Dialog(xml.sax.ContentHandler):
 						ap.append(i[0])
 						p += 1
 					res.PARTY[res.FORMATION] = ap
-				#DATETIME
-				elif txt[tid][0] == 19:
-					ds = self.dlg['TEXT'].copy()
-					self.dlg['TEXT'] = [] 
-					self.dlg['TYPE'] = 3
-					self.transiction(True,250,10,'fade')
-					if txt[tid][1] != None: res.TIME = txt[tid][1]
-					if txt[tid][2] != None: res.DATE = txt[tid][2]
-					for i in range(10): self.run()
-					tt = str(res.TIME[0]) + ':' + str(res.TIME[1]) + ':' + str(res.TIME[2])
-					dd = str(res.DATE[0]) + '/' + str(res.DATE[1]) + '/' + str(res.DATE[2])
-					self.dialog([(0,1,3),tt,dd,1])
-					self.transiction(False,0,10,'fade')
-					self.dlg['TEXT'] = ds
-					self.dlg['TYPE'] = res.DTYPE
 				#INCREASE/DECREASE STATUS
 				elif txt[tid][0] == 20:
 					if txt[tid][2] < 2:
@@ -1572,19 +1514,6 @@ class Dialog(xml.sax.ContentHandler):
 								if txt[tid][1] == 2:
 									i['RESISTANCE'] -= txt[tid][2] + tst
 									self.hitisplay(0, self.aim, '-' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['RESISTANCE'].lower(), (20, 20, 200))
-					if txt[tid][2] > 2:
-						prb = round(random.randint(0,20))
-						if prb > 10:
-							self.ch_sfx.play(res.SOUND['ATTRIBUTE_GAIN'])
-							if txt[tid][1] == 0:
-								self.fig[self.turn]['STRENGHT'] += txt[tid][2] + self.fig[self.turn]['INSPIRATION']
-								self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['STRENGHT'].lower(), (200, 20, 20))
-							if txt[tid][1] == 1:
-								self.fig[self.turn]['AGILITY'] += txt[tid][2] + self.fig[self.turn]['INSPIRATION']
-								self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['AGILITY'].lower(), (20, 200, 20))
-							if txt[tid][1] == 2:
-								self.fig[self.turn]['RESISTANCE'] += txt[tid][2] + self.fig[self.turn]['INSPIRATION']
-								self.hitisplay(0, self.aim, '+' + str(txt[tid][2]) + ' ' + dtb.PROFNAMES['RESISTANCE'].lower(), (20, 20, 200))
 				#KEYBOARD INPUT
 				elif txt[tid][0] == 22:
 					snd = self.ch_msc.get_sound()
@@ -1677,25 +1606,6 @@ class Dialog(xml.sax.ContentHandler):
 					if snd != None: self.ch_msc.play(snd,-1)
 					self.dlg['TEXT'].append(0)
 					did = len(self.dlg['TEXT'])
-				#GET OTHER DIALOG
-				elif txt[tid][0] == 23:
-					dlg = txt[tid][1]
-					if dlg not in dtb.DIALOGS: print('CAUTION: No dialog ' + dlg + ' in database!')
-					else:
-						idx = None
-						if len(txt[tid]) > 2: idx = txt[tid][2]
-						if self.battle:
-							if dlg == None: dlg = self.foe[self.opt]['FILE']
-							if dlg.upper() not in dtb.DIALOGS:
-								dlg = 'IRRATIONAL'
-							else: dlg = self.foe[self.opt]['FILE'].upper()
-						if idx == None:
-							for j in dtb.DIALOGS[dlg].copy()[::-1]:
-								txt.insert(tid + 1, j)
-						else:
-							for j in dtb.DIALOGS[dlg][idx].copy()[::-1]:
-								txt.insert(tid + 1, j)
-						did = len(self.dlg['TEXT'])
 				#MOVE CHARACTER
 				elif txt[tid][0] == 24:
 					px = txt[tid][2][0]
@@ -1736,16 +1646,6 @@ class Dialog(xml.sax.ContentHandler):
 							if i['N'] == txt[tid][1]:
 								self.dlg['CAMERA'] = i['RECT']
 					else: self.dlg['CAMERA'] = pygame.Rect(txt[tid][1][0],txt[tid][1][1],1,1)
-				#ANOTHER PLACE
-				elif txt[tid][0] == 29:
-					ds = self.dlg['TEXT'].copy()
-					self.dlg['TEXT'] = []
-					self.transiction(True, 210, 10)
-					self.loadmap(txt[tid][1])
-					self.player[0]['RECT'].x = txt[tid][2]
-					self.player[0]['RECT'].y = txt[tid][3]
-					self.transiction(False, 50, 10)
-					self.dlg['TEXT'] = ds
 				#PUT CHARACTER
 				elif txt[tid][0] == 30:
 					ind = 0
@@ -1771,84 +1671,32 @@ class Dialog(xml.sax.ContentHandler):
 	def draw(self):
 		#print(self.choices)
 		#print(self.idx)
-		if self.scroll < (self.idx * 60): self.scroll += 4
-		lst = [self.rects,self.optrects]
-		for r in range(len(lst)):
-			for i in range(len(lst[r])):
-				rct = lst[r][i].copy()
-				rct.y -= self.scroll
-				if self.shake: shk = (random.randint(-5,5),random.randint(-5,5))
-				else: shk = (0,0)
-				if r == 1 and self.opt == i: col = ((10,10,10),res.COLOR)
-				else: col = (res.COLOR,(10,10,10))
-				for l in [0,rct.width]:
-					pygame.draw.ellipse(self.window,col[1],pygame.Rect(rct.x + l - (rct.height/2),rct.y + 10,rct.height,rct.height))
-					pygame.draw.ellipse(self.window,col[0],pygame.Rect(rct.x + l - (rct.height/2),rct.y,rct.height,rct.height))
-				pygame.draw.rect(self.window,col[0],rct)
-				pygame.draw.rect(self.window,col[1],pygame.Rect(rct.x,rct.y + rct.height,rct.width,10))
-				if r == 0: txt = self.text
-				else: txt = self.choices[len(self.choices)-1]
-				self.window.blit(self.fnt[self.curfnt].render(txt[i],True,col[1]),(rct.x + 5 + shk[0],rct.y + shk[1]))
-
-		#DIALOG
-		'''if self.dlg['FADE'] < 500 and res.SCENE != -1:
-			if self.dlg['TEXT'] != []:
-				opt = 1
-				ln = 1
-				#DIALOG BOX
-				if self.dlg['TYPE'] == 0:
-					srf = pygame.Surface((self.windoww,self.winbar * res.GSCALE))
-					srf.fill((0,0,0))
-					yyax = 20 + self.windowh - (self.winbar * res.GSCALE)
-				elif self.dlg['TYPE'] == 3:
-					srf = pygame.Surface((self.windoww,40 * res.GSCALE))
-					srf.fill((200,0,0))
-					yyax = int(self.windowh/2)
-				else: yyax = self.displayzh - 100
-				if self.vkb.active: yyax = int((self.vkb.size[1] - self.vkb.pos - 100)/res.GSCALE)
-				#DIALOG SCROLL
-				if self.dlg['Y'] > (self.lopt * 40):
-					self.dlg['Y'] -= int((40 * ln)/10)
-					if self.dlg['Y'] < (self.lopt * 40): self.dlg['Y'] = (self.lopt * 40)
-				if self.dlg['Y'] < (self.lopt * 40):
-					self.dlg['Y'] += int((40 * ln)/10)
-					if self.dlg['Y'] > (self.lopt * 40): self.dlg['Y'] = (self.lopt * 40)
-				sd = False
-				yy = 0
-				ind = 0
-				for i in self.dlg['TEXT']:
-					if i == 0: sd = not sd
-					if isinstance(i,str):
-						if sd:
-							self.dlgrct[ind].y = yyax + self.dlg['Y'] - yy
-							ind += 1
-						yy += 40
-				yy = 0
-				for i in self.dlg['TEXT'][::-1]:
-					if isinstance(i,str):
-						txt = self.fnt[self.dlg['FONT']].render(i, True, (255, 255, 255))
-						txtsz = math.floor(self.fnt[self.dlg['FONT']].size(i)[0]/res.GSCALE) + 10
-						if txtsz < 30: txtsz = 30
-					if self.dlg['TYPE'] in [1,2] and i != 1 and i != 0 and len(i) != 0: ballons
-					if i == 0:
-						if sd == False: sd = True
-						elif sd: sd = False
-					elif isinstance(i, str):
-						else: shkx = 0; shky = 0
-						if self.dlg['TYPE'] in [0,3]:
-							if sd == False: srf.blit(txt, (shkx + (30 * res.GSCALE), shky + (((self.winbar - 30 + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							else: srf.blit(txt, (shkx + (((self.displayzw - 12) - txtsz) * res.GSCALE), shky + (((self.winbar - 30 + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							yy += 20
-						elif self.dlg['TYPE'] == 1:
-							if sd == False: self.display[1].blit(txt, (shkx + (30 * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							else: self.display[1].blit(txt, (shkx + (((self.displayzw - 12) - txtsz) * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							yy += 40
-						else:
-							if sd == False: self.display[1].blit(txt, (shkx + (30 * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							else: self.display[1].blit(txt, (shkx + (((self.displayzw - 12) - txtsz) * res.GSCALE), shky + (((yyax + 7) + self.dlg['Y'] - yy) * res.GSCALE)))
-							yy += 40
-				if self.dlg['TYPE'] in [0,3]:
-					self.display[1].blit(srf,(0,yyax))'''
+		if self.chapter:
+			sz = int(self.fnt[self.curfnt].size(self.chapter)[0]/2)
+			pygame.draw.rect(self.window,res.COLOR,pygame.Rect(0,self.window.get_height() - 25,self.window.get_width(),50))
+			self.window.blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[self.chapter][0],True,(10,10,10)),(int(self.window.get_width()/2) - sz,self.window.get_height() - 25))
+			self.window.blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[self.chapter][1],True,(10,10,10)),(int(self.window.get_width()/2) - sz,self.window.get_height() - 50))
+		else:
+			if self.scroll < (self.idx * 60): self.scroll += 4
+			lst = [self.rects,self.optrects]
+			for r in range(len(lst)):
+				for i in range(len(lst[r])):
+					rct = lst[r][i].copy()
+					rct.y -= self.scroll
+					if self.shake: shk = (random.randint(-5,5),random.randint(-5,5))
+					else: shk = (0,0)
+					if r == 1 and self.opt == i: col = ((10,10,10),res.COLOR)
+					else: col = (res.COLOR,(10,10,10))
+					#DRAW BOXES
+					for l in [0,rct.width]:
+						pygame.draw.ellipse(self.window,col[1],pygame.Rect(rct.x + l - (rct.height/2),rct.y + 10,rct.height,rct.height))
+						pygame.draw.ellipse(self.window,col[0],pygame.Rect(rct.x + l - (rct.height/2),rct.y,rct.height,rct.height))
+					pygame.draw.rect(self.window,col[0],rct)
+					pygame.draw.rect(self.window,col[1],pygame.Rect(rct.x,rct.y + rct.height,rct.width,10))
+					#DRAW TEXT
+					if r == 0: txt = self.text
+					else: txt = self.choices[len(self.choices)-1]
+					self.window.blit(self.fnt[self.curfnt].render(txt[i],True,col[1]),(rct.x + 5 + shk[0],rct.y + shk[1]))
 
 	def test(self):
 		mp = pygame.mouse.get_pos()
@@ -1885,14 +1733,6 @@ class Map:
 		self.cam.x = int(self.cam.x - pcam[0] - (self.displayzw/2))
 		self.cam.y = int(self.cam.y - pcam[1] - (self.displayzh/2))
 		#rects 1,rects 2,carry/hold,walls,hide,water
-		self.enemies = []
-		self.foe = []
-		self.npcs = []
-		self.vehicles = []
-		self.nodes = []
-		self.areas = []
-		self.particles = []
-		self.loadingif = 0
 		self.bbg['X'] = 0
 		for i in self.player: i['NODES'] = []
 		self.camgrid = 1
@@ -1905,161 +1745,116 @@ class Map:
 		#DRAW MAP
 		i = -1
 		tlyrs = 0
-		for l in self.map.layers:
-			nol = True
-			if l.name.startswith('Camada'): nol = False
-			if l.name.startswith('TILE LAYER'): nol = False
-			if nol: continue
-			else: i += 1; tlyrs += 1
-			for a in range(2):
-				self.tilmap[i].append(pygame.Surface((self.map.width * self.map.tilewidth,self.map.height * self.map.tileheight), pygame.SRCALPHA, 32))
-				for y in range(0, self.map.height):
-					for x in range(0, self.map.width):
-						gid = self.map.get_tile_gid(x, y, i)
-						#NO TILE
-						if gid == None and i == 0:
-							self.tilrect[0].append(['WALL',pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,self.map.tileheight)])
-							if self.tilrect[3][len(self.tilrect[3]) - 1][0] == 'WALL': self.tilrect[3][len(self.tilrect[3]) - 1][1].width += self.map.tilewidth
-							else: self.tilrect[3].append(['WALL',pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,self.map.tileheight)])
-						#FOUND TILE
-						else:
-							t = self.map.get_tile_properties_by_gid(gid)
-							if t != None:
-								#GET TILE TYPE
-								if 'TYPE' not in t: t['TYPE'] = None
-								elif t['TYPE'] == None: t['TYPE'] = 'NONE'
-								else: t['TYPE'] = t['TYPE'].upper()
-								#LOAD TIME IMAGE
-								if gid in tilimg.keys() and t['TYPE'] != 'TREADMILL':
-									if t['frames'] != []:
-										if len(tilimg[gid]) <= a:
-											if a >= len(tilimg[gid]): frm = t['frames'][len(tilimg[gid]) - 1]
-											else: frm = t['frames'][a]
-											tilimg[gid].append(self.map.get_tile_image_by_gid(frm.gid).convert_alpha())
-										image = tilimg[gid][a]
-									else:
-										image = tilimg[gid]
-								else:
-									if t['frames'] != []:
-										image = self.map.get_tile_image_by_gid(t['frames'][a].gid).convert_alpha()
-										tilimg[gid] = []
-										tilimg[gid].append(image)
-									else:
-										image = self.map.get_tile_image_by_gid(gid).convert_alpha()
-										tilimg[gid] = image
-								#SKY
-								if t['TYPE'] == 'SKY':
-									if len(self.tilmap[3]) == 0:
-										img = pygame.image.load(res.BACKG_PATH + 'sky.png').convert_alpha()
-										srf = pygame.Surface((self.map.width * self.map.tilewidth,img.get_height()), pygame.SRCALPHA)
-										srf.fill((100,0,0))
-										for rx in range(int((self.map.width * self.map.tilewidth)/img.get_width())):
-											srf.blit(img, (rx * img.get_width(), 0))
-										self.tilmap[3].append(srf)
-								#PARALLAX SCROLLING
-								elif t['TYPE'] == 'BACKGROUND':
-									if len(self.tilmap[int(t['LAYER'])]) < a + 1:
-										self.tilmap[int(t['LAYER'])].append(pygame.Surface((self.map.width * self.map.tilewidth,self.map.height * self.map.tileheight), pygame.SRCALPHA, 32))
-									if res.TIME[0] >= 18: fr = 1
-									elif res.TIME[0] >= 6: fr = 0
-									else: fr = 1
-									if t['frames'] != []: image = self.map.get_tile_image_by_gid(t['frames'][fr].gid).convert_alpha()
-									else: image = self.map.get_tile_image_by_gid(gid).convert_alpha()
-									self.tilmap[int(t['LAYER'])][a].blit(image, (x * self.map.tilewidth - self.cam.x, y * self.map.tileheight - self.cam.y))
-								#OBJECT TILE
-								elif t['TYPE'] == 'OBJECT':
-									tlrct = pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,self.map.tileheight)
-									self.objects.append(['tile',{'RECT': tlrct,'IMAGE': image},tlrct.y])
-								#COLOR TILE
-								elif t['TYPE'] == 'COLOR':
-									t['SCALE'] = 30
-									if int(t['COLOR']) == 0:
-										t['COLOR'] = res.CHAPTER
-									img = []
-									for fi in range(t['COLOR'] + 1):
-										img.append(self.map.get_tile_image_by_gid(t['frames'][fi].gid).convert_alpha())
-									t['IMAGE'] = img
-								#ANIMATED TILES
-								elif t['TYPE'] in ['SUNMOON','TREADMILL','PORTAL','SPIKE','JUMP']:
-									if t['TYPE'] == 'SPIKE':
-										t['HIDE'] = False
-										t['TIME'] = 0 
-									t['GIF'] =  0
-									t['SFX'] = 100
-									img = []
-									for fi in range(len(t['frames'])):
-										if t['TYPE'] != 'TREADMILL': frm = self.map.get_tile_image_by_gid(t['frames'][fi].gid).convert_alpha()
-										else: frm = pygame.transform.rotate(self.map.get_tile_image_by_gid(t['frames'][fi].gid).convert_alpha(),45 * (int(t['DIRECTION']) - 1))
-										img.append(frm)
-									t['IMAGE'] = img
-								#MOVING
-								elif t['TYPE'] == 'MOVING':
-									t['IMAGE'] = image
-									t['INOUT'] = True
-									t['TIME'] = 0
-								#NORMAL TILE
-								elif t['TYPE'] not in ['INVISIBLE','CARRY','HOLD','HIDEON','HIDEOFF','WATER']:
-									#this coordinates functions is suposed to draw tiles at the current camera position,however
-									# nothing is drawn when executed. <WORK ON IT>
-									#self.tilmap[i][a].blit(image, ((x * self.map.tilewidth) - self.cam.x, (y * self.map.tileheight) - self.cam.y))
-									self.tilmap[i][a].blit(image, (x * self.map.tilewidth, y * self.map.tileheight))
-								#TILRECT
-								try: 
-									p = self.map.get_tile_properties(x, y, i)
-									trct = pygame.Rect((x + int(p['X'])) * self.map.tilewidth, (y + int(p['Y'])) * self.map.tileheight,int(p['WIDTH']),int(p['HEIGHT']))
-								except: trct = pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,self.map.tileheight)
-								if i < 2 and a == 0:
-									#STEP TILES
-									if i == 0: self.tilrect[i].append([t,trct])
-									#MOVABLE OBJECTS
-									if t['TYPE'] in ['CARRY','HOLD','DESTROY']:
-										if t['frames'] != []:
-											trct = pygame.Rect(x * self.map.tilewidth, (y * self.map.tileheight) + self.map.tileheight,self.map.tilewidth,self.map.tileheight)
-											srf = pygame.Surface((self.map.tilewidth,self.map.tileheight * 2), pygame.SRCALPHA)
-											srf.blit(self.map.get_tile_image_by_gid(t['frames'][1].gid).convert_alpha(),(0,0))
-											srf.blit(self.map.get_tile_image_by_gid(t['frames'][0].gid).convert_alpha(),(0,self.map.tileheight))
-										else: srf = image
-										self.objects.append(['move',{'IMAGE': srf,'RECT': trct,'TYPE': t['TYPE'],'DIRECTION': 0,'SPEED': 0,'DESTROY': False},trct.y])
-									#PORTAL
-									elif t['TYPE'] == 'PORTAL':
-										dt = {'N': portalind, 'RECT': trct,
-										'TYPE': 0, 'PX': t['GO'], 'PY': t['GO'], 'MAP': None,
-										'OPENING': None,'CLOSURE': None,'MUSIC': None,'MATCH': None}
-										self.objects.append(['portal',dt,trct.y])
-										portalind += 1
-									#SUNMOON
-									elif t['TYPE'] == 'SUNMOON':
-										self.tilrect[6].append([t,trct])
-									#PROPS
-									elif t['TYPE'] in ['SPIKE','JUMP','DESTROY']:
-										self.tilrect[i].append([t,trct])
-									#MIRROR SURFACES
-									elif t['TYPE'] == 'WATER':
-										self.tilrect[5].append([image,trct])
-									#WALLS
-									if t['TYPE'] in ['WALL','OBJECT','INVISIBLE']:
-										#GLUE WALLS
-										'''bft = self.tilrect[3][len(self.tilrect[3]) - 1]
-										#if bft[1].y == (y - 1) * self.map.tileheight: bft[1].height += self.map.tileheight
-										#elif bft[1].height == (y - 1) * self.map.tileheight: bft[1].height += self.map.tileheight
-										if bft[1].x == (x - 1) * self.map.tileheight: bft[1].width += self.map.tileheight
-										elif bft[1].width == (x - 1) * self.map.tilewidth bft[1].width += self.map.tilewidth'''
-										
-										#APPEND WALLS
-										#else:
-										if t['TYPE'] == 'OBJECT': hh = int(self.map.tileheight/2)
-										else: hh = self.map.tileheight
-										ww = pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,hh)
-										if i == 0: self.tilrect[3].append([t,ww])
-										else: self.tilrect[3][(x * self.map.width) + x] = [{'TYPE': 'WALL'},ww]
-									elif i == 0 and a == 0: self.tilrect[3].append(None)
-								#HIDE TILES
-								else:
-									if t['TYPE'].startswith('HIDE'): self.tilrect[4].append([t['TYPE'],pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,int(self.map.tilewidth),int(self.map.tileheight))])
-							#FOR GRID
-							elif i in [0,1]:
-								self.tilrect[i].append(None)
-								if i == 0: self.tilrect[3].append(None)
+		#SKY
+		if t['TYPE'] == 'SKY':
+			if len(self.tilmap[3]) == 0:
+				img = pygame.image.load(res.BACKG_PATH + 'sky.png').convert_alpha()
+				srf = pygame.Surface((self.map.width * self.map.tilewidth,img.get_height()), pygame.SRCALPHA)
+				srf.fill((100,0,0))
+				for rx in range(int((self.map.width * self.map.tilewidth)/img.get_width())):
+					srf.blit(img, (rx * img.get_width(), 0))
+				self.tilmap[3].append(srf)
+		#PARALLAX SCROLLING
+		elif t['TYPE'] == 'BACKGROUND':
+			if len(self.tilmap[int(t['LAYER'])]) < a + 1:
+				self.tilmap[int(t['LAYER'])].append(pygame.Surface((self.map.width * self.map.tilewidth,self.map.height * self.map.tileheight), pygame.SRCALPHA, 32))
+			if res.TIME[0] >= 18: fr = 1
+			elif res.TIME[0] >= 6: fr = 0
+			else: fr = 1
+			if t['frames'] != []: image = self.map.get_tile_image_by_gid(t['frames'][fr].gid).convert_alpha()
+			else: image = self.map.get_tile_image_by_gid(gid).convert_alpha()
+			self.tilmap[int(t['LAYER'])][a].blit(image, (x * self.map.tilewidth - self.cam.x, y * self.map.tileheight - self.cam.y))
+		#OBJECT TILE
+		elif t['TYPE'] == 'OBJECT':
+			tlrct = pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,self.map.tileheight)
+			self.objects.append(['tile',{'RECT': tlrct,'IMAGE': image},tlrct.y])
+		#COLOR TILE
+		elif t['TYPE'] == 'COLOR':
+			t['SCALE'] = 30
+			if int(t['COLOR']) == 0:
+				t['COLOR'] = res.CHAPTER
+			img = []
+			for fi in range(t['COLOR'] + 1):
+				img.append(self.map.get_tile_image_by_gid(t['frames'][fi].gid).convert_alpha())
+			t['IMAGE'] = img
+		#ANIMATED TILES
+		elif t['TYPE'] in ['SUNMOON','TREADMILL','PORTAL','SPIKE','JUMP']:
+			if t['TYPE'] == 'SPIKE':
+				t['HIDE'] = False
+				t['TIME'] = 0 
+			t['GIF'] =  0
+			t['SFX'] = 100
+			img = []
+			for fi in range(len(t['frames'])):
+				if t['TYPE'] != 'TREADMILL': frm = self.map.get_tile_image_by_gid(t['frames'][fi].gid).convert_alpha()
+				else: frm = pygame.transform.rotate(self.map.get_tile_image_by_gid(t['frames'][fi].gid).convert_alpha(),45 * (int(t['DIRECTION']) - 1))
+				img.append(frm)
+			t['IMAGE'] = img
+		#MOVING
+		elif t['TYPE'] == 'MOVING':
+			t['IMAGE'] = image
+			t['INOUT'] = True
+			t['TIME'] = 0
+		#NORMAL TILE
+		elif t['TYPE'] not in ['INVISIBLE','CARRY','HOLD','HIDEON','HIDEOFF','WATER']:
+			#this coordinates functions is suposed to draw tiles at the current camera position,however
+			# nothing is drawn when executed. <WORK ON IT>
+			#self.tilmap[i][a].blit(image, ((x * self.map.tilewidth) - self.cam.x, (y * self.map.tileheight) - self.cam.y))
+			self.tilmap[i][a].blit(image, (x * self.map.tilewidth, y * self.map.tileheight))
+		#TILRECT
+		try: 
+			p = self.map.get_tile_properties(x, y, i)
+			trct = pygame.Rect((x + int(p['X'])) * self.map.tilewidth, (y + int(p['Y'])) * self.map.tileheight,int(p['WIDTH']),int(p['HEIGHT']))
+		except: trct = pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,self.map.tileheight)
+		if i < 2 and a == 0:
+			#STEP TILES
+			if i == 0: self.tilrect[i].append([t,trct])
+			#MOVABLE OBJECTS
+			if t['TYPE'] in ['CARRY','HOLD','DESTROY']:
+				if t['frames'] != []:
+					trct = pygame.Rect(x * self.map.tilewidth, (y * self.map.tileheight) + self.map.tileheight,self.map.tilewidth,self.map.tileheight)
+					srf = pygame.Surface((self.map.tilewidth,self.map.tileheight * 2), pygame.SRCALPHA)
+					srf.blit(self.map.get_tile_image_by_gid(t['frames'][1].gid).convert_alpha(),(0,0))
+					srf.blit(self.map.get_tile_image_by_gid(t['frames'][0].gid).convert_alpha(),(0,self.map.tileheight))
+				else: srf = image
+				self.objects.append(['move',{'IMAGE': srf,'RECT': trct,'TYPE': t['TYPE'],'DIRECTION': 0,'SPEED': 0,'DESTROY': False},trct.y])
+			#PORTAL
+			elif t['TYPE'] == 'PORTAL':
+				dt = {'N': portalind, 'RECT': trct,
+				'TYPE': 0, 'PX': t['GO'], 'PY': t['GO'], 'MAP': None,
+				'OPENING': None,'CLOSURE': None,'MUSIC': None,'MATCH': None}
+				self.objects.append(['portal',dt,trct.y])
+				portalind += 1
+			#SUNMOON
+			elif t['TYPE'] == 'SUNMOON':
+				self.tilrect[6].append([t,trct])
+			#PROPS
+			elif t['TYPE'] in ['SPIKE','JUMP','DESTROY']:
+				self.tilrect[i].append([t,trct])
+			#MIRROR SURFACES
+			elif t['TYPE'] == 'WATER':
+				self.tilrect[5].append([image,trct])
+			#WALLS
+			if t['TYPE'] in ['WALL','OBJECT','INVISIBLE']:
+				#GLUE WALLS
+				'''bft = self.tilrect[3][len(self.tilrect[3]) - 1]
+				#if bft[1].y == (y - 1) * self.map.tileheight: bft[1].height += self.map.tileheight
+				#elif bft[1].height == (y - 1) * self.map.tileheight: bft[1].height += self.map.tileheight
+				if bft[1].x == (x - 1) * self.map.tileheight: bft[1].width += self.map.tileheight
+				elif bft[1].width == (x - 1) * self.map.tilewidth bft[1].width += self.map.tilewidth'''
+				
+				#APPEND WALLS
+				#else:
+				if t['TYPE'] == 'OBJECT': hh = int(self.map.tileheight/2)
+				else: hh = self.map.tileheight
+				ww = pygame.Rect(x * self.map.tilewidth, y * self.map.tileheight,self.map.tilewidth,hh)
+				if i == 0: self.tilrect[3].append([t,ww])
+				else: self.tilrect[3][(x * self.map.width) + x] = [{'TYPE': 'WALL'},ww]
+			elif i == 0 and a == 0: self.tilrect[3].append(None)
+		#FOR GRID
+		if i in [0,1]:
+			self.tilrect[i].append(None)
+			if i == 0: self.tilrect[3].append(None)
 		#OBJECTS
 		vhn = 0
 		for lyr in self.map.layers:
@@ -3524,40 +3319,7 @@ class Game:
 			if res.GAS < 1.0: i['DIRECTION'] = 0
 			if i['SPEED'] < 0: i['SPEED'] = 0
 			p += 1
-		
-	def audioedit(self,snd,function,value):
-		import numpy
-		snd = pygame.sndarray.array(snd)
-		if value > 0:
-			window_size=2**13
-			h=2**11
-			if function == 'velocity':
-				indices = numpy.round(numpy.arange(0, len(snd), value))
-				indices = indices[indices < len(snd)].astype(int)
-				snd = snd[indices.astype(int)]	     
-			if function in ['stretch','pitch']:
-				if function == 'pitch': factor = 1.0/(2**(1.0 * value/12.0))
-				else: factor = value
-				phase = numpy.zeros(window_size)
-				hanning_window = numpy.hanning(window_size)
-				result = numpy.zeros(int(len(snd)/value + window_size))
-				for i in numpy.arange(0,len(snd)-(window_size+h), h*factor):
-					ind = int(i)
-					a1 = snd[ind: ind + window_size]
-					a2 = snd[ind + h: ind + window_size + h]
-					s1 = numpy.fft.fft(hanning_window * a1)
-					s2 = numpy.fft.fft(hanning_window * a2)
-					phase = (phase + numpy.angle(s2/s1)) % 2*numpy.pi
-					a2_rephased = numpy.fft.ifft(numpy.abs(s2)*numpy.exp(1j*phase))
-					i2 = int(i/f)
-					result[i2 : i2 + window_size] += hanning_window*a2_rephased
-				result = ((2**(16-4)) * result/result.max()).astype('int16')
-				if function == 'pitch':
-					indices = numpy.round(numpy.arange(0, len(snd[window_size:]), 2**(1.0 * value/12.0)))
-					indices = indices[indices < len(snd[window_size:])].astype(int)
-					snd = snd[indices.astype(int)]	     
-		return pygame.sndarray.make_sound(snd)
-
+	
 	def fight(self):
 		#BATTLE START
 		if self.turn < 0:
@@ -4714,15 +4476,6 @@ class Game:
 					self.hpctrl = dtb.HINTS['VEHICLE_CONTROLS']
 			#BLACK BARS
 			if self.trsction: self.display[1].blit(self.trsction,(0,0))
-			#RADIOPLAY
-			if self.rad.onoff and self.turn != -6: self.display[1].blit(self.rad.display(),(0,0))
-			#CITY NAME
-			if self.cityname != '' and self.winbar >= 50: abl = True
-			elif self.cityname != '' and self.turn == -6: abl = True
-			else: abl = False
-			if abl:
-				sz = self.fnt['MININFO'].size(self.cityname)
-				self.display[0].blit(self.fnt['MININFO'].render(self.cityname, True, (250,250,250)), (self.displayzw - sz[0] - 20, int(self.displayzh/2)))
 			#PORTALGO
 			if self.portalgo != {}:
 				if self.rectdebug: pygame.draw.rect(self.display[0], (255,0,0), pygame.Rect(self.portalgo[0]['RECT'].x, self.portalgo[0]['RECT'].y, self.portalgo[0]['RECT'].width, self.portalgo[0]['RECT'].height))
@@ -4773,40 +4526,7 @@ class Game:
 			elif res.CHARACTERS[i]['HEALTH'] in [8,13,14,15]: dth += 1
 			u += 1
 		#GAME OVER
-		if dth == len(res.PARTY[res.FORMATION]) and self.turn != -5:
-			if self.rad.onoff: pygame.mixer.music.stop(); self.rad.onoff = False
-			self.ch_msc.fadeout(500)
-			pygame.mixer.music.fadeout(500)
-			self.ch_ton.play(res.SOUND['BATTLE_LOST'])
-			while self.sttsy > 120:
-				self.sttsy -= 10
-				self.run(False)
-			for i in self.guitools.transiction((800,600),1,-100,'fade'): self.trsction = i; self.run()
-			self.battle = True
-			self.obstacles = False
-			self.turn = -5
-			self.bbg['X'] = 0
-			self.mnu = self.displayzw
-			acc = 60
-			while self.mnu > 0:
-				self.mnu -= acc
-				acc -= 2
-				self.run(False)
-			self.turn = -5
-			self.wait()
-			res.MAP = 'hospital_0'
-			res.PX = 315
-			res.PY = 200
-			mny = self.inv.find(None,'credit_card','value')
-			if mny != None:
-				for i in res.PARTY[res.FORMATION]:
-					mny[1] -= 100
-				for i in res.PARTY[res.FORMATION]:
-					res.CHARACTERS[i]['HP'] = dtb.CLASSES[res.CHARACTERS[i]['CLASS']]['RESISTANCE'][res.CHARACTERS[i]['LEVEL']]
-					res.CHARACTERS[i]['HEALTH'] = 0
-			self.__init__()
-			if res.CHAPTER > 0: self.loadmap(res.MAP)
-			self.transiction(False, 0)
+		if dth == len(res.PARTY[res.FORMATION]) and self.turn != -5: self.levelmenu.draw()
 		#BATTLE
 		if self.battle:
 			#BACKGROUND
@@ -5028,74 +4748,7 @@ class Game:
 			'''for i in range(len(self.grd)):
 				self.display[1].blit(self.grd[i],(0,i))
 				self.display[1].blit(self.grd[i],(0,self.windowh - i))'''
-			#WIN SCREEN
-			if self.winbar >= 100:
-				if self.turn == -4:
-					pd = 200 - (50 * res.GSCALE)
-					#LABEL
-					if self.hpl < 0: self.display[0].blit(self.fnt['MININFO'].render(dtb.MENU['victory'], True, (255,255,255)), (pd + 30 + self.mnu, pd - 30))
-					else: self.display[0].blit(self.fnt['MININFO'].render(dtb.MENU['perfect'], True, (255,255,255)), (pd + 30 + self.mnu, pd - 30))
-					#GREENBLOOD
-					for it in ['tube100','tube250']:
-						btls = self.inv.find(None,it,'value')
-						if btls != None and btls[1] >= dtb.ITEMS[res.INVENTORY[btls[0][0]][btls[0][1]][btls[0][2]][btls[0][3]]][5]: btls = None
-					if btls != None:
-						it = res.INVENTORY[btls[0][0]][btls[0][1]][btls[0][2]][btls[0][3]]
-						if btls[1] > 0 and int(200/(dtb.ITEMS[it][5]/btls[1])) >= 1:
-							pygame.draw.rect(self.display[0], (0, 255, 100), pygame.Rect(pd + 40 - self.mnu,300 - int(200/(dtb.ITEMS[it][5]/btls[1])),30,int(200/(dtb.ITEMS[it][5]/btls[1]))))
-							if int(btls[1]) < 90:
-								pygame.draw.ellipse(self.display[0], (32, 219, 166), pygame.Rect(pd + 40 - self.mnu,291 - int(200/(dtb.ITEMS[it][5]/btls[1])),30,13))
-							pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(self.displayzw - pd + self.mnu,280 - int(200/(dtb.ITEMS[it][5]/btls[1])),50,20))
-							self.display[1].blit(self.fnt['DEFAULT'].render(str(btls[1]) + 'ml', True, (0,0,0)), ((self.displayzw - (5 + pd) + self.mnu) * res.GSCALE, (285 - int(200/(dtb.ITEMS[it][5]/int(btls[1])))) * res.GSCALE))
-						self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'gbbar.png'), (pd + 40, pd + 20))
-					#PARTY XP
-					for i in range(len(res.PARTY[res.FORMATION])):
-						if self.mnu > 0: mvx = self.mnu
-						else: mvx = 0
-						self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(res.PARTY[res.FORMATION][i]) + '.png'), (pd + mvx, pd + 20 + (i * 30)))
-						pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(pd + 30 + mvx,pd + 20 + (i * 30),100,20))
-						if self.barxp[i] > 0: pygame.draw.rect(self.display[0], (0, 255, 100), pygame.Rect(pd + 30 + mvx,pd + 20 + (i * 30),self.barxp[i],20))
-					#LEVEL UP
-					bw = (self.displayzw * 2) - pd
-					ch = res.CHARACTERS[res.PARTY[res.FORMATION][self.exvar]]
-					if ch['LEVEL'] > 0:
-						#self.display[1].blit(self.fnt['DEFAULT'].render(dtb.BATTLE[39] + ' +' + str(ch['STRENGHT'][ch['LEVEL']] - ch['STRENGHT'][ch['LEVEL'] - 1]), True, (255,255,255)), ((1000 + self.mnu) * 2, 260))
-						pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(bw + self.mnu,120,100,15))
-						pygame.draw.rect(self.display[0], (255, 255, 0), pygame.Rect(bw + self.mnu,120,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['STRENGHT'][ch['LEVEL']] + ch['BONUS'][0]))),15))
-						if dtb.CLASSES[ch['CLASS']]['STRENGHT'][ch['LEVEL'] - 1] > 0: pygame.draw.rect(self.display[0], (0, 255, 100), pygame.Rect(bw + self.mnu,120,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['STRENGHT'][ch['LEVEL'] - 1] + ch['BONUS'][0]))),15))
-						#self.display[1].blit(self.fnt['DEFAULT'].render(dtb.BATTLE[40] + ' +' + str(ch['ATTACK'][ch['LEVEL']] - ch['ATTACK'][ch['LEVEL'] - 1]), True, (255,255,255)), ((1000 + self.mnu) * 2, 290))
-						pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(bw + self.mnu,145,100,15))
-						pygame.draw.rect(self.display[0], (255, 255, 0), pygame.Rect(bw + self.mnu,145,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']] + ch['BONUS'][1]))),15))
-						if dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL'] - 1] > 0: pygame.draw.rect(self.display[0], (0, 255, 100), pygame.Rect(bw + self.mnu,145,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL'] - 1] + ch['BONUS'][1]))),15))
-						#self.display[1].blit(self.fnt['DEFAULT'].render(dtb.BATTLE[41] + ' +' + str(ch['AGILITY'][ch['LEVEL']] - ch['AGILITY'][ch['LEVEL'] - 1]), True, (255,255,255)), ((1000 + self.mnu) * 2, 320))
-						pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(bw + self.mnu,170,100,15))
-						pygame.draw.rect(self.display[0], (255, 255, 0), pygame.Rect(bw + self.mnu,170,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['AGILITY'][ch['LEVEL']] + ch['BONUS'][2]))),15))
-						if dtb.CLASSES[ch['CLASS']]['AGILITY'][ch['LEVEL'] - 1] > 0: pygame.draw.rect(self.display[0], (0, 255, 100), pygame.Rect(bw + self.mnu,170,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['AGILITY'][ch['LEVEL'] - 1] + ch['BONUS'][2]))),15))
-						#self.display[1].blit(self.fnt['DEFAULT'].render(dtb.BATTLE[42] + ' +' + str(ch['RESISTANCE'][ch['LEVEL']] - ch['RESISTANCE'][ch['LEVEL'] - 1]), True, (255,255,255)), ((1000 + self.mnu) * 2, 350))
-						pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(bw + self.mnu,195,100,15))
-						pygame.draw.rect(self.display[0], (255, 255, 0), pygame.Rect(bw + self.mnu,195,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['KNOWLEDGE'][ch['LEVEL']] + ch['BONUS'][3]))),15))
-						if dtb.CLASSES[ch['CLASS']]['KNOWLEDGE'][ch['LEVEL'] - 1] > 0: pygame.draw.rect(self.display[0], (0, 255, 100), pygame.Rect(bw + self.mnu,195,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['KNOWLEDGE'][ch['LEVEL'] - 1] + ch['BONUS'][3]))),15))
-						#self.display[1].blit(self.fnt['DEFAULT'].render(dtb.BATTLE[43] + ' +' + str(ch['RESISTANCE'][ch['LEVEL']] - ch['RESISTANCE'][ch['LEVEL'] - 1]), True, (255,255,255)), ((1000 + self.mnu) * 2, 380))
-						pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(bw + self.mnu,220,100,15))
-						pygame.draw.rect(self.display[0], (255, 255, 0), pygame.Rect(bw + self.mnu,220,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['CHARISMA'][ch['LEVEL']] + ch['BONUS'][4]))),15))
-						if dtb.CLASSES[ch['CLASS']]['CHARISMA'][ch['LEVEL'] - 1] > 0: pygame.draw.rect(self.display[0], (0, 255, 100), pygame.Rect(bw + self.mnu,220,math.floor(100/(100/(dtb.CLASSES[ch['CLASS']]['CHARISMA'][ch['LEVEL'] - 1] + ch['BONUS'][4]))),15))
-						if self.lopt == -1: n = random.randint(0,6)
-						elif self.lopt == -2: n = ' '
-						else: n = self.lopt
-						pygame.draw.rect(self.display[0], (50, 50, 50), pygame.Rect(bw + 110 + self.mnu,145,15,15))
-						self.display[1].blit(self.fnt['DEFAULT'].render(str(n), True, (240,240,240)), ((bw + 115 + self.mnu) * res.GSCALE, 295))
-						
-						if self.mnu <= 0:
-							pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,0,self.displayzw,self.winbar))
-							pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,self.displayzh - self.winbar,self.displayzw,self.winbar))
-						
-						self.display[0].blit(self.fnt['MININFO'].render(ch['NAME'].lower(), True, (255,255,255)), (800 + self.mnu, 30))
-						self.display[1].blit(self.fnt['DEFAULT'].render(dtb.MENU['level_up'] + str(dtb.CNAMES[ch['CLASS']][ch['LEVEL'] - 1]) + ' !', True, (255,255,255)), ((800 + self.mnu) * res.GSCALE, 70 * res.GSCALE))
-				#LOST SCREEN
-				elif self.turn == -5:
-					self.display[0].blit(self.fnt['MININFO'].render(dtb.MENU['lost'], True, (255,255,255)), (200 + self.mnu, 70))
-					self.display[1].blit(self.fnt['DEFAULT'].render('-$100', True, (255,255,255)), ((200 + self.mnu) * res.GSCALE, 240))
-		#HITISPLAY
+			#HITISPLAY
 		if len(self.dmg) > 0:
 			for i in range(len(self.dmg)):
 				if self.dmg[i]['INFO'] == None:

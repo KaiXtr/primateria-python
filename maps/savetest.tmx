@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="9" height="9" tilewidth="30" tileheight="30" infinite="0" nextlayerid="14" nextobjectid="77">
+<map version="1.2" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="9" height="12" tilewidth="30" tileheight="30" infinite="0" nextlayerid="14" nextobjectid="77">
 	<floor>
 		<layer id="0" width="9" height="9">
+			001,001,001,001,001,001,001,001,001
+			001,001,001,001,001,001,001,001,001
+			001,001,001,001,001,001,001,001,001
 			581,581,579,576,591,576,579,347,347
 			581,581,579,576,591,576,579,347,347
 			579,579,579,577,577,577,579,579,579
