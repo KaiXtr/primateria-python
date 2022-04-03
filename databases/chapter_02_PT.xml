@@ -1,0 +1,39 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="2">
+		<name value="14"/>: Intrigante. Já vi que vou ter muito trabalho...<br/>
+		Todos esses acontecimentos ocorreram entre os meses de Janeiro e Abril, certo?<br/>
+		<name value="1"/>: Certo.<br/>
+		<name value="14"/>: Ok. A partir de então vocês dois saíram muito?<br/>
+		<name value="1"/>: Pode se dizer que sim.<br/>
+		<name value="14"/>: E os acontecimentos no Edifício e sua posterior entrada como mercenária foram eventos após o assalto á FIOCRUZ, certo?<br/>
+		<name value="1"/>: Sim.<br/>
+		<name value="14"/>: Preciso de detalhes sobre esse ocorrido. Por favor, <name value="4"/>.<br/>
+		<name value="4"/>: Claro. Bom, antes disso, preciso mencionar um fato que pode ser muito importante para a investigação.<br/>
+		Antes de eu receber as amostras, eu fui chamada por cientistas para ir até Lagoa Santa...
+	</chapter>
+	<dialog key="CH2PIETRA">
+		<spk/>Olá?<input time="100"/>Eu tô apertada, sabe?<answer/>j-já vou sair!<answer/>Eu espero...<input time="100"/>
+		Finalm-<sleep time="100"/>Você tá bem?<answer/><mini>não.</mini><input time="100"/>Ah...desculpa...<answer/>
+		Você não tem culpa de nada. Por que você tá chorando?<answer/>Nada demais. Sério não precisa se preocupar.<answer/>
+		...tá bom então...<answer/>Só um desgraçado que não liga pra ninguém e só se importa com ele mesmo! Nunca tem tempo pra 
+		nada! E ainda cobra de mim!<answer/>...é um cara?<answer/>A gente não se vê faz meses.<input/>Só conseguimos se falar 
+		por telefone.<input/>Ele sempre diz que vai voltar algum dia mas nunca vem!<answer/>Bom...pelo menos ele se importa...
+		<input time="30"/>...não?<answer/>Ele finge que se importa, fica fazendo falsas promessas e me fazendo de otária!
+		<answer/>É seu namorado?<answer/>Não...<br/>Quer dizer...<br/>Não mais...<br/>Ele era...<br/>É complicado...<input/>
+		Você acha que deveria esquecer?<answer/>Honestamente...<input time="40"/>Sim, você deveria.<answer/>
+		Mas eu ainda gosto dele!<answer/>Olha, você tem que parar de se prender á pessoas que não te fazem feliz.<input/>
+		A vida é assim.<answer/>Entendo...<answer/>Vai fazer bem pra você.<input/>Uma hora isso passa.<answer/>
+		...entendi.<answer/>Ok?<answer/>Ok.<answer/>Então tira essa lágrima do rosto e vai se divertir.<input/>
+		Se quiser posso ir contigo, tá sozinha?<answer/>Não, mas pode vir.<answer/>Ah, obrigada!<answer time="100"/>
+		Você DEVE vir.<answer/>Eu sei menina, relaxa! Como se chama?<answer time="100"/>Pietra.<answer/>
+		Que isso garota pera aí...<answer/>Obrigada por me escutar, mas preciso ir direto para o que interessa, tá?<answer/>
+		Caramba, eu achei que tinha criado um laço de amizade aqui!<answer/>Olha...não tem nada a ver comigo! Me pediram para 
+		fazer isso, tá bom?<answer/>Fala logo o que você quer!<answer/>Preciso das suas amostras.<answer/>É o que?<answer/>
+		FOI O QUE ME PEDIRAM!!<spk/>Mas quem te pediu?<spk/><shk>ANDA LOGO COM ISSO!<answer time="100"/></shk>
+		Elas estão no laboratório.<answer/>Eu sei que estão no laboratório. Você vai me levar até a sala onde estão guardados 
+		e entragar para mim!<answer/>Você tá de...<undo/><sleep time="50"/>Eu não faria isso!<answer/>Olha aqui, eu não sou 
+		burra e sei que se eu atirar aqui dentro vão me prender. Mas eu posso muito bem te fazer ir para meu carro com a pistola 
+		nas suas costas!<answer/>Você não faria isso.<answer/>Não mesmo. Mas adivinha? Eu tenho que fazer!<answer/>Ei pera!
+		<input time="100"/>Tá vindo alguém!<spk/><shk>DROGA! SE ESCON</shk><battle index="pietra"/>
+	</dialog>
+</data>

@@ -1,0 +1,27 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="12">
+		<name value="14"/>: Olha...Devo admitir que antes eu estava bravo com vocês, mas o que vocês fizeram por essa região é impressionante, mesmo.<br/>
+		Quem diria que o acaso iria unir pessoas tão diferentes para resolver mistérios?<br/>
+		<name value="0"/>: Verdade...<br/><name value="1"/>: Concordo...<br/>
+		<name value="14"/>: Consegui cobrir quase todos os eventos desse ano. Em Julho não fizeram nada?<br/>
+		<name value="0"/>: Eu fiquei caçando, normal.<br/>
+		<name value="3"/>: Eu visitei minha família.<br/>
+		<name value="1"/>: Botei minhas matérias em dia e viajei para Angra com meu marido.<br/>
+		<name value="4"/>: Também viajei, fiz um cursinho de férias e participei de pesquisas.<br/>
+		<name value="5"/>: Visitei a família e levei meu filho para passear.<br/>
+		<name value="14"/>: E você, <name value="2"/>?<br/>
+		<name value="2"/>: Eu não tenho férias.<br/>
+		<name value="14"/>: Entendi...<br/>
+		E nesses últimos meses, muitos mistérios?<br/>
+		<name value="0"/>: Até então, nada. Pelo menos nada muito impressionante.<br/>
+		A gente já tinha dado conta da maioria dos casos. A região estava tranquila de novo.<br/>
+		<br/>
+		Tranquila até demais...
+	</chapter>
+	<dialog key="POLTERGEIST">
+		<select>
+			<option text="Você está aqui?"><sleep time="120"/>Mexeu!<br/>Como isso é possível?<spk/>Silêncio!<input/></option>
+			<option text="Charlie Charlie"></option>
+		</select>
+	</dialog>
+</data>

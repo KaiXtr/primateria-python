@@ -1,0 +1,41 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="6">
+		<name value="14"/>: Impressionante...<br/>
+		<name value="1"/>: Pois é...<br/>
+		<name value="14"/>: Uma médium...<br/>
+		Você estuda psicologia, certo?<br/>
+		<name value="14"/>: Sim.<br/>
+		<name value="14"/>: Isto não cria dúvidas na sua cabeça?<br/>
+		<name value="14"/>: Muitas! Muitas mesmo! Na verdade, até hoje não sei como tenho esse dom.<br/>
+		<name value="14"/>: Peculiar. Ok, acho que já terminei com você.<br/>
+		<name value="14"/>: Sem mais perguntas?<br/>
+		<name value="14"/>: Mais nenhuma. Agora que ele está aqui, quero ouvir a versão dele sobre o assalto á FIOCRUZ.<br/>
+		<name value="0"/>: ...<br/>
+		<name value="1"/>: ...<br/>
+		<name value="3"/>: ...<br/>
+		<name value="4"/>: ...<br/>
+		<name value="5"/>: ...para defesa?<br/>
+		<name value="14"/>: Não. Apenas preciso escutá-lo. Sei que ele tem informações valiosas.<br/>
+		<name value="5"/>: Desculpa, Senhor Dalibor, mas creio que pode obter essas informações comigo!<br/>
+		<name value="14"/>: Agradeço a ajuda, mas quero escutar todos os lados da história.<br/>
+		<name value="2"/>, pode me dizer como organizou o assalto, o que pretendia e o que levou á sua liberdade, após quase matar
+		<name value="1"/>?<br/>
+		<name value="2"/>: Posso sim, senhor...
+	</chapter>
+	<dialog key="CH6VINICIUS">
+		<spk/>Fiocruz?<answer/>Pois é.<answer/>Por que a gente assaltaria um lugar desses?<answer/>Ele falou que lá dentro tem 
+		uma coisa muito importante. Ao que parece são amostras de sangue.<answer time="20"/>...ele quer fraldar um teste de 
+		DNA?<answer/>Eu lá vou saber cara! Mas parece que ele vai pagar bastante pra gente fazer isso!<input/>E a gente também 
+		tem algumas informações pra nos ajudar!<input/>Vocês estão sabendo da festa que vai ter lá na Boate 021, certo?<answer/>
+		Ahã.<spk/>Então, lá vai estar uma pesquisadora que é a quem manda nas amostras. É só a gente ir atrás dela!<answer/>
+		Ah, vai ser moleza!<input/>
+	</dialog>
+	<dialog key="CH6BIANCA">
+		<scene>
+			O QUE VOCÊS QUEREM?!<answer/>Bora logo, <name value="2"/>! Atrás dela!<answer time="30"/>Hã?<input time="30"/>
+			Sai da frente!<answer/><name value="2"/>! É uma emboscada!<answer/>Não! Eles estão malucos!<input/>
+		</scene>
+		<scene>Ela está escapando!<input/></scene>
+		<scene>Quem foi que deu açúcar mascavo para eles?<input/></scene>
+	</dialog>
+</data>

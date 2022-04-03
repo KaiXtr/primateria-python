@@ -1,0 +1,575 @@
+<!--
+DIALOG PROTOCOLS IN INT
+speaker (who) - change speaker
+getch - wait for input
+answer - wait for input and change speaker
+2 - dialog name
+prologue - start chapter
+epilogue - exit chapter/chapter ending
+
+DIALOG PROTOCOLS IN TUPLE
+set - dialog settings (voice/type/font,value)
+get - get item/money (item/quantity,price,dlgsav,properties)
+ethic - morality (quantity,check,[if text],[else text])
+add - insert text (dtalks index/party member/time)
+call - call (contact index)
+mail - new email (email index)
+task - task (task index/item,text incomplete,text complete)
+contact - new contact (contact index)
+achievement - achievement (achievement index)
+relationship - relationship ((from,to),check,[if ttext],[else text])
+select-option - dialog choices ([text]...)
+go-return - walk in dialog (quantity)
+gui - gui class (gui class)
+battle - battle (enemies,(repeat))
+probability-chance - probabiliy ([probability,text],...)
+play - play sfx/music (sound/song)
+if - if character in party (party index, text)
+queue - waitlist (name,time,{type,who,index})
+party - change party
+datetime - set datetime (time,date)
+20 - attribute change (quantity,proficiency)
+jmp - dlgsav (dialog key, dialog index)
+22 - name party (answer)
+insert - insert dialog (dialog key,dialog index)
+move - move character (npc index,(x,y),direction,sprite key)
+emote - character emotion (npc index,sprite key)
+cam - camera (npc index)
+sleep - wait (time)
+28 - tutorial (tutorial key)
+goto - go to place (map name,x,y)
+30 - add character ((x,y),npc index,npc who)
+censor - censorship (original, censored)
+-->
+
+<data lang="PT" charset="utf-8">
+	<!--WARNINGS-->
+	<dialog key="INVSHIRT">Não é uma boa idéia tirar a camisa aqui.<input/>Se eu tivesse ao menos um provador...<input/></dialog>
+	<dialog key="INVPANTS">Não é uma boa idéia tirar a calça aqui.<input/>Se eu tivesse ao menos um provador...<input/></dialog>
+	<dialog key="OVERPLAY">
+		Desculpe interromper. Mas é uma história muito longa para se contar de uma só vez.<input/>
+		Não vai querer continuar amanhã? Nós gravamos tudo o que você falou.<input/>E então?
+		<select>
+			<option text="Tudo bem">Ótimo.<br/>Rapazes, guardem suas coisas.<exit/></option>
+			<option text="Espere um pouco">Tá bom então...Vamos prosseguir.<input/></option>
+		</select>
+	</dialog>
+
+	<!--ENEMIES-->
+	<dialog key="BATTLEDIALOG">
+		<select>
+			<option text="Motivar"></option>
+			<option text="Ameaçar"></option>
+			<option text="Negociar"></option>
+			<option text="Misericórdia"></option>
+		</select>
+	</dialog>
+	<dialog key="IRRATIONAL">Impossível estabelecer comunicação com uma criatura irracional.<input/></dialog>
+	<dialog key="4.1.1">Miau.<input/></dialog>
+	<dialog key="EMOHIPSTER">
+		<select>
+			<option text="O que você escuta?">
+				Conhece Santos Baianos? Aquela banda?
+				<select>
+					<option text="Eu também gosto!">Sério?! Ai meu deus! Que legal!</option>
+					<option text="Já ouvi falar.">É muito boa cara, você tem que escutar!</option>
+				</select>
+			</option>
+			<option text="Se manda daqui, barbudo!">
+				Como é que é? O que você tem contra barba?
+				<select>
+					<option text="Nada oxe">É bom mesmo...</option>
+					<option text="Isso não é barba!">M-mas...eu cuido tanto dela...</option>
+				</select>
+			</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="HOTMAN">
+		<select>
+			<option text="Cê tá bem mano?">Claro que não né?? Estou queimando feito palha nessa desgraça!</option>
+			<option text="Vaza ou meto chumbo">Eu não tenho medo de você!</option>
+			<option text="A gente não quer nada contigo">Mas eu quero! Preciso de sangue!!</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="EDMOTO">
+		<select>
+			<option text="ED MOTA??">Não!<input/>Meu nome não é mais Ed Mota! De agora em diante meu nome será...<input/>ED MOTO!</option>
+		</select>
+	</dialog>
+
+	<!--BOSSES-->
+	<dialog key="MRKITE">
+		<select>
+			<option text="Pra quê está fazendo isso?">Eu não vou deixar vocês fazerem palhaçada aqui! Não vão estragar meu show!</option>
+			<option text="Deixa a gente te ajudar!">
+				Eu não preciso da ajuda de ninguém!<input/>Com quem pensa que está falando? Eu sou o grande empresário MR.KITE!
+				<select>
+					<option text="Você vai cavar a própria cova!">Besteiras! Vocês não entendem!</option>
+					<option text="Você vai estragar a própria carreira!">
+						Do que está falando, criança insolente?
+						<select>
+							<option text="Eu não sou uma criança!">Comparados á mim, não passam de jovens imaturos!</option>
+							<option text="Imagine o que irá acontecer se descobrirem o que aconteceu!">
+								Não seja pessimista! É isso que o público quer, afinal!<input/>
+								Os teatros abertos! Pessoas fantasiadas por aí! Monstros para se combater!<input/>
+								Eu serei o apresentador do circo do caos! Farei o que ninguém mais fez!
+								<select>
+									<option text="Você é louco!">Os maiores gênios também foram os maiores loucos!</option>
+									<option text="Dragunok também faz isso">NÃO OUSE FALAR ESSE NOME!!!</option>
+								</select>
+							</option>
+						</select>
+					</option>
+				</select>
+			</option>
+		</select>
+		<input/>
+	</dialog>
+
+	<!--STRANGER-->
+	<dialog key="STNPC">
+		<select type="random">
+			<option id="1">Oi...eu te conheço?</option>
+			<option id="2">Você não deveria estar falando com estranhos</option>
+			<option id="3">Agora não! Eu tô com pressa!</option>
+			<option id="4">Afe, mercenários...</option>
+			<option id="5">Não quero falar com você.</option>
+			<option id="6">Licença.</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="STDOOR">
+		<select type="random">
+			<option id="1">Não conheço você.</option>
+			<option id="2">Quem é você?</option>
+			<option id="3">O que você quer?</option>
+			<option id="4">Vai embora!</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="STDOOR_HOTEL">
+		<select type="random">
+			<option id="1">Esse é meu quarto.</option>
+			<option id="2">Aqui não é seu quarto. Está perdido?</option>
+		</select>
+		<input/>
+	</dialog>
+
+	<!--CITIZENS-->
+	<dialog key="PRETTY_MOM">Minha filha tá me pertubando pra levar alguns doces pra ela.<input/>É assim toda hora, ela vai parar já já.<input/></dialog>
+	<dialog key="PRESSING_CHILD">Mãe! Tem tantos doces aqui!<br/>Eu quero!<br/>Eu quero!<br/>EU QUERO!<input/></dialog>
+	<dialog key="SKEPTICAL_MAN">Estão falando que tem uma anomalia solta na rodovia.<br/>Sendo honesto, eu não acredito que existam anomalias.<input/></dialog>
+	<dialog key="BUS_WAITER">Esse ônibus demora mesmo.<br/>Pego ele todo dia pra descer a serra até a capital.<input/><emote value="anger"/>São só 4h de viagem!<input/></dialog>
+	<dialog key="SQUARE_OLD_MAN">
+		Eu adoro alimentar os pombinhos. Ainda mais aqueles que tem um monte de penas lindas no rabo.
+		<select>
+			<option text="Como assim?">Elas chegam a hipnotizar...<br/>Eu fico olhando e perco a noção do tempo.</option>
+			<option text="Legal">São adoráveis.</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="HOMELESS_MAN">
+		Pode me dar um trocado por favor?
+		<select>
+			<option text="...">É sempre assim...</option>
+			<option text="Tudo bem">Deus te abençoe!<get money="-1"/></option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="YOUNG_MON">
+		Meu filho adora brincar nesse monte de areia.<input/>Também gosto porque o sinal da praça é muito bom.
+		<select>
+			<option text="o quão bom?">
+				Quê?
+				<select>
+					<option text="O quão bom?">
+						Ah...Dá pra ver as notícias e mexer na internet.<input/>Não é muita coisa porque meu celular é de tecla.
+						<input/>mal posso esperar ter um daqueles celulares novos que você pode tocar na tela.
+					</option>
+					<option text="Esquece">Ah tá.</option>
+				</select>
+			</option>
+			<option text="Não é pra tanto">É o que você pensa.<input/>Pelo menos é melhor do que em outras cidades.</option>
+			<option text="Mas é só aqui?">Meio que sim.<input/>O sinal só é bom mesmo na praça.<input/>Mas dá pra usar o sinal em outros lugares também.</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="FUNNY_KID">Iaaaaaaá!<answer/>Que fofo.<input/></dialog>
+	<dialog key="INFORMED_MAN">
+		Eu sempre vejo as notícias na televisão. Mas quando a internet está boa eu vejo no celular também.
+		<select>
+			<option text="Deveria ver mais jornais">
+				Vai por mim, hoje em dia é mais que necessário.<input/>Ainda mais com essa onda de crimes por causa dos mercenários.
+				<input/>Eles avisam quando tá tendo caça na região.
+			</option>
+			<option text="Não gosto muito de notícias">
+				Mas por que?
+				<select>
+					<option text="É muita violência">
+						Eu também acho.<input/>Mas é a vida. Se não se informar, pode perder muita coisa importante.
+					</option>
+					<option text="Não tenho tempo pra isso">
+						Ler um artigo não faz mal cara.<input/>Não demora muito, é bom parar a correria do dia pra ler alguma coisa.
+					</option>
+					<option text="É tudo mentira">
+						Eu concordo. Mas sei lá, quem não mente hoje?<input/>Eu faço assim, leio a matéria, mas com uma certa 
+						desconfiança.<input/>Eu preciso me informar, mas se eu sair acreditando em tudo que vejo, aí eu posso 
+						acabar espalhando mentiras.
+					</option>
+				</select>
+			</option>
+		</select>
+	</dialog>
+
+	<!--CHESTS-->
+	<dialog key="EMPTY_CHEST">Não tem nada aqui...<input/></dialog>
+	<dialog key="HHBEDROOMCHEST"><get item="key_bedroom" key="HHBEDROOMCHEST" property="0001"/></dialog>
+	<dialog key="SIDNEY_NIGHTSTAND">
+		<select type="character">
+			<option><get item="food_peanut_candy" key="SIDNEY_NIGHTSTAND"/></option>
+			<option>Não deveria mexer nas coisas dos outros<input/></option>
+		</select>
+	</dialog>
+	<dialog key="HH_FRIDGE">
+		<select type="character">
+			<option><get item="drink_beer" key="HH_FRIDGE"/></option>
+			<option>Não deveria mexer nas coisas dos outros<input/></option>
+		</select>
+	</dialog>
+	<dialog key="TRASH_CAN"><get item="melee_bottle" key="TRASH_CAN"/></dialog>
+
+	<!--POSTERS-->
+	<dialog key="TAROT_POSTER">BÚZIOS E CARTAS<br/>Trago seu amor aos seus pés!<br/>CONTATO: 978543322<input/></dialog>
+	<dialog key="MISSING_POSTER1">'PROCURA-SE Talita Manhães<br/>Se você a viu, favor ligue para: 992120342<input/></dialog>
+
+	<!--SHOPPING-->
+	<dialog key="POPCORN_KART">
+		<add type="time"/>, <add type="pronoun"/>!
+		<select>
+			<option text="Quanto é a pipoca?">A pipoca salgada é 5$<br/>e a pipoca doce é 6$<input/><return/></option>
+			<option text="Gostaria de uma pipoca salgada">Aqui está!<get item="food_popcorn" price="5"/>Obrigado.</option>
+			<option text="Gostaria de uma pipoca doce">Aqui está!<get item="food_popcorn_candy" price="5"/>Obrigado.</option>
+			<option text="Estou só olhando"></option>
+		</select>
+	</dialog>
+	<dialog key="CHURROS_KART">
+		<add type="time"/>, <add type="pronoun"/>!
+		<select>
+			<option text="Quanto é um churros?">O churros é 5$<input/><return/></option>
+			<option text="Gostaria de um churros">Aqui está!<get item="food_churros" price="5"/>Obrigado.</option>
+			<option text="Estou só olhando."></option>
+		</select>
+	</dialog>
+	<dialog key="BLOOD_BANK">
+		<select type="blood">
+			<option value="0">Ei! Você não tem sangue nenhum! Volte quando tiver pego alguma coisa!</option>
+			<option value="20">Só isso? Vou dar sua recompensa, mas poderia ter se esforçado mais.</option>
+			<option value="50">Você conseguiu bastante sangue. Aqui está sua recompensa.</option>
+			<option value="100">Uau! isso é muito sangue! Aqui está sua recompensa pelo seu trabalho duro!</option>
+		</select>
+		<nomoney>Não tem carteira? Nem cartão? E como é que vou te pagar?</nomoney>
+		<get money="blood"/>
+		<input/>
+	</dialog>
+	<dialog key="PIZZA_DELIVERY_MUSSARELLA">Aqui está.<get item="food_pizza_mussarella" price="20"/><move direction="7"/></dialog>
+	<dialog key="PIZZA_DELIVERY_SHAGGY">Aqui está.<get item="food_pizza_shaggy" price="20"/><move direction="7"/></dialog>
+	<dialog key="PIZZA_DELIVERY_CHICKEN">Aqui está.<get item="food_pizza_chicken" price="20"/><move direction="7"/></dialog>
+	<dialog key="PIZZA_DELIVERY_4CHEESE">Aqui está.<get item="food_pizza_4cheese" price="20"/><move direction="7"/></dialog>
+
+	<!--BANK-->
+	<dialog key="BANK_GUARD">Ponha qualquer objeto de metal que tiver na caixa ao lado.<input/></dialog>
+	<dialog key="UNLUCKY_MAN">Não é possível uma coisa dessas!<input/>O caixa acabou de entrar em manutenção!<input/>ERA MINHA VEZ!<input/></dialog>
+	<dialog key="OLD_WOMAN">Como que faz pra tirar a telesena aqui?<input/></dialog>
+
+	<!--HOSPITAL-->
+	<dialog key="DOCTOR">Você sofreu várias fraturas no corpo. A conta dos cuidados foi de $100 por pessoa.<input/></dialog>
+	<dialog key="WORRIED_NURSE">Você deveria se cuidar mais. É muito comum te ver por aqui.<input/></dialog>
+	<dialog key="HINT_NURSE">Tome cuidado com sua vida!<input/>Não digo por causa da saúde, mas pelo dinheiro.<br/>Se não tiver dinheiro da próxima vez, pode entrar em prejuízo.<input/>Mas se quiser dar mais lucro para nós, se quebre á vontade!<input/></dialog>
+	<dialog key="DEATH_COUNTS">Você já parou no hospital <add type="deaths"/> vezes.<input/>
+		<select type="death">
+			<option value="10">Mas isso nem é nada.<br/>O que você está passando é só o começo.</option>
+			<option value="20">Já está normal ver você por aqui.</option>
+			<option value="30">Devia fazer amizade com as enfermeiras. É o paciente número 1 delas.</option>
+			<option value="40">Coitado...Você quer morar aqui, né?</option>
+			<option value="50">Mano...Tá tudo bem? Você tá vindo muitas e muitas vezes aqui!<getch/>Com certeza você tá todo rachado!</option>
+			<option value=">50">Estou impressionado.<getch/>Nunca vi ninguém parar no hospital mais de 50 vezes na vida.</option>
+		</select>
+	</dialog>
+	<dialog key="OLD_MAN">É bom você sempre tirar dúvidas com o entendido do assunto.<input/>Minha filha comprou um antibiótico e pensou que era pra beber.<br/>Agora ela tá no hospital...<input/>Essa menina...<input/></dialog>
+	<dialog key="INJURED_DAUGHTER">É bem vergonhoso dizer o motivo...<br/>Mas estou internada porque bebi antibiótico.<input/>Devia ter escutado meu pai...<input/></dialog>
+	<dialog key="PATIENT1">Eu quero ir pra casa logo! A comida daqui é horrível!<input/></dialog>
+	<dialog key="IMPATIENT_PATIENT">Eu tô na fila desde anteontem. Parece até que nunca anda!<input/></dialog>
+
+	<!--DRUGSTORE-->
+	<dialog key="FARMACEUTIC">
+		Não sabe que remédios comprar?
+		<select>
+			<option text="Não">
+				O que você quer tratar?
+				<select>
+					<option text="Resfriados e alergias">Se você estiver sentindo algum resfriado, gripe, tontura ou fraqueza,<br/>um simples xarope já basta.</option>
+					<option text="Infecções e hemorragias">Esses são problemas fortes, mas não muito graves. Para infecções, use o antibiótico correspondente ao tipo de contaminação.<input/>Se tiver hemorragias, primeiro cicatrize a ferida e depois ponha um band-aid para evitar mais saída de sangue.</option>
+					<option text="Contaminação e Mal-estar">Caso se sinta alguma coisa parecida, pode ser sinal de envenenamento ou intoxicação.<input/>Existem várias pílulas para diversos tipos de tóxicos.</option>
+				</select>
+				<input/>Mais alguma pergunta?<return/>
+			</option>
+			<option text="Tô de boa">Tudo bem.<br/>Se tiver alguma dúvida é só perguntar. Fique á vontade.</option>
+		</select>
+		<input/>
+	</dialog>
+
+	<!--HOTEL-->
+	<dialog key="HOTEL_ATENDANT">
+		<add type="time"/>! O que deseja?
+		<select>
+			<option text="Uma noite apenas">
+				O custo é de 20 por pessoa.
+				<select>
+					<option text="Ok">Aqui, seu quarto é o N° 902.<get item="key" price="20"/></option>
+					<option text="Deixa pra lá">Volte sempre.</option>
+				</select>
+			</option>
+			<option text="Estou apenas olhando">Sinta-se á vontade</option>
+		</select>
+		<input/>
+	</dialog>
+
+	<!--ELECTRONICS-->
+	<dialog key="BALANCE">
+		<select type="character">
+			<option>PESO: 65kg</option>
+			<option>PESO: 72kg</option>
+			<option>PESO: 67kg</option>
+			<option>PESO: 58kg</option>
+			<option>PESO: 54kg</option>
+			<option>PESO: 63kg</option>
+		</select>
+		<input/>
+	</dialog>
+	<dialog key="OLD_PC">
+		<select type="queue">
+			<option id="1">Esse pc ainda usa Windows XP.</option>
+			<option id="2">O Orkut tá aberto.</option>
+			<option id="3">Estavam usando o MSN.</option>
+		</select>
+		<input/><jmp/>
+	</dialog>
+	<dialog key="MODERN_PC">
+		<select type="queue">
+			<option id="1">No canto da tela diz "Não é genuíno".</option>
+			<option id="2">Que diabos é facebook?</option>
+		</select>
+		<input/><jmp/>
+	</dialog>
+	<dialog key="PS2"><play src="BOOTPS2"/></dialog>
+	<dialog key="MAICONSPS2">
+		<select type="queue">
+			<option id="1">O Maicon tava jogando Bully.</option>
+			<option id="2">Droga!<input/>Esse CD do GTA San Andreas veio com um jogo nada a ver!</option>
+			<option id="3">Se não funcionar, a gente bota de ponta-cabeça.<input/>Nunca falha.</option>
+		</select>
+		<input/><jmp/>
+	</dialog>
+	<dialog key="PLUG">
+		Eu posso encaixar um carregador aqui.
+		<if item="charger">
+			O celular carregou. Foi rápido!
+		</if>
+		<input/>
+	</dialog>
+	<dialog key="OLDTVSID">O Maicon precisa trocar logo essa TV velha.<input/></dialog>
+	<dialog key="TV1">
+		<select type="queue">
+			<option id="1"><play src="TVSHOW1"/>Aí carinha que mora logo ali! Passa um dólar!</option>
+			<option id="2"><play src="TVSHOW2"/>E aí Til Phil!</option>
+			<option id="3"><play src="TVSHOW3"/>
+				QUEM É VELHA COROCA?<input/>Foi o Seu Madruga que disse, Dona Florinda!<input/>AH É?<input/>
+				<play src="LAUGHS"/><sleep time="100"/>E da próxima vez, vá falar mal da sua avó!<input/>
+				Ninguém tem paciência comigo...<input/>"Ninguém tem paciência comigo!"<input/>Só não te dou outra porque...<sleep time="50"/>
+				minha mãe se chamava coroca...
+			</option>
+		</select>
+		<input/><jmp/>
+	</dialog>
+	<dialog key="ATM1">Hora da bufunfa...<input/><gui value="ATM"/></dialog>
+
+	<dialog key="FORTUNE_TELLER">
+		Seja bem vindo!<br/>Está a procura de respostas? Não consegue encontrar seu rumo? Gostaria de conhecer seu destino?
+		<select>
+			<option text="Não, obrigado">Se mudar de idéia, vou estar aqui para ajudar.</option>
+			<option text="Sim">
+				Excelente. Sente-se, por favor.<br/>A verdade está nas cartas. Interpretando elas com atenção, podemos encontrar as respostas que nós procuramos.
+				<select type="character">
+					<option>Lhe aconselho a se preparar para o que vir. Sempre esteja um passo adiante!<input/>Até mais!'</option>
+					<option>Oh meu Deus!<input/>Impressionante...<input/>Nunca vi algo assim antes!<input/>Você irá enfrentar grandes ameaças...Seres sem vida irão te atormentar.<input/>Irá se perder no local que mais conhece e passará por dificuldades em seus relacionamentos.</option>
+					<option>Vejamos...<input/>Você enfrentará tribulações nos seus momentos de maior discontração.<input/>Tentarão lhe tomar o que é de mais valioso para você.Você precisa estar sempre atento e vigilante.</option>
+					<option>Que interessante.<input/>Seus caminhos irão se cruzar com o de uma aprendiz.<br/>Laços firmes e duradouros irão surgir dessa relação.<input/>Mas seus caminhos também irão se cruzar com os de um vingativo.<input/>Alguém se arrependerá de cometer um grave erro que custará sua paz e longevidade.</option>
+				</select>
+			</option>
+		</select>
+		<input/>
+	</dialog>
+
+	<!--PHONE NUMBERS-->
+	<dialog key="69686766">
+		Olá cliente, em que posso ajudar? você está a procura de meus serviços?
+		<select>
+			<option text="Sim">Já tô brotando, sangue bom.<input/><queue type="delivery" time="600" who="MERCATOR"/></option>
+			<option text="Não">Ah, tudo bem. Mas qualquer coisa eu tô por aí, beleza?<input/></option>
+		</select>
+		<wait>Alô? É tu? Pera aí doido eu já tô chegando.<input/></wait>
+	</dialog>
+	<dialog key="53478809">
+		<add type="time"/>! Em que posso ajudar?
+		<select>
+			<option text="Uma pizza de mussarela">Já estamos á caminho.<input/><queue type="delivery" time="600" who="PIZZA_DELIVERY_MUSSARELLA"/></option>
+			<option text="Uma pizza de calabresa">Já estamos á caminho.<input/><queue type="delivery" time="600" who="PIZZA_DELIVERY_SHAGGY"/></option>
+			<option text="Uma pizza de frango">Já estamos á caminho.<input/><queue type="delivery" time="600" who="PIZZA_DELIVERY_CHICKEN"/></option>
+			<option text="Uma pizza de 4 queijos">Já estamos á caminho.<input/><queue type="delivery" time="600" who="PIZZA_DELIVERY_4CHEESE"/></option>
+			<option text="Uma pizza, por favor.">Qual sabor?<return/></option>
+			<option text="foi um engano">Ah, entendo. Tenha um bom dia.</option>
+		</select>
+		<input/>
+		<wait>Alô? É Você? Espere um instante, já estou aí a qualquer momento.<input/></wait>
+	</dialog>
+	<dialog key="09236521">Correios</dialog>
+
+	<dialog key="89074454">Sidney</dialog>
+	<dialog key="91124257">Jane</dialog>
+	<dialog key="90435671">
+		<select>
+			<option><name value="1"/>! Precisamos de você aqui AGORA!<br/>Eu sei que você saiu e coisa e tal, mas a gente PRECISA DE VOCÊ!<br/>Estamos na Av. Jobim, venha logo!<input/><task index="POLTERGEIST"/><jmp/></option>
+			<option>Caramba, <name value="1"/>! Será que você não entende a gravidade da situação?? Só você pode deter essa anomalia!<input/></option>
+		</select>
+	</dialog>
+	<dialog key="26148930">E aí mano? Beleza?<br/>Então, aquela parada da transferência deu certo, adivinha? Amanhã á noite eu tô indo pra Nova Friburgo!<input/>Tá tendo umas paradas estranhas lá, e me mandaram examinar.<br/>Vamos aproveitar pra gente se ver, beleza?<input/></dialog>
+	<dialog key="76564008">Agora não! Eu tô trabalhando!<br/>Me ligue depois, estou fazendo coisa importante aqui!<input/></dialog>
+	<dialog key="90271802">Garoto, o chefe quer te ver o mais cedo possível na delegacia.<input/>Espero que não tenha feito merda...<input/></dialog>
+	<dialog key="23778988" scenes="2">
+		<scene id="0">
+			Alô?<input/><if char="0"><name value="0"/>! A quanto tempo cara!<br/></if>
+			Precisando de ajuda em carregar algumas coisas?<input/>Não tem problema, o pai tá aí pra resolver já já!<input/>
+			<queue type="delivery" time="400" who="23778988" scene="2"/><jmp/>
+		</scene>
+		<scene id="1">Oi? Ah sim, daqui a pouco já chego aí.<input/></scene>
+		<scene id="2">Olá! Me chamou?<input/><gui index="Storage"/><jmp/></scene>
+		<scene id="3">Se precisar de qualquer coisa, é só chamar!<input/><move/><!--(24,'n',('px300','py0'),0)--><jmp scene="0"/></scene>
+	</dialog>
+	<dialog key="77904623">
+		<scene>
+			Hey! Você está bem? Onde você tá? O que tá acontecendo? Você se machucou?
+			<select>
+				<option text="Eu tô bem">Mesmo? Ufa...</option>
+				<option text="Fique calmo">Não consigo me acalmar!</option>
+			</select>
+			<input/>
+			Eu estava preocupado com você!<br/>Mas graças a Deus você está bem.<input/>Aquela mulher chamando vocês aos prantos me deixou assustado...<input/>
+			Você deve estar cansada depois de tudo o que passou.<input/>Engraçado, não é?<br/>
+			Você mal saiu dessa coisa de mercenária e já tá na ativa novamente.<input/>Mas assim...<sleep time="100"/>
+			<select>
+				<option text="Pode falar">
+					Não...é que...<sleep time="50"/>Não quero que a gente se afaste de novo.<input/>
+					Não agora que tá tudo dando muito certo.<input/>Não precisa ser que nem seu amigo mercenário.<input/>
+					Ah é, esqueci de te contar...<br/>Eu fiquei sabendo dele e tudo isso sobre aquela garota.<input/>
+					Bem problemático<input/>Não...<br/>Esquece eu só falei besteira...<input/>
+					Só quero que você não seja ausente como eu fui com você.<input/>Entende?
+					<select>
+						<option text="Sim">Ainda bem que entendeu.</option>
+						<option text="Não">Esquece isso</option>
+					</select>
+				</option>
+				<option text="Eu já ligo de volta">Tudo bem.<br/>Você deve estar muito ocupada agora.</option>	
+			</select>
+			<input/>A gente se fala mais em casa, então.<input/>Te amo, ok?<input/><jmp/>
+		</scene>
+	</dialog>
+	<dialog key="60428331">Vinícius</dialog>
+	<dialog key="">João Grande</dialog>
+	<dialog key="23578103">Sofia</dialog>
+	<dialog key="40028922">Oh, olá! como vai, <name value="0"/>?<br/>Tenho andado ocupada esses dias, muita coisa pra fazer...<input/>Não dá pra falar com você agora, desculpa.<br/>Me ligue mais tarde, ok?<input/></dialog>
+	<dialog key="87690021">Paulo</dialog>
+
+	<dialog key="69696969">Oi gatinho...<br/>Tá afim de brincar? :;):</dialog>
+	<dialog key="78543322">Oi, em que posso ajudar?<input/>Ah...eu já parei de fazer isso há muitos anos. Tchau.<input/></dialog>
+	<dialog key="40028922">
+		<probability>
+			<chance value="99">Que pena...Não foi dessa vez!<input/>Tente novamente em outra hora!<input/></chance>
+			<chance value="1">
+				Alô?<answer/>Alô!<answer/>Quem fala?<name/>.<answer/>Que legal! Quantos anos você tem?
+				<select>
+					<option text="Tenho 12 anos.">Muito bom!<br/>Seguinte <name/>, nós vamos fazer uma brincadeira!<input/></option>
+					<option text="Eu tô nos meus 20.">Minha nossa! Você não é muito velho para assistir esse programa, <name/>?</option>
+				</select>
+			</chance>
+		</probability>
+	</dialog>
+	<dialog key="66666666"><play src="mystery"/>Você vai morrer em sete dias.<input/></dialog>
+
+	<!--EASTER EGGS-->
+	<dialog key="MATRIX_GUY">Você nunca se questionou sobre nossa existência dentro do universo?<input/><play src="THE_X_FILES" loop="true"/>E se nada disso for real? E se tudo for apenas uma enorme simulação? É tudo ilusão da nossa mente? Ou vivemos dentro de uma matrix como dizia Platão?<input/>E SE TUDO ISSO FOR APENAS UM JOGO???<sleep time="100"/><input/></dialog>
+	<dialog key="TWNN">Você tem a hora certa?<input/><play src="TWMN" wait="true"/><spk/>Não.<input/></dialog>
+	<dialog key="KONAMI_GUY">Hey, sabe o que acontece se você apertar cima, cima, baixo, baixo, esquerda, direita, esquerda, direita, B, A e START?<input/>Merda nenhuma!<input/></dialog>
+	<dialog key="MATT_KAI">EU AMO PINK FLOYD<br/>EU AMO PINK FLOYD<br/>EU AMO PINK FLOYD<br/><spk/>Esse é o criador do jogo?<answer/>Ele mesmo.<answer/>Sem nexo.<answer/>Mó fita.<input/></dialog>
+
+	<!--#ADVICES
+	'TEST': [['Queria jogar cartas...',1,(6,'playingcards',['Você tem algumas?',1],['Que conveniente! Você tem cartas!',1,'Que acha de jogar?',(10,['Por que não?',(12,'minigames.TicTacToe()')],['Não, obrigado'])]),(3,'CC','<ele anda pelo quarto.>'),'O que vai acontecer em outro dia?',1,(19,[14,35,0],[15,3,2007,1,1])]],-->
+
+	<!--PRODUCTS-->
+	<dialog key="PRODUCTS1">
+		<products>
+			<product name="food_peanut_candy"/>
+			<product name="locksmith1"/>
+			<product name="cage_big" sale="0.75"/>
+		</products>
+	</dialog>
+	<!--
+	#TUTORIALS
+	'TUTINV': [['Antes disso,','você sabe mexer nas suas coisas?',1,0,'Como assim?',1,0,'Você sabe...','suas coisas!',1,'Sua mochila','Seu inventário.',
+	(10,['Sei sim (pular tutorial)','Ah, que bom!',1,(23,'',0)],['Mais ou menos (tutorial pra experientes)','Já mexeu com','esse tipo de coisa','antes, né?',1,
+	'O jeito que mexo é','um pouco diferente.',1,(23,'TUTINV1',1)],['Não... (tutorial pra iniciantes)','Nunca mexeu com','inventário antes?',1,'Não se preocupe!',
+	'Vou te ensinar direitinho!',1,(23,'TUTINV',2)])],
+	['Como já deve saber,','Você deve acessar seu inventário',(3,(6,0)),'para mexer em seus itens.',1,'Aqui estão todas as suas...','Uísque?',1,0,'Voltei a beber.',1,0,
+	'Entendi...',1,'Enfim,',1,'É muito importante','mexer no seu inventário.',1,'Mas você não pode guardar','tudo o que você quiser!',1,'Cada item tem','um volume e um peso,',
+	'assim como a mochila que','estiver usando.',1,'Por isso você precisa','ver o que você precisa','mesmo levar.',1,'Claro que tem coisas que','realmente não precisa','levar.',1,
+	'Como por exemplo essa','garrafa vazia que','tá ocupando espaço!',1,'Sempre que terminar de usar','seus itens você precisa','jogar o lixo fora!',1,'Alguns itens não deixam lixo,',
+	'mas a maioria deixa.','Vê se joga o lixo','no lugar certo, tá?',1,'Os 4 quadradinhos em pé','são as coisas que está vestindo.',1,'Só vai estar vestindo as roupas','se estiverem nesse espaço.',1,
+	'A mesma coisa acontece com','os 4 quadradinhos deitados.',1,'É onde ficam seus equipamentos','e armas para batalha.',1,'O quadradinho no canto é','sua mochila.',1,'Você vai encontrar mochilas',
+	'que carregam mais itens,','e você pode trocar por aqui.',1,'Por último,','você pode usar seus itens','apertando',(3,(4,0)),1,'Você também pode mover','seus itens apertando',(3,(5,0)),1,
+	'desse jeito você pode','equipar itens, juntar itens,','e até dar para outras pessoas.',1,'Também é desse jeito','que você recarrega armas','coloca tempero nas comidas','e confecciona objetos.',1,
+	'basta colocar um item','em cima de outro item.',1,'Nem sempre vai dar certo,','mas só vai saber se tentar!',1,'O inventário é bem legal','para se mexer.',1,'Por isso não tenha','medo de ficar brincando com ele.',1,(23,'',0)],
+	['Você deve acessar seu inventário',(3,(6,0)),'para mexer em seus itens.',1,'Aqui estão todas as suas...','Uísque?',1,0,'Voltei a beber.',1,0,'Entendi...',1,'Enfim,','Todas as coisas e objetos','que pegar vão ficar','guardados aqui.',1,
+	'comida, bebida, remédios,','roupas, armas, aparelhos,','munição, chaves e até lixo!',1,'É muito importante','mexer no seu inventário.',1,'Mas você não pode guardar','tudo o que você quiser!',1,
+	'Cada item tem','um volume e um peso,','assim como a mochila que','estiver usando.','Não vai caber tudo na sua mochila.',1,'Por isso você precisa','ver o que você precisa','mesmo levar.',1,'Claro que tem coisas que','realmente não precisa','levar.',1,'Como por exemplo essa','garrafa vazia que','tá ocupando espaço!',1,'Sempre que terminar de usar','seus itens você precisa','jogar o lixo fora!',1,'Alguns itens não deixam lixo,','mas a maioria deixa.','Vê se joga o lixo','no lugar certo, tá?',1,'Você deve ter visto','que alguns quadrados','estão afastados, né?',1,'Os 4 quadradinhos em pé','são as coisas que está vestindo.',1,'Como disse, você pode guardar roupas','mas só vai estar vestindo elas','se estiver nesse espaço.',1,'Roupas aumentam sua defesa','além de te deixar mais estiloso!',1,'A mesma coisa acontece com','os 5 quadradinhos deitados.',1,'É onde ficam seus equipamentos','e armas para batalha.',1,'O quadradinho no canto é','sua mochila.',1,'Lembra que falei que','mochilas tem volume e peso?',1,'Você vai encontrar mochilas','que carregam mais itens,','e você pode trocar por aqui.',1,'Por último,','você pode usar seus itens','apertando',(3,(4,0)),1,'É por aqui que você pode','comer, beber, essas coisas.',1,'Você também pode mover','seus itens apertando',(3,(5,0)),1,'desse jeito você pode','equipar itens, juntar itens,','e até dar para outras pessoas.',1,'Também é útil para dar uma','organizada!',1,'Também é desse jeito','que você recarrega armas','coloca tempero nas comidas','e confecciona objetos.',1,'basta colocar um item','em cima de outro item.',1,'Nem sempre vai dar certo,','mas só vai saber se tentar!',1,'O inventário é bem legal','para se mexer.',1,'Por isso não tenha','medo de ficar brincando com ele.',1,'Ele não vai te morder.',1,(23,'',0)]],
+
+	'TUTGB': [[0,'Mas como vocês ganham dinheiro?',1,0,'Isso é interessante.',1,'Nós caçadores de anomalias','ganhamos dinheiro com contratos.','Recebemos uma ligação','e uma pessoa paga a gente','para fazer um serviço.',1,'Seja um monstro que está','atrapalhando um fazendeiro,','ou uma aberração que','matou vários civis.',1,0,'Meu Deus...',0,'...mas o mais daora','é quando vamos numa','casa assombrada ou','algo do tipo!','É bem legal!',1,0,'Entendi...',1,'Mas na maioria das vezes...',1,'Ganhamos dinheiro expurgando mesmo.',1,0,'Expurgando?',1,0,'Exterminando anomalias.',1,'Essas que ficam zanzando','por aí, sabe?',1,0,'São muitas?',1,0,'Deve pensar que não são tantas','mas é porque elas preferem','a natureza.',1,'Houve um tempo que elas','atormentavam as cidades,','todas elas.',1,'Mas graças á PRF a gente','conseguiu controlar as anomalias.',1,0,'Mas por que a Polícia Rodoviária?',1,0,'É uma longa história.',1,'Voltando ao assunto,','A gente ganha uma graninha','com isso daqui.',1,0,'O que é isso?',1,0,'Nós chamamos de Sangue Verde','mas não sabemos o que é','de verdade.',1,'Apenas que todas as anomalias','tem essa coisa dentro deles.',1,'A gente vende o sangue verde','em frasquinhos.',1,'Sempre que expurgamos','alguma anomalia,','pegamos um pouco do','sangue verde nela.',1,'Não conseguimos pegar muito','porque a maioria seca rapidinho.',1,'Além disso a gente derrama','muito enfrentando elas.',1,0,'Vocês ganham dinheiro','vendendo sangue?!',1,0,'Daora né?',1,0,'Quem diabos iria comprar','sangue de monstros?',1,'Na moral?','Sei também não.',1,'Mas eu ganho grana','então isso é o que importa.',1,'A gente leva os frascos','para um posto de polícia','e eles nos pagam.',1,0,'Que nojo.','Já estou me arrependendo.',1,0,'Deixa de graça!','Você vai amar!',1]],
+
+	#FURNITURE
+	'MIRROR': [[(16,0,['Que peste feia é essa?',1,'ah.','Sou eu.',1]),(16,1,['Estou bonita...?',1]),(16,2,['Bigodin finin','Cabelin na régua',1]),(16,3,['Dá pra sair',1]),(16,4,['Sempre arrasando',1]),(16,5,['Tô bem arrumada',1])]],
+	'SIDNEY WARDROBE': [['Qual roupa vou vestir agora?',(10,['Casaco xadrez','Ok'],['Blusa preta de banda','Sempre gostei do HUG'],['Blusa social','Essa tá boa'])]],
+	'BROKEN CLOCK': [['Isso tá quebrado faz tempo.',1]],
+	'SIDNETRA PORTRAIT': [[(16,0,['Essa foto me traz muitas lembranças...',1,'...lembranças ruins.',1]),(16,1,['...',1,'Eles se davam bem...',1])]],
+	'JANAGO PORTRAIT': [[(16,0,['Legal.',1]),(16,1,['Essa foto foi em Búzios.',1,'Foi o dia em que nós','começamos a morar juntos.',1,'A gente comeu muito camarão naquele dia.',1])]],
+	'JANE BED': [['Ah não...',1,'a cama tá bagunçada de novo',1,'...',1,'...abracadabra, cama arrumada!',1]],
+	'PICTURE': [['É uma pintura bonita.',1,'não tô entendendo nada,','só sei que é bonita.',1]],
+	'DIRTY SINK': [['A pia está cheia de louça suja...',1]],
+	'DIRTY COOKER': [['Tem arroz frio e uma frigideira engordurada no fogão.',1]],
+	'EMPTY FRIDGE': [['Água,sachês de ketchup e ovos...',1,'Considero isso uma geladeira vazia.',1],['Tá na de fazer as compras do mês.',1]],
+	'JANE FRIDGE': [['A visão do paraíso.',1],['O Iago comprou um monte de sorvete.',1,'Esse idiota me conhece.',1]],
+	'TRASH': [[(12,'TRASH')]],
+
+	#MERCENARIES
+	'VINICIUS': [(10,['Eu não quero brigar contigo','Eu também não quero','Mas é preciso'],['Você pode ficar com a recompensa','Você está blefando?',(10,['Vai pegar?','É claro que vou!','...assim que acabar com você!'],['Esqueçe','Agora estou mais invocado!'])])],
+			
+	'MERCATOR': [['Olá cliente!','Interessado em alguns produtos?',1,(12,'mercator',[('locksmith1',),('tent_big',1,0.5)])],['Foi mal cara, mas sem grana, sem acordo.',1],['Espera um pouco cara!','Você tá sem espaço!',1,'Não quer dar para outra pessoa?',1]],
+	'CASHIER INGRID': [['Os produtos estão nas pratileiras','é só você ir pegar e trazer aqui',1,0,'O quê? você quer que eu vá buscar pra você?!',1],['Você não tem dinheiro?',1,'Sério?',1],['Você tá cheio de coisas...','Não sei se posso deixar levar tudo isso.',1]],
+	'CASHIER SANDRA': [['Vai pedir alguma coisa?',1],['Você tá sem dinheiro.',1],['Você tá sem espaço',1]],
+	'CASHIER YASMIN': [['Eu tenho que dormir...','compra logo o que tu quer...',1],['Como é que você leva coisas','que não pode comprar??',1],['Fala sério',1,'Por favor leve só o que puder levar',1]],
+
+	'DRITHR SANDRA': [['Licença, aqui é o Drive Thru',1],['Você tá sem dinheiro.',1],['Você tá sem espaço',1]]
+
+	'STREET SWEEPER': [['Hey mano',1,'Posso te falar uma coisa?',1,(10,['É claro','Se estiver com lixo nos','bolsos ou na mochila...',1,'por favor...',1,'...jogue na lixeira',1,
+	'Não custa nada',1,'Tem uma em cada esquina da cidade',1,'Fechou?',1],['Agora não...','Tá bom então...',1,'não é como se fosse','te dar uma informação','importante que fosse',
+	'mudar sua vida e seu','jeito de agir',1,'bola pra frente',1])]],-->
+</data>

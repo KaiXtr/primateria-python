@@ -1,0 +1,97 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="1">
+		<name value="1"/>: Eu começo?<br/>
+		<name value="14"/>: Sim. Por favor.<br/>
+		<br/>
+		<name value="1"/>: Bom...Antes de me envolver com a caça de anomalias, eu estudava psicologia na UFF de Volta Redonda.<br/>
+		Na verdade, eu ainda estudo, mas a rotina de caçadora dificulta um pouco.<br/>
+		<name value="14"/>: Entendo.<br/>
+		<br/>
+		<name value="1"/>: Eu e meu marido passávamos muito perrengue e procurávamos bicos o tempo inteiro.<br/>
+		Eu trabalhava como faxineira no Edifício Esmeralda.<br/>
+		<br/>
+		<name value="14"/>: No Edifício Esmeralda?<br/>
+		<name value="1"/>: Sim.<br/>
+		<name value="14"/>: Continue.<br/>
+		<name value="1"/>: Quando eu vi aquelas coisas estranhas pela primeira vez no prédio, eu já tinha visto várias coisas estranhas antes.<br/>
+		Eu achava que estava ficando louca.<br/>
+		Numa dessas vezes Iago me buscou na faculdade...
+	</chapter>
+	<dialog key="CH1BLUEBULLDOG" scenes="6">
+		<scene id="0">
+			<shk><censor alt="MERDA!!">CARALHO!!</censor><spk/>O QUE FOI ISSO!?<spk/>EU NÃO SEI!<input/>
+			<cc>O casal deixa o carro conforme se aproximam apavorados do corpo de um cachorro morto.</cc>
+			<sleep time="200"/></shk><cls/>A gente deveria dar uma olhada?
+			<select>
+				<option text="Você vai sozinho!">Tá bom, tá bom.<br/>Fica aí que eu já volto.</option>
+				<option text="Melhor a gente olhar">Ok...<input/>...mas vamos devagar.</option>
+			</select>
+			<input time="500"/><spk/>ai meu deus.<input/>AI<input/>MEU<input/>DEUS<answer/>
+			Fica calma <name value="1"/>. Tá tudo bem...<spk/>
+			<shk>COMO ASSIM TUDO BEM!? A GENTE ATROPELOU UM BULLDOGUE, IAGO! <censor>PUTA QUE PARIU!!</censor><input/></shk>
+			<sleep time="120"/>A gente não pode deixar isso aqui!<input/>Que que a gente faz?!<spk/>Putz...
+			<sleep time="100"/><spk/>Por que tá olhando assim pra mim?<input/><task index="CH01"/><jmp/>
+		</scene>
+		<scene id="1">Você sabe o que temos que fazer.<input/><jmp/></scene>
+		<scene id="2">Vamos logo com isso.<input/><jmp/></scene>
+		<scene id="3">Vai ser rápido.<input/><jmp scene="1"/></scene>
+		<scene id="4">
+			<sleep time="300"/>Me desculpe bem.<input/>Não havia nada que possamos fazer.<answer time="100"/>Iago...
+			<input/>O que é isso?<input time="200"/>Mais um...<input/>Bul...<input/>...dogue?<answer/>
+			<play src="SERPENT_OF_ARABIA"/><sleep time="100"/>Não...<br/>É....<input/>Não pode ser....<input/>
+			<sleep time="100"/><shk>CORRE IAGO!!<spk/>COMO É?<spk/>CORRE <censor>BUCETA</censor>!! ELE TÁ VINDO!!
+			<spk/>ISSO É LOUCURA!<spk/>AAAAAHHH!!!<spk/>AHHHHHH!!!</shk><battle index="blue_bulldog"/><jmp/>
+		</scene>
+		<scene id="5">
+			<sleep time="100"/><spk/>O que foi...<spk/>Esqueçe isso.<input/>Vamos chegar em casa<input/>
+			E fingir que nada disso aconteceu.<input/>Se tiver acontecido mesmo...<input/>...talvez eu tenha bebido demais.
+			<answer/>Você tá dirigindo.<answer/>Nunca se sabe.<input/>
+		</scene>
+	</dialog>
+	<dialog key="CH1JANE">
+		Amor.<answer/>Que foi?<answer/>Tô indo fazer compras.<answer/>Tá bom. Vai com Deus.<input/>
+		<sleep/>Traz um salgadinho pra gente.<answer/>Tudo bem.<input/>
+	</dialog>
+	<dialog key="CH1IAGO">
+		<scene>
+			<option>
+				O que você tá vendo?<answer/>O jornal, não tá vendo?<answer/>Mas o que está assistindo no jornal?<answer/>
+				Eu que pergunto...<answer/>O que é isso?<input/><insert index="CH1FIOCRUZ"/><jmp/>
+			</option>
+			<option>Deus me livre. Estão assaltando até as universidades!<input/>Onde esse país vai parar?<answer/>'Não é?</option>
+		</scene>
+	</dialog>
+	<dialog key="CH1FIOCRUZ">
+		<play src="TVNEWS" loop="true"/>Nessa tarde de quarta-feira, um grupo de assaltantes mercenários acabou de invadir a
+		Fundação Oswaldo Cruz em Manguinhos, no centro da cidade de Rio de Janeiro.<input/>A polícia militar já se encontra no local
+		e estão negociando com os criminosos á respeito dos cientistas e pesquisadores, que estão sendo mantidos como reféns.<input/>
+		A PM ainda desconhece o motivo do assalto, visto que os criminosos não possuem dinheiro e não levaram os pertences dos
+		reféns.<input/>A operação delicada continua desde as 9h da manhã e até agora nenhum refém foi liberto
+		pelos bandidos.<input/><insert index="CH1IAGO" value="1"/>
+	</dialog>
+	<dialog key="CH1MRKITE">
+		Obrigado pelo café.<answer/>De nada senhor.<answer time="100"/>Sabe, é disso que eu gosto desse local.<input/>
+		O serviço, os funcionários...<input/>Dá para ver que os chefes sabem mandar nessa gente<answer/>Pois é.<answer/>
+		Mas então...sobre o que estava falando antes, eu pessoalmente acho que esses bicho aí podem lucrar muito, sabe?<input/>
+		Mas esse povo, sabe...<br/>Eles não conseguem enxergar o tanto de lucro que eles poderiam estar ganhando!<input/>
+		Pode ver que o povo lá da cidade, lá de, de...<spk/>...Varginha?<spk/>
+		Lá em Varginha, o pessoal tá aproveitando!<input/>As pessoas dizem que eles estão se aproveitando, tão ganhando dinheiro 
+		de tudo, isso aquilo, mas poxa!<input/>Né não?<input/>A gente que é empresário precisa buscar novas oportunidades!
+		<answer/>É verdade.<answer/>E esses bichos abrem portas para novas oportunidades!<br/>Tanto para a gente que bota as 
+		coisas pra funcionar quanto para os clientes que vão conseguir um novo tipo de entretenimento!<answer/>Mas deixa eu te 
+		falar, senhor...<br/>As pessoas ainda não confiam nisso não! Todos esses anos as pessoas já se aproveitavam<spk/>
+		Não sim...<spk/>desses casos estranhos sabe<spk/>Claro, claro<spk/>e o povo não quer mais ser enganado!<answer/>
+		Mas aí que tá! Tá começando á vir á tona tudo isso daí!<input/>Tá muito mais fácil para as pessoas acreditarem nas 
+		aberrações agora que tá tendo muito mais aparição!<input/>E quem que não vai querer olhar uma de perto agora que tem 
+		gente poderosa envolvida nisso?
+		<input/>Agora que todo mundo se sente um pouco mais seguro para se entreter com esses mistério?<answer/>É né...<answer/>
+		<sleep time="100"/>Que tá fazendo aqui?
+		<select>
+			<option text="Nada não">Estava escutando a gente, não é? É feio ficar escutando as conversa dos outros, hein?<input/>
+			<sleep time="100"/>Tinha que ser mulher.<br/>Fofqueiras...</option>
+			<option text="...">É uma conversa particular! Vai varrer outro quarto!<input time="100"/>
+			Com empregada a gente faz assim! A gente manda e elas fazem!</option>
+		</select>
+		<input/>Enfim...Eu quero trazer uma revolução no mundo do entretenimento...<input/>
+	</dialog>
+</data>

@@ -1,0 +1,75 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="10">
+		<name value="14"/>: Bom, isso é o bastante. Já terminei com você também.<br/>
+		<name value="2"/>: Por que não prende ela também, senhor?<br/>
+		<name value="5"/>: Eu estava defendendo um amigo!<br/>
+		<name value="2"/>: Por que esse seu amigo não sabe enfrentar ninguém sozinho, né?<br/>
+		<name value="0"/>: Não fala nada que eu sou veterano!<br/><br/>
+		<name value="2"/>: Balela! Pra cima de mim!<br/>
+		<name value="5"/>: Diz isso para seu amiguinho!<br/>
+		<name value="2"/>: NÃO FALA ASSIM DELE!<br/>
+		<name value="0"/>: VOCÊ NEM LIGA PRA ELE!<br/>
+		<name value="5"/>: VOCÊ MANDOU ELE PRA MORRER!<br/>
+		<name value="2"/>: NÃO ERA PRA ELE MORRER!<br/>
+		<name value="1"/>: Matar quem não precisa é o que faz de melhor, né?<br/>
+		<name value="2"/>: Você não tinha nada a ver com nada!!<br/>
+		<name value="4"/>: Gente, calma...<br/>
+		<name value="0"/>: Ele assaltou seu laboratório!<br/>
+		<name value="4"/>: Isso foi faz muito tempo, já. Deixa isso pra lá.<br/>
+		<name value="5"/>: Essas coisas ninguém perdoa fácil, não! Se quiser você pode conversar com a <name value="1"/>.<br/>
+		<name value="1"/>: O que tem eu?<br/>
+		<name value="5"/>: Não é psicóloga?<br/>
+		<name value="4"/>: Tá me chamando de doente?<br/>
+		<name value="2"/>: Boa! Tô gostando de ver!<br/>
+		<name value="1"/>: Você fica quieto também!<br/>
+		<name value="14"/>: Já chega! Por favor! Parecem um bando de crianças!<br/>
+		<name value="0"/>: ...<br/><name value="1"/>: ...<br/><name value="2"/>: ...<br/><name value="3"/>: ...<br/>
+		<name value="4"/>: ...<br/><name value="5"/>: ...ele começou.<br/>
+		<name value="14"/>: Quer saber? Esqueçe o que tinha dito. Desse jeito não vamos poder trabalhar juntos.<br/>
+		<name value="5"/>: Mas Senhor Dalibor...<br/>
+		<name value="14"/>: Vamos logo terminar isso...<br/>
+		Aqui, <name value="3"/>, pelo menos não tá brigando. Você foi investigar mais sobre os alienígenas?<br/>
+		<name value="3"/>: Sim. Após longos meses conseguimos evidências concretas. Fomos mais longe até que <name value="5"/>.<br/>
+		<name value="5"/>: Como?<br/>
+		<name value="14"/>: Quero escutá-lo.
+	</chapter>
+	<dialog key="CH10HERMES">
+		<spk/>Olá?<input time="60"/>Alguém em casa?<input time="100"/><spk/>Olá!<input/>
+		Em que posso ajudá-los?<answer/>Boa tarde senhor, essa fazenda é sua?<answer/>Oh sim, é minha desde que meu avô
+		começou a capinar.<input/>quando tudo isso ainda era mato!<answer/>...mas só tem mato aqui senhor.<answer/>
+		Pois é.<input/>Faz um bom tempo que não tem ninguém para cuidar da minha terrinha.<input/>
+		Só resta eu e minha maloca...<answer/>Mas esses animais também são seus?<answer/>Ah não. Apareceram aí!<input/>
+		Não são criatuinhas de Deus?<input/><spk/>Nossa <name value="1"/>, tem um Boi Dourado ali!<answer/>
+		<name value="3"/>! Se concentra!<input/>Então...nós somos...<answer/>...detetives?<input time="100"/>...sim!
+		Sim, detetive <name value="3"/> e minha colega, detetive <name value="1"/>.<input/><spk/>
+		Muito prazer, me chamo Hermes.<input/>Eu já imaginava que fossem, pois não tem uma semana que alguém bate na minha porta!
+		<answer/>É mesmo?<answer/>Sim! vocês não sabem?<answer/>Não...viemos de outra cidade<answer/>Ah...<input/>
+		Vieram de onde?<answer/>Vargi...<answer/>Itatiaia!<spk/>'Pera, quê?<spk/>Não é que ele<spk/>A gente acabou de vir
+		de Itatiaia, mas estamos indo pra Varginha.<answer/>É, isso mesmo.<answer/>Interessante...<input/>
+		É porque Policiais vieram aqui perguntando um monte de baboseira...<input/>Umas presepada que não sei nem o nome!<answer/>
+		Geóglifos?<nswer/>Sim.<input/>E acho que você gostariam de saber algo a respeito, não é?<answer/>
+		Sim, o depoimento dos moradores próximos é muito importante!<answer/>Bom, eu não sei nada desses Zoológicos coisa nenhuma.
+		<input/>Mas por alguma razão todos vem me perguntar.<answer/>É porque, Sr. Hermes, os Geóglifos estão na sua fazenda.<answer/>
+		Pois é, mas é justamente porque ela está a tanto tempo parada que não me informo dessas coisas, entende?<input/>
+		Talvez alguma pessoa tenha invadido meus campos e fez esses desenhos no mato!<answer/>Hermes...<spk/>Olha <name value="1"/>,
+		acho que já conseguimos informações o suficiente do Sr. Hermes.<input/>E aliás, acho que um vândalo qualquer seria mais
+		suspeito do que qualquer aposentado de meia-idade<answer/>Eu trabalho.<answer/>Ah, sério?<answer/>
+		Sim, eu vendo artesanato.<answer/>Boas vendas, Hermes.<answer/>Muito obrigado...<sleep time="20"/><spk/>
+		<name value="3"/>.<spk/><name value="3"/>! Muito obrigado pela ajuda de vocês!<answer/>O prazer é todo nosso!<input/>
+		<sleep time="100"/><spk/>Por que fez isso?<answer/>Muita gente já falou com ele.<input/>
+		Se fizermos perguntas demais ele pode fazer alguma coisa!<answer/>O quê? destruir provas?<answer/>Exatamente isso.<answer/>
+		Por que ele faria isso?<answer/>É o que estamos tentando descobrir!<input/>
+	</dialog>
+	<dialog key="CH10JANE">
+		Ainda não entendo como foi tão simpático com aquele velho...<answer/>Por que? Você acha ele mau?<answer/>
+		Não...mas eu desconfio dele.<input/>Não deveria falar desse jeito com ele.<answer/>Então o que você sugere?<answer/>
+		Seja mais duro?!<answer/>Não dá pra gente conseguir nada das pessoas sendo duro com elas!<answer/>
+		Os policiais conseguem.<answer/>Ele é um cara muito suspeito, isso a gente já sabe. Mas como ninguém conseguiu tirar
+		provas dele, quer dizer que ele é muito bom em guardar segredo.<answer/>Eu não sei...<input/>
+		Acho que a gente devia sequestrar ele<spk/>Claro que não!<spk/>Nossa calma! Eu só tava falando...<input time="60"/>
+		Então o que a gente vai fazer?<answer/>Vamos continuar investigando.<answer/>Ah sim. Claro que sim...<answer/>
+		O problema de leigos como você é que eles tentam começar de cima...'<input/><rotate id="1" direction="3"/><sleep time="60"/>
+		<spk/>Como é que é?<answer/>É a verdade.<answer/>Olha me escuta aqui, <name value="3"/>! Você não sabe quem eu sou
+		e de onde eu vim!<input/>Então é bom você ficar calado que aí você ganha mais e não caga pela boca!<answer/>Ok...<input/>
+	</dialog>
+</data>

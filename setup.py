@@ -1,5 +1,4 @@
 import os
-import pickle
 os.system('cls')
 
 from cx_Freeze import *
@@ -8,13 +7,13 @@ import sys
 
 print('PRIMATERIA SOURCE\nby Matt Kai\n\nThe application setup is starting.\nPlease, wait...\n\n')
 
-FOLDERS = [res.BACKG_PATH,res.SPRITES_PATH,res.SFX_PATH,res.MUSIC_PATH,res.MAPS_PATH,res.TILES_PATH,res.FONTS_PATH,'plugins/']
+FOLDERS = [res.BACKG_PATH,res.SPRITES_PATH,res.SFX_PATH,res.MUSIC_PATH,res.MAPS_PATH,res.TILES_PATH,res.FONTS_PATH,'plugins/','databases/']
 
 build = {
 "path": sys.path + ["app"],
 "no_compress": True,
 "packages": ["pygame","pytmx","plyer","math","random","datetime","traceback","platform","numpy","sys","os"],
-"include_files": FOLDERS + ['database_PT.py','database_EN.py','GUI.py','minigames.py','resources.py','splash.png','icon.ico','README.md','LICENSE','CREDITS.txt'],
+"include_files": FOLDERS + ['GUI.py','minigames.py','resources.py','splash.png','icon.ico','README.md','LICENSE','CREDITS.txt'],
 }
 
 shortcut_table = [

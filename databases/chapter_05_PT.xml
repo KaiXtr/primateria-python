@@ -1,0 +1,16 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="5">
+		<name value="14"/>: E você não se lembra de mais nada?<br/>
+		<name value="5"/>: Lembro. Mas prefiro não contar...<br/>
+		<name value="14"/>: Entendo... Eu lamento pelo que você passou, <name value="5"/>.<br/>
+		Bom... Preciso falar com você de novo.<br/>
+		<name value="1"/>: Quem? Eu?<br/>
+		<name value="14"/>: Como ela tinha dito anteriormente, ela pediu para que <name value="0"/> investigasse uma tal casa assombrada.<br/>
+		Sabendo do envolvimento entre vocês dois, posso presumir que ele também te chamou.<br/>
+		<name value="1"/>: Pior que sim...(risos)<br/>
+		Era apenas para ser uma ida rápida na casa. Só que acabei descobrindo muito mais. Sobre mim ainda.<br/>
+		<name value="14"/>: Descobriu o quê?<br/>
+		<name value="1"/>: Eu encontrei as respostas que procurava no começo do ano...
+	</chapter>
+	<dialog key="CH5RENAN"><play src="BATTLE_DIALOG" loop="true"/>Você mexeu com a turma errada, cara!<input/>Tá na hora de aprender uma lição!<input/><battle index="pietra#thug1"/></dialog>
+</data>

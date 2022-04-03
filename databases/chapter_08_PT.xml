@@ -1,0 +1,54 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="8">
+		<name value="14"/>: No fim, vocês conseguiram prender o sujeito?<br/>
+		<name value="3"/>: Claro né! A gente chutou a bunda daqu-<br/>
+		<name value="5"/>: Minha equipe foi acionada e agora ele está na prisão aguardando julgamento.<br/>
+		<name value="14"/>: Entendi...<br/>(risos)<br/>
+		<name value="3"/>: Que foi?<br/>
+		<name value="14"/>: Nada...ai, ai...<br/>Eu conhecia esse maluco.<br/>
+		<name value="3"/>: Você também conhecia Mr.Kite?!<br/>
+		<name value="14"/>: Todo mundo conhecia ele (risos) mas agora ele tá no fundo do poço. (risos)<br/>
+		É isso que ele virou, foi? (risos)<br/>Ok...voltando para você.<br/>
+		<name value="2"/>: Sim?<br/>
+		<name value="14"/>: Investigou um hospital junto com <name value="4"/>?<br/>
+		<name value="2"/>: Sim, a doença misteriosa que todos estão falando começou a se agravar muito rápido.<br/>
+		Começou a se espalhar entre as pessoas perto de mim.<br/>
+		Uma dessas pessoas foi justamente Pietra...
+	</chapter>
+	<dialog key="CH8PIETRA">
+		<scene>
+			Isso tudo é muito estranho, cara. Semana passada o cleitinho disse que não podia ir pro rolé porque estava numa 
+			ressaca braba.<input/>Alguns dias depois a Larissa fala que tá sentindo uma cólica terrível.<input/>E ontem o Breno 
+			estava espirrando tanto que desmaiou! O que é que está havendo?!
+			<select>
+				<option text="Deve ser coincidência">Ou deve ser muito azar, né? Foi todo mundo de uma vez só!</option>
+				<option text="Eu não sei">
+					Eu também não...admito que estou com um pouco de medo.<input/>E se eu for a próxima?
+					<select>
+						<option text="Deus me livre, Pietra">
+							Eu só to falando! Pode ser que aconteça comigo e eu não sei o que fazer!
+						</option>
+						<option text="Para de falar besteira!">
+							Calma aí! Tá bom!<input/>É que todo mundo tá ficando desse jeito...
+						</option>
+					</select>
+				</option>
+			</select>
+			<input time="100"/>Poucas idéias...<input/>Tudo isso tem que ter alguma ligação!<answer/>Estão espalhando por aí 
+			que deve ser alguma doença. Tipo uma dengue, só que muito pior.<answer/>Meu Deus.<input time="20"/>É sério?<answer/>
+			Sim. Deve ser por causa desses pombos mortos no meio das ruas!<answer/>Verdade.<input time="100"/>Agora que você 
+			falou...<input/>Eu não tenho mais visto pombos vivos.<input/>Só mortos.<input time="100"/>Mas era trabalho da 
+			prefeitura<play src="SNEEZE"/> cuidar disso daí!<play src="SNEEZE"/> Fica um fedor horrível também!
+			<play src="SNEEZE"/>
+			<select>
+				<option text="Amor, você está bem?">
+					Tô bem. Só tô com a garganta seca.<play src="SNEEZE"/><answer/>Você tá tossindo pra caramba!
+				</option>
+				<option text="Quer beber uma água?">Bem queria...você tem aí com você?<task item="drink_water"/></option>
+			</select>
+			<answer/>Eu vou<play src="SNEEZE"/> ficar<play src="SNEEZE"/> bem...<play src="SNEEZE"/>tenho que...
+			<play src="SNEEZE"/>tenho<play src="SNEEZE"/><spk time="10"/><censor alt="Meu Deus!">Puta que Pariu!!</censor>
+			Vou chamar uma ambulância!<input/>
+		</scene>
+	</dialog>
+</data>

@@ -1,0 +1,280 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="0">
+		Medo é desconhecer<br/>
+		Não entender e não compreender<br/>
+		É uma parede que nos impede<br/>
+		Que nossa mente atravesse'<br/>
+		As comportas do saber<br/>
+		<br/>
+		O que não se sabe é bizarro<br/>
+		Estranho e extraordinário<br/>
+		Com o instinto natural de sobreviver<br/>
+		Todos podemos perceber<br/>
+		Que pode até ser um pouco hilário<br/>
+		<br/>
+		Sem contexto não há razão<br/>
+		Só há uma imensa ilusão<br/>
+		De que detém todo o poder<br/>
+		Que a verdade pode compreender<br/>
+		Quando quem mente é você<br/>
+		<br/>
+		Imaginação é uma dádiva<br/>
+		A força criadora e divina dada<br/>
+		Pelas mãos suadas de Prometeu<br/>
+		Que entregou a magia aos súditos seus<br/>
+		E aboliu a separação que agora juntava<br/>
+		<br/>
+		Através do símbolo do caduceus<br/>
+		Eu pude perceber quem é Deus<br/>
+		E quem é o divino mensageiro<br/>
+		O messias, o Hermes, o hospedeiro<br/>
+		Que habita os pensamentos meus<br/>
+		<br/>
+		A quintessência só é alcançada<br/>
+		Na alquimia da Serpente da Arábia<br/>
+		E quando sua alma for tratada<br/>
+		Como limpando a sujeira da água<br/>
+		Não terás mais medo de nada<br/>
+		<br/>
+		Pois alcançastes a iluminação<br/>
+		Que tirou a impureza da visão<br/>
+		E agora um novo mundo<br/>
+		Se abre para você<br/>
+		Como um grande portão<br/>
+		<br/>
+		Essa nova dimensão<br/>
+		Vai além da nossa imaginação<br/>
+		Uma realidade possível<br/>
+		Em outro espaço, em outro tempo<br/>
+		Em outras regras, outros momentos<br/>
+		<br/>
+		Você está prestes a adentrar<br/>
+		Um lugar onde pode imaginar além<br/>
+		Um lugar que muitos chamam<br/>
+		De Setesalém
+	</chapter>
+	<dialog key="HHINTRO"><sleep time="100"/>Quem está aí?<input/><prologue/><goto room="hauntedhouse_0" x="0" y="0"/></dialog>
+	<dialog key="DALIBOR">
+		<select>
+			<option>
+				VEM AQUI TODO MUNDO!!<answer/>Que foi isso?!!,1,2,0,(26,4),(24,None,(184,370),8),(24,1,(180,350),2,'stand'),(24,2,(230,380),6,'stand'),(24,3,(200,330),2,'stand'),(24,4,(230,350),4,'stand'),(27,70),(25,4,'L'),
+				Estão todos os mercenários aqui?<input/>(25,4,'LD')<spk/>Não, tem um lá fora e outro não chegou ainda.<spk/>(25,4,'DD')<spk/>Ah pronto.<br/>Não tenho idade pra essas coisas...<input/>(25,4,'D'),
+				Seguinte...<br/>Vamos fazer assim então.<input/>(25,4,'LD')Você.<answer/>Quem, eu?<answer/>Sim! você!<br/>Pode falar o nome e sobrenome de vocês seis?
+				<select>
+					<option text="Não (nomes padrões)">'Não sabe?',1,(25,4,'LU'),'Era só o que me faltava...',1,(25,4,'L'),então a mulher do seu lado','vai me dizer.',1,'Beleza?',1,(22,False)</option>
+					<option text="Sim (nomear personagens)">Tenha o tempo que quiser.<input/>(22,True)</option>
+				</select>
+				Muito bom, quando todos chegarem nós vamos dar início ao interrogatório.<input/>(24,4,(330,300),3,'seat'),(27,20),(26,1),(27,20),(25,1,'D')
+				Esquisito.<br/>Eu imaginava que um interrogatório fosse bem mais...<sleep time="50"/>...pesado.<br/>digamos assim.<answer/>Verdade...<input/>(25,1,'DD'),0,<sleep time="30"/><jmp/>(23,'HHBIANCA',1)
+			</option>
+			<option>Chame todo mundo pra começar as gravações, por favor.<input/></option>
+			<option>
+				Estão todos aqui. Vamos começar?
+				<select>
+					<option text="Espera um pouco">Venha quando estiver pronta.<input/></option>
+					<option text="Podemos">Excelente.<br/>Atenção! Põe essa máquina pra rodar!<input/><epilogue/></option>
+				</select>
+			</option>
+		</select>
+	</dialog>
+	<dialog key="AGENT1">
+		Tá procurando alguém?
+		<select>
+			<option text="Não">Tudo bem.<br/>Se estiver precisando de ajuda, é só falar.<input/></option>
+			<option text="Sim">Eu vi um homem subindo as escadas.<br/>Deve estar lá em cima.<input/></option>
+		</select>
+	</dialog>
+	<dialog key="AGENT2">
+		Vocês entraram em encrenca!<br/>Tem noção do que seus preciosos olhos testemunharam?
+		<select>
+			<option text="Do que tá falando?">Não se faça de besta!<br/>Espero que tenha muita coisa pra contar para o Senhor Dalibor!<input/></option>
+			<option text="Nem imagino">Você não tem noção.<br/>Nunca antes se viu um evento dessa magnitude.<input/>Por isso mesmo nós precisamos que vocês contem tudo pra gente.<input/></option>
+			<option text="'Eu tô com pressa">Que isso.<input/>Se acalma.<input/>Bebe um copo de água.<input/>Você vai ter bastante tempo quando falar com o Senhor Dalibor.<input/></option>
+		</select>
+	</dialog>
+	<dialog key="HHSIDNEY">
+		<select>
+			<option>
+				<spk/>Oi, <name value="0"/>.<input time="100"/><name value="0"/>?<answer/>Oi <name value="4"/>.<answer/>
+				O que tá fazendo?<answer/>Nada não...<input/>Só apreciando a vista...<answer/>Ah sim...<input/>
+				<rotate id="self" direction="7"/><sleep time="100"/><spk/>A noite não é linda?<input/>
+				É a minha parte favorita do dia.<input/>Ficar vendo as estrelas...<input/>
+				As pessoas não tem mais tempo para essas coisas hoje em dia.
+				<select>
+					<option text="Verdade">Tem muita coisa que as pessoas perdem por causa do tempo delas.<input/>
+					As pessoas deveriam aproveitar mais as coisas a sua volta.</option>
+					<option text="Estava falando com ela?"><sleep time="200"/>Não é surpresa nenhuma...<input/>...né?</option>
+				</select>
+				<input/>O que veio fazer aqui?
+				<select>
+					<option text="Queria saber como estava.">Ah..Valeu...</option>
+					<option text="Lá dentro tá chato.">Pior...</option>
+				</select>
+				<input/>(30,(320,520),'051011','HHLUCY')Olha lá. É a <name value="5"/>.<input/>
+				(6,'CH01',False),(21,'HHSIDNEY',1),(21,'HHJANE',1),(21,'HHLUCY',1),(28,'NOTIFICATION'),(18,[0,0,'HHJANE'])
+			</option>
+			<option>Eu já vou. Espera só um pouquinho.<input/></option>
+			<option>...<input/>A lua está mesmo linda.<input/>Tem algo de estranho nessa lua. Não é possível...<input/></option>
+		</select>
+	</dialog>
+	<dialog key="HHJANE">
+		<select type="scene">
+			<option>Por favor, vê onde o <name value="0"/> foi.<gecth/></option>
+		</select>
+		<option>
+			<move/><add type="char"/><play src="DOOR_KICK"/><sleep time="60"/>Você sabe bater a porta?<answer/>
+			Desculpa aí. Achei que tinha ninguém.<input/><jmp/><party value="1#9"/>
+		</option>
+		<option>Melhor você entrar, estão te esperando.<input/>Ainda mais o <name value="3"/></option>
+	</dialog>
+	<dialog key="HHRENAN">
+		<select type="scene">
+			<option>
+				Onde será que está esse miserável?<answer/><goto room="highway040" x="1160" y="360"/>
+				<shk><censor alt="Que Merda!">Puta que Pariu!</censor></shk><input/>Espero não estar atrasado!<input/>
+				<party/><jmp/>
+			</option>
+			<option>
+				Finalmente!<answer/><move/><sleep time="20"/>Eu demorei muito?<answer/>Tá todo mundo lá dentro esperando você.
+				<answer/>Putz...<input/>Tive que resolver uma parada antes de vir pra cá.<input/>Mas pra quê me chamaram?<answer/>
+				Detetives.<answer/>Quê??<spk/>Detetives vieram pra cá.<shk><spk/>Como assim??<spk/>Calma aí!<spk/>
+				Véi! Estamos muito ferrados!<spk/></shk>O Paulo tá de boa!<answer/>Como?<answer/>Pô, como ninguém ia saber o
+				que aconteceu depois daquilo?<answer/>Sei lá...Mas o que vieram fazer aqui?<answer/>Nem eu sei direito. Mas eles
+				são da PM. Vão interrogar a gente.<answer/>Beleza...<answer/>Entra lá dentro que só falta você.<input/><jmp/>
+			</option>
+			<option>
+				<if item="drink_beer" not="Eu espero você.">
+					Aí sim, meu rapaz!<input/>Mano, sabe onde a <name value="5"/> tá?
+					<select>
+						<option text="Não faço idéia">Putz. Preciso resolver um negócio com ela.</option>
+						<option text="Estava no banheiro">Ah! Valeu!</option>
+					</select>
+					<input/>
+				</if>Já volto já.<jmp/><party/>
+			</option>
+			<option>Você tá carregando muita tralha! Aproveita para jogar fora esse lixo na sua mochila!<input/></option>
+		</select>
+	</dialog>
+	<dialog key="HHDIEGO">
+		<select type="scene">
+			<option>
+				<select>
+					<option text="Oi" format="4">E aí.</option>
+					<option text="Sabe onde está o {}?" format=	"0">
+						Velho, acho que ele tá lá fora. Atrás da casa.
+						<select>
+							<option text="Obrigada">Disponha!</option>
+							<option text="Ah tá">Deve estar falando com aquela garota de novo.<answer/>Já imaginava.</option>
+						</select>
+					</option>
+				</select>
+				<input/>
+			</option>
+			<option>
+				<name value="2"/>! Finalmente!
+				<select>
+					<option text="O que aconteceu?">
+						Nem queira saber! A gente encontrou um espírito aqui nessa casa!<answer/>Não brinca<answer/>
+						Tô te falando. Queria ver tua reação.<answer/>Aí, mal aí por não ter vindo. Se não estivesse ocupado 
+						eu ajudava vocês<answer/>Que nada cara, tranquilo.
+					</option>
+					<option text="Já vai começar a entrevista?">
+						A gente ia começar, mas o <name value="0"/> tá no celular.<answer/>Não é a...<spk/>Sim, ela mesma.
+						<answer/>Putz...<input/>Cara, eu...<answer/>Nah. Cara...O que é de vocês é de vocês.<answer/>Certo.
+					</option>
+				</select>
+				<input/>Aí vou buscar alguma coisa pra gente!<answer/>Beleza!<answer/>O que prefere?
+				<select>
+					<option text="Uma cerveja"><task/></option>
+					<option text="Uma água"><task/></option>
+					<option text="Um refrigerante"><task/></option>
+				</select>
+				<input/>Pra já!<input/><jmp/><party/>
+			</option>
+		</select>
+	</dialog>
+	<dialog key="HHBIANCA">
+		<scene>
+			O que foi?<answer/>Era Iago. Perguntou se eu tava bem.<answer/>Ah tá.<input/>Pelo menos ele se preocupa com você.<input/>
+			Sim...<answer time="100"/>Percebeu onde a gente. Conseguiu chegar?<answer/>Como assim?<answer/>
+			Ás vezes nós não nos damos conta...<input/>...mas agora a pouco eu era pesquisadora e agora além de tudo a gente sai 
+			pra caçar monstros. Não é esquisito?
+			<select>
+				<option text="Não são monstros">Você entendeu o que eu quis dizer!</option>
+				<option text="Muito esquisito">Não é?</option>
+			</select>
+			<input/>Isso parece até coisa de filme. Mas isso não é errado?
+			<select>
+				<option text="Acho que não">
+					Mas por que?<answer/>A gente não está salvando as pessoas? Eu acho que isso é o que importa.
+				</option>
+				<option text="Eu não ligo">
+					Sei não...<input/>Não gosto dessa coisa de matar bichinhos.<answer/>Mas não são bichos, garota!
+				</option>
+			</select>
+			<input/>Eu sei. Mas mesmo assim...<answer/>Ei.<answer/>O quê?
+			<select>
+				<option text="Não se culpe por isso" spk="0">No começo parece que você está fazendo a coisa mais cruel do mundo.
+					<input/>Se já deve ser difícil pra quem trabalha na polícia, imagine pra gente!<input/>
+					Nós apenas estamos fazendo o que é melhor pra todos.
+				</option>
+				<option text="Eu já me acostumei" spk="0">
+					Não ligue para o que os outros dizem. Eles não são a gente pra dizer alguma coisa! Se estivessem no nosso 
+					lugar fariam o mesmo.
+				</option>
+			</select>
+			<input/>Sim, mas...<sleep time="40"/>...<sleep time="20"/>...precisa ser matando...?<input/><jmp/>
+			<insert key="DALIBOR"/>
+		</scene>
+		<scene>
+			<spk/>Viu o <name value="0"/>?<answer/>Não. Não vi.<answer/>Vê onde ele está, por favor?<answer/>Tudo bem.
+			<input/><party/><jmp/>
+		</scene>
+		<scene>
+			Ei, você viu se ele já voltou?
+			<select>
+				<option text="Eu ia perguntar isso">
+					É, ele não aparece.
+					<select>
+						<option text="Pode procurar ele?">Claro!</option>
+					</select>
+				</option>
+				<option text="Não vi ele">Ele tá demorando muito...</option>
+			</select>
+			<input/>Eu já volto.<jmp/><party/>
+		</scene>
+		<scene><name value="0"/>! Quem mandou você entrar aqui?!<input/></scene>
+	</dialog>
+	<dialog key="HHLUCY">
+		<scene>O <name value="2"/> tá demorando muito. Acho que vamos ter que começar sem ele.<input/></scene>
+		<scene>
+			E aí, <name value="2"/>. Daqui a pouco vão começar a entrevista.
+			<select>
+				<option text="O {} chegou?" format="name">
+					Ainda não...Mas já deve estar chegando. O Dalibor está pensando em começar logo sem ele.<answer/>
+					Quem é Dalibor?<answer/>O detetive.
+				</option>
+				<option text="Espera eu terminar">Muito ocupado você, hein...</option>
+			</select>
+			<input/>Então tá. Quando acabar aí vem pra sala.<input/><jmp/><party/>
+		</scene>
+	</dialog>
+	<dialog key="HHBASEMENT">
+		O que é isso?<input/><play src="TREASURE" wait="true"/><get item="mysterious"/>Que esquisito. Preciso mostrar pra 
+		<name value="4"/> depois.<input/>Espera! Ah não!<battle index="papamouse"/>
+	</dialog>
+	<dialog key="HHMERCHANT">
+		Hey! Psiu!<sleep time="20"/>Aqui!<spk/>Que susto mano!
+		<select>
+			<option text="Que tá fazendo aí?">Eu tô no armário.</option>
+			<option text="Isso é hora cara?">Preciso arrumar meu trampo. Não tá fácil pra ninguém</option>
+		</select>
+		<input/>Você não devia estar aqui. Tá rolando mó treta aqui por causa de uma assombração.<answer/>Nem pensar.<spk/>
+		Papo reto. É o que me disseram.<answer/>Olha, eu posso até não acreditar, mas sejam dias de luta ou dias de glória, 
+		eu vou continuar meus negócios.<input/>Não quer descolar nada não?<answer/>Agora não véi.<spk/>Sabe que te considero 
+		muito né? Você é meu mano né não?<spk/>Sim mas-<spk/>Ajuda o parça aqui pô! Vai me deixar na mão?<spk/>
+		<censor>AGORA NÃO PORRA!</censor><answer/><name value="2"/>?<answer/><move/><add type="char"/>Ah, oi <name/>.
+		<answer/>Tava te procurando.<answer/>Mesmo?<answer/>Todo mundo tá procurando você!<answer/>Sério?<answer/>
+		Sim! o que tá fazendo aí?<answer/>Tava só-<spk/>Vai logo pra sala!<jmp/><party/>
+	</dialog>
+</data>

@@ -1,8 +1,6 @@
 import sys
 import pygame
-import math
-import random
-from pygame.locals import *
+#from pygame.locals import *
 import plyer
 import queue
 from queue import LifoQueue
@@ -11,6 +9,7 @@ import numpy as np
 import resources as res
 import GUI
 
+sys.path.insert(0,'databases')
 if res.FILES != []: dtb = __import__('database_' + res.FILES[0][4])
 else: dtb = __import__('database_' + res.MAINLANG)
 
@@ -45,7 +44,7 @@ class Game:
 		for i in range(len(self.mglstg)):
 			self.bgames.append([])
 			self.cbts.append(pygame.Rect(i * int(self.display.get_width()/len(self.mglstg)),0,int(self.display.get_width()/len(self.mglstg)),40))
-			for y in range(math.floor(len(self.mglstg[i])/3)):
+			for y in range(np.floor(len(self.mglstg[i])/3)):
 				for x in range(3):
 					self.bgames[i].append(pygame.Rect(10 + (x * int((self.display.get_width() - 10)/3)), 50 + (y * 60), int((self.display.get_width() - 10)/3) - 10, 50))
 			if len(self.bgames[i]) < len(self.mglstg[i]):
@@ -147,10 +146,10 @@ class Dice:
 		for d in self.dices:
 			for v1 in d:
 				for v2 in d:
-					"""s2 = [(math.cos((self.spin[1] + v1[0]) * (0.5 * self.sz)) + cc[0],
-					math.sin(self.spin[1] * (0.5 * self.sz)) + cc[1]),
-					(math.cos(self.spin[1] * (0.5 * self.sz)) + cc[0],
-					math.sin(self.spin[1] * (0.5 * self.sz)) + cc[1])]
+					"""s2 = [(np.cos((self.spin[1] + v1[0]) * (0.5 * self.sz)) + cc[0],
+					np.sin(self.spin[1] * (0.5 * self.sz)) + cc[1]),
+					(np.cos(self.spin[1] * (0.5 * self.sz)) + cc[0],
+					np.sin(self.spin[1] * (0.5 * self.sz)) + cc[1])]
 					
 					pygame.draw.line(self.surface,(200,200,200),
 					(s2[0][0],s2[0][1]),(s2[1][0],s2[1][1]))"""
@@ -260,7 +259,7 @@ class Pinball:
 		if msk.overlap(bll, (int(self.ball['X']), int(self.ball['Y']))):
 			self.ball['XSPEED'] = -(self.ball['XSPEED'] * 0.8)
 			self.ball['YSPEED'] = -(self.ball['YSPEED'] - 2)
-		if math.floor(self.ball['YSPEED']) == 0 and math.floor(self.ball['XSPEED'] > 0): self.ball['XSPEED'] -= 0.1
+		if np.floor(self.ball['YSPEED']) == 0 and np.floor(self.ball['XSPEED'] > 0): self.ball['XSPEED'] -= 0.1
 
 		#DRAW
 		self.surface.blit(self.tables[0], (0,0))
@@ -285,7 +284,7 @@ class Tetris:
 		for x in range(10):
 			for y in range(20):
 				self.grid.append([x,y])
-		self.pieces = [[0,0,random.randint(0,6)]]
+		self.pieces = [[0,0,np.random.randint(0,6)]]
 		self.bricks = [
 			[[0,0],[1,0],[2,0],[3,0]],
 			[[0,0],[0,1],[1,1],[2,1]],
@@ -317,7 +316,7 @@ class Tetris:
 		else:
 			ck = [[b[0] + self.pieces[0][0],b[1] + self.pieces[0][1]] for b in self.bricks[self.pieces[0][2]]]
 			if 19 in ck or self.endy in ck:
-				self.pieces.insert(0,[0,0,random.randint(0,6)])
+				self.pieces.insert(0,[0,0,np.random.randint(0,6)])
 			else: self.pieces[0][1] += 1
 			self.spd = 30
 
@@ -354,8 +353,8 @@ class Minesweeper:
 				self.grid[y].append([pygame.Rect(10 + (x * 22), 50 + (y * 22), 20, 20), None, 0])
 		self.mines = 0
 		while self.mines < self.flgs:
-			mx = random.randint(0,9)
-			my = random.randint(0,29)
+			mx = np.random.randint(0,9)
+			my = np.random.randint(0,29)
 			if self.grid[my][mx][1] == None:
 				self.grid[my][mx][1] = 'X'
 				self.mines += 1
@@ -515,14 +514,14 @@ class Jigsaw:
 		mp = pygame.mouse.get_pos()
 		mr = pygame.Rect(mp[0],mp[1],2,2)
 		if event.type == pygame.MOUSEBUTTONUP and self.drgdrp != None:
-			self.table[self.drgdrp][1].x = math.floor(mr.x/self.size) * self.size
-			self.table[self.drgdrp][1].y = math.floor(mr.y/self.size) * self.size
+			self.table[self.drgdrp][1].x = np.floor(mr.x/self.size) * self.size
+			self.table[self.drgdrp][1].y = np.floor(mr.y/self.size) * self.size
 			self.drgdrp = None
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			if len(self.pieces) > 0:
 				self.table.append(self.pieces[-1])
-				self.table[-1][1].x = math.floor(mr.x/self.size) * self.size
-				self.table[-1][1].y = math.floor(mr.y/self.size) * self.size
+				self.table[-1][1].x = np.floor(mr.x/self.size) * self.size
+				self.table[-1][1].y = np.floor(mr.y/self.size) * self.size
 				del self.pieces[-1]
 			for i in range(len(self.table)):
 				if pygame.Rect.colliderect(mr,self.table[i][1]):
@@ -598,7 +597,7 @@ class Snake:
 		self.pos = [[10,10],[10,9],[10,8]]
 		self.dir = 3
 		self.spd = 20
-		self.fd = [random.randint(2,20),random.randint(2,20)]
+		self.fd = [np.random.randint(2,20),np.random.randint(2,20)]
 		
 	def events(self,event):
 		if event.type == pygame.KEYDOWN:
@@ -618,10 +617,10 @@ class Snake:
 			if self.dir == 1: self.pos[0][1] -= 1
 			if self.dir == 2: self.pos[0][0] += 1
 			if self.dir == 3: self.pos[0][1] += 1
-			self.spd = 20 - math.floor(len(self.pos)/2)
+			self.spd = 20 - np.floor(len(self.pos)/2)
 			if self.spd < 1: self.spd = 1
 			if self.pos[0] == self.fd:
-				self.fd = [random.randint(2,20),random.randint(2,20)]
+				self.fd = [np.random.randint(2,20),np.random.randint(2,20)]
 				self.pos.append(self.pos[-1].copy())
 			if self.pos[0] in self.pos[1:]: self.__init__()
 
@@ -638,7 +637,7 @@ class HittheMole:
 		self.holes = []
 		for x in range(3):
 			for y in range(3):
-				self.holes.append([pygame.Rect(100 + (x * 60),200 + (y * 60),50,50),random.randint(100,400)])
+				self.holes.append([pygame.Rect(100 + (x * 60),200 + (y * 60),50,50),np.random.randint(100,400)])
 		self.score = 0
 		self.time = 30
 	
@@ -649,7 +648,7 @@ class HittheMole:
 			for i in self.holes:
 				if pygame.Rect.colliderect(mr,i[0]) and i[1] <= 0:
 					self.score += 1
-					i[1] = random.randint(100,400)
+					i[1] = np.random.randint(100,400)
 	
 	def draw(self):
 		self.surface.fill((0,0,0))
@@ -657,7 +656,7 @@ class HittheMole:
 			if i[1] <= 0: pygame.draw.ellipse(self.surface, (0,200,0), i[0])
 			pygame.draw.ellipse(self.surface, (0,0,200), i[0], 15)
 			i[1] -= 1
-			if i[1] < -100: i[1] = random.randint(100,400)
+			if i[1] < -100: i[1] = np.random.randint(100,400)
 		self.surface.blit(self.font.render(str(self.score),1,(200,200,200)), (10,10))
 		
 		return self.surface
@@ -681,13 +680,13 @@ class FallingItems:
 		
 		if self.time > 0: self.time -= 1
 		else:
-			self.items.append(pygame.Rect(random.randint(0,self.surface.get_width() - 20),-10,20,20))
+			self.items.append(pygame.Rect(np.random.randint(0,self.surface.get_width() - 20),-10,20,20))
 			self.time = 100 - self.score
 			if self.time <= 10: self.time = 10
 		for i in self.items:
 			pygame.draw.ellipse(self.surface, (200,0,0), i)
 
-			i.y += 2 + math.floor(self.score/10)
+			i.y += 2 + np.floor(self.score/10)
 			if pygame.Rect.colliderect(i,self.basket):
 				self.score += 1
 				i.width = 0
@@ -704,7 +703,7 @@ class Jumping:
 		self.font = pygame.font.SysFont("Arial", 22)
 		self.ball = {'X': 200,'Y': 100, 'XSPEED': 0, 'YSPEED': 5}
 		self.platforms = [[pygame.Rect(0,400,self.surface.get_width(),20),1]]
-		for i in range(random.randint(2,5)): self.platforms.append([pygame.Rect(10 + random.randint(0,self.surface.get_width()), 200 + random.randint(0,100), 60, 5), 1])
+		for i in range(np.random.randint(2,5)): self.platforms.append([pygame.Rect(10 + np.random.randint(0,self.surface.get_width()), 200 + np.random.randint(0,100), 60, 5), 1])
 		self.scroll = 1
 		self.height = 1
 		
@@ -722,7 +721,7 @@ class Jumping:
 				self.ball['YSPEED'] = -(self.ball['YSPEED'])
 				if 400 - p[0].y > self.height:
 					self.height += 400 - p[0].y
-					for i in range(random.randint(2,5)): self.platforms.append([pygame.Rect(10 + random.randint(0,self.surface.get_width()), 200 + random.randint(0,100) - self.height, 40, 5), 1])
+					for i in range(np.random.randint(2,5)): self.platforms.append([pygame.Rect(10 + np.random.randint(0,self.surface.get_width()), 200 + np.random.randint(0,100) - self.height, 40, 5), 1])
 			pygame.draw.rect(self.surface, (200,200,200), pygame.Rect(p[0].x,p[0].y + self.scroll,p[0].width,p[0].height))
 		#DRAW BALL
 		self.ball['Y'] += self.ball['YSPEED']
@@ -740,7 +739,7 @@ class FlappyBird:
 		self.surface = pygame.Surface((sz.current_w,sz.current_h))
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.bird = {'Y': 0, 'YSPEED': 5}
-		self.pipes = [[self.surface.get_width(),random.randint(0,650)]]
+		self.pipes = [[self.surface.get_width(),np.random.randint(0,650)]]
 		self.time = 200
 	
 	def events(self, event):
@@ -750,7 +749,7 @@ class FlappyBird:
 	def draw(self):
 		self.surface.fill((0,0,0))
 		if self.time > 0: self.time -= 1
-		else: self.pipes.append([self.surface.get_width(),random.randint(0,650)]); self.time = 200
+		else: self.pipes.append([self.surface.get_width(),np.random.randint(0,650)]); self.time = 200
 		self.bird['Y'] += self.bird['YSPEED']
 		self.bird['YSPEED'] += 1
 		
@@ -817,7 +816,7 @@ class BubbleBubble:
 		sz = pygame.display.Info()
 		self.surface = pygame.Surface((sz.current_w,sz.current_h))
 		self.font = pygame.font.SysFont("Arial", 64)
-		self.nxt = [random.randint(0,6) for i in range(3)]
+		self.nxt = [np.random.randint(0,6) for i in range(3)]
 		self.mp = [0,0]
 		self.balls = []
 		self.direction = 0
@@ -830,16 +829,16 @@ class BubbleBubble:
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			self.balls.append([pygame.Rect(200,500,30,30),5,self.nxt[0]])
 			del self.nxt[0]
-			self.nxt.append(random.randint(0,6))
+			self.nxt.append(np.random.randint(0,6))
 		
 	def draw(self):
 		self.surface.fill((0,0,0))
-		self.balls[len(self.balls)-1][0].x += int(math.cos(self.direction) * 5)
-		self.balls[len(self.balls)-1][0].y += int(math.sin(self.direction) * 5)
+		self.balls[len(self.balls)-1][0].x += int(np.cos(self.direction) * 5)
+		self.balls[len(self.balls)-1][0].y += int(np.sin(self.direction) * 5)
 		cc = [(200,0,0),(200,100,0),(200,200,0),(0,200,0),(0,200,200),(0,0,200),(200,0,200)]
 		for i in self.balls: pygame.draw.ellipse(self.surface,cc[i[2]],i[0])
 		pygame.draw.circle(self.surface,(200,200,200),(200,500),50,2)
-		pygame.draw.line(self.surface,(100,200,100),(200,500),(200 + (math.cos(self.mp[0]) * 90),450 + (math.cos(self.mp[1])) * 90),3)
+		pygame.draw.line(self.surface,(100,200,100),(200,500),(200 + (np.cos(self.mp[0]) * 90),450 + (np.cos(self.mp[1])) * 90),3)
 		
 		return self.surface
 
@@ -853,7 +852,7 @@ class ColorMatch:
 		for i in range(20): bbs += [0,1,2,3,4]
 		for y in range(10):
 			for x in range(10):
-				rr = random.randint(0,len(bbs)-1)
+				rr = np.random.randint(0,len(bbs)-1)
 				self.grid.append([x,y,bbs[rr]])
 				del bbs[rr]
 		self.select = None
@@ -959,8 +958,8 @@ class Pool:
 		for i in self.balls:
 			if i[2] > 0:
 				i[2] -= 0.1
-				i[1].x += int(math.cos(i[3]) * i[2])
-				i[1].y += int(math.sin(i[3]) * i[2])
+				i[1].x += int(np.cos(i[3]) * i[2])
+				i[1].y += int(np.sin(i[3]) * i[2])
 			if pygame.Rect.colliderect(i[1],self.pbll[0]) and i[1].width == 40:
 					i[2] += self.pbll[1]
 					i[3] = self.pbll[2]
@@ -989,8 +988,8 @@ class Pool:
 			self.surface.blit(self.nfnt.render(str(i[0]),True,c[1]),(i[1].x + 20 - (len(str(i[0])) * 5),i[1].y + 10))
 		if self.pbll[1] > 0:
 			self.pbll[1] -= 0.1
-			self.pbll[0].x += int(math.cos(self.pbll[2]) * self.pbll[1])
-		self.pbll[0].y += int(math.sin(self.pbll[2]) * self.pbll[1])
+			self.pbll[0].x += int(np.cos(self.pbll[2]) * self.pbll[1])
+		self.pbll[0].y += int(np.sin(self.pbll[2]) * self.pbll[1])
 		
 		if self.pbll[0].x <= 0: self.pbll[0].x += 2; self.pbll[2] += 2
 		if self.pbll[0].x >= self.surface.get_width(): self.pbll[0].x -= 2; self.pbll[2] += 2
@@ -998,7 +997,7 @@ class Pool:
 		if self.pbll[0].y >= self.surface.get_height(): self.pbll[0].y -= 2; self.pbll[2] += 2
 		
 		pygame.draw.ellipse(self.surface,(240,240,240),self.pbll[0])
-		pygame.draw.line(self.surface,(240,240,240),(self.pbll[0].x + 20 - int(math.cos(self.pang) * 30),self.pbll[0].y + 20 - int(math.sin(self.pang) * 30)),(self.pbll[0].x + 20 - int(math.cos(self.pang) * 250),self.pbll[0].y + 20 - int(math.sin(self.pang) * 250)),3)
+		pygame.draw.line(self.surface,(240,240,240),(self.pbll[0].x + 20 - int(np.cos(self.pang) * 30),self.pbll[0].y + 20 - int(np.sin(self.pang) * 30)),(self.pbll[0].x + 20 - int(np.cos(self.pang) * 250),self.pbll[0].y + 20 - int(np.sin(self.pang) * 250)),3)
 
 		self.surface.blit(self.font.render(str(self.score),1,(200,200,200)), (10,10))
 		
@@ -1076,7 +1075,7 @@ class Twothousandforthyeight:
 					if i[1][0] == cor[j][0] and i[1][1] == cor[j][1]:
 						del cor[j]; j -= 1
 					j += 1
-			self.blocks.append([[len(self.blocks),2],cor[random.randint(0,len(cor) - 1)],0,-10])
+			self.blocks.append([[len(self.blocks),2],cor[np.random.randint(0,len(cor) - 1)],0,-10])
 			for i in self.blocks: i[2] = 1
 		
 	def draw(self):
@@ -1104,8 +1103,8 @@ class Twothousandforthyeight:
 				if i[1][1] < 0: i[1][1] = 0; i[2] = 0
 				if i[1][1] > 164: i[1][1] = 164; i[2] = 0
 			else:
-				i[1][0] = math.floor(i[1][0]/41) * 41
-				i[1][1] = math.floor(i[1][1]/41) * 41
+				i[1][0] = np.floor(i[1][0]/41) * 41
+				i[1][1] = np.floor(i[1][1]/41) * 41
 			if i[4] < 0: i[4] += 1
 			elif i[4] > 0: i[4] -= 1
 		self.blocks = [i for i in self.blocks if i[0][0] != -1]
@@ -1130,7 +1129,7 @@ class Memory:
 				self.values.append(i + 1)
 		for x in range(4):
 			for y in range(3):
-				v = random.randint(0,len(self.values) - 1)
+				v = np.random.randint(0,len(self.values) - 1)
 				self.buttons.append([pygame.Rect(100 + (x * 60),200 + (y * 60),50,50),self.values[v],2])
 				del self.values[v]
 		
@@ -1185,7 +1184,7 @@ class Simon:
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.score = 0
 		self.time = 1
-		self.sequence = [random.randint(0,3)]
+		self.sequence = [np.random.randint(0,3)]
 		self.mimic = []
 		self.turn = 0
 		
@@ -1208,13 +1207,13 @@ class Simon:
 			if self.mimic[self.turn] == self.sequence[self.turn]:
 				self.turn += 1
 				if self.turn == len(self.sequence):
-					self.sequence.append(random.randint(0,3))
+					self.sequence.append(np.random.randint(0,3))
 					self.mimic = []
 					self.turn = 0
 					self.time = -60
 					self.score += 1
 			else:
-				self.sequence = [random.randint(0,3)]
+				self.sequence = [np.random.randint(0,3)]
 				self.mimic = []
 				self.turn = 0
 				self.time = -60
@@ -1282,10 +1281,10 @@ class FindtheCup:
 			for i in range(len(self.cups)): self.cups[i] = int(self.cups[i])
 			self.mov = []
 			while len(self.mov) < 1:
-				j = random.randint(0,len(self.cups)-1)
+				j = np.random.randint(0,len(self.cups)-1)
 				if j not in self.mov and int(self.cups[j] != 2): self.mov.append(j)
 			while len(self.mov) < 2:
-				j = random.randint(0,len(self.cups)-1)
+				j = np.random.randint(0,len(self.cups)-1)
 				if j not in self.mov and int(self.cups[j] != 0): self.mov.append(j)
 			self.moves -= 1
 			self.wait = 50
@@ -1335,7 +1334,7 @@ class Cassino:
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.slots = []
 		self.sltsz = 90
-		for i in range(3): self.slots.append(random.randint(0,9) * self.sltsz)
+		for i in range(3): self.slots.append(np.random.randint(0,9) * self.sltsz)
 		self.stop = 0
 		self.acc = 10.0
 		self.img = pygame.Surface((self.sltsz,self.sltsz * 11))
@@ -1404,7 +1403,7 @@ class NumberPuzzle:
 		for y in range(3):
 			for x in range(3):
 				if len(self.grid) < 8:
-					rr = random.randint(0,len(lst) - 1)
+					rr = np.random.randint(0,len(lst) - 1)
 					self.grid.append([x,y,lst[rr]])
 					del lst[rr]
 		self.hole = [2,2]
@@ -1838,9 +1837,9 @@ class Blackgammon:
 		if self.time >= 1:
 			self.time += 1
 			if self.time%5 == 0:
-				if self.turn < 0: self.dice[self.turn + 2] = random.randint(1,6)
+				if self.turn < 0: self.dice[self.turn + 2] = np.random.randint(1,6)
 				else:
-					for i in range(2): self.dice[i] = random.randint(1,6)
+					for i in range(2): self.dice[i] = np.random.randint(1,6)
 		if self.time > 120:
 			self.time = 0
 			if self.turn < 0:
@@ -1939,16 +1938,16 @@ class Ludo:
 							pygame.draw.ellipse(self.surface,clst[i],pygame.Rect(self.grid[y][x][0].x + 10,self.grid[y][x][0].y + 10,self.grid[y][x][0].width - 20,self.grid[y][x][0].height - 20))
 		plg = [[(295,295),(295,418)],[(295,295),(418,295)],[(418,295),(418,418)],[(295,418),(418,418)]]
 		for i in range(len(self.players)):
-			pygame.draw.rect(self.surface,clst[i],pygame.Rect(50 + (368 * (i - (2 * math.floor(i/2)))), 50 + (368 * math.floor(i/2)), 246, 246))
-			pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(100 + (368 * (i - (2 * math.floor(i/2)))), 100 + (368 * math.floor(i/2)), 146, 146))
+			pygame.draw.rect(self.surface,clst[i],pygame.Rect(50 + (368 * (i - (2 * np.floor(i/2)))), 50 + (368 * np.floor(i/2)), 246, 246))
+			pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(100 + (368 * (i - (2 * np.floor(i/2)))), 100 + (368 * np.floor(i/2)), 146, 146))
 			pygame.draw.polygon(self.surface,clst[i],(plg[i][0],plg[i][1],(355,355)))
 			for j in range(len(self.players[i])):
 				if self.players[i][j] == None:
-					pygame.draw.ellipse(self.surface,(10,10,10),pygame.Rect(120 + (368 * (i - (2 * math.floor(i/2)))) + (80 * (j - (2 * math.floor(j/2)))),120 + (368 * math.floor(i/2)) + (80 * math.floor(j/2)),30,30))
-					pygame.draw.ellipse(self.surface,clst[i],pygame.Rect(125 + (368 * (i - (2 * math.floor(i/2)))) + (80 * (j - (2 * math.floor(j/2)))),125 + (368 * math.floor(i/2)) + (80 * math.floor(j/2)),20,20))
+					pygame.draw.ellipse(self.surface,(10,10,10),pygame.Rect(120 + (368 * (i - (2 * np.floor(i/2)))) + (80 * (j - (2 * np.floor(j/2)))),120 + (368 * np.floor(i/2)) + (80 * np.floor(j/2)),30,30))
+					pygame.draw.ellipse(self.surface,clst[i],pygame.Rect(125 + (368 * (i - (2 * np.floor(i/2)))) + (80 * (j - (2 * np.floor(j/2)))),125 + (368 * np.floor(i/2)) + (80 * np.floor(j/2)),20,20))
 		if self.time >= 1:
 			self.time += 1
-			if self.time%5 == 0: self.dice = random.randint(1,6)
+			if self.time%5 == 0: self.dice = np.random.randint(1,6)
 		if self.time > 120:
 			self.time = 0
 			if self.dice == 5 and self.players[self.turn][-1] == None: self.opt = 4
@@ -2089,7 +2088,7 @@ class SnakesNLadders:
 				for i in range(len(self.pawns)):
 					if i == 0: cc = (200,100,100)
 					else: cc = (100,200,100)
-					if self.pawns[math.floor(i)] == vl: pygame.draw.ellipse(self.surface,cc,pygame.Rect(25 + (x * 30),325 - (y * 30),20,20))
+					if self.pawns[np.floor(i)] == vl: pygame.draw.ellipse(self.surface,cc,pygame.Rect(25 + (x * 30),325 - (y * 30),20,20))
 				self.pos[vl] = [30 + (x * 30),330 - (y * 30)]
 				bw = not bw
 			bw = not bw
@@ -2104,7 +2103,7 @@ class SnakesNLadders:
 			way = -way
 		if self.time >= 1:
 			self.time += 1
-			if self.time%5 == 0: self.dice = random.randint(1,6)
+			if self.time%5 == 0: self.dice = np.random.randint(1,6)
 		if self.time > 120:
 			self.time = 0
 			self.walk = (self.dice) * 10
@@ -2145,7 +2144,7 @@ class SpiderSolitaire:
 			for n in range(len(nb)): self.mount.append(n)
 		for i in range(5):
 			for n in self.table:
-				rr = random.randint(0,len(self.mount) - 1)
+				rr = np.random.randint(0,len(self.mount) - 1)
 				n.append(self.mount[rr])
 				del self.mount[rr]
 		self.mrct = pygame.Rect(20,50,70,100)
@@ -2155,23 +2154,23 @@ class SpiderSolitaire:
 		mr = pygame.Rect(mp[0],mp[1],2,2)
 		if event.type == MOUSEBUTTONUP:
 			if self.drgdrp != [None,None]:
-				if self.table[math.floor((mr.x - 100)/80)] == [] or self.table[self.drgdrp[0]][self.drgdrp[1]] == self.table[math.floor((mr.x - 100)/80)][-1] - 1:
+				if self.table[np.floor((mr.x - 100)/80)] == [] or self.table[self.drgdrp[0]][self.drgdrp[1]] == self.table[np.floor((mr.x - 100)/80)][-1] - 1:
 					for i in self.table[self.drgdrp[0]][self.drgdrp[1]:]:
-						self.table[math.floor((mr.x - 100)/80)].append(i)
+						self.table[np.floor((mr.x - 100)/80)].append(i)
 					del self.table[self.drgdrp[0]][self.drgdrp[1]:]
 				self.drgdrp = [None,None]
 				chk = 12
 				stt = -1
-				for i in range(len(self.table[math.floor((mr.x - 100)/80)])):
-					if self.table[math.floor((mr.x - 100)/80)][i] == chk:
+				for i in range(len(self.table[np.floor((mr.x - 100)/80)])):
+					if self.table[np.floor((mr.x - 100)/80)][i] == chk:
 						if stt == -1: stt = i
 						chk -= 1
 					else: chk = 12; stt = -1
-				if chk < 0: del self.table[math.floor((mr.x - 100)/80)][stt:]
+				if chk < 0: del self.table[np.floor((mr.x - 100)/80)][stt:]
 		if event.type == MOUSEBUTTONDOWN:
 			if len(self.mount) > 0 and pygame.Rect.colliderect(mr,self.mrct):
 				for n in self.table:
-					rr = random.randint(0,len(self.mount) - 1)
+					rr = np.random.randint(0,len(self.mount) - 1)
 					n.append(self.mount[rr])
 					del self.mount[rr]
 			for i in range(len(self.table)):
@@ -2206,7 +2205,7 @@ class Mahjong:
 			for y in range(2):
 				self.blocks[z].append([])
 				for x in range(4):
-					rr = random.randint(0,len(bbs)-1)
+					rr = np.random.randint(0,len(bbs)-1)
 					self.blocks[z][y].append([pygame.Rect(150 + (x * 45) + (z * 20), 150 + (y * 65) + (z * 30), 40, 60), bbs[rr], 0])
 					del bbs[rr]
 		
@@ -2464,7 +2463,7 @@ class Sueca:
 		elif self.turn != 0 and self.time == 0:
 			do = False
 			if self.table != []: print('NAIPE: '+str(self.table))
-			rr = random.randint(0,len(self.deck[self.turn]) - 1)
+			rr = np.random.randint(0,len(self.deck[self.turn]) - 1)
 			if len(self.table) == 0: do = True
 			elif [i for i in self.deck[self.turn] if i[1] == self.table[0][1]] == []: do = True
 			else:
@@ -2678,7 +2677,7 @@ class TicTacToe:
 						pl.append(x)
 					x += 1
 				if len(pl) > 0:
-					ch = random.randint(0,len(pl) - 1)
+					ch = np.random.randint(0,len(pl) - 1)
 					self.buttons[pl[ch]][1] = 2
 			if self.mode == 1:
 				if self.turn == 1: self.turn = 2
@@ -2864,12 +2863,12 @@ class HuntingWords:
 				self.buttons.append([pygame.Rect(10 + (x * 50),200 + (y * 50),50,50),0])
 				self.grid.append('_')
 		for i in range(10):
-			t = random.randint(0,3)
+			t = np.random.randint(0,3)
 			t = 1
-			w = random.randint(0,len(self.words) - 1)
+			w = np.random.randint(0,len(self.words) - 1)
 			while len(self.words[w]) >= 10:
-				w = random.randint(0,len(self.words) - 1)
-			s = random.randint(0,10 - len(self.words[w]))
+				w = np.random.randint(0,len(self.words) - 1)
+			s = np.random.randint(0,10 - len(self.words[w]))
 			for l in range(len(self.words[w])):
 				if t == 0:
 					self.grid[i + s + (l * 10)] = self.words[w][l]
@@ -2880,7 +2879,7 @@ class HuntingWords:
 		letters = 'abcdefghijklmnopqrstuvwxyz'
 		for i in range(len(self.grid)):
 			if self.grid[i] == '_':
-				c = random.randint(0,len(letters) - 1)
+				c = np.random.randint(0,len(letters) - 1)
 				self.grid[i] = letters[c]
 		
 	def events(self,event):
@@ -2982,7 +2981,7 @@ class Sudoku:
 			for x in range(len(self.grid[y])):
 				if self.grid[y][x][1] != self.grid[y][x][2] and isinstance(self.grid[y][x][1],int):
 					cc = (200,100,100)
-				elif self.block == [x,y] or x == self.block[0] or y == self.block[1] or [x,y] in [[(math.floor(self.block[0]/3)*3) + i,(math.floor(self.block[1]/3)*3) + j] for i in range(3) for j in range(3)]:
+				elif self.block == [x,y] or x == self.block[0] or y == self.block[1] or [x,y] in [[(np.floor(self.block[0]/3)*3) + i,(np.floor(self.block[1]/3)*3) + j] for i in range(3) for j in range(3)]:
 					cc = (100,200,100)
 				elif bw: cc = (150,150,150)
 				else: cc = (200,200,200)
@@ -3031,7 +3030,7 @@ class Hangman:
 		self.doll = 0
 		self.time = 0
 		
-		p = random.randint(0,len(self.words) - 1)
+		p = np.random.randint(0,len(self.words) - 1)
 		self.word = self.words[p]
 		for i in self.word:
 			if i != ' ': self.guess += '_'
@@ -3068,7 +3067,7 @@ class Hangman:
 			self.doll = 0
 			self.time = 0
 		
-			p = random.randint(0,len(self.words) - 1)
+			p = np.random.randint(0,len(self.words) - 1)
 			self.word = self.words[p]
 			for i in self.word:
 				if i != ' ': self.guess += '_'
@@ -3152,7 +3151,7 @@ class Yatzy:
 			self.time += 1
 			if self.time%5 == 0:
 				for i in range(5):
-					if self.lock[i] == 0: self.dice[i] = random.randint(1,6)
+					if self.lock[i] == 0: self.dice[i] = np.random.randint(1,6)
 		if self.time > 120:
 			self.time = 0
 			for i in range(13):

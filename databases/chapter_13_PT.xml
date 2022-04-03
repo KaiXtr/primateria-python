@@ -1,0 +1,37 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="13">
+		[ПОВЕРИТЕЛНО]<br/>
+		<br/>
+		Отчитане на събитията от 25 декември 2007 г. в 12:30 ч. На -22.55105007942486, -43.18521939938314.<br/>
+		Момичето не присъстваше. Дом разрушен. Има нужда от прикриване.<br/>
+		Информацията беше събрана от наемника, медиума, мошеника, ловеца, мошеника, учения и полицията.<br/>
+		Записите от разговорите се съхраняват на 12 DVD, чифт DVD за всеки респондент.<br/>
+		<br/>
+		Предложението за членство на Албанската агенция е отхвърлено. Запазени спомени.<br/>
+		Те се нуждаят от защита от албанската агенция.<br/>
+		Змеят се появи след интервюто. Несигурна дължина, височина на главата е приблизително 50 метра.<br/>
+		Можете лесно да погълнете цял син кит.<br/>
+		<br/>
+		УЖАСНО ИМПОНТЕНТ.<br/>
+	</chapter>
+	<dialog key="CH13PIETRA">
+		<shk>VOCÊ É INSUPORTÁVEL!<spk/>O QUE FOI QUE EU FIZ?!<spk/>EU VOU TE MATAR!!<answer/>
+		Pietra! Aguenta firme! <add/></shk>Mete bala logo! Só não me acerta!<answer/>Você tem demência mulher?<answer/>
+		Não pedi sua ajuda também!<input time="60"/>Amor! Me ajuda!!<answer/>Me espera!<input/>
+	</dialog>
+	<dialog key="CH13SIDNEY">
+		<spk/>O que é que eu estou olhando?<answer/>Parece um dragão, cara.<answer/>Não pode ser. A gente tá chapando, né?
+		<answer/>Se fosse isso estaríamos chapados desde ano passado.<answer/>Como assim velho...<answer/>Ok...<input/>
+		Ele só tá voando, né?<input/>Pelo menos ele não tá...<sleep time="100"/>...merda.<answer/>
+		Ele tá destruindo a cidade?<answer/>É o que você tá vendo, né?<answer/>Não quero acreditar nos meus olhos.<answer/>
+		E o que a gente deveria fazer agora?<slep time="100"/>Vou lá saber. Dá não. Vamo simbora. Puxar o carro e já era.
+		<answer/>Vocês não estão nem aí pra isso?<sleep time="100"/>Desculpe, <name value="1"/>.
+		É que realmente não temos mais o que fazer!<answer/>Eu vou rezar<spk/>Eu também.<spk/>Boa.<answer/>Olha gente...
+		Eu sei que parece uma tarefa difícil.<input/>Mas não podemos deixar que o tamanho dos nossos problemas sejam maiores 
+		do que nossa força de vencê-los!<input/>Os gigantes da vida estão apenas nas aparências! Com força e união nós-<spk/>
+		Tá bom já entendi, psiquiatra da facul! Vamos se armar e ir para o centro!<input/>Estou pensando em usar os prédios para 
+		atirar, mas seria muito arriscado.<input/>Precisamos achar a fraqueza dele primeiro!<input/>De repente seria-<spk/>
+		Subam!<answer/>Eu tava falan-<spk/>Não enrolem seus molengas! Tem um dragão na cidade! Subam logo!<spk/>
+		Vamos logo gente!<spk/>Eu tô com medo mas tô empolgado!<spk/>Sei nem mais o que tô sentindo!<input/>
+	</dialog>
+</data>

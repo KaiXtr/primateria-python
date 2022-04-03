@@ -1,0 +1,30 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="11">
+		<name value="14"/>: Hermitas?<br/>
+		<name value="3"/>: Pois é! E o melhor é que isso também solucionou o mistério da praga que assolou a região serrana.<br/>
+		<name value="14"/>: Percebi. No fim, uma simples busca por provas de alienígenas ofereceu um bem real para a população.<br/>
+		Parabéns, <name value="3"/>.<br/>
+		<name value="3"/>: Não foi nada, obrigado.<br/>
+		<name value="14"/>: Se bem me lembro, <name value="0"/>se separou de vocês para ir junto com Dra <name value="4"/>.<br/>
+		<name value="4"/>: Sim, ele veio depois que eu já havia obtido algumas informações.<br/>
+		<name value="14"/>: Sobre uma rinha de anomalias?<br/>
+		<name value="4"/>: Sim. Absurdo, né? Eu descobri me infiltrando entre os participantes.<br/>
+		A maioria eram ex-mercenários que não passaram no teste no começo do ano.
+	</chapter>
+	<dialog key="CH11SIDNEY">
+		<spk/>Aí está você.<answer/>Pois é...<answer/>A gente já vai embora. Precisamos capturar anomalias para competir.<answer/>
+		Hã? Como é?<answer/>Foi o único jeito.<answer/>Achava que era contra essas coisas!<answer/>
+		Agora as coisas são um pouco diferentes.<input/>Ou são 3 galos de combate ou é toda a fauna da mata atlântica.<input/>
+		De quebra a gente pode ganhar uma grana!<answer/>Ah sim...<input/>Tem isso aí...<answer/>
+		Falando nisso, onde estão meus 300 reais?<answer/>Então...<answer time="60"/><name value="0"/>.<input/>
+		Cadê meus 300 reais?<answer/>Olha só tenta entender a situação.<input/>Eu queria ajudar a gente apostando dinheiro nas anomalias de combate.<spk/>Ah não...<spk/>Eu tava indo bem, bem pra caramba. Só que...<spk/>
+		Só que o quê?!<answer/>Bom...<input/>Como tava ganhando muito eu fui logo com tudo.<input/>
+		Então apostei todo o dinheiro que a gente tinha.<answer time="300"/>Oi?<spk/>A gente ia ganhar o dobro!<spk/>
+		<shk>CARA QUAL É TEU PROBLEMA!!<spk/>VOCÊ FARIA O MESMO!! EU TAVA ENRIQUECENDO A GENTE!!</shk><spk/>
+		Eu não acredito nisso. Era o bolsa família da minha mãe!<spk/>Tá e o que você quer que eu faça?<spk/>
+		<shk>QUERO QUE VÁ SE <censor>FUDER</censor>, <name value="0"/>!<spk/>VAI <censor>TOMAR NO CU</censor> TAMBÉM!</shk>
+		<sleep time="60"/><spk/>Eu preciso desse dinheiro...<input/>Você nem tem noção...<answer/>Ok...eu tô te devendo essa.
+		<input/>Eu vou te ajudar a capturar algumas pestes.<answer/>Eu ia te chamar de qualquer jeito!<answer/>
+		Tá bom! Se acalma!<answer/><censor alt="Misericórdia...">Puta que pariu...</censor>Vamos embora logo...<input/>
+	</dialog>
+</data>

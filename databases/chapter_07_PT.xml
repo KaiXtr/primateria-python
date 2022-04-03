@@ -1,0 +1,22 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="7">
+		<name value="14"/>: E você foi procurar ajuda depois que todos desapareceram?<br/>
+		<name value="2"/>: Era o mais lógico a se fazer.<br/>
+		<name value="14"/>: De fato. Essa história está me interessando muito.<br/>
+		<name value="3"/>: Quero só ver a reação dele!<br/>
+		<name value="14"/>: Calma.<br/>
+		<name value="3"/>: Mano, você vai se amarrar!<br/>
+		<name value="14"/>: Ok, tudo bem. Mas antes eu preciso de detalhes antes de você se reunir novamente com <name value="0"/>.
+		<br/>
+		<name value="3"/>: Beleza! Presta atenção! Se liga, eu e meu amigo, João Grande, estávamos buscando evidências de alienígenas aqui na- É muito esquisito falar isso?<br/>
+		<name value="14"/>: De maneira alguma.<br/>
+		<name value="3"/>: Obrigado. Bom, como tava dizendo... A parada dos géoglifos nos interessou.<br/>
+		Então fomos atrás de provas...
+	</chapter>
+	<dialog key="CH7MRKITE">
+		Crianças malcriadas!<br/>Desse jeito o show não vai ter graça!<answer/>Quem está aí?<br/>Quem é você?<answer/>Quem sou ou como me chamo não é da sua conta!<input/>
+		Vocês estragaram o espetáculo! Mas o show deve continuar!<answer/>Já entendemos. Você é o cara dos shows.<answer/>Como você aprende rápido!<br/>Gostaria de aprender alguns truques?<answer/>
+		Dá um tempo cara. Você não é vilão de Scooby Doo!<answer/>Pode até ser verdade...<br/>Mas no fim eu sempre tenho uma carta na manga!<answer/>Ele tá muito empenhado nos trocadilhos.<answer/>Gostou? Eu decorei tudinho.<answer/>
+		Achei massa!<answer/>Muito obrigado.<input/>Como estava dizendo...<input/>O SHOW DEVE CONTINUAR!<input/><battle index="mrkite"/>
+	</dialog>
+</data>

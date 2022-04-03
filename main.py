@@ -2,32 +2,30 @@
 import pygame
 import xml.sax
 import plyer
-import random
+import threading
 import datetime
 import platform
-import math
+import numpy as np
 import sys
 import os
 
-from plugins import *
 import resources as res
 import minigames as mng
 import GUI
 
+sys.path.insert(0,'databases')
 if res.FILES != []: dtb = __import__('database_' + res.FILES[0][4])
 else: dtb = __import__('database_' + res.MAINLANG)
 
 class Initialize:
 	def __init__(self):
+		pygame.init()
+		pygame.mixer.init()
+
 		osinfo = platform.uname()
 		print(res.GNAME.upper() + ' v.' + res.VERSION + ' - ' + res.AUTHOR + ' ' + res.YEAR)
 		print(osinfo.system + ' ' + osinfo.machine + ' ' + osinfo.node + ' ' + osinfo.release + ' ' + osinfo.version)
-		pygame.init()
-		pygame.mixer.init()
-		res.spr()
-		res.battlesprites()
-		res.animals()
-		for j in os.listdir(res.SFX_PATH[:-1]): res.sfx(j)
+
 		pygame.display.set_caption(res.GNAME)
 		pygame.display.set_icon(pygame.image.load('icon.ico'))
 		pygame.mouse.set_visible(False)
@@ -43,10 +41,13 @@ class Initialize:
 			self.windowh = sz.current_h
 			res.MOUSE = 2
 			res.GSCALE = 2
+
+		#SPLASH SCREEN
 		self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
-		img = pygame.image.load('Icon.png')
-		self.screen.blit(img,(int(self.windoww/2) - int(img.get_width()/2),int(self.windowh/2) - int(img.get_height()/2)))
-		pygame.display.update()
+		#img = pygame.image.load('Icon.png')
+		#self.screen.blit(img,(int(self.windoww/2) - int(img.get_width()/2),int(self.windowh/2) - int(img.get_height()/2)))
+		#pygame.display.update()
+
 		if res.TTS: plyer.tts.speak('')
 		if res.VIBRATE: plyer.vibrator.vibrate(0.01)
 		self.srf = pygame.Surface((600,400),pygame.SRCALPHA)
@@ -57,13 +58,13 @@ class Initialize:
 		self.mnu = 0
 		self.lspd = 0
 		
-		self.bump = pygame.image.load(res.BACKG_PATH + 'bump_' + str(random.randint(0,res.RANGE_BUMP)) + '.png')
+		self.bump = pygame.image.load(res.BACKG_PATH + 'bump_' + str(np.random.randint(0,res.RANGE_BUMP)) + '.png')
 		
 		self.holiday = datetime.datetime.now()
 		
 		self.sscroll = self.windoww + 20
-		self.stext = dtb.TSECRETS[random.randint(0,len(dtb.TSECRETS) - 1)]
-		self.stime = random.randint(600,1000)
+		self.stext = dtb.TSECRETS[np.random.randint(0,len(dtb.TSECRETS) - 1)]
+		self.stime = np.random.randint(600,1000)
 		self.gmtim = []
 		
 		self.load = 0
@@ -76,18 +77,59 @@ class Initialize:
 		
 		#self.grd = [self.guitools.gradient((self.windoww,200),(0,0,0,200),(0,0,0,0)),
 		#self.guitools.gradient((self.windoww,200),(0,0,0,200),(0,0,0,0))]
+
+		#LOAD ASSETS
+		th = [
+			threading.Thread(target=res.spr,args=()),
+			threading.Thread(target=res.battlesprites,args=()),
+			threading.Thread(target=res.animals,args=()),
+			threading.Thread(target=res.sfx,args=()),
+			threading.Thread(target=self.run,args=())
+		]
+		for i in th: i.start()
+		for i in th: i.join()
+
+		#LOAD PLUGINS
+		for p in os.listdir('plugins'):
+			pth = 'plugins/' + p + '/'
+			sys.path.insert(0,pth)
+			sprpth = res.SPRITES_PATH
+			itpth = res.ITEMS_PATH
+			sfxpth = res.SFX_PATH
+
+			res.SPRITES_PATH = pth + 'sprites/'
+			res.ITEMS_PATH = pth + 'sprites/items/it_'
+			res.SFX_PATH = pth + 'sfx/'
+			
+			if res.FILES != []: pdtb = __import__('database_' + res.FILES[0][4])
+			else: pdtb = __import__('database_' + res.MAINLANG)
+
+			dtb.FREAKS = {**dtb.FREAKS,**pdtb.FREAKS}
+			dtb.ITEMS = {**dtb.ITEMS,**pdtb.ITEMS}
+
+			th = [
+				threading.Thread(target=res.sfx,args=()),
+				threading.Thread(target=self.run,args=())
+			]
+			for i in th: i.start()
+			for i in th: i.join()
+			res.SPRITES_PATH = sprpth
+			res.ITEMS_PATH = itpth
+			res.SFX_PATH = sfxpth
 		
 		if res.GAMETIME > 0: self.msc.play(pygame.mixer.Sound(res.MUSIC_PATH + 'alchimera.mp3'))
 		print('Boot time: ' + str(float(self.lspd/1000)) + 's')
+		self.mnu = 2# for quick start
+		while self.mnu < 2: self.run()
 	
 	def intro(self):
 		self.screen.fill((0,0,10))
 		#STARS
 		if len(self.stars) < 10000:
-			'''self.stars.append([(random.randint((self.windoww/2) - 5,(self.windoww/2) + 5),
-			random.randint((self.windowh/2) - 5,(self.windowh/2) + 5)),random.randint(1,9)])'''
-			prb = random.randint(0,100)
-			if prb > 50: self.stars.append([[self.windoww,random.randint(0,self.windowh)],random.randint(3,12)])
+			'''self.stars.append([(np.random.randint((self.windoww/2) - 5,(self.windoww/2) + 5),
+			np.random.randint((self.windowh/2) - 5,(self.windowh/2) + 5)),np.random.randint(1,9)])'''
+			prb = np.random.randint(0,100)
+			if prb > 50: self.stars.append([[self.windoww,np.random.randint(0,self.windowh)],np.random.randint(3,12)])
 		for i in self.stars:
 			'''if i[1] == 1:
 				i[0][0] += 2'''
@@ -126,7 +168,7 @@ class Initialize:
 				self.windoww = event.w
 				self.windowh = event.h
 				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
-				self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', math.floor(self.windoww/200) * 2)}
+				self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', np.floor(self.windoww/200) * 2)}
 		
 		self.screen.fill((0,0,0))
 		if self.alpha < 255 and self.wait == 0: self.alpha += 5
@@ -149,8 +191,8 @@ class Avatar:
 		self.window = pygame.display.set_mode((600, 600))
 		self.surface = pygame.Surface((400, 600))
 		self.brd = pygame.Surface((200,150))
-		for x in range(math.ceil(self.brd.get_width()/10)):
-			for y in range(math.ceil(self.brd.get_height()/10)):
+		for x in range(np.ceil(self.brd.get_width()/10).astype(int)):
+			for y in range(np.ceil(self.brd.get_height()/10).astype(int)):
 				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10, y * 10))
 		self.scr = [pygame.Surface((200,150)), pygame.Surface((400,300), pygame.SRCALPHA)]
 		self.fnt = {'MEDIUM': pygame.font.SysFont('Calibri', 40), 'SMALL': pygame.font.SysFont('Calibri', 20)}
@@ -173,7 +215,7 @@ class Avatar:
 		if i['PAUSE'] < 2: i['GIF'] += 0.5
 		if i['GIF'] >= len(res.SPRITES[i['SPRITE']]): i['GIF'] = 0
 		if i['PAUSE'] < 2: i['BLINK'] -= 1
-		if i['BLINK'] < 0: i['BLINK'] = round(random.randint(30,90))
+		if i['BLINK'] < 0: i['BLINK'] = round(np.random.randint(30,90))
 		#JUMP
 		if i['GRAVITY'] > -5:
 			i['JUMP'] += i['GRAVITY']
@@ -191,8 +233,8 @@ class Avatar:
 				self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'mp_player.png'), (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y))
 			else:
 				#DONE SPRITE
-				sprstr = str(i['HAIR'][0]) + str(i['HAIR'][1]) + str(i['HAIR'][2]) + i['HEAD'] + str(math.floor(i['BLINK'])) + \
-				'_' + i['SPRITE'] + str(i['SKIN']) + str(math.floor(i['GIF']))
+				sprstr = str(i['HAIR'][0]) + str(i['HAIR'][1]) + str(i['HAIR'][2]) + i['HEAD'] + str(np.floor(i['BLINK'])) + \
+				'_' + i['SPRITE'] + str(i['SKIN']) + str(np.floor(i['GIF']))
 				if sprstr in self.donesprites: doll = self.donesprites[sprstr]
 				else:
 					#EXTRA SPACEMENT
@@ -202,7 +244,7 @@ class Avatar:
 					elif i['SPRITE'].startswith('WALK'): lst = [0,1,1,1,0,1,1,1]
 					elif i['SPRITE'].startswith('RUN'): lst = [0,1,2,1,0,1,2,1]
 					else: lst = [0]
-					try: xsp = lst[math.floor(i['GIF'])]
+					try: xsp = lst[np.floor(i['GIF'])]
 					except: xsp = 0
 					if i['SPRITE'].endswith('L') or i['SPRITE'].endswith('R'): xsp += 1
 					if i['JUMP'] > 0: xsp = 1
@@ -256,7 +298,7 @@ class Avatar:
 						eye_img = pygame.image.load(res.TEMP_PATH + eye_img + '.png')
 						#MOUTH
 						if True: #self.dlg['CAMERA'] == i['RECT']:
-							mouth_img = pygame.image.load(res.TEMP_PATH + 'mouth_' + str(math.floor(i['GIF'])) + '.png')
+							mouth_img = pygame.image.load(res.TEMP_PATH + 'mouth_' + str(np.floor(i['GIF']).astype(int)) + '.png')
 							mouth_rect = mouth_img.get_rect()
 						#FACIAL HAIR
 						if i['HAIR'][2] > 0:
@@ -314,25 +356,25 @@ class Avatar:
 					#BODY
 					if i['SWIM'] == None:
 						if t and i['SLEEP']: body_img = res.SPRITES['REST'][0].copy()
-						else: body_img = res.SPRITES[i['SPRITE']][math.floor(i['GIF'])].copy()
+						else: body_img = res.SPRITES[i['SPRITE']][np.floor(i['GIF']).astype(int)].copy()
 						body_img.fill((res.PALETTES[0][int(i['SKIN'])]),None,pygame.BLEND_RGBA_MULT)
 						#CLOTHES
 						clth_img = []
-						if t and i['COSTUME'] and int(i['DIRECTION']) < 6:
+						'''if t and i['COSTUME'] and int(i['DIRECTION']) < 6:
 							for clth in i['COSTUME']:
 								it = res.INVENTORY[clth[0]][clth[1]][clth[2]][clth[3]]
-								cc = pygame.image.load(res.TEMP_PATH + it[0:-2] + '_' + i['SPRITE'] + '.png')
+								cc = pygame.image.load(res.TEMP_PATH + it[0:-1] + '_' + i['SPRITE'] + '.png')
 								cc.fill((res.PALETTES[1][dtb.ITEMS[it][5]]),None,pygame.BLEND_RGBA_MULT)
 								clth_img.append(cc)
 						if clth_img != []:
 							for clth in clth.img:
-								body_img.blit(clth,(0,0))
+								body_img.blit(clth,(0,0))'''
 					#SWIMMING
 					else:
 						xsp += 21
 						i['SWIM'] += 0.1
 						if i['SWIM'] > 1.5: i['SWIM'] = 0.0
-						body_img = pygame.image.load(res.SPRITES_PATH + 'water_' + str(math.floor(i['SWIM'])) + '.png')
+						body_img = pygame.image.load(res.SPRITES_PATH + 'water_' + str(np.floor(i['SWIM'])) + '.png')
 					#DRAW
 					fsz = face_srf.get_rect()
 					bsz = body_img.get_rect()
@@ -389,11 +431,6 @@ class Avatar:
 		self.window.blit(pygame.transform.scale(self.surface,sz),(0,0))
 		pygame.display.flip()
 		pygame.time.Clock().tick(res.FPS)
-
-'''
-a = Avatar()
-while True: a.test()
-'''
 
 class NPC:
 	def __init__(self,index,pos,who=None):
@@ -580,8 +617,8 @@ class NPC:
 							i['SPEED'] += 0.5
 							if i['SPEED'] == 3.0: i['DIRECTION'] = 1
 					if self.dodge == 'circle':
-						i['MASK'].x = int(math.cos(i['SPEED'] + (i['N'] * 2)) * 50) + int(self.displayzw/2) - 50
-						i['MASK'].y = int(math.sin(i['SPEED'] + (i['N'] * 2)) * 50) + int(self.displayzh/2) - 50
+						i['MASK'].x = int(np.cos(i['SPEED'] + (i['N'] * 2)) * 50) + int(self.displayzw/2) - 50
+						i['MASK'].y = int(np.sin(i['SPEED'] + (i['N'] * 2)) * 50) + int(self.displayzh/2) - 50
 						i['SPEED'] += 0.5
 				else:
 					if self.dodge == 'jump': i['SPEED'] = 3.0
@@ -592,7 +629,7 @@ class NPC:
 					elif i['FADE'] > 0: i['SPRITE'].fill((200,10,10,int(i['FADE'] * 50)),None,pygame.BLEND_RGBA_MULT)
 				#DRAW
 				if self.away == 0:
-					self.hdpos[1] = int(math.sin(self.acc) * 3)
+					self.hdpos[1] = int(np.sin(self.acc) * 3)
 					self.acc += 0.1
 					self.surface.blit(pygame.image.load(res.FREAKS_PATH + (self.file) + '_body.png').convert_alpha(), (int(self.mask.x + dtb.FREAKS[self.file]['SKELETON']['body'][0]), int(self.mask.y + dtb.FREAKS[self.file]['SKELETON']['body'][1])))
 					for x in range(len(dtb.FREAKS[self.file]['SKELETON']['eye'])):
@@ -616,7 +653,7 @@ class NPC:
 					self.display[0].blit(pygame.transform.scale(i['SPRITE'],(szw,szh)), (i['MASK'].x, i['MASK'].y - i['AWAY']))
 				#EFFECTS ANIMATION
 				if self.condition:
-					self.surface.blit(res.SPRITES['EFFECT_' + str(i['HEALTH'])][math.floor(self.effect)], (self.mask.x + 5, self.mask.y - 10))
+					self.surface.blit(res.SPRITES['EFFECT_' + str(i['HEALTH'])][np.floor(self.effect)], (self.mask.x + 5, self.mask.y - 10))
 					self.effect += 0.5
 					#self.effect >= len(res.SPRITES['EFFECT_' + str(i['HEALTH'])]): self.effect = 0.0
 			else: self.mask.x -= self.agility
@@ -645,15 +682,11 @@ class NPC:
 		pygame.display.flip()
 		pygame.time.Clock().tick(res.FPS)
 
-'''
-e = NPC('4.1.1',(50,50))
-while True: e.test()
-'''
-
 class TileHandler(xml.sax.ContentHandler):
 	def __init__(self,file,lst=None,first=0):
 		self.guitools = GUI.Guitools()
-		self.window = pygame.display.set_mode((600,600))
+		#self.window = pygame.display.set_mode((600,600))
+		self.window = pygame.Surface((1,1))
 		self.name = file[:-4]
 		self.first = first
 		self.ind = ''
@@ -698,7 +731,7 @@ class TileHandler(xml.sax.ContentHandler):
 					self.gid = int(attributes['id']) + self.first
 					self.tilidx = int(attributes['id']) + self.first
 					rct = (self.cor[0] * self.tilewidth,self.cor[1] * self.tileheight,self.tilewidth,self.tileheight)
-					self.tiles[self.gid] = {'ID': lid,'IMG': self.img.subsurface(rct).copy(),'RECT': (0,0,0,0)}
+					self.tiles[self.gid] = {'ID': lid,'IMG': self.img.subsurface(rct).copy(),'MASK': (0,0,0,0),'ANIMATION': []}
 					for x in attributes.items(): self.tiles[self.gid][x[0].upper()] = x[1]
 				self.cor[0] += 1
 				if self.cor[0] >= self.columns:
@@ -801,9 +834,11 @@ class MapHandler(xml.sax.ContentHandler):
 		self.guitools = GUI.Guitools()
 		self.name = file[:-4]
 		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE)}
-		self.window = pygame.display.set_mode((600,600))
+		#self.window = pygame.display.set_mode((600,600))
+		self.window = pygame.Surface((1,1))
 		self.sfx = pygame.mixer.Channel(0)
 		self.sfx.set_volume(res.SFX)
+		self.cam = pygame.Rect(0,90,300,500)
 		self.surfaces = [None for i in range(5)]
 		self.layers = [[] for i in range(5)]
 		self.tileset = []
@@ -839,12 +874,12 @@ class MapHandler(xml.sax.ContentHandler):
 				setattr(self, i, int(attributes[i]))
 			self.surfaces = [pygame.Surface((int(attributes['width']) * int(attributes['tilewidth']),int(attributes['height']) * int(attributes['tileheight'])),pygame.SRCALPHA) for i in range(5)]
 		if tag == 'property': setattr(self, attributes['name'], attributes['value'])
-		if tag == 'tileset': pass
 		if tag in lst: self.srflvl = lst.index(tag)
 		if tag == 'layer':
 			dct = {i[0]: i[1] for i in attributes.items()}
 			dct['data'] = []
-			dct['surface'] = pygame.Surface((int(attributes['width']) * self.tilewidth,int(attributes['height']) * self.tileheight),pygame.SRCALPHA)
+			dct['tiles'] = []
+			#dct['surface'] = pygame.Surface((int(attributes['width']) * self.tilewidth,int(attributes['height']) * self.tileheight),pygame.SRCALPHA)
 			self.layers[self.srflvl].append(dct)
 
 		#ITEMS
@@ -923,14 +958,17 @@ class MapHandler(xml.sax.ContentHandler):
 						for x in range(int(self.layers[i][ldx]['width'])):
 							t = self.layers[i][ldx]['data'][x + (y * int(self.layers[i][ldx]['height']))]
 							if t > 0:
-								self.layers[i][ldx]['surface'].blit(tls[t]['IMG'],(x * self.tilewidth,y * self.tileheight))
-								if tls[t]['TYPE'] in ['sidewalk','street','crossing']:
-									self.paths[tls[t]['TYPE'].upper()].append((x * self.tilewidth,y * self.tileheight))
+								til = tls[t].copy()
+								til['GIF'] = 0.0
+								til['RECT'] = pygame.Rect(x * self.tilewidth,y * self.tileheight,self.tilewidth,self.tileheight)
+								self.layers[i][ldx]['tiles'].append(til)
+								if til['TYPE'] in ['sidewalk','street','crossing']:
+									self.paths[til['TYPE'].upper()].append((til['RECT'].x,til['RECT'].y))
 					#DRAW SURFACES
-					for l in self.layers[i]:
+					'''for l in self.layers[i]:
 						if 'offsetx' in l.keys(): cor = (int(l['offsetx']) * self.tilewidth,int(l['offsety']) * self.tileheight)
 						else: cor = (0,0)
-						self.surfaces[i].blit(l['surface'],cor)
+						self.surfaces[i].blit(l['surface'],cor)'''
 		self.current = None
 		self.content = ''
 
@@ -979,36 +1017,18 @@ class MapHandler(xml.sax.ContentHandler):
 		file.close()
 		
 	def draw(self):
-		pass
-		'''
-		#REGULAR GROUND
-		self.surfaces[0].blit(self.tilmap[0][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
-		if len(self.tilmap[1]) > 0: self.display[0].blit(self.tilmap[1][math.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
-		#MIRROR SURFACES
-		for i in self.tilrect[5]:
-			self.display[0].blit(i[0],(i[1].x - self.cam.x, i[1].y - self.cam.y))
-			if self.rectdebug: pygame.draw.rect(self.display[0],(0,0,255),pygame.Rect(i[1].x - self.cam.x,i[1].y - self.cam.y,i[1].width,i[1].height),3)
-		
-		
-			if res.MAP != 'rodoviary':
-				if self.turn != -6 and res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] != 12:
-					if len(self.tilmap) > 1: self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)],(0,0),(self.cam.x, self.cam.y,self.displayzw,self.displayzh))
-			else:
-				self.bbg['X'] += 0.2
-				if math.floor(self.bbg['X']) > (self.map.width * self.map.tilewidth): self.bbg['X'] = 0.0
-				self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)], (math.floor(self.bbg['X']) - self.cam.x, -self.cam.y))
-				self.display[0].blit(self.tilmap[2][math.floor(self.tilemation)], (math.floor(self.bbg['X']) - (self.map.width * self.map.tilewidth) - self.cam.x, -self.cam.y))
-				for t in self.tilrect[4 + math.floor(self.tilemation)]:
-					if self.colide(t[1],self.cam): self.display[0].blit(t[2], (t[1].x - self.cam.x, t[1].y - self.cam.y))
-		'''
+		for lyr in range(len(self.layers)):
+			for l in self.layers[lyr]:
+				for i in l['tiles']:
+					if pygame.Rect.colliderect(i['RECT'],self.cam):
+						if 'offsetx' in l.keys(): cor = (int(l['offsetx']) * self.tilewidth,int(l['offsety']) * self.tileheight)
+						else: cor = (0,0)
+						self.surfaces[lyr].blit(i['IMG'],(i['RECT'].x + cor[0],i['RECT'].y + cor[1]))
+						if len(i['ANIMATION']) > 0: i['GIF'] += 0.2
+						if i['GIF'] > len(i['ANIMATION']) - 1: i['GIF'] = 0.0
+		for i in self.surfaces:
+			self.window.blit(i,(0,0))
 
-	def test(self):
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				exit()
-		self.window.fill((100,100,100))
-		#for i in self.surfaces: self.window.blit(i,(0,0))
 		self.traflight += 1
 		if self.traflight > 240: self.traflight = 0
 		for i in self.paths['SIDEWALK']: pygame.draw.rect(self.window,(100,100,200),pygame.Rect(i[0],i[1],30,30),2)
@@ -1034,8 +1054,8 @@ class MapHandler(xml.sax.ContentHandler):
 					chk.append([rct.x + (cors[c][0] * 30),rct.y + (cors[c][1] * 30)])
 
 				#SOUND
-				snd = pygame.mixer.Sound(res.SFX_PATH + 'step_motor.wav')
-				#dst = math.hypot(*(self.listener[0] - rct.x,self.listener[1] - rct.y))
+				snd = res.SOUND['STEP_MOTOR']
+				#dst = np.hypot(*(self.listener[0] - rct.x,self.listener[1] - rct.y))
 				cor = abs(self.listener[0] - rct.x) - abs(self.listener[1] - rct.y)
 
 				cor = [(rct.x + rr,rct.y + rr),
@@ -1054,24 +1074,85 @@ class MapHandler(xml.sax.ContentHandler):
 				if eval(eq): ntil += [x for x in self.paths['CROSSING'] for cor in chk if x[0] == int(cor[0]/self.tilewidth) * self.tilewidth and x[1] == int(cor[1]/self.tileheight) * self.tileheight]
 				dirs = [x for x in [1,3,5,7] if x not in ntil]
 				if len(dirs) == 0: lst[l][i]['DIRECTION'] = 0
-				elif lst[l][i]['DIRECTION'] not in dirs: lst[l][i]['DIRECTION'] = dirs[random.randint(0,len(dirs) - 1)]
-				
+				elif lst[l][i]['DIRECTION'] not in dirs: lst[l][i]['DIRECTION'] = dirs[np.random.randint(0,len(dirs) - 1)]
+		'''#SKY
+			if len(self.tilmap) > 2:
+				tt = (res.TIME[0] * 60) + res.TIME[1]
+				img = self.tilmap[3][0]
+				self.surfaces[0].blit(img, (0, -int(tt * ((img.get_height() - (img.get_height()/self.display.height))/1440))))
+				if len(self.tilrect) > 5:
+					for i in range(2):
+						aa = ((tt)/240) + 2 + (i * 3)
+						xx = int(np.cos(aa) * 100) + int(self.display.width/2)
+						yy = int(np.sin(aa) * 100) + int(self.display.height/2)
+						if i == 0: frm = 0
+						else: frm = res.DATE[4]
+						self.surfaces[0].blit(self.tilrect[6][0][0]['IMAGE'][frm],(xx,yy))	
+			#PARALLAX SCROLLING
+			px = 2
+			for t in self.tilmap[4:]:
+				if len(t) > 0: self.surfaces[0].blit(t[np.floor(self.tilemation)], (-np.floor(self.cam.x/px), -np.floor(self.cam.y/px)))
+				px += 3'''
+		'''
+		if self.map and len(self.tilrect) > 3:
+				if self.tilhide == False and self.tilalpha > 0: self.tilalpha -= 20
+				if self.tilhide and self.tilalpha < 255: self.tilalpha += 20
+				if self.tilalpha < 0: self.tilalpha = 0
+				if self.tilalpha > 255: self.tilalpha = 255
+				al = 255 - self.tilalpha
+				for i in self.tilrect[4]:
+					srf = pygame.Surface((i[1].width,i[1].height))
+					if i[0].endswith('ON') and al > 0: srf.set_alpha(al); srf.fill((0,0,0)); self.surfaces[0].blit(srf, (i[1].x - self.cam.x,i[1].y - self.cam.y))
+					if i[0].endswith('OFF') and self.tilalpha > 0: srf.set_alpha(self.tilalpha); srf.fill((0,0,0)); self.surfaces[0].blit(srf, (i[1].x - self.cam.x,i[1].y - self.cam.y))
+			'''
+
+		'''
+		#REGULAR GROUND
+		self.surfaces[0].blit(self.tilmap[0][np.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+		if len(self.tilmap[1]) > 0: self.display[0].blit(self.tilmap[1][np.floor(self.tilemation)],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+		#MIRROR SURFACES
+		for i in self.tilrect[5]:
+			self.display[0].blit(i[0],(i[1].x - self.cam.x, i[1].y - self.cam.y))
+			if self.rectdebug: pygame.draw.rect(self.display[0],(0,0,255),pygame.Rect(i[1].x - self.cam.x,i[1].y - self.cam.y,i[1].width,i[1].height),3)
+		
+			if res.MAP != 'rodoviary':
+				if self.turn != -6 and res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] != 12:
+					if len(self.tilmap) > 1: self.display[0].blit(self.tilmap[2][np.floor(self.tilemation)],(0,0),(self.cam.x, self.cam.y,self.displayzw,self.displayzh))
+			else:
+				self.bbg['X'] += 0.2
+				if np.floor(self.bbg['X']) > (self.map.width * self.map.tilewidth): self.bbg['X'] = 0.0
+				self.display[0].blit(self.tilmap[2][np.floor(self.tilemation)], (np.floor(self.bbg['X']) - self.cam.x, -self.cam.y))
+				self.display[0].blit(self.tilmap[2][np.floor(self.tilemation)], (np.floor(self.bbg['X']) - (self.map.width * self.map.tilewidth) - self.cam.x, -self.cam.y))
+				for t in self.tilrect[4 + np.floor(self.tilemation)]:
+					if self.colide(t[1],self.cam): self.display[0].blit(t[2], (t[1].x - self.cam.x, t[1].y - self.cam.y))
+		'''
+
+	def test(self):
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				exit()
+		self.window.fill((100,100,100))
+		self.draw()
 		pygame.display.flip()
 		pygame.time.Clock().tick(res.FPS)
 
-m = MapHandler('savetest.tmx')
-while True: m.test()
-
 class Dialog(xml.sax.ContentHandler):
-	def __init__(self,key,mainclass):
+	def __init__(self,key,file='dialogs'):
 		self.inv = GUI.Inventory((0,0),0)
 		self.guitools = GUI.Guitools()
-		self.main = mainclass
+		self.main = None
 		self.window = pygame.display.set_mode((600,700))
-		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 12 * res.GSCALE)}
+		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 12 * res.GSCALE),'MINI': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE)}
 		self.sfx = pygame.mixer.Channel(0)
 		self.sfx.set_volume(res.SFX)
+
+		self.bxsize = 50
+		self.bxmargin = self.bxsize + 20
+		self.iblk = 0
+
 		self.key = key
+		self.scene = 0
 		self.current = ''
 		self.content = ''
 		self.emote = None
@@ -1099,47 +1180,38 @@ class Dialog(xml.sax.ContentHandler):
 			self.text = res.CHAT.copy()
 			for i in range(len(self.text)):
 				sz = self.fnt[self.curfnt].size(self.text[i])[0] + 10
-				self.rects.append(pygame.Rect(30,200 + (i * 60),sz,50))
+				self.rects.append(pygame.Rect(30,200 + (i * self.bxmargin),sz,self.bxsize))
 			self.idx = len(res.CHAT) - 1
 			while True: self.test()
 		elif key in ['debug','DEBUG']: pass
 		else:
-			self.rects.append(pygame.Rect(30,200,0,50))
+			self.rects.append(pygame.Rect(30,200,0,self.bxsize))
 			parser = xml.sax.make_parser()
 			parser.setFeature(xml.sax.handler.feature_namespaces, 0)
 			parser.setContentHandler(self)
-			parser.parse('dialogs_{}.xml'.format(res.LANG))
+			parser.parse('databases/{}_{}.xml'.format(file,res.LANG))
 
 	def startElement(self, tag, attributes):
 		tag = tag.lower()
-		if tag == 'dialog' and attributes['key'] == self.key: self.read = True
+		if tag == 'dialog' and attributes['key'] == self.key:
+			if 'scenes' in attributes.keys(): self.scene = 1
+			else: self.read = True
+
+		#DIALOG SAVING AND SCENES
+		if tag == 'scene' and self.scene == 1:
+			if 'id' in attributes.keys(): sid = int(attributes['id'])
+			else: sid = 0
+			if self.key not in res.DLGSAV: res.DLGSAV[self.key] = sid
+			if res.DLGSAV[self.key] == sid: self.read = True
 		if self.read:
 			#DIALOG SETTINGS
 			if tag == 'voice': self.voice = int(attributes['value'])
 			if tag == 'type': self.type = attributes['value']
 			if tag == 'font': self.font = attributes['value']
-			if tag == 'shake': self.shake = True
+			if tag in ['shk','shake']: self.shake = True
 
 			if len(self.choices) > 0: txt = self.choices[len(self.choices)-1]
 			else: txt = self.text
-
-			#TALK BALLONS
-			if tag in ['spk','speaker','answer']: self.speaker = not self.speaker
-			if tag in ['br','input','spk','answer','get']:
-				if tag in ['input','answer']:
-					while self.guitools.wait(): self.test()
-					self.sfx.play(res.SOUND['MENU_GO'])
-				self.idx += 1
-				txt.append('')
-				self.rects.append(pygame.Rect(30,200 + (self.idx * 60),0,50))
-			if tag == 'option':
-				self.opt = 0
-				if 'text' in attributes.keys():
-					sz = self.fnt[self.curfnt].size(attributes['text'])[0] + 10
-					self.optrects.append(pygame.Rect(self.window.get_width() - 30 - sz,200 + (self.idx * 60),sz,50))
-					self.choices.append([attributes['text'],''])
-					self.stidx = self.idx
-					self.idx = 1
 
 			#PROLOGUE AND EPILOGUE
 			if tag == 'prologue':
@@ -1149,26 +1221,47 @@ class Dialog(xml.sax.ContentHandler):
 				self.chapter = None
 				pygame.mixer.music.unpause()
 
+			#TALK BALLONS
+			if tag in ['spk','speaker','answer']: self.speaker = not self.speaker
+			if tag in ['br','input','spk','answer','get']:
+				if tag in ['input','answer'] and len(self.choices) == 0:
+					self.iblk = 1
+					while self.guitools.wait(): self.test()
+					self.sfx.play(res.SOUND['MENU_GO'])
+					self.iblk = 0
+				self.idx += 1
+				txt.append('')
+				if len(self.choices) == 0: self.rects.append(pygame.Rect(30,200 + (self.idx * self.bxmargin),0,self.bxsize))
+			if tag == 'option':
+				if 'text' in attributes.keys():
+					if len(self.choices) == 0:
+						self.opt = 0
+						self.stidx = self.idx + 1
+					self.idx = 0
+					sz = self.fnt[self.curfnt].size(attributes['text'])[0] + 10
+					self.optrects.append(pygame.Rect(self.window.get_width() - 30 - sz,200 + ((self.stidx + len(self.choices)) * self.bxmargin),sz,self.bxsize))
+					self.choices.append([attributes['text'],''])
+					self.idx += 1
+
 			#MOVE THROUGH DIALOG
-			if tag == 'sleep':
-				ds = txt.copy()
-				#self.text = []
-				#if len(txt[tid]) > 2 and txt[tid][2] == 'TWNN': self.cityname = 'TWNN'
+			if tag in ['sleep','input','answer','spk'] and 'time' in attributes.keys():
 				for i in range(int(attributes['time'])): self.test()
-				#if len(txt[tid]) > 2 and txt[tid][2] == 'TWNN': self.cityname = ''
-				txt = ds
 			if tag == 'go': self.idx += 1
 			if tag == 'return': self.idx = self.stidx
-			if tag in ['jump','jmp']: res.DLGSAV[self.key] += 1
-			if tag in ['cls','clear']: self.idx = 0; self.text = ['']; self.rects = [pygame.Rect(0,0,0,0)]
+			if tag in ['jump','jmp']:
+				if self.key not in res.DLGSAV: res.DLGSAV[self.key] = 0
+				if 'scene' in attributes.keys(): res.DLGSAV[self.key] = int(attributes['scene'])
+				else: res.DLGSAV[self.key] += 1
+				self.scene = 2
+			if tag in ['cls','clear']: self.idx = 0; self.text = ['']; self.scroll = 0; self.rects = [pygame.Rect(30,200,0,50)]
 
 			#GET AND CHANGE VARIABLES
-			if tag == 'get':
+			if tag == 'get' and len(self.choices) > 0:
 				if 'map' in attributes.keys(): res.MAP = attributes['map']
 				if 'time' in attributes.keys(): res.TIME[0] += int(attributes['time'])
 				if 'date' in attributes.keys(): res.DATE[0] += int(attributes['date'])
 				if 'item' in attributes.keys():
-					self.inv.add(attributes['item'])
+					self.inv.add(0,attributes['item'])
 					self.sfx.play(res.SOUND['ITEM_GET'])
 				if 'money' in attributes.keys():
 					self.sfx.play(res.SOUND['CASH_GET'])
@@ -1193,9 +1286,11 @@ class Dialog(xml.sax.ContentHandler):
 				if attributes['type'] == 'pronoun': cc += dtb.DTALKS[res.CHARACTERS[res.PARTY[res.FORMATION][0]]['PRONOUN'] + '1']
 				if attributes['type'] == 'deaths': cc += str(res.CHARACTERS[res.PARTY[res.FORMATION][0]]['DEATHS'])
 				self.characters(cc)
+			if tag == 'name': self.characters(dtb.NAMES[int(attributes['value']) * 2])
 			if tag == 'task':
-				if res.TASKS[attributes['index']][1] == 100: self.task = 1
-				else: self.task = 2
+				'''if res.TASKS[int(attributes['index'])][1] == 100: self.task = 1
+				else: self.task = 2'''
+				pass
 			if tag == 'if':
 				add = False
 				if 'ethic' in attributes.keys() and res.CHARACTERS[res.PARTY[res.FORMATION][0]] >= int(attributes['ethic']): add = True
@@ -1204,7 +1299,7 @@ class Dialog(xml.sax.ContentHandler):
 				if 'char' in attributes.keys() and int(attributes['char']) in res.PARTY[res.FORMATION]: add = True
 			if tag == 'chance':
 				self.choices.append([attributes['text'],''])
-				prb = random.randint(0,100)
+				prb = np.random.randint(0,100)
 				for i in txt[tid][1:]:
 					if prb > i[0] - 100:
 						txt.insert(tid + 1, i[1:])
@@ -1215,7 +1310,7 @@ class Dialog(xml.sax.ContentHandler):
 			if tag == 'insert': self.__init__(attributes['index'],None)
 
 			#RESOURCES
-			if tag == 'playz':
+			if tag == 'play':
 				lp = 0
 				if 'loop' in attributes.keys(): lp = attributes['loop']
 				if attributes['src'] in res.SOUND:
@@ -1245,14 +1340,15 @@ class Dialog(xml.sax.ContentHandler):
 	def characters(self, content):
 		if len(self.choices) > 0: txt = self.choices[len(self.choices)-1]
 		else: txt = self.text
+
+		for i in ['\n','\t']: content = content.replace(i,'')
+		if self.current == 'cc' and not res.CC: content = False
 		if self.read and content:
-			for i in ['\n','\t']: content = content.replace(i,'')
-			if self.current == 'cc' and not res.CC: content = False
-			wrp = self.guitools.wrap([content],self.fnt[self.curfnt],self.window.get_width())
-			print(content)
-			print(wrp)
+			wrp = self.guitools.wrap([content],self.fnt[self.curfnt],self.window.get_width() - 40)
 			for tt in [i[1:] for i in wrp]:
-				if len(self.choices) > 0: self.choices[len(self.choices)-1][self.idx] += tt
+				#ADDING OPTIONS
+				if len(self.choices) > 0: self.choices[-1][self.idx] += tt
+				#NORMAL DIALOG
 				else:
 					#SOUND
 					snd = False
@@ -1267,38 +1363,50 @@ class Dialog(xml.sax.ContentHandler):
 						elif tt[i] == ':': self.emote = ''
 
 						#TEXT ADAPTATIONS
-						if self.censor == 2 and tt[i] not in [' ','!','?']: txt[self.idx] += '*'
+						if self.censor == 2 and tt[i]:
+							if tt[i] == ' ': txt[self.idx] += ' '
+							elif res.CENSORSHIP == 1: txt[self.idx] += '*'
+							else: lst = '@#%$*&'; txt[self.idx] += lst[np.random.randint(0,len(lst)-1)]
 						elif self.censor == 0: txt[self.idx] += tt[i]
 						if res.DISLEXIC: txt[self.idx] += ' '
 
+						test = True
 						halign = 60
 						if self.speaker: halign = self.window.get_width() - self.fnt[self.curfnt].size(self.text[self.idx])[0]
 						self.rects[-1].x = halign - 30
 						self.rects[-1].width = self.fnt[self.curfnt].size(self.text[self.idx])[0] + 10
-						self.test()
+						self.events()
+						self.draw()
+						if test: self.test()
 					#self.sfx.stop()
-				#the word wrapping is causing unecessary text ballons to be created WORK ON IT
-				if len(wrp) > 1:
-					self.idx += 1
-					txt.append('')
-					self.rects.append(pygame.Rect(30,200 + (self.idx * 60),0,50))
+					if len(wrp) > 1:
+						self.idx += 1
+						txt.append('')
+						self.rects.append(pygame.Rect(30,200 + (self.idx * self.bxmargin),0,self.bxsize))
 
 	def endElement(self, tag):
 		if tag == 'data' and self.text == ['']: print(dtb.ERROR['dialog_key'] + self.key)
-		if tag == 'dialog' and self.read: self.read = False; print(self.text)
 		if self.read:
-			if tag == 'shake': self.shake = False
+			if tag == 'dialog': self.read = False
+			if tag == 'scene' and self.scene: self.read = False
+			if tag in ['shk','shake']: self.shake = False
 			if tag in ['censor','censorship']: self.censor = 0
+			#SELECT OPTION
 			if len(self.choices) > 0:
-				if tag == 'option' and self.choices[len(self.choices)-1][-1] == '': del self.choices[len(self.choices)-1][-1]
+				if tag == 'option' and self.choices[-1][-1] == '': del self.choices[len(self.choices)-1][-1]
 				if tag == 'select':
 					while self.guitools.wait(): self.test()
 					self.sfx.play(res.SOUND['MENU_GO'])
-					lst = self.choices[self.opt].copy()
-					for i in lst: self.characters(i)
+					lst = self.choices[self.opt][1:].copy()
+					self.idx = self.stidx + 1
+					self.text.append(self.choices[self.opt][0])
+					self.text.append('')
+					self.rects.append(self.optrects[0])
+					self.rects.append(pygame.Rect(30,200 + (self.idx * self.bxmargin),0,self.bxsize))
 					self.choices = []
+					self.optrects = []
 					self.opt = None
-					self.idx = self.stidx
+					for i in lst: self.characters(i)
 		self.current = ''
 	
 	def dialog(self, txt, wh=0):
@@ -1500,7 +1608,7 @@ class Dialog(xml.sax.ContentHandler):
 				elif txt[tid][0] == 20:
 					if txt[tid][2] < 2:
 						for i in self.foe + self.mrc:
-							prb = round(random.randint(0,20))
+							prb = round(np.random.randint(0,20))
 							if prb > 10:
 								self.ch_sfx.play(res.SOUND['ATTRIBUTE_LOSS'])
 								if i['TYPE'] == 'spirit': tst = self.fig[self.turn]['SPIRITS']
@@ -1521,13 +1629,13 @@ class Dialog(xml.sax.ContentHandler):
 					yy = 0
 					self.dlg['TEXT'].append(0)
 					self.dlg['TEXT'].append('')
-					txtsz = math.floor(self.fnt['DEFAULT'].size(self.dlg['TEXT'][-1])[0]/res.GSCALE) + 10
+					txtsz = np.floor(self.fnt['DEFAULT'].size(self.dlg['TEXT'][-1])[0]/res.GSCALE) + 10
 					self.dlgrct.append(pygame.Rect((self.displayzw - 22) - txtsz,self.displayzh - 100 + self.dlg['Y'] - yy,5 + txtsz,25))
 					self.dlg['Y'] += 40
 					self.vkb.active = True
 					while self.vkb.active:
 						self.dlg['TEXT'][-1] = self.vkb.output
-						txtsz = math.floor(self.fnt['DEFAULT'].size(self.dlg['TEXT'][-1])[0]/res.GSCALE) + 10
+						txtsz = np.floor(self.fnt['DEFAULT'].size(self.dlg['TEXT'][-1])[0]/res.GSCALE) + 10
 						self.dlgrct[-1].x = self.displayzw - 22 - txtsz
 						self.dlgrct[-1].width = 5 + txtsz
 						self.run(False)
@@ -1662,41 +1770,48 @@ class Dialog(xml.sax.ContentHandler):
 		for i in range(len(self.optrects)):
 			rct = self.optrects[i].copy()
 			rct.y -= self.scroll
-			if pygame.Rect.colliderect(mouse,rct): self.opt
+			if pygame.Rect.colliderect(mouse,rct): self.opt = i
 		if event.type == pygame.MOUSEBUTTONDOWN: pass
 			
 		if pygame.mouse.get_pressed()[0]: self.speed = 3
 		else: self.speed = res.SPEED
 
 	def draw(self):
-		#print(self.choices)
-		#print(self.idx)
 		if self.chapter:
-			sz = int(self.fnt[self.curfnt].size(self.chapter)[0]/2)
+			sz = self.fnt[self.curfnt].size(self.chapter)
 			pygame.draw.rect(self.window,res.COLOR,pygame.Rect(0,self.window.get_height() - 25,self.window.get_width(),50))
-			self.window.blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[self.chapter][0],True,(10,10,10)),(int(self.window.get_width()/2) - sz,self.window.get_height() - 25))
-			self.window.blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[self.chapter][1],True,(10,10,10)),(int(self.window.get_width()/2) - sz,self.window.get_height() - 50))
+			self.window.blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[self.chapter][0],True,(10,10,10)),(int(self.window.get_width()/2) - int(sz[0]/2),self.window.get_height() - 25))
+			self.window.blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[self.chapter][1],True,(10,10,10)),(int(self.window.get_width()/2) - int(sz[0]/2),self.window.get_height() - 50))
 		else:
 			if self.scroll < (self.idx * 60): self.scroll += 4
 			lst = [self.rects,self.optrects]
 			for r in range(len(lst)):
 				for i in range(len(lst[r])):
-					rct = lst[r][i].copy()
-					rct.y -= self.scroll
-					if self.shake: shk = (random.randint(-5,5),random.randint(-5,5))
-					else: shk = (0,0)
-					if r == 1 and self.opt == i: col = ((10,10,10),res.COLOR)
-					else: col = (res.COLOR,(10,10,10))
-					#DRAW BOXES
-					for l in [0,rct.width]:
-						pygame.draw.ellipse(self.window,col[1],pygame.Rect(rct.x + l - (rct.height/2),rct.y + 10,rct.height,rct.height))
-						pygame.draw.ellipse(self.window,col[0],pygame.Rect(rct.x + l - (rct.height/2),rct.y,rct.height,rct.height))
-					pygame.draw.rect(self.window,col[0],rct)
-					pygame.draw.rect(self.window,col[1],pygame.Rect(rct.x,rct.y + rct.height,rct.width,10))
-					#DRAW TEXT
-					if r == 0: txt = self.text
-					else: txt = self.choices[len(self.choices)-1]
-					self.window.blit(self.fnt[self.curfnt].render(txt[i],True,col[1]),(rct.x + 5 + shk[0],rct.y + shk[1]))
+					if r == 0: txt = self.text[i]
+					else: txt = self.choices[i][0]
+					if txt != '':
+						rct = lst[r][i].copy()
+						rct.y -= self.scroll
+						if self.shake: shk = (np.random.randint(-5,5),np.random.randint(-5,5))
+						else: shk = (0,0)
+						if r == 1 and self.opt == i: col = ((10,10,10),res.COLOR)
+						else: col = (res.COLOR,(10,10,10))
+						#DRAW BOXES
+						for l in [0,rct.width]:
+							pygame.draw.ellipse(self.window,col[1],pygame.Rect(rct.x + l - (rct.height/2),rct.y + 10,rct.height,rct.height))
+							pygame.draw.ellipse(self.window,col[0],pygame.Rect(rct.x + l - (rct.height/2),rct.y,rct.height,rct.height))
+						pygame.draw.rect(self.window,col[0],rct)
+						pygame.draw.rect(self.window,col[1],pygame.Rect(rct.x,rct.y + rct.height,rct.width,10))
+						#DRAW TEXT
+						sz = self.fnt[self.curfnt].size(txt)
+						self.window.blit(self.fnt[self.curfnt].render(txt,True,col[1]),(rct.x + 5 + shk[0],rct.y + int(rct.height/2) - int(sz[1]/2) + shk[1]))
+			if self.iblk > 0:
+				cor = (self.window.get_width() - 30,200 + ((self.idx + 1) * self.bxmargin) - self.scroll)
+				if self.iblk < 50:
+					pygame.draw.polygon(self.window,res.COLOR,((cor[0],cor[1]),(cor[0] + 10,cor[1]),(cor[0] + 5,cor[1] + 10)))
+					pygame.draw.polygon(self.window,(10,10,10),((cor[0] - 2,cor[1] - 2),(cor[0] + 12,cor[1] - 2),(cor[0] + 5,cor[1] + 12)),2)
+				self.iblk += 4
+				if self.iblk > 100: self.iblk = 1
 
 	def test(self):
 		mp = pygame.mouse.get_pos()
@@ -1707,14 +1822,6 @@ class Dialog(xml.sax.ContentHandler):
 		self.draw()
 		pygame.display.flip()
 		pygame.time.Clock().tick(res.FPS)
-
-d = Dialog('CHAT',None)
-d = Dialog('CH7MRKITE',None)
-d = Dialog('CH1IAGO',None)
-d = Dialog('CH1BLUEBULLDOG',None)
-d = Dialog('23778988',None)
-d = Dialog('POPCORN_KART',None)
-d = Dialog('FARMACEUTIC',None)
 
 class Map:
 	def loadmap(self, mp=None):
@@ -1946,9 +2053,9 @@ class Map:
 					if obj.type == '0':
 						pygame.draw.ellipse(img, (255, 255, 255), pygame.Rect(0,0,int(obj.width),int(obj.height)))
 					elif obj.type == '1':
-						for r in range(math.floor(obj.height/2)):
+						for r in range(np.floor(obj.height/2)):
 							srf = pygame.Surface((obj.width,obj.height),pygame.SRCALPHA)
-							pygame.draw.circle(srf, (255, 255, 255, r), (math.floor(obj.width/2),math.floor(obj.height/2)), r)
+							pygame.draw.circle(srf, (255, 255, 255, r), (np.floor(obj.width/2),np.floor(obj.height/2)), r)
 							img.blit(srf,(0,0))
 					elif obj.type == '2':
 						pygame.draw.ellipse(img, (255, 208, 0, 100), pygame.Rect(0,0,int(obj.width),int(obj.height)))
@@ -1994,12 +2101,12 @@ class Map:
 						lst.append(self.map.properties['ENEMIES'][st:en])
 						st = en + 1
 					en += 1
-				for i in range(round(random.randint(5,10))):
-					wh = lst[round(random.randint(0,len(lst) - 1))]
+				for i in range(round(np.random.randint(5,10))):
+					wh = lst[round(np.random.randint(0,len(lst) - 1))]
 					eny = Enemy(wh,(0,0))
 					eny.id = i
 					rct = None
-					while rct == None: rct = self.tilrect[0][round(random.randint(0, len(self.tilrect[0])))]
+					while rct == None: rct = self.tilrect[0][round(np.random.randint(0, len(self.tilrect[0])))]
 					eny.rect.x = rct[1].x
 					eny.rect.y = rct[1].y
 					self.enemies.append(eny)
@@ -2046,12 +2153,12 @@ class Map:
 						lst.append(self.map.properties['ANIMALS'][st:en])
 						st = en + 1
 					en += 1
-				for i in range(random.randint(0,5)):
-					prb = random.randint(0,len(lst) - 1)
+				for i in range(np.random.randint(0,5)):
+					prb = np.random.randint(0,len(lst) - 1)
 					img = res.SPRITES[lst[prb] + '_WALKL'][0]
 					sz = img.get_rect()
 					rct = None
-					while rct == None: rct = self.tilrect[0][round(random.randint(0, len(self.tilrect[0])))]
+					while rct == None: rct = self.tilrect[0][round(np.random.randint(0, len(self.tilrect[0])))]
 					rct = pygame.Rect(rct[1].x,rct[1].y,sz.width,sz.height)
 					self.objects.append(['pet',{'N': i,'FILE': lst[prb],'RECT': rct,'SPRITE': res.SPRITES[lst[prb] + '_WALKL'],
 					'GIF': 0.0,'DIRECTION': 1,'SPEED': 2,'MOVE': 'walk','TIME': 20},rct.y])
@@ -2070,38 +2177,31 @@ class Map:
 			
 class Game:
 	def __init__(self):
-		#GAME SETTINGS
-		sz = pygame.display.Info()
 		self.running = True
-		self.windoww = sz.current_w
-		self.windowh = sz.current_h
-		self.displayzw = int(self.windoww/res.GSCALE)
-		self.displayzh = int(self.windowh/res.GSCALE)
-		self.displayx = 0
-		self.displayy = 0
-		self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE | pygame.DOUBLEBUF)
-		self.display = [pygame.Surface((self.displayzw, self.displayzh)), pygame.Surface((self.windoww, self.windowh), pygame.SRCALPHA)]
-		self.glock = pygame.time.Clock()
+		self.log = ''
+
+		#SURFACES AND DISPLAY
+		sz = pygame.display.Info()
+		self.window = pygame.Rect(0,0,sz.current_w,sz.current_h)
+		self.display = pygame.Rect(0,0,int(self.window.width/res.GSCALE),int(self.window.height/res.GSCALE))
+		self.screen = pygame.display.set_mode((self.window.width, self.window.height), pygame.RESIZABLE | pygame.DOUBLEBUF)
+		self.surfaces = [pygame.Surface((self.display.width, self.display.height)), pygame.Surface((self.window.width, self.window.height), pygame.SRCALPHA)]
+		self.cam = pygame.Rect(0,0,self.display.width,self.display.height)
+		self.camgrid = 1
+		self.campos = [0,0]
+
 		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 10 * res.GSCALE), 'ALT': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', 30),
 			'MININFO': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 25), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 15),
 			'CONTROLKEYS': pygame.font.Font(res.FONTS_PATH + 'controlkeys.ttf', 15),'ANGER': pygame.font.Font(res.FONTS_PATH + res.FONT, 15 * res.GSCALE),
 			'DISDBG': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', int(7.5 * res.GSCALE)),'SCORETXT': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 12)}
-		self.cam = pygame.Rect(0,0,self.displayzw,self.displayzh)
-		self.camgrid = 1
-		self.campos = [0,0]
-		self.tilemation = 0
+		
 		self.rectdebug = False
 		self.disdbg = False
-		self.classrun = 1
 		self.hpctrl = []
 		self.waitime = 0
 		self.waitlst = [['advice',432000],['rain',3600]]
-		self.blankimg = pygame.Surface((self.windoww,self.windowh))
-		self.blankimg.fill(res.COLOR)
-		self.blankimg.set_alpha(100)
-		for x in range(math.ceil(self.blankimg.get_width()/10)):
-			for y in range(math.ceil(self.blankimg.get_height()/10)):
-				self.blankimg.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10, y * 10))
+		self.glock = pygame.time.Clock()
+		
 		#MIXER CHANNELS
 		pygame.mixer.init(frequency = 44100, size = -16, channels = 1, buffer = 2**12)
 		pygame.mixer.music.set_volume(res.MSC)
@@ -2115,45 +2215,45 @@ class Game:
 		self.ch_msc.set_volume(res.MSC)
 		self.ch_ton = pygame.mixer.Channel(2) #for long sounds or jingles
 		self.ch_ton.set_volume(res.SFX)
-		self.ch_rng = pygame.mixer.Channel(3) #for phone ringtone
-		self.ch_rng.set_volume(res.MSC)
+		
 		#MENU VARIABLES
 		self.guitools = GUI.Guitools()
 		self.tilset = self.guitools.get_tiles()
 		self.dvmp = pygame.Rect(0,0,2,2)
-		self.vkb = GUI.Vkeyboard((self.windoww,self.windowh))
-		#score counter, time counter
-		self.counter = [[0,0,0]]
+		self.vkb = GUI.Vkeyboard((self.window.width,self.window.height))
+		self.dlg = None
+		self.counter = [[0,0,0]] #score counter, time counter
 		self.trsction = None
-		self.guis = [GUI.Popup('Inventory',(400,300),0),GUI.Popup('Status',(300,300))]
+		self.files = GUI.Files((self.display.width,self.display.height))
+		self.guis = [GUI.Popup('Inventory',(400,300),0),GUI.Popup('Status',(300,300)),GUI.Popup('Tactics',(300,300)),GUI.Popup('Radio',(300,300))]
 		for i in self.guis: i.show = False
 		self.inv = self.guis[0].gui
+		self.bbg = GUI.Backgrounds()
+		self.vectordraw = GUI.VectorialDraw()
+		self.pseudo3d = GUI.Pseudo3d()
+		self.levelmenu = GUI.LevelMenu((self.window.width,self.window.height))
+		self.minigame = None
 
 		self.grd = []
 		for g in range(200):
-			srf = pygame.Surface((self.windoww,1),pygame.SRCALPHA)
+			srf = pygame.Surface((self.window.width,1),pygame.SRCALPHA)
 			srf.fill((0,0,0,200 - g))
 			self.grd.append(srf)
 		self.dmg = []
 		self.actqueue = []
 		self.notification = []
-		self.dlg = {'TEXT': [], 'FADE': 500, 'Y': 0, 'CAMERA': 0, 'SPEED': res.SPEED, 'VOICE': 1, 'FONT': 'DEFAULT', 'TYPE': 0}
-		self.tutorial = {'TEXT': [], 'OUTPUT': [], 'FADE': 0, 'TIME': 0, 'WAIT': 0, 'NEXT': '','GO': 0}
-		self.chat = ['@kaixtr: Eu gosto disso!','@kanbz: Bem bacana!']
 		self.cityname = ''
+
 		#BATTLE VARIABLES
 		self.equip = []
 		self.battle = False
-		self.btime = 100
-		self.banimation = {'INDEX': None, 'GIF': 0}
-		self.bbg = {'IMAGE': None, 'X': 0, 'ACC': 0, 'DIRECTION': False}
 		self.obstacles = False
 		self.hits = 0
 		self.tdmg = 0
 		self.hpl = 0
 		self.tbt = 0
 		self.turn = -1
-		self.aim = pygame.Rect(300,int(self.displayzh/2),30,30)
+		self.aim = pygame.Rect(300,int(self.display.height/2),30,30)
 		self.player = []
 		self.barhp = []
 		self.barpp = []
@@ -2162,11 +2262,11 @@ class Game:
 		self.dices = []
 		self.sttsy = 0
 		self.objects = []
-		self.log = ''
 		res.MAP = 'savetest'
 		res.PX = 0
 		res.PY = 0
 		#PLAYERS
+		self.avatar = Avatar()
 		x = 0
 		for i in res.PARTY[res.FORMATION]:
 			self.player.append({'RECT': pygame.Rect(res.PX,res.PY,20,20),'SPEED': 0,'ACC': 0,'SPEEDLOCK': False,'JUMP': 0,'GRAVITY': -5,'STEP': 10,
@@ -2179,10 +2279,10 @@ class Game:
 			x += 1
 		self.player[0]['PLAYING'] = True
 		self.donesprites = {}
-		self.objects = []
+		'''self.objects = []
 		self.tilrect = []
 		self.tilhide = False
-		self.tilalpha = 0
+		self.tilalpha = 0'''
 		#MAP VARIABLES
 		self.mapdata = {}
 		self.enemies = []
@@ -2195,9 +2295,9 @@ class Game:
 		self.portalgo = {}
 		#BUTTONS
 		if res.MOUSE == 2:
-			self.buttons = [pygame.Rect(20,self.windowh - 264,240,80),pygame.Rect(20,self.windowh - 100,240,80),pygame.Rect(20,self.windowh - 264,80,240),
-			pygame.Rect(184,self.windowh - 264,80,240),pygame.Rect(self.windoww - 190,self.windowh - 100,80,80),pygame.Rect(self.windoww - 100,self.windowh - 100,80,80),
-			pygame.Rect(self.windoww - 190,40,80,80),pygame.Rect(self.windoww - 100,40,80,80),pygame.Rect(20,40,80,80)]
+			self.buttons = [pygame.Rect(20,self.window.height - 264,240,80),pygame.Rect(20,self.window.height - 100,240,80),pygame.Rect(20,self.window.height - 264,80,240),
+			pygame.Rect(184,self.window.height - 264,80,240),pygame.Rect(self.window.width - 190,self.window.height - 100,80,80),pygame.Rect(self.window.width - 100,self.window.height - 100,80,80),
+			pygame.Rect(self.window.width - 190,40,80,80),pygame.Rect(self.window.width - 100,40,80,80),pygame.Rect(20,40,80,80)]
 		else: self.buttons = []
 		#STUDIO
 		self.editing = False
@@ -2210,11 +2310,6 @@ class Game:
 		self.sselect = [0,0,0,0]
 		self.sstore = []
 		self.map = None
-		#START MENU
-		self.files = GUI.Files((self.displayzw,self.displayzh))
-		self.bckgs = GUI.Backgrounds()
-		for i in self.guitools.transiction((self.displayzw,self.displayzh),1,-100,'fade'): self.trsction = i; self.run()
-
 		#STARTING GAME
 		if res.CHAPTER == 0 and res.SCENE == -3:
 			self.tutorial = {'TEXT': dtb.TUTORIALS['BEGIN'], 'OUTPUT': [], 'FADE': 0, 'TIME': 0, 'WAIT': 300, 'NEXT': '','GO': 0}
@@ -2232,21 +2327,16 @@ class Game:
 			self.phone = 1
 			self.mnu = 1
 		else:
-			self.tilrect = [[437,437,437,437,437,0,437,437,437,0,0,437,437,437,0,0,437,437,437,0,0,0,0,0,0],
-							[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
-			parser = xml.sax.make_parser()
-			parser.setFeature(xml.sax.handler.feature_namespaces, 0)
-			self.map = MapHandler()
-			parser.setContentHandler(self.map)
-			parser.parse(res.MAPS_PATH + 'savetest.tmx')
+			self.map = MapHandler('savetest.tmx')
 			self.tilmap = [[i,i] for i in self.map.surfaces]
+		for i in self.guitools.transiction((self.window.width,self.window.height),1,-100,'fade'): self.trsction = i; self.run()
 			
 	def pet(self, i):
 		#ANIMATION
 		if self.player[0]['PAUSE'] < 2: i['GIF'] += 0.5
 		if i['GIF'] >= len(i['SPRITE']): i['GIF'] = 0
 		#DRAW
-		if self.rectdebug: pygame.draw.rect(self.display[0], (255,0,0), pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
+		if self.rectdebug: pygame.draw.rect(self.surfaces[0], (255,0,0), pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
 		if res.TIME[0] < 12:
 			tms = (12 - res.TIME[0]) * 2
 			sxx = i['RECT'].x - self.cam.x - tms + 5
@@ -2254,12 +2344,12 @@ class Game:
 			tms = (res.TIME[0] - 12) * 2
 			sxx = i['RECT'].x - self.cam.x
 		if tms < 5: tms = 5
-		img = i['SPRITE'][math.floor(i['GIF'])]
+		img = i['SPRITE'][np.floor(i['GIF'])]
 		shd = pygame.transform.scale(pygame.transform.rotate(img,90),(tms,4))
 		shd.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
 		shd.set_alpha(100)
-		self.display[0].blit(shd, (sxx, i['RECT'].y - self.cam.y))
-		self.display[0].blit(img, (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y))
+		self.surfaces[0].blit(shd, (sxx, i['RECT'].y - self.cam.y))
+		self.surfaces[0].blit(img, (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y))
 		#MOVEMENT
 		if self.winbar == 0:
 			#FOLLOW MOVEMENT
@@ -2282,22 +2372,22 @@ class Game:
 			#TIMING
 			if i['TIME'] <= 0:
 				if i['FILE'].startswith('PIGEON'):
-					do = random.randint(0,1)
+					do = np.random.randint(0,1)
 					if do == 0:
 						if i['MOVE'] == 'sit': i['MOVE'] = 'stand'
 						elif i['MOVE'] == 'stand': i['MOVE'] = 'sit'
 					elif do == 1:
 						dl = [1,5]
-						i['DIRECTION'] = dl[random.randint(0,1)]
+						i['DIRECTION'] = dl[np.random.randint(0,1)]
 						i['MOVE'] = 'walk'
 				elif i['FILE'].startswith('DOG'):
-					do = random.randint(0,1)
+					do = np.random.randint(0,1)
 					if do == 0:
 						if i['MOVE'] == 'sit': i['MOVE'] = 'stand'
 						elif i['MOVE'] == 'stand': i['MOVE'] = 'sit'
 					elif do == 1:
 						dl = [1,5]
-						i['DIRECTION'] = dl[random.randint(0,1)]
+						i['DIRECTION'] = dl[np.random.randint(0,1)]
 						i['MOVE'] = 'walk'
 				if i['DIRECTION'] == 1: dr = 'L'
 				if i['DIRECTION'] == 5: dr = 'R'
@@ -2306,17 +2396,17 @@ class Game:
 
 	def npc(self, i):
 		#DRAW
-		if self.rectdebug: pygame.draw.rect(self.display[0], (255,0,0), pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
+		if self.rectdebug: pygame.draw.rect(self.surfaces[0], (255,0,0), pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
 		if i['TYPE'] in [0,2,3,4]: imgrct = self.people(i,False)
 		elif i['TYPE'] >= 5:
 			shk = 0
 			if i['TYPE'] == 11:
 				for w in res.WASH:
 					if w[1] == i['WHO']:
-						shk = int(random.randint(-2,2))
+						shk = int(np.random.randint(-2,2))
 						break
 			imgrct = pygame.image.load(res.SPRITES_PATH + 'obj_' + str(i['INDEX']) + '.png')
-			self.display[0].blit(imgrct, (i['RECT'].x - self.cam.x + shk, i['RECT'].y - self.cam.y - 10))
+			self.surfaces[0].blit(imgrct, (i['RECT'].x - self.cam.x + shk, i['RECT'].y - self.cam.y - 10))
 			if self.player[0]['SLEEP'] and i['TYPE'] == 6: self.people(self.player[0],False)
 		else: imgrct = pygame.Surface((i['RECT'].width,i['RECT'].height))
 		#FOLLOW
@@ -2337,10 +2427,10 @@ class Game:
 			#SIDEWALK
 			elif i['MOVE'] == 'sidewalk':
 				i['SPEED'] = 1
-				try: t = self.tilrect[1][(math.floor((i['RECT'].y + 15)/self.map.tilewidth) * self.map.width) + math.floor((i['RECT'].x + 15)/self.map.tilewidth)]
+				try: t = self.tilrect[1][(np.floor((i['RECT'].y + 15)/self.map.tilewidth) * self.map.width) + np.floor((i['RECT'].x + 15)/self.map.tilewidth)]
 				except: t = None
 				if self.rectdebug and t != None:
-					pygame.draw.rect(self.display[0], (255,200,0), pygame.Rect(t[1].x - self.cam.x, t[1].y - self.cam.y, t[1].width, t[1].height),3)
+					pygame.draw.rect(self.surfaces[0], (255,200,0), pygame.Rect(t[1].x - self.cam.x, t[1].y - self.cam.y, t[1].width, t[1].height),3)
 				if t != None and t[0]['TYPE'].startswith('SIDEWALK'): #and self.colide(i['RECT'],t[1]):
 					if t[0].endswith('1'):
 						if i['DIRECTION'] in [1,2]: i['DIRECTION'] = 7
@@ -2413,7 +2503,7 @@ class Game:
 				if i['TALKING'] == False:
 					#ARROW
 					if self.battle == False and self.dlg['CAMERA'] != i['RECT'] and self.dlg['FADE'] > 0 and isinstance(i['TYPE'],str) == False:
-						self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (i['RECT'].x - self.cam.x + int(i['RECT'].width/2) - 5, i['RECT'].y - self.cam.y - i['RECT'].height * 2))
+						self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (i['RECT'].x - self.cam.x + int(i['RECT'].width/2) - 5, i['RECT'].y - self.cam.y - i['RECT'].height * 2))
 						self.hpctrl = dtb.HINTS['NPC_DIALOG']
 					#SCENE CHANGE
 					if isinstance(i['TYPE'],str) and i['TYPE'].startswith('scene'):
@@ -2435,7 +2525,7 @@ class Game:
 							if self.dlg['FADE'] > 0:
 								#DIALOG
 								if i['WHO'] == None:
-									self.dialog(dtb.DIALOGS['STNPC'][round(random.randint(0,len(dtb.DIALOGS['STNPC']) - 1))].copy(),i['RECT'])
+									self.dialog(dtb.DIALOGS['STNPC'][round(np.random.randint(0,len(dtb.DIALOGS['STNPC']) - 1))].copy(),i['RECT'])
 								else:#elif i['WHO'] != 'REWARD':
 									if isinstance(i['WHO'], int): self.dialog(dtb.DIALOGS['NPC_' + str(i['WHO'])][res.DLGSAV[i['WHO']]].copy(),i['RECT'])
 									elif len(dtb.DIALOGS[i['WHO']]) > res.DLGSAV[i['WHO']]:
@@ -2506,12 +2596,12 @@ class Game:
 				i['RECT'].x = p['RECT'].x
 				i['RECT'].y = p['RECT'].y
 		#DRAW
-		if self.rectdebug: pygame.draw.rect(self.display[0], (255,0,0), pygame.Rect(rect.x - self.cam.x, rect.y - self.cam.y, rect.width, rect.height))
+		if self.rectdebug: pygame.draw.rect(self.surfaces[0], (255,0,0), pygame.Rect(rect.x - self.cam.x, rect.y - self.cam.y, rect.width, rect.height))
 		if self.colide(rect, self.cam) and self.turn != -6:
-			self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'moto_' + str(i['INDEX']) + '_walkL.png'), (rect.x - self.cam.x + 10, rect.y + rect.height - self.cam.y - 30))
+			self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'moto_' + str(i['INDEX']) + '_walkL.png'), (rect.x - self.cam.x + 10, rect.y + rect.height - self.cam.y - 30))
 		#MOVEMENT
 		if i['MOVE'] == 'street':
-			try: t = self.tilrect[0][(math.floor(i['RECT'].y/self.map.tilewidth) * self.map.width) + math.floor(i['RECT'].x/self.map.tilewidth)]
+			try: t = self.tilrect[0][(np.floor(i['RECT'].y/self.map.tilewidth) * self.map.width) + np.floor(i['RECT'].x/self.map.tilewidth)]
 			except: t = None
 			if t != None and t[0]['TYPE'].startswith('STREET') and self.colide(i['RECT'],t[1]):
 				if t[0]['TYPE'].endswith('1'):
@@ -2556,20 +2646,20 @@ class Game:
 		xx = (self.player[0]['RECT'].x - self.cam.x) - (i['RECT'].x - self.cam.x)
 		yy = (self.player[0]['RECT'].y - self.cam.y) - (i['RECT'].y - self.cam.y)
 		dir = (xx,yy)
-		dst = math.hypot(*dir)
+		dst = np.hypot(*dir)
 		if dst == 0.0: dir = (0, -1)
 		else: dir = (dir[0]/dst,dir[1]/dst)
 		'''if dst < 0: dst = -dst
 		if dst == 0: dst = 1'''
 		snd.set_volume(2/dst)
 		snd.play()
-		pygame.draw.line(self.display[0],(200,10,10),(self.player[0]['RECT'].x - self.cam.x,self.player[0]['RECT'].y - self.cam.y),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y))
-		self.display[0].blit(self.fnt['DEFAULT'].render(str(dst),True,(200,200,200)),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y))
+		pygame.draw.line(self.surfaces[0],(200,10,10),(self.player[0]['RECT'].x - self.cam.x,self.player[0]['RECT'].y - self.cam.y),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y))
+		self.surfaces[0].blit(self.fnt['DEFAULT'].render(str(dst),True,(200,200,200)),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y))
 		#ACTION
 		for p in self.player:
 			if self.colide(p['RECT'], rect) and p['DRIVING'] == None:
 				if self.battle == False:
-					self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (rect.x - self.cam.x + int(rect.width/2) - 5, rect.y - self.cam.y - int(rect.height/2)))
+					self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (rect.x - self.cam.x + int(rect.width/2) - 5, rect.y - self.cam.y - int(rect.height/2)))
 					self.hpctrl = dtb.HINTS['VEHICLE_USE']
 				if self.pressed[4][0] and self.inv.type == 0 and self.phone == 0:
 					trigger = True
@@ -2577,22 +2667,22 @@ class Game:
 					p['RECT'].x = rect.x
 					p['RECT'].y = rect.y
 					i['MOVE'] = 'fixed'
-					'''self.displayzw = 1200
-					self.displayzh = 800
+					'''self.display.width = 1200
+					self.display.height = 800
 					self.display = pygame.Surface((1200, 800))
-					self.cam = pygame.Rect(0,0,self.displayzw,self.displayzh)'''
+					self.cam = pygame.Rect(0,0,self.display.width,self.display.height)'''
 
 	def portal(self, i):
 		if i['RECT'].width > 0: rect = pygame.Rect(i['RECT'].x,i['RECT'].y,i['RECT'].width,i['RECT'].height)
 		else: rect = pygame.Rect(i['RECT'].x,i['RECT'].y,30,30)
 		#DRAW
-		if self.rectdebug: pygame.draw.rect(self.display[0], (255,255,0), pygame.Rect(rect.x - self.cam.x, rect.y - self.cam.y, rect.width, rect.height),3)
+		if self.rectdebug: pygame.draw.rect(self.surfaces[0], (255,255,0), pygame.Rect(rect.x - self.cam.x, rect.y - self.cam.y, rect.width, rect.height),3)
 		if self.colide(self.player[0]['RECT'], rect) and self.winbar > 0: spr = '1'
 		else: spr = '0'
 		if res.MAP != 'rodoviary':
-			if i['RECT'].width == 24: self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'door_0' + spr + '.png'), (rect.x - self.cam.x, rect.y - self.cam.y))
-			if i['RECT'].width == 48: self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'door_1' + spr + '.png'), (rect.x - self.cam.x, rect.y - self.cam.y))
-		else: self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'mp_player.png'), (rect.x - self.cam.x, rect.y - self.cam.y))
+			if i['RECT'].width == 24: self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'door_0' + spr + '.png'), (rect.x - self.cam.x, rect.y - self.cam.y))
+			if i['RECT'].width == 48: self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'door_1' + spr + '.png'), (rect.x - self.cam.x, rect.y - self.cam.y))
+		else: self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'mp_player.png'), (rect.x - self.cam.x, rect.y - self.cam.y))
 		goto = False
 		#ENTERING DOOR
 		if self.colide(self.player[0]['RECT'], rect) and self.winbar == 0 and self.portalgo == {}:
@@ -2626,7 +2716,7 @@ class Game:
 			else: spd = 10
 			#BATHROOM
 			if i['MAP'] == 'bathroom':
-				self.transiction(True, int(self.displayzh/2))
+				self.transiction(True, int(self.display.height/2))
 				for i in range(30): self.run()
 				self.ch_ton.play(res.SOUND['TREASURE_GET'])
 				for i in res.PARTY[res.FORMATION]:
@@ -2647,7 +2737,7 @@ class Game:
 				self.portalgo[1]['RECT'].x -= self.cam.x
 				self.portalgo[1]['RECT'].y -= self.cam.y
 				if i['MAP'] != None:
-					self.transiction(True, int(self.displayzh/2), spd, "side")
+					self.transiction(True, int(self.display.height/2), spd, "side")
 					self.loadmap(i['MAP'])
 				#OUT
 				self.portalgo[0]['MATCH'] = i['MATCH']
@@ -2678,12 +2768,12 @@ class Game:
 							if pr[0] == 4 and pr[1]['N'] != i['N'] and pr[1]['MAP'] == None and pr[1]['PX'] == i['PX']:
 								lst.append([pr[1]['RECT'].x,pr[1]['RECT'].y])
 						if lst != []:
-							prb = random.randint(0,len(lst) - 1)
+							prb = np.random.randint(0,len(lst) - 1)
 							p['RECT'].x = lst[prb][0]
 							p['RECT'].y = lst[prb][1]
 					p['PAUSE'] = 0
 		
-	def soundplay(self, sound, value=1):
+	def play(self, sound, value=1):
 		for i in self.channels:
 			if value == 0 and i[1] == sound:
 				i[0].stop()
@@ -2705,7 +2795,7 @@ class Game:
 					if cld and i1['JUMP'] == 0:
 						#HOLD OBJECT
 						if i[0] == 'HOLD':
-							self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (i[1].x - self.cam.x + int(i[1].width/2) - 5, i[1].y - self.cam.y - i[1].height))
+							self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (i[1].x - self.cam.x + int(i[1].width/2) - 5, i[1].y - self.cam.y - i[1].height))
 							if self.pressed[4][0] and self.player[0]['HOLD'] == None:
 								self.player[0]['HOLD'] = ind
 							cld = False
@@ -2769,38 +2859,46 @@ class Game:
 	def events(self):
 		for event in pygame.event.get():
 			self.pressed, self.click = self.guitools.get_pressed(event)
-			#EXIT
+			#QUIT
 			if event.type == pygame.QUIT: self.running = False
 			#RESIZE
 			if event.type == pygame.VIDEORESIZE:
-				self.windoww = event.w
-				self.windowh = event.h
-				self.displayzw = int(self.windoww/res.GSCALE)
-				self.displayzh = int(self.windowh/res.GSCALE)
-				self.inv = GUI.Inventory((self.displayzw,self.displayzh),0)
-				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE | pygame.DOUBLEBUF)
-				self.display = [pygame.Surface((self.displayzw, self.displayzh)),pygame.Surface((self.windoww, self.windowh), pygame.SRCALPHA)]
-				self.buttons = [pygame.Rect(20,self.windowh - 264,240,80),pygame.Rect(20,self.windowh - 100,240,80),pygame.Rect(20,self.windowh - 264,80,240),
-				pygame.Rect(184,self.windowh - 264,80,240),pygame.Rect(self.windoww - 190,self.windowh - 100,80,80),pygame.Rect(self.windoww - 100,self.windowh - 100,80,80),
-				pygame.Rect(self.windoww - 190,40,80,80),pygame.Rect(self.windoww - 100,40,80,80),pygame.Rect(20,40,80,80)]
+				self.window.width = event.w
+				self.window.height = event.h
+				self.display.width = int(self.window.width/res.GSCALE)
+				self.display.height = int(self.window.height/res.GSCALE)
+				self.inv = GUI.Popup('Inventory',(self.display.width,self.display.height),0)
+				self.screen = pygame.display.set_mode((self.window.width, self.window.height), pygame.RESIZABLE | pygame.DOUBLEBUF)
+				self.display = [pygame.Surface((self.display.width, self.display.height)),pygame.Surface((self.window.width, self.window.height), pygame.SRCALPHA)]
+				self.buttons = [pygame.Rect(20,self.window.height - 264,240,80),pygame.Rect(20,self.window.height - 100,240,80),pygame.Rect(20,self.window.height - 264,80,240),
+				pygame.Rect(184,self.window.height - 264,80,240),pygame.Rect(self.window.width - 190,self.window.height - 100,80,80),pygame.Rect(self.window.width - 100,self.window.height - 100,80,80),
+				pygame.Rect(self.window.width - 190,40,80,80),pygame.Rect(self.window.width - 100,40,80,80),pygame.Rect(20,40,80,80)]
 			#DEBUG
 			if self.pressed[8][0] and res.DEBUG: self.dialog(['',(22,'debug')])
 			#CLICK
 			if res.MOUSE == 1:
 				for i in range(2):
 					if res.CLICK[i] == 'move' and event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[i]:
-						rct = pygame.Rect(int(math.floor(((self.click.x/res.GSCALE) + self.cam.x)/self.map.tilewidth) * self.map.tilewidth),
-						int(math.floor(((self.click.y/res.GSCALE) + self.cam.y)/self.map.tileheight) * self.map.tileheight),10,10)
+						rct = pygame.Rect(int(np.floor(((self.click.x/res.GSCALE) + self.cam.x)/self.map.tilewidth) * self.map.tilewidth),
+						int(np.floor(((self.click.y/res.GSCALE) + self.cam.y)/self.map.tileheight) * self.map.tileheight),10,10)
 						img = []
 						for a in range(2): img.append(pygame.image.load(res.SPRITES_PATH + 'click_' + str(a) + '.png'))
 						self.objects.append(['click',{'RECT': rct,'IMAGE': img,'GIF': 0.0,'DESTROY': False},rct.y])
 						self.player[0]['FOLLOW'] = rct
 						self.player[0]['FOLLEND'] = 3
+			#MENUS OPTIONS
+			rcts = []
+			for i in range(len(self.guis))[::-1]:
+				do = True
+				for r in rcts:
+					if pygame.Rect.colliderect(self.click,r): do = False
+				if do: self.guis[i].inside_events(self.pressed)
+				rcts.append(self.guis[i].rect)
+				self.guis = [x for x in self.guis if x.gui != None]
+
 			#BATTLE OPTIONS
 			if self.battle and self.phone == 0 and self.dlg['FADE'] > 0 and self.turn >= 0:
-				if self.turn == len(res.PARTY[res.FORMATION]):
-					self.fight()
-					tp = 0
+				if self.turn == len(res.PARTY[res.FORMATION]): self.fight()
 				else:
 					if self.turn == 0: tp = 0
 					elif self.turn >= len(self.player): tp = 0
@@ -2872,7 +2970,7 @@ class Game:
 						self.aim.x = int(pygame.mouse.get_pos()[0]/res.GSCALE)
 						self.aim.y = int(pygame.mouse.get_pos()[1]/res.GSCALE)
 						if event.type == pygame.MOUSEBUTTONUP:
-							if self.colide(self.aim,pygame.Rect(0,self.winbar,self.displayzw,self.displayzh - (self.winbar * 2))):
+							if self.colide(self.aim,pygame.Rect(0,self.winbar,self.display.width,self.display.height - (self.winbar * 2))):
 								sht = True
 					if sht:
 						#SHOT OR HIT
@@ -2973,7 +3071,7 @@ class Game:
 						self.player[0]['PAUSE'] = 0
 					else: self.mnu = 1
 			#DEVICE EVENTS
-			if self.phone > 0 and self.dev != None and self.dev.battery > 0:
+			'''if self.phone > 0 and self.dev != None and self.dev.battery > 0:
 				if event.type == pygame.KEYDOWN: self.dev.rqst = True
 				if event.type == pygame.MOUSEBUTTONDOWN: self.dev.rqst = True
 				self.dev.inside_events(self.pressed,self.dvmp)
@@ -3019,18 +3117,11 @@ class Game:
 				#PHOTO NOTIFICATION
 				elif self.dev.ingame == 7:
 					self.notification.append({'TEXT': self.foe[0]['NAME'] + ' registrada', 'COLOR': (134, 0, 211), 'HALIGN': 'left','X': 0})
+			'''
 			#MINIGAMES EVENTS
-			if self.minigame != None: self.minigame.events(event)
-			for i in self.guis:
-				if i.show: i.inside_events(self.pressed,self.click)
-			#READING OPTIONS
-			if self.read != None:
-				self.read.inside_events(self.pressed)
-				if self.pressed[7][0]:
-					self.ch_sfx.play(res.SOUND['PAGE_FLIP'])
-					self.read = None
+			if self.minigame: self.minigame.events(event)
 			#PLAYER OPTIONS
-			if self.battle == False and self.inv.type == 0 and self.phone == 0:
+			if self.battle == False and self.inv.type == 0:
 				p = 0
 				for i in self.player:
 					i['POSTURE'] = 1
@@ -3052,8 +3143,8 @@ class Game:
 											for f in range(13):
 												img.append(pygame.image.load(res.SPRITES_PATH + 'bomb_' + str(f) + '.png'))
 											self.particles.append({'TYPE': 'bomb',
-											'X': math.floor(i['RECT'].x/self.map.tilewidth) * self.map.tilewidth,
-											'Y': math.floor(i['RECT'].y/self.map.tileheight) * self.map.tileheight,
+											'X': np.floor(i['RECT'].x/self.map.tilewidth) * self.map.tilewidth,
+											'Y': np.floor(i['RECT'].y/self.map.tileheight) * self.map.tileheight,
 											'IMAGE': img,'GIF': 0.0,'POWER': pp})
 											self.ch_sfx.play(res.SOUND['EQUIP'])
 											sht[1] -= 1
@@ -3093,8 +3184,8 @@ class Game:
 									self.ch_sfx.play(res.SOUND['FALL'])
 								#RUN
 								if res.ACTION[a] == 'run' and res.MOUSE == 2:
-									spd1 = 3 + math.floor(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['ATLETISM']/4)
-									spd2 = 6 + math.floor(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['ATLETISM']/2)
+									spd1 = 3 + np.floor(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['ATLETISM']/4)
+									spd2 = 6 + np.floor(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['ATLETISM']/2)
 									if i['SWIM'] != None: spd1 -= 3; spd2 -= 1
 									#elif self.inv.space(p) == False: spd1 -= 2; spd2 -= 1
 									i['SPEEDLOCK'] = not i['SPEEDLOCK']
@@ -3120,22 +3211,22 @@ class Game:
 			if self.pressed[4][0] and self.build != '' and self.battle == False and self.phone == 0 and self.player[0]['SLEEP'] == False:
 				if self.inv.type == 0:
 					if self.build.startswith('tent'):
-						self.objects.append(['tent',{'RECT': pygame.Rect(math.floor((self.player[0]['RECT'].x + 15)/30) * 30,math.floor((self.player[0]['RECT'].y + 15)/30) * 30,30,30),'SPRITE': pygame.image.load(res.SPRITES_PATH + '' + self.build + '.png')},self.player[0]['RECT'].y])
+						self.objects.append(['tent',{'RECT': pygame.Rect(np.floor((self.player[0]['RECT'].x + 15)/30) * 30,np.floor((self.player[0]['RECT'].y + 15)/30) * 30,30,30),'SPRITE': pygame.image.load(res.SPRITES_PATH + '' + self.build + '.png')},self.player[0]['RECT'].y])
 						self.build = ''
 			#VKEYBOARD
 			if self.vkb.active == True: self.vkb.events(event)
 		self.pressed, self.click = self.guitools.get_pressed(None)
+		for i in self.guis: i.outside_events(self.pressed)
+
 		#BATTLE AIM MOVE
 		if self.battle and self.mnu == 2 and res.MOUSE < 2:
 			for tp in range(len(self.player)):
 				if self.pressed[0][tp] and self.aim.x > 10: self.aim.x -= 1
-				if self.pressed[1][tp] and self.aim.x < self.displayzw - 10: self.aim.x += 1
+				if self.pressed[1][tp] and self.aim.x < self.display.width - 10: self.aim.x += 1
 				if self.pressed[2][tp] and self.aim.y > self.winbar: self.aim.y -= 1
-				if self.pressed[3][tp] and self.aim.y < self.displayzh - self.winbar: self.aim.y += 1
+				if self.pressed[3][tp] and self.aim.y < self.display.height - self.winbar: self.aim.y += 1
 		#PHONE HOLDING OPTIONS
-		if self.phone > 0 and self.dev != None: self.dev.outside_events(self.pressed)
-		#READING SCROLL
-		if self.read != None: self.read.outside_events(self.pressed)
+		#if self.phone > 0 and self.dev != None: self.dev.outside_events(self.pressed)
 		for i in self.guis:
 			if i.show: i.outside_events(pressed)
 		#MOVE CAMERA
@@ -3163,8 +3254,8 @@ class Game:
 		if self.editing and do and self.paint != '' and self.battle == False and self.phone == 0 and self.player[0]['PAUSE'] == 0:
 			if self.inv.type == 0 and self.map.edit:
 				self.ch_sfx.play(res.SOUND['PAINT'])
-				mse = [math.floor((self.cam.x + int(self.click.x/res.GSCALE))/self.mapdata['TILEWIDTH']),
-				math.floor((self.cam.y + int(self.click.y/res.GSCALE))/self.mapdata['TILEHEIGHT'])]
+				mse = [np.floor((self.cam.x + int(self.click.x/res.GSCALE))/self.mapdata['TILEWIDTH']),
+				np.floor((self.cam.y + int(self.click.y/res.GSCALE))/self.mapdata['TILEHEIGHT'])]
 				pos = (mse[0] * self.mapdata['TILEWIDTH'],mse[1] * self.mapdata['TILEHEIGHT'])
 				ind = (mse[0] * self.mapdata['WIDTH']) + mse[1]
 				if self.guit == 0 and ind < len(self.mapdata['TILES'][self.slayer]):
@@ -3195,8 +3286,8 @@ class Game:
 								if res.ACTION[a] == 'look': i['POSTURE'] = 2
 								if res.ACTION[a] == 'squat': i['POSTURE'] = 0
 						#SPEED SET
-						spd1 = 3 + math.floor(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['ATLETISM']/4)
-						spd2 = 6 + math.floor(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['ATLETISM']/2)
+						spd1 = 3 + np.floor(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['ATLETISM']/4)
+						spd2 = 6 + np.floor(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['ATLETISM']/2)
 						if i['SWIM'] != None: spd1 -= 3; spd2 -= 1
 						#elif self.inv.space(p) == False: spd1 -= 2; spd2 -= 1
 						if res.MAP != 'rodoviary' and res.MOUSE < 2:
@@ -3225,11 +3316,11 @@ class Game:
 				else:
 					if self.pressed[0][p]:
 						i['DRIVING'] = None
-						'''self.displayzw = 600
-						self.displayzh = 400
-						self.display[0] = pygame.Surface((600, 400))
-						self.cam.width = self.displayzw
-						self.cam.height = self.displayzh'''
+						'''self.display.width = 600
+						self.display.height = 400
+						self.surfaces[0] = pygame.Surface((600, 400))
+						self.cam.width = self.display.width
+						self.cam.height = self.display.height'''
 						i['DIRECTION'] = 3
 					if res.GAS > 0:
 						if self.pressed[1][0]:
@@ -3260,7 +3351,7 @@ class Game:
 			if i['DIRECTION'] in [2,3,4]: dy = self.map.tileheight
 			if i['DIRECTION'] in [4,5,6]: dx = -self.map.tilewidth
 			if i['DIRECTION'] in [6,7,8]: dy = -self.map.tileheight
-			ind = (math.floor((i['RECT'].y + dy)/self.map.tileheight) * self.map.width) + math.floor((i['RECT'].x + dx)/self.map.tilewidth)
+			ind = (np.floor((i['RECT'].y + dy)/self.map.tileheight) * self.map.width) + np.floor((i['RECT'].x + dx)/self.map.tilewidth)
 			rct = self.tilrect[3][ind]
 			if rct == None: cld = False
 			else:
@@ -3282,8 +3373,8 @@ class Game:
 					algn = 30
 					if i['DIRECTION'] in [3,7]: i['RECT'].x = (round(i['RECT'].x/algn) * algn) + int(algn/2) - int(i['RECT'].width/2)
 					if i['DIRECTION'] in [1,5]: i['RECT'].y = (round(i['RECT'].y/algn) * algn) + int(algn/2) - int(i['RECT'].height/2)
-					#i['RECT'].x += int(math.cos(i['DIRECTION']) * i['SPEED'])
-					#i['RECT'].y += int(math.sin(i['DIRECTION']) * i['SPEED'])
+					#i['RECT'].x += int(np.cos(i['DIRECTION']) * i['SPEED'])
+					#i['RECT'].y += int(np.sin(i['DIRECTION']) * i['SPEED'])
 				elif i['JUMP'] > 0 and i['PLAYING']:
 					if i['DIRECTION'] == 3: i['RECT'].y += i['SPEED']
 					elif i['DIRECTION'] == 7: i['RECT'].y -= i['SPEED']
@@ -3316,6 +3407,7 @@ class Game:
 						if i['DIRECTION'] == c + 1:
 							if i['SPEED'] > 0 or i['FOLLEND'] == 'head': i['HEAD'] = lst[c]
 							if self.phone == 0: i['SPRITE'] = spr + lst[c]
+			res.GAS = 0
 			if res.GAS < 1.0: i['DIRECTION'] = 0
 			if i['SPEED'] < 0: i['SPEED'] = 0
 			p += 1
@@ -3340,10 +3432,7 @@ class Game:
 			elif self.foe[0]['TYPE'] == 'boss': self.ch_ton.play(res.SOUND['BATTLE_BOSS'])
 			if self.player[0]['DRIVING'] != None: self.obstacles = True
 			#BACKGROUND
-			self.bbg['IMAGE'] = pygame.image.load(res.BACKG_PATH + 'bt_' + self.map.habitat + '.png')
-			self.bbg['X'] = 0
-			self.bbg['ACC'] = 0
-			self.bbg['DIRECTION'] = False
+			self.bbg.index = pygame.image.load(res.BACKG_PATH + 'bt_' + self.map.habitat + '.png')
 			#SET UP PARTY
 			self.fig = []
 			tr = 0
@@ -3361,9 +3450,9 @@ class Game:
 			x = 0
 			for i in self.foe + self.mrc:
 				sz = i['SPRITE'].get_rect()
-				i['MASK'] = pygame.Rect(230 - ((len(self.foe + self.mrc) - 1) * 80) + (x * 80),self.displayzh - (50 + sz.height),sz.width,sz.height)
+				i['MASK'] = pygame.Rect(230 - ((len(self.foe + self.mrc) - 1) * 80) + (x * 80),self.display.height - (50 + sz.height),sz.width,sz.height)
 				dprb = [1,5]
-				i['DIRECTION'] = dprb[round(random.randint(0,1))]
+				i['DIRECTION'] = dprb[round(np.random.randint(0,1))]
 				i['SPEED'] = 0
 				i['HP'] = i['VITALITY']
 				i['BTIMES'] = [0,0,0,0]
@@ -3381,7 +3470,7 @@ class Game:
 					self.mrc[0]['SPRITE'] = pygame.image.load(res.FREAKS_PATH + (self.mrc[0]['FILE']) + '_backwards.png')
 					self.mrc[0]['HEALTH'] = 1
 			#ZOOM TRANSITION
-			if self.turn != -6: self.transiction(True,int(self.windoww/100),type='zoom')
+			if self.turn != -6: self.transiction(True,int(self.window.width/100),type='zoom')
 			#MYSTERIOUS FREAK
 			else:
 				freakname = self.foe[0]['NAME'].lower()
@@ -3392,7 +3481,7 @@ class Game:
 					showname = ''
 					for i in range(len(freakname)):
 						self.ch_sfx.play(res.SOUND['TEXT_INPUT'])
-						showname += abc[random.randint(0,len(abc) - 1)]
+						showname += abc[np.random.randint(0,len(abc) - 1)]
 					self.cityname = showname
 					self.run()
 				for i in range(len(freakname)):
@@ -3416,7 +3505,7 @@ class Game:
 			self.battle = True
 			self.sttsy = 120
 			#ZOOM TRANSITION
-			if self.turn != -6: self.transiction(False,int(self.windoww/res.GSCALE),type="zoom")
+			if self.turn != -6: self.transiction(False,int(self.window.width/res.GSCALE),type="zoom")
 			#TRANSICTION
 			if res.GSCALE < 3: nb = 100
 			else: nb = 60
@@ -3443,7 +3532,7 @@ class Game:
 					for d in range(len(self.player)):
 						if self.player[d]['PLAYING']:
 							di = dtb.CLASSES[self.fig[d]['CLASS']]['AGILITY'][self.fig[d]['LEVEL']] + self.fig[d]['BONUS'][2]
-							self.dices.append([random.randint(0,di),d])
+							self.dices.append([np.random.randint(0,di),d])
 						else: self.dices.append([-1,d])
 					self.run()
 				for i in range(30):
@@ -3489,7 +3578,7 @@ class Game:
 						gottem = True
 						if it == '_': wpdmg = 0
 						else: wpdmg = dtb.ITEMS[res.INVENTORY[res.PARTY[res.FORMATION][self.fig[self.turn]['N']]][4][self.equip[self.fig[self.turn]['N']] + 1][0]][5]['DAMAGE']
-						dmg = int(random.randint(wpdmg - 2,wpdmg + 2)) - i['RESISTANCE'] + self.fig[self.turn]['STRENGHT']
+						dmg = int(np.random.randint(wpdmg - 2,wpdmg + 2)) - i['RESISTANCE'] + self.fig[self.turn]['STRENGHT']
 						if res.CHARACTERS[res.PARTY[res.FORMATION][self.fig[self.turn]['N']]]['HEALTH'] == 11: dmg = int(dmg/2)
 						if i['HEALTH'] != 1: i['SPRITE'] = pygame.image.load(res.FREAKS_PATH + (i['FILE']) + '_damage.png')
 						#HIT
@@ -3498,8 +3587,8 @@ class Game:
 						for p in range(dmg * 2):
 							if i['TYPE'] == 'mercenary': cl = (150, 25, 29)
 							else: cl = (10, 255, 50)
-							self.particles.append({'TYPE': 'blood', 'X': self.aim.x, 'Y': self.aim.y, 'RADIUS': round(random.randint(3,5)), 'DIRECTION': round(random.randint(0,360)),
-								'SPEED': round(random.randint(2,6)), 'COLOR': cl})
+							self.particles.append({'TYPE': 'blood', 'X': self.aim.x, 'Y': self.aim.y, 'RADIUS': round(np.random.randint(3,5)), 'DIRECTION': round(np.random.randint(0,360)),
+								'SPEED': round(np.random.randint(2,6)), 'COLOR': cl})
 						i['HP'] -= dmg
 						self.hits += 1
 						self.tdmg += dmg
@@ -3520,7 +3609,7 @@ class Game:
 						if i['HP'] <= 0:
 							if dmg >= i['RESISTANCE']: again = True
 							if i['ITEM'] != None:
-								prb = round(random.randint(0,100))
+								prb = round(np.random.randint(0,100))
 								if prb > i['ITEM'][1]:
 									self.inv.add(res.PARTY[res.FORMATION][0],i['ITEM'][0])
 									self.ch_sfx.play(res.SOUND['ITEM_GET'])
@@ -3539,13 +3628,13 @@ class Game:
 			#RUN AWAY
 			elif self.equip[self.turn] == 7:
 				self.dialog([self.fig[self.turn]['NAME'] + dtb.BATTLE[15]])
-				run = round(random.randint(0,30)) + self.fig[self.turn]['ATLETISM']
+				run = round(np.random.randint(0,30)) + self.fig[self.turn]['ATLETISM']
 				if run > 20:
 					self.ch_msc.fadeout(500)
 					pygame.mixer.music.fadeout(500)
 					self.dialog([dtb.BATTLE[17]])
 					res.CHARACTERS[res.PARTY[res.FORMATION][0]]['MORALITY'] += 1
-					self.transiction(True, int(self.displayzh/2))
+					self.transiction(True, int(self.display.height/2))
 					for i in self.enemies: i['FIGHTING'] = False
 					self.turn = 0
 					self.mnu = 0
@@ -3593,7 +3682,7 @@ class Game:
 					prb = []
 					for h in i['HABILITIES']:
 						prb.append(h[4])
-					opt = int(random.randint(0,100))
+					opt = int(np.random.randint(0,100))
 					rng = 100
 					for p in range(len(prb)):
 						rng -= prb[p]
@@ -3608,8 +3697,8 @@ class Game:
 					else: lst = self.foe
 					for d in lst:
 						if d['HP'] > 0: otk += 1
-					if i['HEALTH'] == 9: pl = int(random.randint(-20,len(self.fig) - 1 + otk))
-					else: pl = int(random.randint(-1,len(self.fig) - 1 + otk))
+					if i['HEALTH'] == 9: pl = int(np.random.randint(-20,len(self.fig) - 1 + otk))
+					else: pl = int(np.random.randint(-1,len(self.fig) - 1 + otk))
 					#DECREASE STATUS LIMIT
 					if act[3] == 2 and i['BTIMES'][0] == 2: act = i['HABILITIES'][0]
 					if act[3] == 3 and i['BTIMES'][1] == 2: act = i['HABILITIES'][0]
@@ -3637,7 +3726,7 @@ class Game:
 									self.ch_sfx.play(res.SOUND['DAMAGE_1'])
 									#DODGE
 									if self.attackimation(act[5]):
-										act[2] -= math.floor(act[2]/5)
+										act[2] -= np.floor(act[2]/5)
 										self.hitisplay(5, i['MASK'], 'dodge', (0, 200, 0))
 									#CRITICAL
 									if -act[2] > int(self.fig[self.turn]['RESISTANCE']/4):
@@ -3697,9 +3786,9 @@ class Game:
 							self.hitisplay(5, i['MASK'], dtb.FCONDITIONS[act[2]], (10, 10, 10))
 						#ADD ANOMALY
 						elif act[3] == 7:
-							prb = round(random.randint(0,100))
+							prb = round(np.random.randint(0,100))
 							if prb > 49:
-								wh = round(random.randint(0,len(act[2]) - 1))
+								wh = round(np.random.randint(0,len(act[2]) - 1))
 								self.dialog([(13,[act[2][wh]])])
 								if self.dlg['FADE'] > 0:
 									self.dialog([i['NAME'] + ' usou ' + act[0],1,nw['NAME'] + dtb.BATTLE[37],1])
@@ -3729,7 +3818,7 @@ class Game:
 							else:
 								self.ch_sfx.play(res.SOUND['HIT'])
 								for p in range(dmg * 3):
-									self.particles.append({'TYPE': 'blood', 'X': self.aim.x, 'Y': self.aim.y, 'RADIUS': round(random.randint(3,5)), 'DIRECTION': round(random.randint(0,360)), 'SPEED': round(random.randint(2,6))})
+									self.particles.append({'TYPE': 'blood', 'X': self.aim.x, 'Y': self.aim.y, 'RADIUS': round(np.random.randint(3,5)), 'DIRECTION': round(np.random.randint(0,360)), 'SPEED': round(np.random.randint(2,6))})
 								self.hitisplay(10, i['MASK'], str(act[2]), (200, 0, 0))
 								if i['HEALTH'] != 1: i['SPRITE'] = pygame.image.load(res.FREAKS_PATH + (i['FILE'])+ '_stand.png')
 								i['HP'] -= act[2]
@@ -3742,7 +3831,7 @@ class Game:
 									i['FADE'] -= 0.5
 									self.run()
 								if i['ITEM'] != None:
-									prb = round(random.randint(0,100))
+									prb = round(np.random.randint(0,100))
 									if prb > i['ITEM'][1]:
 										self.inv.add(res.PARTY[res.FORMATION][0],i['ITEM'][0])
 										self.ch_sfx.play(res.SOUND['ITEM_GET'])
@@ -3813,14 +3902,13 @@ class Game:
 			else: self.ch_ton.play(res.SOUND['BATTLE_WON'])
 			self.tbt += round(self.btime/10)
 			xp = int(((self.hits*self.tdmg)-self.hpl+self.tbt)/len(self.fig))
-			self.mnu = self.displayzw
+			self.mnu = self.display.width
 			while self.sttsy > 120:
 				self.sttsy -= 10
 				self.run()
-			self.transiction(True, int(self.displayzh/2) + 10)
+			self.transiction(True, int(self.display.height/2) + 10)
 			self.turn = -4
 			self.obstacles = False
-			self.bbg['X'] = 0
 			while self.mnu > 0:
 				self.mnu -= 60
 				self.run()
@@ -3857,13 +3945,13 @@ class Game:
 				if self.barxp[i] >= 100:
 					self.lopt = -1
 					if lvlup == False:
-						self.bbg['IMAGE'] = pygame.image.load(res.BACKG_PATH + 'level_up.png')
+						self.bbg.index = pygame.image.load(res.BACKG_PATH + 'level_up.png')
 						self.ch_ton.play(res.SOUND['LEVEL_UP'],-1)
 						self.transiction(False, int(200/res.GSCALE), 10)
 						lvlup = True
-					if self.mnu < -self.displayzw:
-						self.mnu = -self.displayzw
-					while self.mnu > -(self.displayzw + 100):
+					if self.mnu < -self.display.width:
+						self.mnu = -self.display.width
+					while self.mnu > -(self.display.width + 100):
 						self.mnu -= 50
 						self.run()
 					self.exvar += 1
@@ -3872,10 +3960,10 @@ class Game:
 					res.CHARACTERS[res.PARTY[res.FORMATION][i]]['HP'] += dtb.CLASSES[res.CHARACTERS[res.PARTY[res.FORMATION][i]]['CLASS']]['RESISTANCE'][res.CHARACTERS[res.PARTY[res.FORMATION][i]]['LEVEL']] - dtb.CLASSES[res.CHARACTERS[res.PARTY[res.FORMATION][i]]['CLASS']]['RESISTANCE'][res.CHARACTERS[res.PARTY[res.FORMATION][i]]['LEVEL'] - 1]
 					res.CHARACTERS[res.PARTY[res.FORMATION][i]]['XP'] = 0
 					self.wait()
-					self.lopt = random.randint(0,6)
+					self.lopt = np.random.randint(0,6)
 					res.CHARACTERS[res.PARTY[res.FORMATION][i]]['BONUS'][1] += self.lopt
 					self.wait()
-					while self.mnu > -((self.displayzw * 2) + 200):
+					while self.mnu > -((self.display.width * 2) + 200):
 						self.mnu -= 50
 						self.run()
 			if lvlup:
@@ -3903,24 +3991,24 @@ class Game:
 			while ex != 0:
 				self.screen.fill((255, 0, 0))
 				if tar:
-					self.displayx = dv * res.GSCALE
-					self.displayy = 0
+					self.display.x = dv * res.GSCALE
+					self.display.y = 0
 					dv += ex * 10
-					if dv > self.displayzw * 1.25:
+					if dv > self.display.width * 1.25:
 						dv = 1
 						ex -= 3
 						if ex < 0: ex = 0
 				else:
-					self.displayx = ex
-					self.displayy = ex
+					self.display.x = ex
+					self.display.y = ex
 					if ex > 0:
 						ex = -ex
 					elif ex < 0:
 						ex = -ex
 						ex -= dv
 				self.run()
-			self.displayx = 0
-			self.displayy = 0
+			self.display.x = 0
+			self.display.y = 0
 			self.dmg['INFO'] = None
 	
 	def attackimation(self, wh):
@@ -3957,17 +4045,17 @@ class Game:
 		#POP
 		if p['TYPE'] == 'pop':
 			img = pygame.image.load(res.SPRITES_PATH + 'pop_' + str(int(p['GIF'])) + '.png')
-			self.display[0].blit(img,(p['X'] - self.cam.x,p['Y'] - self.cam.y))
+			self.surfaces[0].blit(img,(p['X'] - self.cam.x,p['Y'] - self.cam.y))
 			if p['GIF'] < 8: p['GIF'] += 1
 		#BOMB
 		elif p['TYPE'] == 'bomb':
-			if math.floor(p['GIF']) < len(p['IMAGE']):
-				self.display[0].blit(p['IMAGE'][math.floor(p['GIF'])],(p['X'] - self.cam.x,p['Y'] - self.cam.y))
+			if np.floor(p['GIF']) < len(p['IMAGE']):
+				self.surfaces[0].blit(p['IMAGE'][np.floor(p['GIF'])],(p['X'] - self.cam.x,p['Y'] - self.cam.y))
 			p['GIF'] += 0.5
 		#EXPLODE
 		elif p['TYPE'] == 'explode':
-			img = pygame.image.load(res.SPRITES_PATH + 'explode_' + str(math.floor(p['GIF'])) + '.png')
-			self.display[0].blit(img,(p['X'] - self.cam.x,p['Y'] - self.cam.y))
+			img = pygame.image.load(res.SPRITES_PATH + 'explode_' + str(np.floor(p['GIF'])) + '.png')
+			self.surfaces[0].blit(img,(p['X'] - self.cam.x,p['Y'] - self.cam.y))
 			p['GIF'] += 1
 			if p['GIF'] >= p['LIMIT']: p['GIF'] = 0
 			p['TIME'] += 1
@@ -3982,89 +4070,65 @@ class Game:
 						break
 			if rd == False:
 				p['TIME'] -= 1
-				p['X'] += int(math.cos(p['DIRECTION']) * p['SPEED'])
-				p['Y'] += int(math.sin(p['DIRECTION']) * p['SPEED'])
-				self.display[0].blit(p['IMAGE'], (p['X'],p['Y']))
+				p['X'] += int(np.cos(p['DIRECTION']) * p['SPEED'])
+				p['Y'] += int(np.sin(p['DIRECTION']) * p['SPEED'])
+				self.surfaces[0].blit(p['IMAGE'], (p['X'],p['Y']))
 				if p['TIME'] == 0:
 					p['X'] = p['X'] + self.cam.x
 					p['Y'] = p['Y'] + self.cam.y
 			elif p['GIF'] <= 8:
-				self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'raindrop_' + str(p['GIF']) + '.png'), (p['X'] - self.cam.x + 4,p['Y'] -self.cam.y + 6))
+				self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'raindrop_' + str(p['GIF']) + '.png'), (p['X'] - self.cam.x + 4,p['Y'] -self.cam.y + 6))
 				p['GIF'] += 1
 		#GREENBLOOD & GUNSHOT
 		elif p['TYPE'] in ['blood','gunshot']:
-			p['X'] += int(math.cos(p['DIRECTION']) * p['SPEED'])
-			p['Y'] += int(math.sin(p['DIRECTION']) * p['SPEED'])
+			p['X'] += int(np.cos(p['DIRECTION']) * p['SPEED'])
+			p['Y'] += int(np.sin(p['DIRECTION']) * p['SPEED'])
 			if p['TYPE'] == 'blood':
 				p['RADIUS'] -= 0.25
 				if p['RADIUS'] < 0.0: p['RADIUS'] = 0.0
 				cor = (p['X'],p['Y'])
 			else: cor = (p['X'] - self.cam.x,p['Y'] - self.cam.y)
-			pygame.draw.circle(self.display[0], p['COLOR'], cor, math.ceil(p['RADIUS']))
+			pygame.draw.circle(self.surfaces[0], p['COLOR'], cor, np.ceil(p['RADIUS']))
 			if p['TYPE'] == 'gunshot':
 				if self.colide(pygame.Rect(p['X'],p['Y'],2,2),self.cam) == False: p['DESTROY']
 		#SPIN
 		elif p['TYPE'] == 'spin':
-			p['X'] += int(math.cos(p['DIRECTION']) * 5)
-			p['Y'] += int(math.sin(p['DIRECTION']) * 5)
+			p['X'] += int(np.cos(p['DIRECTION']) * 5)
+			p['Y'] += int(np.sin(p['DIRECTION']) * 5)
 			cor = (p['X'] - self.cam.x,p['Y'] - self.cam.y)
-			self.display[0].blit(pygame.transform.rotate(p['IMAGE'],p['SPIN']),cor)
+			self.surfaces[0].blit(pygame.transform.rotate(p['IMAGE'],p['SPIN']),cor)
 			p['SPIN'] += 10
 			p['TIME'] += 1
 	
 	def draw(self):
-		for i in self.display: i.fill((0,0,0,0))
+		for i in self.surfaces: i.fill((0,0,0,0))
 		if self.battle and self.turn < 0: self.hpctrl = []
-		elif self.dlg['FADE'] > 0: self.hpctrl = []
 		else: self.hpctrl = dtb.HINTS['MENUS']
-		#TILEMATION
-		if self.player[0]['PAUSE'] < 2: self.tilemation += 0.1
-		if self.tilemation >= 2.0: self.tilemation = 0.0
 		#BLINDNESS
-		if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] == 12: self.display[0].fill((0,0,0))
+		if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['HEALTH'] == 12: self.surfaces[0].fill((0,0,0))
 		#STUDIO
 		elif self.editing:
-			self.display[0].fill((200,0,200))
 			"""for l in self.shist[self.ihist]:
 				pos = [0,0]
 				for t in l:
-					self.display[0].blit(self.tilset[t],((pos[0] * self.mapdata['TILEWIDTH']),(pos[1] * self.mapdata['TILEHEIGHT'])))
+					self.surfaces[0].blit(self.tilset[t],((pos[0] * self.mapdata['TILEWIDTH']),(pos[1] * self.mapdata['TILEHEIGHT'])))
 					pos[0] += 1
 					if pos[0] >= self.mapdata['WIDTH']:
 						pos[0] = 0; pos[1] += 1"""
 			for i in self.shist[self.ihist]:
 				for l in i:
-					self.display[0].blit(i[0],(0,0))#,(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+					self.surfaces[0].blit(i[0],(0,0))#,(self.cam.x,self.cam.y,self.display.width,self.display.height))
 			for y in self.objects:
 				if y[0] == 'npc':
 					for i in self.npcs:
 						if i['N'] == y[1]:
-							pygame.draw.rect(self.display[0],(200,200,0),pygame.Rect(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y,i['RECT'].width,i['RECT'].height))
-				if y[0] == 'portal': pygame.draw.rect(self.display[0],(200,200,0),pygame.Rect(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y,y[1]['RECT'].width,y[1]['RECT'].height))
-			self.display[0].blit(self.inv.bar(1,4,(1,5),'vertical'),(0,0))
+							pygame.draw.rect(self.surfaces[0],(200,200,0),pygame.Rect(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y,i['RECT'].width,i['RECT'].height))
+				if y[0] == 'portal': pygame.draw.rect(self.surfaces[0],(200,200,0),pygame.Rect(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y,y[1]['RECT'].width,y[1]['RECT'].height))
+			self.surfaces[0].blit(self.inv.bar(1,4,(1,5),'vertical'),(0,0))
 		#TILED MAP
 		elif self.map and self.turn != -6:
 			self.map.draw()
-			'''#SKY
-			if len(self.tilmap) > 2:
-				tt = (res.TIME[0] * 60) + res.TIME[1]
-				img = self.tilmap[3][0]
-				self.display[0].blit(img, (0, -int(tt * ((img.get_height() - (img.get_height()/self.displayzh))/1440))))
-				if len(self.tilrect) > 5:
-					for i in range(2):
-						aa = ((tt)/240) + 2 + (i * 3)
-						xx = int(math.cos(aa) * 100) + int(self.displayzw/2)
-						yy = int(math.sin(aa) * 100) + int(self.displayzh/2)
-						if i == 0: frm = 0
-						else: frm = res.DATE[4]
-						self.display[0].blit(self.tilrect[6][0][0]['IMAGE'][frm],(xx,yy))	
-			#PARALLAX SCROLLING
-			px = 2
-			for t in self.tilmap[4:]:
-				if len(t) > 0: self.display[0].blit(t[math.floor(self.tilemation)], (-math.floor(self.cam.x/px), -math.floor(self.cam.y/px)))
-				px += 3'''
-			#MAP FLOOR
-			self.display[0].blit(self.map.surfaces[0],(0,0),(self.cam.x,self.cam.y,self.displayzw,self.displayzh))
+			for i in self.map.surfaces: self.surfaces[1].blit(i,(0,0),(self.cam.x,self.cam.y,self.display.width,self.display.height))
 			#PROPS
 			xxxx = False
 			if xxxx:
@@ -4076,9 +4140,9 @@ class Game:
 							else:
 								img = pygame.transform.scale(i[0]['IMAGE'][i[0]['COLOR']],(i[0]['SCALE'],self.map.tileheight))
 								i[0]['SCALE'] += 1
-							self.display[0].blit(img, (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							self.surfaces[0].blit(img, (i[1].x - self.cam.x, i[1].y - self.cam.y))
 						if i[0]['TYPE'] in ['TREADMILL','PORTAL']:
-							self.display[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							self.surfaces[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
 							i[0]['GIF'] += 0.5
 							if i[0]['GIF'] == len(i[0]['IMAGE']):
 								i[0]['GIF'] = 0
@@ -4092,7 +4156,7 @@ class Game:
 							self.ch_ton.set_volume(i[0]['SFX'] * res.SFX)
 							self.ch_ton.play(res.SOUND['STEP_MOTOR'])"""
 						if i[0]['TYPE'] == 'MOVING':
-							self.display[0].blit(i[0]['IMAGE'], (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							self.surfaces[0].blit(i[0]['IMAGE'], (i[1].x - self.cam.x, i[1].y - self.cam.y))
 							if i[0]['INOUT'] == False:
 								if i[0]['DIRECTION'] == 1: i[1].x -= 1
 								if i[0]['DIRECTION'] == 3: i[1].y -= 1
@@ -4104,7 +4168,7 @@ class Game:
 								i[0]['TIME'] = 0
 								i[0]['INOUT'] = not i[0]['INOUT']
 						if i[0]['TYPE'] == 'SPIKE':
-							self.display[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							self.surfaces[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
 							if i[0]['TIME'] < 30: i[0]['TIME'] += 1
 							if i[0]['TIME'] == 30:
 								if i[0]['HIDE'] == False:
@@ -4118,27 +4182,26 @@ class Game:
 										i[0]['HIDE'] = False
 										i[0]['TIME'] = 0
 						if i[0]['TYPE'] == 'JUMP' and i[0]['DIRECTION'] == 0:
-							self.display[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							self.surfaces[0].blit(i[0]['IMAGE'][int(i[0]['GIF'])], (i[1].x - self.cam.x, i[1].y - self.cam.y))
 							if i[0]['GIF'] > 0: i[0]['GIF'] += 0.5
 							if int(i[0]['GIF']) == len(i[0]['IMAGE']) - 1: i[0]['GIF'] = 0
 						if i[0]['TYPE'] == 'SLIME':
-							self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'slime.png'), (i[1].x - self.cam.x, i[1].y - self.cam.y))
+							self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'slime.png'), (i[1].x - self.cam.x, i[1].y - self.cam.y))
 					ind += 1
-		else: self.display[0].fill((250,10,250))
 		#for t in self.tilrect[3]:
-		#	if self.rectdebug and t!= None: pygame.draw.rect(self.display[0],(255,0,0),pygame.Rect(t[1].x - self.cam.x,t[1].y - self.cam.y,t[1].width,t[1].height),3)
+		#	if self.rectdebug and t!= None: pygame.draw.rect(self.surfaces[0],(255,0,0),pygame.Rect(t[1].x - self.cam.x,t[1].y - self.cam.y,t[1].width,t[1].height),3)
 		
 		#DEPTH
 		dpth = 0
 		for i in range(len(self.objects)):
-			if i!= len(self.objects) - 1:
+			if i != len(self.objects) - 1:
 				if self.objects[i][2] > self.objects[i + 1][2]:
 					self.objects.insert(i, self.objects[i + 1])
 					del self.objects[i + 2]
 		#DELETE OBJECTS
 		self.npcs = [i for i in self.npcs if i['DIRECTION'] == 0]
 		self.enemies = [i for i in self.enemies if i.hp <= 0]
-		self.objects = [i for i in self.objects if i[0] in ['item','move','click'] and i[1]['DESTROY']]
+		#self.objects = [i for i in self.objects if i[0] in ['item','move','click'] and i[1]['DESTROY']]
 		#OVERWORLD
 		if self.battle == False and self.editing == False:
 			#OBJECTS
@@ -4149,28 +4212,30 @@ class Game:
 					p = 0
 					for i in self.player:
 						if y[1] == p:
-							if self.rectdebug: pygame.draw.rect(self.display[0], (0,0,255), pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
-							doll = self.people(i,True)
+							if self.rectdebug: pygame.draw.rect(self.surfaces[0], (0,0,255), pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
+							doll = self.avatar.people(i,True)
+							self.surfaces[0].blit(doll,(i['RECT'].x,i['RECT'].y))
 							#CONDITIONS
-							if res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HEALTH'] > 1:
+							if 1 in res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HEALTH']:
 								if i['SHK'] == 0:
-									pygame.draw.rect(self.display[0], res.COLOR, pygame.Rect(i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40,16,13))
-								else: pygame.draw.rect(self.display[0], (255,10,10), pygame.Rect(i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40,16,13))
-								self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'hl_' + str(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HEALTH']) + '.png'), (i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40))
+									pygame.draw.rect(self.surfaces[0], res.COLOR, pygame.Rect(i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40,16,13))
+								else: pygame.draw.rect(self.surfaces[0], (255,10,10), pygame.Rect(i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40,16,13))
+								self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'hl_' + str(res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HEALTH']) + '.png'), (i['RECT'].x - self.cam.x + 10 + i['SHK'],i['RECT'].y - self.cam.y - 40))
 							if self.map.hscroll != 0 and i['RECT'].x < self.cam.x - self.map.tilewidth: res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HP'] = 0
 							if self.map.vscroll != 0 and i['RECT'].y < self.cam.y - self.map.tileheight: res.CHARACTERS[res.PARTY[res.FORMATION][p]]['HP'] = 0
 							#MIRROR SURFACES
-							for t in self.tilrect[5]:
+							'''for t in self.tilrect[5]:
 								doll = pygame.transform.flip(doll,False,True)
-								self.display[0].blit(doll,(t[1].x + i['RECT'].x - (self.cam.x * 2),t[1].y + i['RECT'].y - (self.cam.y * 2)))
+								self.surfaces[0].blit(doll,(t[1].x + i['RECT'].x - (self.cam.x * 2),t[1].y + i['RECT'].y - (self.cam.y * 2)))
+							'''
 							#TILE COLISION
-							for tl in range(2):
+							for tl in range(0):
 								if i['STEP'] > 0: i['STEP'] -= 1
-								ind = (math.floor((i['RECT'].y + 15)/self.map.tileheight) * self.map.width) + math.floor((i['RECT'].x + 15)/self.map.tilewidth)
+								ind = (np.floor((i['RECT'].y + 15)/self.map.tileheight) * self.map.width) + np.floor((i['RECT'].x + 15)/self.map.tilewidth)
 								t = self.tilrect[tl][ind]
 								if t != None:
 									if self.rectdebug:
-										if tl == 0: pygame.draw.rect(self.display[0],(255,255,0),pygame.Rect(t[1].x + 2 - self.cam.x,t[1].y + 2 - self.cam.y,t[1].width - 4,t[1].height - 4),3)
+										if tl == 0: pygame.draw.rect(self.surfaces[0],(255,255,0),pygame.Rect(t[1].x + 2 - self.cam.x,t[1].y + 2 - self.cam.y,t[1].width - 4,t[1].height - 4),3)
 									if i['PAUSE'] == 0:
 										#PROPS COLISION
 										if i['DRIVING'] == None:
@@ -4240,7 +4305,7 @@ class Game:
 													#REGULAR SOUND
 													elif t[0]['TYPE'] != 'WALL':
 														self.soundplay('STEP_' + t[0]['TYPE'],0)
-													if i['SPEED'] > 0: i['STEP'] = math.floor(12/i['SPEED'])
+													if i['SPEED'] > 0: i['STEP'] = np.floor(12/i['SPEED'])
 												#SWIMMING
 												if t[0]['TYPE'] == 'WATER':
 													if i['SWIM'] == None: i['SWIM'] = 0.0
@@ -4249,13 +4314,13 @@ class Game:
 										elif i['DRIVING'] != None and t[0]['TYPE'] != 'WALL' and t[0]['TYPE'].startswith('JUMP') == False and i['JUMP'] == 0:
 											if i['STEP'] == 0 and res.MAP != 'rodoviary':
 												self.soundplay('STEP_MOTOR',0)
-												if i['SPEED'] > 0: i['STEP'] = math.floor(12/i['SPEED'])
+												if i['SPEED'] > 0: i['STEP'] = np.floor(12/i['SPEED'])
 							y[2] = i['RECT'].y
 						p += 1
 				#ENEMIES
 				if y[0] == 'enemy':
 					for i in self.enemies:
-						if i.id == y[1] and self.colide(i.rect,cm): self.display[0].blit(i.sprite,(i.rect.x,i.rect.y)); y[2] = i.rect.y
+						if i.id == y[1] and self.colide(i.rect,cm): self.surfaces[0].blit(i.sprite,(i.rect.x,i.rect.y)); y[2] = i.rect.y
 				#NPCS
 				elif y[0] == 'npc':
 					for i in self.npcs:
@@ -4271,9 +4336,9 @@ class Game:
 					if self.colide(y[1]['RECT'],cm) and self.turn != -6:
 						if res.MAP != 'rodoviary':
 							sz = self.fnt['DEFAULT'].size(dtb.SIGNS[y[1]['TEXT']])
-							pygame.draw.rect(self.display[0], (250, 250, 250), pygame.Rect(y[1]['RECT'].x - self.cam.x, y[1]['RECT'].y - self.cam.y, math.floor(sz[0]/2) + 10, math.floor(sz[1]/2) + 10))
-							self.display[1].blit(self.fnt['DEFAULT'].render(dtb.SIGNS[y[1]['TEXT']], True, (0,0,0)), ((5 + y[1]['RECT'].x - self.cam.x) * res.GSCALE,(5 + y[1]['RECT'].y - self.cam.y) * res.GSCALE))
-						else: self.display[1].blit(self.fnt['DEFAULT'].render(y[1]['TEXT'], True, (250,250,250)), ((y[1]['RECT'].x - self.cam.x - math.floor(self.cam.x/5)) * res.GSCALE,(y[1]['RECT'].y - self.cam.y - math.floor(self.cam.y/5)) * res.GSCALE))
+							pygame.draw.rect(self.surfaces[0], (250, 250, 250), pygame.Rect(y[1]['RECT'].x - self.cam.x, y[1]['RECT'].y - self.cam.y, np.floor(sz[0]/2) + 10, np.floor(sz[1]/2) + 10))
+							self.surfaces[1].blit(self.fnt['DEFAULT'].render(dtb.SIGNS[y[1]['TEXT']], True, (0,0,0)), ((5 + y[1]['RECT'].x - self.cam.x) * res.GSCALE,(5 + y[1]['RECT'].y - self.cam.y) * res.GSCALE))
+						else: self.surfaces[1].blit(self.fnt['DEFAULT'].render(y[1]['TEXT'], True, (250,250,250)), ((y[1]['RECT'].x - self.cam.x - np.floor(self.cam.x/5)) * res.GSCALE,(y[1]['RECT'].y - self.cam.y - np.floor(self.cam.y/5)) * res.GSCALE))
 					y[2] = y[1]['RECT'].y
 				#ITEMS
 				elif y[0] == 'item':
@@ -4285,7 +4350,7 @@ class Game:
 							y[1]['ACC'] += 1
 							if y[1]['ACC'] > 3: y[1]['DIRECTION'] = False
 						y[1]['FLOAT'] += int(y[1]['ACC'])
-						self.display[0].blit(y[1]['IMAGE'], (y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y + y[1]['FLOAT']))
+						self.surfaces[0].blit(y[1]['IMAGE'], (y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y + y[1]['FLOAT']))
 						for p in range(len(self.player)):
 							if self.colide(self.player[p]['RECT'],y[1]['RECT']):
 								if y[1]['ITEM'].startswith('bomb'):
@@ -4302,8 +4367,8 @@ class Game:
 				#MOVE
 				elif y[0] == 'move':
 					if self.colide(y[1]['RECT'],cm):
-						self.display[0].blit(y[1]['IMAGE'],(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y - self.map.tileheight))
-						if self.rectdebug: pygame.draw.rect(self.display[0], (0,0,255), pygame.Rect(y[1]['RECT'].x - self.cam.x, y[1]['RECT'].y - self.cam.y, y[1]['RECT'].width, y[1]['RECT'].height),3)
+						self.surfaces[0].blit(y[1]['IMAGE'],(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y - self.map.tileheight))
+						if self.rectdebug: pygame.draw.rect(self.surfaces[0], (0,0,255), pygame.Rect(y[1]['RECT'].x - self.cam.x, y[1]['RECT'].y - self.cam.y, y[1]['RECT'].width, y[1]['RECT'].height),3)
 						if y[1]['DIRECTION'] in [8,1,2]: y[1]['RECT'].x += y[1]['SPEED']
 						if y[1]['DIRECTION'] in [2,3,4]: y[1]['RECT'].y += y[1]['SPEED']
 						if y[1]['DIRECTION'] in [4,5,6]: y[1]['RECT'].x -= y[1]['SPEED']
@@ -4323,7 +4388,7 @@ class Game:
 						trs = pygame.transform.rotate(pygame.image.load(res.SPRITES_PATH + 'toll.png'),y[1]['ANGLE'] + 90)
 						#i['CENTER'] = trs.get_rect(center = i['CENTER'].center)
 						srf.blit(trs,(0,0))
-						self.display[0].blit(srf,(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y))
+						self.surfaces[0].blit(srf,(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y))
 						if y[1]['TIME'] > 0: y[1]['TIME'] -= 1
 						if self.colide(self.player[0]['RECT'],y[1]['RECT']):
 							if y[1]['TIME'] == 0:
@@ -4351,10 +4416,10 @@ class Game:
 				#TENTS
 				elif y[0] == 'tent':
 					if self.colide(y[1]['RECT'],cm):
-						self.display[0].blit(y[1]['SPRITE'],(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y - 20))
+						self.surfaces[0].blit(y[1]['SPRITE'],(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y - 20))
 						for p in self.player:
 							if self.colide(p['RECT'],y[1]['RECT']):
-								 self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (y[1]['RECT'].x - self.cam.x + int(y[1]['RECT'].width/2) - 5,y[1]['RECT'].y - self.cam.y - y[1]['RECT'].height * 2))
+								 self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (y[1]['RECT'].x - self.cam.x + int(y[1]['RECT'].width/2) - 5,y[1]['RECT'].y - self.cam.y - y[1]['RECT'].height * 2))
 								 if self.pressed[4][0]: p['SLEEP'] = not p['SLEEP']
 					y[2] = y[1]['RECT'].y
 				#PETS
@@ -4362,30 +4427,30 @@ class Game:
 					if self.colide(y[1]['RECT'],cm): self.pet(y[1]); y[2] = y[1]['RECT'].y
 				#TILES
 				elif y[0] == 11:
-					self.display[0].blit(y[1]['IMAGE'], (y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y)); y[2] = y[1]['RECT'].y
+					self.surfaces[0].blit(y[1]['IMAGE'], (y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y)); y[2] = y[1]['RECT'].y
 				#CLICK
 				elif y[0] == 'click':
 					y[1]['GIF'] += 0.1
-					if math.floor(y[1]['GIF']) >= len(y[1]['IMAGE']):
+					if np.floor(y[1]['GIF']) >= len(y[1]['IMAGE']):
 						y[1]['GIF'] = 0
-					self.display[0].blit(y[1]['IMAGE'][math.floor(y[1]['GIF'])],(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y - 20))
+					self.surfaces[0].blit(y[1]['IMAGE'][np.floor(y[1]['GIF'])],(y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y - 20))
 					if self.colide(self.player[0]['RECT'],y[1]['RECT']): y[1]['DESTROY'] = True
 					y[2] = y[1]['RECT'].y
 			#BUILD ITEMS
 			if self.build != '':
 				srf = pygame.image.load(res.SPRITES_PATH + '' + self.build + '.png')
 				srf.set_alpha(100)
-				self.display[0].blit(srf,((math.floor((self.player[0]['RECT'].x + 15)/30) * 30) - self.cam.x,(math.floor((self.player[0]['RECT'].y + 15)/30) * 30) - self.cam.y - 20))
+				self.surfaces[0].blit(srf,((np.floor((self.player[0]['RECT'].x + 15)/30) * 30) - self.cam.x,(np.floor((self.player[0]['RECT'].y + 15)/30) * 30) - self.cam.y - 20))
 			#NODES DEBUG
 			if self.rectdebug:
-				for i in self.nodes: pygame.draw.rect(self.display[0], (250,250,10),pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
+				for i in self.nodes: pygame.draw.rect(self.surfaces[0], (250,250,10),pygame.Rect(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y, i['RECT'].width, i['RECT'].height))
 			#OVER TILES & CLOUDS
 			if self.map: pass
 			#DAYTIME & WEATHER
 			if res.TIME[0] >= 18: tim = 100
 			elif res.TIME[0] >= 6: tim = 0
 			else: tim = 100
-			srf = pygame.Surface((self.displayzw,self.displayzh))
+			srf = pygame.Surface((self.display.width,self.display.height))
 			srf.set_alpha(tim)
 			srf.fill((0, 58, 160))
 			#LIGHTS
@@ -4393,7 +4458,7 @@ class Game:
 				if y[0] == 'light':
 					if self.colide(y[1]['RECT'], self.cam):
 						srf.blit(y[1]['IMAGE'], (y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y),None,pygame.BLEND_RGBA_SUB)
-			if self.map and self.map.interior == 0: self.display[0].blit(srf, (0,0))
+			if self.map and self.map.interior == 0: self.surfaces[0].blit(srf, (0,0))
 			#RAIN
 			if self.map and self.map.interior == 0 and res.WEATHER == 1 and res.MAP != 'rodoviary':
 				if len(self.particles) < 100:
@@ -4401,8 +4466,8 @@ class Game:
 						img = pygame.Surface((2,2),pygame.SRCALPHA)
 						pygame.draw.circle(img,(0, 148, 255),(1,1),2)
 						img.set_alpha(120)
-						self.particles.append({'IMAGE': img,'TYPE': 'raindrop', 'X': round(random.randint(0,self.cam.width + int(self.cam.width/4))), 'Y': -int(self.cam.height/2),
-							'RADIUS': 2, 'DIRECTION': 90, 'SPEED': 15, 'TIME': round(random.randint(10,60)), 'GIF': 0})
+						self.particles.append({'IMAGE': img,'TYPE': 'raindrop', 'X': round(np.random.randint(0,self.cam.width + int(self.cam.width/4))), 'Y': -int(self.cam.height/2),
+							'RADIUS': 2, 'DIRECTION': 90, 'SPEED': 15, 'TIME': round(np.random.randint(10,60)), 'GIF': 0})
 			#PARTICLES
 			p = 0
 			while p < len(self.particles):
@@ -4414,9 +4479,9 @@ class Game:
 						for obj in self.objects:
 							if obj[0] == 'move' and obj[1]['TYPE'] == 'DESTROY':
 								if self.colide(obj[1]['RECT'], pygame.Rect(ptc['X'] - int((self.map.tilewidth * 3)/2),ptc['Y'] - int((self.map.tileheight * 3)/2),self.map.tilewidth * 3,self.map.tileheight * 3)):
-									prb = random.randint(0,30)
+									prb = np.random.randint(0,30)
 									if prb > 20:
-										pit = random.randint(0,100)
+										pit = np.random.randint(0,100)
 										if pit > 90: it = 'pow_speed'
 										elif pit > 80: it = 'pow_speed'
 										elif pit > 40: it = 'pow_bubble'
@@ -4425,13 +4490,13 @@ class Game:
 										self.objects.append(['item',{'IMAGE': img,'ITEM': it,'RECT': pygame.Rect(ptc['X'],ptc['Y'],img.get_width(),img.get_height()),
 										'FLOAT': 0,'ACC': 3,'DIRECTION': False,'DESTROY': False},100])
 									for i in range(10):
-										self.particles.append({'TYPE': 'spin','IMAGE': pygame.image.load(res.SPRITES_PATH + 'brick.png'),'DIRECTION': random.randint(1,6),'SPIN': 0,'TIME': 0,'X': obj[1]['RECT'].x,'Y': obj[1]['RECT'].y})
+										self.particles.append({'TYPE': 'spin','IMAGE': pygame.image.load(res.SPRITES_PATH + 'brick.png'),'DIRECTION': np.random.randint(1,6),'SPIN': 0,'TIME': 0,'X': obj[1]['RECT'].x,'Y': obj[1]['RECT'].y})
 									obj[1]['DESTROY'] = True
 						self.particles.append({'TYPE': 'explode','GIF': 0.0,'TIME': 0,'X': ptc['X'],'Y': ptc['Y'],'LIMIT': 3})
-						self.ch_ton.play(res.SOUND['EXPLOSION_' + str(random.randint(1,4))])
+						self.ch_ton.play(res.SOUND['EXPLOSION_' + str(np.random.randint(1,4))])
 					if ptc['POWER'] == 1:
-						rct = [{'TYPE': 'SLIME'},pygame.Rect(math.floor(ptc['X']/self.map.tilewidth) * self.map.tilewidth,math.floor(ptc['Y']/self.map.tileheight) * self.map.tileheight,self.map.tilewidth,self.map.tileheight)]
-						self.tilrect[1][(math.floor((ptc['Y'] + 15)/self.map.tilewidth) * self.map.width) + math.floor((ptc['X'] + 15)/self.map.tilewidth)] = rct
+						rct = [{'TYPE': 'SLIME'},pygame.Rect(np.floor(ptc['X']/self.map.tilewidth) * self.map.tilewidth,np.floor(ptc['Y']/self.map.tileheight) * self.map.tileheight,self.map.tilewidth,self.map.tileheight)]
+						self.tilrect[1][(np.floor((ptc['Y'] + 15)/self.map.tilewidth) * self.map.width) + np.floor((ptc['X'] + 15)/self.map.tilewidth)] = rct
 					del self.particles[p]
 				if ptc['TYPE'] == 'explode' and ptc['TIME'] >= 30: del self.particles[p]; p -= 1
 				if ptc['TYPE'] == 'raindrop' and ptc['GIF'] > 8: del self.particles[p]; p -= 1
@@ -4441,53 +4506,26 @@ class Game:
 				p += 1
 			if len(self.particles) > 0:
 				for p in self.particles: self.particle(p)
-			#HIDE PLACES
-			if self.map and len(self.tilrect) > 3:
-				if self.tilhide == False and self.tilalpha > 0: self.tilalpha -= 20
-				if self.tilhide and self.tilalpha < 255: self.tilalpha += 20
-				if self.tilalpha < 0: self.tilalpha = 0
-				if self.tilalpha > 255: self.tilalpha = 255
-				al = 255 - self.tilalpha
-				for i in self.tilrect[4]:
-					srf = pygame.Surface((i[1].width,i[1].height))
-					if i[0].endswith('ON') and al > 0: srf.set_alpha(al); srf.fill((0,0,0)); self.display[0].blit(srf, (i[1].x - self.cam.x,i[1].y - self.cam.y))
-					if i[0].endswith('OFF') and self.tilalpha > 0: srf.set_alpha(self.tilalpha); srf.fill((0,0,0)); self.display[0].blit(srf, (i[1].x - self.cam.x,i[1].y - self.cam.y))
-			#MAP COMPASS
-			if len(res.MARKER) > 0 and res.MARKER[0][0] == res.MAP:
-				xx = (self.player[0]['RECT'].x - self.cam.x) - (res.MARKER[0][1] - self.cam.x)
-				yy = (self.player[0]['RECT'].y - self.cam.y) - (res.MARKER[0][2] - self.cam.y)
-				dir = (xx,yy)
-				lth = math.hypot(*dir)
-				if lth == 0.0: dir = (0, -1)
-				else: dir = (dir[0]/lth,dir[1]/lth)
-				img = pygame.transform.rotate(pygame.image.load(res.SPRITES_PATH + 'mp_compass.png'),(math.degrees((math.atan2(-dir[1],dir[0]))) + 90))
-				try: self.mpcrct = img.get_rect(center = self.mpcrct.center)
-				except: self.mpcrct = img.get_rect(center=pygame.Rect(self.displayzw - 70,20,50,50).center)
-				self.display[0].blit(img,self.mpcrct)
-				if self.colide(self.player[0]['RECT'],pygame.Rect(res.MARKER[0][1] - 40,res.MARKER[0][2] - 40,80,80)):
-					del res.MARKER[0]
 			#DRIVING BARS
 			for p in self.player:
 				if p['DRIVING'] != None:
-					pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(20,20,100,20))
-					if res.GAS >= 1: pygame.draw.rect(self.display[0], (255,155,66), pygame.Rect(20,20,int(100/(self.vehicles[p['DRIVING']]['CAPACITY']/round(res.GAS))),20))
-					pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(20,42,100,20))
-					if p['SPEED'] > 0: pygame.draw.rect(self.display[0], (0,255,0), pygame.Rect(20,42,int(100/(20/p['SPEED'])),20))
+					pygame.draw.rect(self.surfaces[0], (10,10,10), pygame.Rect(20,20,100,20))
+					if res.GAS >= 1: pygame.draw.rect(self.surfaces[0], (255,155,66), pygame.Rect(20,20,int(100/(self.vehicles[p['DRIVING']]['CAPACITY']/round(res.GAS))),20))
+					pygame.draw.rect(self.surfaces[0], (10,10,10), pygame.Rect(20,42,100,20))
+					if p['SPEED'] > 0: pygame.draw.rect(self.surfaces[0], (0,255,0), pygame.Rect(20,42,int(100/(20/p['SPEED'])),20))
 					self.hpctrl = dtb.HINTS['VEHICLE_CONTROLS']
-			#BLACK BARS
-			if self.trsction: self.display[1].blit(self.trsction,(0,0))
 			#PORTALGO
 			if self.portalgo != {}:
-				if self.rectdebug: pygame.draw.rect(self.display[0], (255,0,0), pygame.Rect(self.portalgo[0]['RECT'].x, self.portalgo[0]['RECT'].y, self.portalgo[0]['RECT'].width, self.portalgo[0]['RECT'].height))
-				if self.portalgo[0]['RECT'].width == 24: self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'door_01.png'), (self.portalgo[0]['RECT'].x, self.portalgo[0]['RECT'].y))
-				if self.portalgo[0]['RECT'].width == 48: self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'door_11.png'), (self.portalgo[0]['RECT'].x, self.portalgo[0]['RECT'].y))
+				if self.rectdebug: pygame.draw.rect(self.surfaces[0], (255,0,0), pygame.Rect(self.portalgo[0]['RECT'].x, self.portalgo[0]['RECT'].y, self.portalgo[0]['RECT'].width, self.portalgo[0]['RECT'].height))
+				if self.portalgo[0]['RECT'].width == 24: self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'door_01.png'), (self.portalgo[0]['RECT'].x, self.portalgo[0]['RECT'].y))
+				if self.portalgo[0]['RECT'].width == 48: self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'door_11.png'), (self.portalgo[0]['RECT'].x, self.portalgo[0]['RECT'].y))
 				self.portalgo[1]['RECT'].x = self.portalgo[0]['RECT'].x + self.cam.x
 				self.portalgo[1]['RECT'].y = self.portalgo[0]['RECT'].y + self.cam.y + 20
 				self.people(self.portalgo[1],True)
 				for i in self.objects:
 					if i[0] == 4 and self.portalgo[0]['MATCH'] != None and i[1]['MATCH'] == self.portalgo[0]['MATCH']:
-						self.cam.x += int((i[1]['RECT'].x  - self.cam.x - self.displayzw/2)/15)
-						self.cam.y += int((i[1]['RECT'].y  - self.cam.y - self.displayzh/2)/15)
+						self.cam.x += int((i[1]['RECT'].x  - self.cam.x - self.display.width/2)/15)
+						self.cam.y += int((i[1]['RECT'].y  - self.cam.y - self.display.height/2)/15)
 						chk = 0
 						if i[1]['RECT'].x - self.cam.x < self.portalgo[0]['RECT'].x:
 							self.portalgo[0]['RECT'].x -= 10
@@ -4518,7 +4556,7 @@ class Game:
 					self.player[u]['SHK'] = 3
 					res.CHARACTERS[i]['HP'] -= 1
 					if res.CHARACTERS[i]['HEALTH'] == 17:
-						chc = round(random.randint(0,100))
+						chc = round(np.random.randint(0,100))
 						if chc > 70: res.CHARACTERS[i]['HEALTH'] = 0
 				if self.player[u]['SHK'] > 0: self.player[u]['SHK'] = -self.player[u]['SHK']
 				elif self.player[u]['SHK'] < 0: self.player[u]['SHK'] = -self.player[u]['SHK'] - 1
@@ -4530,33 +4568,7 @@ class Game:
 		#BATTLE
 		if self.battle:
 			#BACKGROUND
-			yy = -(int(res.GSCALE/3) * 10)
-			if self.turn == -4:
-				self.display[0].blit(self.bbg['IMAGE'], (self.bbg['X'], yy))
-				self.display[0].blit(self.bbg['IMAGE'], (self.bbg['X'] - 600, yy))
-				if self.displayzw > 600:
-					self.display[0].blit(self.bbg['IMAGE'], (self.bbg['X'] + 600, yy))
-				self.bbg['X'] += 5
-				if self.bbg['X'] > 600: self.bbg['X'] = 0
-			elif self.bbg['IMAGE'] != None:
-				self.display[0].blit(self.bbg['IMAGE'], (int(self.bbg['X'] * 0.5), yy))
-				if self.displayzw > 595:
-					self.display[0].blit(self.bbg['IMAGE'], (int(self.bbg['X'] * 0.5) + 600, yy))
-				if self.obstacles:
-					self.display[0].blit(self.bbg['IMAGE'], (int(self.bbg['X'] * 0.5) - 600, yy))
-					self.bbg['X'] += 5
-					if self.bbg['X'] > 600: self.bbg['X'] = 0
-					self.bbg['ACC'] = 0
-				else:
-					if self.bbg['DIRECTION']:
-						self.bbg['ACC'] += 0.05
-						if self.bbg['ACC'] > 1:
-							self.bbg['DIRECTION'] = False
-					elif self.bbg['DIRECTION'] == False:
-						self.bbg['ACC'] -= 0.05
-						if self.bbg['ACC'] < -1:
-							self.bbg['DIRECTION'] = True
-					self.bbg['X'] += self.bbg['ACC']
+			self.bbg.draw()
 			#FOES
 			foelst = []
 			maxhgt = 0
@@ -4579,20 +4591,20 @@ class Game:
 				count += 1
 			#SKIP PLAYER & BLINDNESS
 			if self.mnu < 3 and self.turn >= 0 and self.turn < len(self.fig):
-				if self.fig[self.turn]['HEALTH'] == 12: self.display[0].fill((0,0,0))
+				if self.fig[self.turn]['HEALTH'] == 12: self.surfaces[0].fill((0,0,0))
 				if self.fig[self.turn]['HP'] <= 0: self.turn += 1
 				elif self.fig[self.turn]['HEALTH'] in [8,13,14,15]: self.turn += 1
 				if self.turn >= len(self.fig):
 					if res.BTYPE == 1: self.fight()
 					else: self.turn = 0
 			#BLACK BARS
-			if self.windoww > self.windowh: wbrh = self.winbar - 10
+			'''if self.window.width > self.window.height: wbrh = self.winbar - 10
 			else: wbrh = self.winbar * 2
-			pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,0,self.displayzw,self.winbar))
-			pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,self.displayzh - wbrh,self.displayzw,wbrh))
+			pygame.draw.rect(self.surfaces[0], (0, 0, 0), pygame.Rect(0,0,self.display.width,self.winbar))
+			pygame.draw.rect(self.surfaces[0], (0, 0, 0), pygame.Rect(0,self.display.height - wbrh,self.display.width,wbrh))'''
 		#STATUS
 		if self.sttsy > 0:
-			upsts = pygame.Surface((self.displayzw,100))
+			upsts = pygame.Surface((self.display.width,100))
 			if res.GSCALE < 3: dwyy = 38
 			else: dwyy = 18
 			#ENEMIES COUNT
@@ -4601,154 +4613,37 @@ class Game:
 				if len(self.mrc) == 0:
 					for i in self.foe:
 						if i['HP'] > 0: ce += 1
-					self.display[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.foe)), True, (255,255,255)), (self.displayzw - 100, int(self.winbar/2) - 15))
+					self.surfaces[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.foe)), True, (255,255,255)), (self.display.width - 100, int(self.winbar/2) - 15))
 				else:
 					for i in self.foe:
 						if i['HP'] > 0: ce += 1
-					self.display[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.foe)), True, (255,255,255)), (self.displayzw - 100, 15))
+					self.surfaces[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.foe)), True, (255,255,255)), (self.display.width - 100, 15))
 					ce = 0
 					for i in self.mrc:
 						if i['HP'] > 0: ce += 1
-					self.display[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.mrc)), True, (255,255,255)), (self.displayzw - 100, 50))
-			#PLAYERS BARS
-			p = 0
-			low = 0
-			while p < len(res.PARTY[res.FORMATION]):
-				#NAME
-				if self.battle == False: ctr = res.PARTY[res.FORMATION][p]
-				else: ctr = res.PARTY[res.FORMATION][self.fig[p]['N']]
-				if p == self.turn:
-					pygame.draw.rect(upsts, res.COLOR, pygame.Rect(p * 120,0,120,100))
-					upsts.blit(self.fnt['MININFO'].render(res.CHARACTERS[ctr]['NAME'].lower(), True, (0,0,0)), (10 + p * 120, 10))
-				else: 
-					upsts.blit(self.fnt['MININFO'].render(res.CHARACTERS[ctr]['NAME'].lower(), True, res.COLOR), (10 + p * 120, 10))
-				#VITALITY GRAY
-				pygame.draw.rect(upsts, (10, 10, 10), pygame.Rect(10 + p * 120,40,100,20))
-				col = (255,255,0)
-				if res.CHARACTERS[ctr]['HP'] > 0:
-					minush = int(98/(dtb.CLASSES[res.CHARACTERS[ctr]['CLASS']]['RESISTANCE'][res.CHARACTERS[ctr]['LEVEL']]/res.CHARACTERS[ctr]['HP']))
-				if res.CHARACTERS[ctr]['HP'] < 0:
-					minush = int(98/(10/abs(res.CHARACTERS[ctr]['HP'])))
-					col = (random.randint(100,255), 10, 10)
-					low = 2
-				else: minush = 0
-				if self.barhp[p] > minush:
-					self.ch_sfx.play(res.SOUND['HP_LOSS'])
-					self.barhp[p] -= 1
-				pygame.draw.rect(upsts, (50, 50, 50), pygame.Rect(11 + p * 120, 41,98,18))
-				if self.barhp[p] > 0: pygame.draw.rect(upsts, col, pygame.Rect(11 + p * 120, 41,self.barhp[p],18))
-				#LIFE BAR
-				limit = dtb.CLASSES[res.CHARACTERS[ctr]['CLASS']]['RESISTANCE'][res.CHARACTERS[ctr]['LEVEL']]
-				if self.equip[p] == 6 and self.turn > p: hpcol = (100, 100, 100)
-				elif res.CHARACTERS[ctr]['HP'] > dtb.CLASSES[res.CHARACTERS[ctr]['CLASS']]['RESISTANCE'][res.CHARACTERS[ctr]['LEVEL']]/5: hpcol = (10, 250, 10)
-				elif res.CHARACTERS[ctr]['HP'] > 0:
-					hpcol = (250, 10, 10)
-					low = 1
-				else: hpcol = (250, 10, 10)
-				if res.CHARACTERS[ctr]['HP'] > 0:
-					pygame.draw.rect(upsts, hpcol, pygame.Rect(11 + p * 120, 41,int(98/(limit/abs(res.CHARACTERS[ctr]['HP']))),18))
-				if low == 1:
-					if self.ch_ton.get_busy() == False: self.ch_ton.play(res.SOUND['HP_LOW'])
-				if low == 2:
-					if self.ch_ton.get_busy() == False: self.ch_ton.play(res.SOUND['DYING'])
-				#CONDITION ICON
-				if res.CHARACTERS[ctr]['HEALTH'] > 1:
-					upsts.blit(pygame.image.load(res.SPRITES_PATH + 'hl_' + str(res.CHARACTERS[ctr]['HEALTH']) + '.png'), (14 + (p * 120), 44))
-				#AMMO BAR
-				if self.equip[p] < 4:
-					pygame.draw.rect(upsts, (10, 10, 10), pygame.Rect(10 + p * 120, 70,100,20))
-					barehands = False
-					if res.INVENTORY[ctr][4][self.equip[p] + 1][0] != '_':
-						if int(res.INVENTORY[ctr][4][self.equip[p] + 1][1]) > 0:
-							try: minush = int(98/(dtb.ITEMS[res.INVENTORY[ctr][4][self.equip[p] + 1][0]][5]['CAPACITY']/int(res.INVENTORY[ctr][4][self.equip[p] + 1][1])))
-							except: minush = 0
-						else: minush = 0
-					
-						if self.barpp[p][self.equip[p]] > minush:
-							self.barpp[p][self.equip[p]] -= 1
-						if self.barpp[p][self.equip[p]] > 0:
-							pygame.draw.rect(upsts, (0, 100, 250), pygame.Rect(11 + p * 120, 71,self.barpp[p][self.equip[p]],18))
-					else: barehands = True
-					#STAMINA
-					if res.BTYPE == 2:
-						if self.fig[p]['STAMINA'][self.equip[p]] < 100:
-							stcol = (100,100,250)
-							if self.turn != p:
-								if barehands: stadd = 1
-								else: stadd = dtb.ITEMS[res.INVENTORY[ctr][4][self.equip[p] + 1][0]][5]['RECHARGE']
-								self.fig[p]['STAMINA'][self.equip[p]] += stadd
-								if self.fig[p]['STAMINA'][self.equip[p]] == 100: self.ch_sfx.play(res.SOUND['READY'])
-						if self.fig[p]['STAMINA'][self.equip[p]] >= 100:
-							self.fig[p]['STAMINA'][self.equip[p]] = 100
-							stcol = (10,250,250)
-						if barehands: dv = 100
-						else: dv = self.barpp[p][self.equip[p]]
-						if dv > 0 and self.fig[p]['STAMINA'][self.equip[p]]:
-							pygame.draw.rect(upsts,stcol, pygame.Rect(11 + p * 120, 71,int(dv/(100/self.fig[p]['STAMINA'][self.equip[p]])),18))
-				p += 1
-			if res.GSCALE < 3: self.display[0].blit(upsts,(0,self.sttsy - 120))
-			else: self.display[0].blit(pygame.transform.scale(upsts,(upsts.get_rect().width - (int(upsts.get_rect().width/10) * 4),60)),(0,int((self.sttsy - 120)/2)))
-			#ACTIONS
-			if self.battle:
-				if self.turn < len(res.PARTY[res.FORMATION]) and self.turn >= 0:
-					itind = res.PARTY[res.FORMATION][self.fig[self.turn]['N']]
-					#TIME BAR:
-					if self.btime > 0:
-						pygame.draw.rect(self.display[0], res.COLOR, pygame.Rect(0,self.displayzh - wbrh,int(self.displayzw/(100/self.btime)),5))
-					if self.mnu < 3 and self.turn < len(self.fig): self.btime -= 0.5
-					if self.btime == 0:
-						self.turn = len(self.fig)
-						self.mnu = 1
-						self.fight()
-					#OPTIONS
-					if self.mnu == 1: pass#tactics gui here
-					#AIM BAR
-					elif self.mnu == 2:
-						if self.equip[self.fig[self.turn]['N']] < 4:
-							if res.CHARACTERS[itind]['HEALTH'] == 9:
-								prb = random.randint(0,10)
-								if prb > 5: self.aim.x += round(random.randint(30,60))
-								if prb < 5: self.aim.x -= round(random.randint(30,60))
-							#else: self.aim.x += 20 - self.fig[self.turn]['AGILITY']
-							if self.aim.x > (self.displayzw - int(self.displayzw/6)):
-								self.aim.x = int(self.displayzw/6)
-							chk = False
-							for i in res.INVENTORY[itind][4][self.equip[self.fig[self.turn]['N']] + 1][1:]:
-								if isinstance(i,str) and i.startswith('aim'): chk = True; break
-							if chk: str(dtb.ITEMS[i][5])
-							else: img = '0'
-							self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'aim_' + img + '.png'), (self.aim.x - 15, self.aim.y))
-							#self.display[0].blit(pygame.image.load(res.SPRITES_PATH + '' + res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][self.equip[self.turn] + 1][0] + '.png'), (150 + int(self.aim.x/2), 255))
-							self.hpctrl = dtb.HINTS['BATTLE_SHOT']
-						#TACTICS
-						elif self.equip[self.fig[self.turn]['N']] == 4:
-							x = 0
-							for i in res.TACTICAL:
-								if self.opt == x: pygame.draw.rect(self.display[0], (255, 0, 0), pygame.Rect(118 + x * 35,338,30,30))
-								else: pygame.draw.rect(self.display[0], (255, 255, 255), pygame.Rect(118 + x * 35,338,30,30))
-								x += 1
+					self.surfaces[0].blit(self.fnt['MININFO'].render(str(ce) + '/' + str(len(self.mrc)), True, (255,255,255)), (self.display.width - 100, 50))
 			#ATTACKIMATION
 			if self.banimation['INDEX'] != None:
-				srf = pygame.Surface((self.displayzw,self.displayzh))
+				srf = pygame.Surface((self.display.width,self.display.height))
 				srf.set_alpha(100)
 				srf.fill((0, 0, 0))
-				self.display[0].blit(srf, (0,0))
-				img = res.SPRITES['ATTACKIMATION_' + str(self.banimation['INDEX'])][math.floor(self.banimation['GIF'])]
+				self.surfaces[0].blit(srf, (0,0))
+				img = res.SPRITES['ATTACKIMATION_' + str(self.banimation['INDEX'])][np.floor(self.banimation['GIF'])]
 				sz = img.get_rect()
-				self.display[0].blit(img, (int(self.displayzw/2) - int(sz.width/2),int(self.displayzh/2) - int(sz.height/2)))
+				self.surfaces[0].blit(img, (int(self.display.width/2) - int(sz.width/2),int(self.display.height/2) - int(sz.height/2)))
 			#DICES
-			if self.dices != []:
-				y = 0
-				for i in self.dices:
-					if i[0] != -1:
-						pygame.draw.rect(self.display[0],res.COLOR,pygame.Rect(int(self.displayzw/2) - (30 * len(self.dices)) + (y * 80),int(self.displayzh/2) - 30,60,60))
-						self.display[0].blit(self.fnt['MININFO'].render(str(i[0]),True,(10,10,10)),(int(self.displayzw/2) - (30 * len(self.dices)) + (y * 80) + 15,int(self.displayzh/2) - 15))
-					y += 1
+			for i in self.dices: self.pseudo3d()
+			'''y = 0
+			for i in self.dices:
+				if i[0] != -1:
+					pygame.draw.rect(self.surfaces[0],res.COLOR,pygame.Rect(int(self.display.width/2) - (30 * len(self.dices)) + (y * 80),int(self.display.height/2) - 30,60,60))
+					self.surfaces[0].blit(self.fnt['MININFO'].render(str(i[0]),True,(10,10,10)),(int(self.display.width/2) - (30 * len(self.dices)) + (y * 80) + 15,int(self.display.height/2) - 15))
+				y += 1'''
 			#GRADIENT
 			'''for i in range(len(self.grd)):
-				self.display[1].blit(self.grd[i],(0,i))
-				self.display[1].blit(self.grd[i],(0,self.windowh - i))'''
-			#HITISPLAY
+				self.surfaces[1].blit(self.grd[i],(0,i))
+				self.surfaces[1].blit(self.grd[i],(0,self.window.height - i))'''
+		#HITISPLAY
 		if len(self.dmg) > 0:
 			for i in range(len(self.dmg)):
 				if self.dmg[i]['INFO'] == None:
@@ -4758,7 +4653,7 @@ class Game:
 					i['INFO'].set_alpha(i['ALPHA'])
 					if i['TYPE'] == 0: cor = (i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y)
 					else: cor = (i['RECT'].x, i['RECT'].y)
-					self.display[0].blit(i['INFO'], cor)
+					self.surfaces[0].blit(i['INFO'], cor)
 					if i['TIME'] > 0:
 						if i['SHAKE'] != 0:
 							i['RECT'].x += i['SHAKE']
@@ -4784,35 +4679,35 @@ class Game:
 		for i in self.actqueue:
 			if i['RECT'] == self.player[0]['RECT']: pos = (self.player[0]['RECT'].x - int(self.player[0]['RECT'].width/2) - self.cam.x,self.player[0]['RECT'].y - 40 - self.cam.y)
 			else: pos = (i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y)
-			pygame.draw.rect(self.display[0],(10,10,10),pygame.Rect(pos[0],pos[1],50,10))
-			if i['BAR'] > 0: pygame.draw.rect(self.display[0],(10,200,10),pygame.Rect(pos[0],pos[1],math.floor(50/(100/i['BAR'])),10))
+			pygame.draw.rect(self.surfaces[0],(10,10,10),pygame.Rect(pos[0],pos[1],50,10))
+			if i['BAR'] > 0: pygame.draw.rect(self.surfaces[0],(10,200,10),pygame.Rect(pos[0],pos[1],np.floor(50/(100/i['BAR'])),10))
 		
 		#INVENTORY
-		'''if self.inv.fade < self.windoww + 400:
+		'''if self.inv.fade < self.window.width + 400:
 			if self.inv.shake != 0: self.inv.rqst = True
 			if self.inv.scroll != (self.mnu * 200): self.inv.rqst = True
 			if self.inv.rqst: self.inv.draw()
-			hh = int(self.windowh/2) - int(self.inv.srf[0].get_height()/2)
+			hh = int(self.window.height/2) - int(self.inv.srf[0].get_height()/2)
 			shd = pygame.Surface((self.inv.srf[0].get_width(),self.inv.srf[0].get_height()),pygame.SRCALPHA)
 			shd.set_alpha(100)
 			shd.fill((10,10,10))
-			self.inv.pos = ((self.windoww + 10) - self.inv.fade,hh)
-			self.display[1].blit(shd,((self.windoww + 20) - self.inv.fade,hh + 10))
-			self.display[1].blit(self.inv.srf[0], ((self.windoww + 10) - self.inv.fade,hh))
-			self.display[1].blit(self.inv.srf[1], ((self.windoww + 10) - self.inv.fade,hh))
+			self.inv.pos = ((self.window.width + 10) - self.inv.fade,hh)
+			self.surfaces[1].blit(shd,((self.window.width + 20) - self.inv.fade,hh + 10))
+			self.surfaces[1].blit(self.inv.srf[0], ((self.window.width + 10) - self.inv.fade,hh))
+			self.surfaces[1].blit(self.inv.srf[1], ((self.window.width + 10) - self.inv.fade,hh))
 		if self.inv.type > 0:
 			if self.inv.itmov == '': self.hpctrl = dtb.HINTS['INVENTORY_ITEMS']
 			elif self.inv.itmov[0] != 0: self.hpctrl = dtb.HINTS['INVENTORY_HOLD']
 			else: self.hpctrl = dtb.HINTS['INVENTORY_ACCESORIES']
-			if self.inv.fade < int(self.windoww/2) + int(self.inv.srf[0].get_rect().width/2): self.inv.fade += 50
-		elif self.inv.fade < self.windoww + 400: self.inv.fade += 50
+			if self.inv.fade < int(self.window.width/2) + int(self.inv.srf[0].get_rect().width/2): self.inv.fade += 50
+		elif self.inv.fade < self.window.width + 400: self.inv.fade += 50
 		#INVENTORY WHEEL
 		if self.inv.hld > 20:
 			if self.inv.hld == 30: srf = self.inv.wheel()
 			else: srf = pygame.transform.scale(self.inv.wheel(),((self.inv.hld - 20) * 3,(self.inv.hld - 20) * 3))
-			self.display[0].blit(srf,(self.player[0]['RECT'].x - self.cam.x - int(srf.get_width()/2),self.player[0]['RECT'].y - self.cam.y - int(srf.get_width()/2)))'''
+			self.surfaces[0].blit(srf,(self.player[0]['RECT'].x - self.cam.x - int(srf.get_width()/2),self.player[0]['RECT'].y - self.cam.y - int(srf.get_width()/2)))'''
 		#DEVICE
-		if self.dev != None:
+		'''if self.dev != None:
 			if self.dev.rqst and self.phone > 0:
 				if self.dev.img == 'camera':
 					self.dev.battle = self.battle
@@ -4829,12 +4724,12 @@ class Game:
 			scl2 = scr[0].get_rect().width/self.dev.img.get_rect().width
 			img = pygame.transform.scale(self.dev.img,(int((self.dev.img.get_rect().width + (self.dev.scrpos[0] * 2)) * scl2),int((self.dev.img.get_rect().height + (self.dev.scrpos[1] * 2)) * scl2)))
 			self.hpctrl = dtb.HINTS[self.dev.hpctrl]
-			imgh = math.floor(self.windoww/2) - math.floor(scr[0].get_width()/2)
-			vv = int(self.windowh/2) - int(scr[0].get_rect().height/2)
+			imgh = np.floor(self.window.width/2) - np.floor(scr[0].get_width()/2)
+			vv = int(self.window.height/2) - int(scr[0].get_rect().height/2)
 			mp = pygame.mouse.get_pos()
 			self.dvmp = pygame.Rect(int(mp[0]/res.GSCALE) - imgh,int(mp[1]/res.GSCALE) - self.phofa,2,2)
 			if self.phone > 0:
-				pygame.draw.rect(self.display[1],(10,10,10),pygame.Rect(imgh,self.phofa,scr[0].get_width(),scr[0].get_height()))
+				pygame.draw.rect(self.surfaces[1],(10,10,10),pygame.Rect(imgh,self.phofa,scr[0].get_width(),scr[0].get_height()))
 				if self.phofa < vv:
 					self.phofa += 40
 					if self.phofa >= 40:
@@ -4845,16 +4740,20 @@ class Game:
 				if self.phofa > 0: self.phofa -= 40
 			if self.phofa == vv:
 				if self.dev.battery:
-					self.display[1].blit(scr[0], (imgh,self.phofa))
-					self.display[1].blit(scr[1], (imgh,self.phofa))
+					self.surfaces[1].blit(scr[0], (imgh,self.phofa))
+					self.surfaces[1].blit(scr[1], (imgh,self.phofa))
 				else:
-					self.display[1].blit(pygame.image.load(res.BACKG_PATH + 'battery_low.png'), (imgh,self.phofa))
+					self.surfaces[1].blit(pygame.image.load(res.BACKG_PATH + 'battery_low.png'), (imgh,self.phofa))
 			if self.phofa > 0:
 				pass
-				#self.display[1].blit(img, (imgh - (self.dev.scrpos[0] * scl2),self.phofa - (self.dev.scrpos[1] * scl2)))
-		
+				#self.surfaces[1].blit(img, (imgh - (self.dev.scrpos[0] * scl2),self.phofa - (self.dev.scrpos[1] * scl2)))'''
+		#GUI WINDOWS
+		for i in [x for x in self.guis if x.gui]:
+			if i.show: self.surfaces[1].blit(i.draw(), (i.rect.x,i.rect.y))
+		#DIALOGS
+		if self.dlg: self.surfaces[1].blit(self.dlg.window,(0,0))
 		#EASTER EGG
-		if self.cityname == 'TWNN': self.display[0].blit(pygame.image.load(res.SPRITES_PATH + 'TWNN.png'), (35,0))
+		if self.cityname == 'TWNN': self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'TWNN.png'), (35,0))
 		#NOTIFICATIONS
 		self.notification = [i for i in self.notification if i['TEXT'] != None]
 		y = [0,0]
@@ -4869,8 +4768,8 @@ class Game:
 			isz = 0
 			if 'IMAGE' in i: isz += i['IMAGE'].get_width()
 			if 'BAR' in i: isz += 105
-			szw = math.floor(self.fnt['DEFAULT'].size(txt)[0]/2) + 30 + isz
-			szh = math.floor(self.fnt['DEFAULT'].size(txt)[1]/2) + 30
+			szw = np.floor(self.fnt['DEFAULT'].size(txt)[0]/2) + 30 + isz
+			szh = np.floor(self.fnt['DEFAULT'].size(txt)[1]/2) + 30
 			#MOVING
 			if i['HALIGN'] == 'left':
 				yy = 0
@@ -4880,8 +4779,8 @@ class Game:
 			if i['HALIGN'] == 'right':
 				yy = 1
 				i['X'] -= 20
-				if i['X'] > self.displayzw - szw: xx = i['X']
-				else: xx = self.displayzw - szw
+				if i['X'] > self.display.width - szw: xx = i['X']
+				else: xx = self.display.width - szw
 			#BLINKING
 			if 'BLIMIT' in i:
 				i['BLINK'] += 1
@@ -4894,28 +4793,28 @@ class Game:
 			#MESSAGE
 			if visible:
 				addx = 0
-				if i['COLOR'] != (0,0,0): pygame.draw.rect(self.display[0], (0,0,0), pygame.Rect(xx - 3,y[yy] + 27,szw,szh))
-				else: pygame.draw.rect(self.display[0], (255,255,255), pygame.Rect(xx - 3,y[yy] + 27,szw,szh))
-				pygame.draw.rect(self.display[0], i['COLOR'], pygame.Rect(xx,y[yy] + 30,szw - 6,szh - 6))
-				if 'IMAGE' in i: self.display[0].blit(i['IMAGE'], (10 + xx, y[yy] + 40)); addx += i['IMAGE'].get_width() + 10
+				if i['COLOR'] != (0,0,0): pygame.draw.rect(self.surfaces[0], (0,0,0), pygame.Rect(xx - 3,y[yy] + 27,szw,szh))
+				else: pygame.draw.rect(self.surfaces[0], (255,255,255), pygame.Rect(xx - 3,y[yy] + 27,szw,szh))
+				pygame.draw.rect(self.surfaces[0], i['COLOR'], pygame.Rect(xx,y[yy] + 30,szw - 6,szh - 6))
+				if 'IMAGE' in i: self.surfaces[0].blit(i['IMAGE'], (10 + xx, y[yy] + 40)); addx += i['IMAGE'].get_width() + 10
 				if 'BAR' in i:
-					pygame.draw.rect(self.display[0], (10,10,10), pygame.Rect(10 + xx + addx,y[yy] + 40,100,20))
-					pygame.draw.rect(self.display[0], (200,200,10), pygame.Rect(10 + xx + addx,y[yy] + 40,int(100/(i['BAR'][0]/i['BAR'][1])),20))
-					pygame.draw.rect(self.display[0], (10,200,10), pygame.Rect(10 + xx + addx,y[yy] + 40,int(100/(i['BAR'][0]/i['BAR'][2])),20))
-				self.display[1].blit(self.fnt['DEFAULT'].render(txt, True, (0, 0, 0)), ((10 + xx + addx) * res.GSCALE, (y[yy] + 45) * res.GSCALE))
+					pygame.draw.rect(self.surfaces[0], (10,10,10), pygame.Rect(10 + xx + addx,y[yy] + 40,100,20))
+					pygame.draw.rect(self.surfaces[0], (200,200,10), pygame.Rect(10 + xx + addx,y[yy] + 40,int(100/(i['BAR'][0]/i['BAR'][1])),20))
+					pygame.draw.rect(self.surfaces[0], (10,200,10), pygame.Rect(10 + xx + addx,y[yy] + 40,int(100/(i['BAR'][0]/i['BAR'][2])),20))
+				self.surfaces[1].blit(self.fnt['DEFAULT'].render(txt, True, (0, 0, 0)), ((10 + xx + addx) * res.GSCALE, (y[yy] + 45) * res.GSCALE))
 				y[yy] += szh + 10
 			if i['X'] in [1000,-1000]:
 				i['TEXT'] = None
 		#CHAPTER NAME
 		if res.SCENE == -1:
-			srf = pygame.Surface((self.displayzw,self.displayzh),pygame.SRCALPHA)
+			srf = pygame.Surface((self.display.width,self.display.height),pygame.SRCALPHA)
 			srf.fill((0,0,0))
-			rct = pygame.Surface((self.displayzw,80))
+			rct = pygame.Surface((self.display.width,80))
 			rct.fill((255,255,255))
-			srf.blit(rct,(0,int(self.displayzh/2) - 40),None,pygame.BLEND_RGBA_MULT)
-			srf.blit(self.fnt['MININFO'].render(dtb.CHAPTERS[res.CHAPTER][0].lower(), True, (10, 10, 10)), (10, int(self.displayzh/2)))
-			self.display[1].blit(self.fnt['DEFAULT'].render(dtb.CHAPTERS[res.CHAPTER][1], True, (250, 250, 250)), (10 * res.GSCALE, (int(self.displayzh/2) + 80) * res.GSCALE))
-			self.display[0].blit(srf, (0,0))
+			srf.blit(rct,(0,int(self.display.height/2) - 40),None,pygame.BLEND_RGBA_MULT)
+			srf.blit(self.fnt['MININFO'].render(dtb.CHAPTERS[res.CHAPTER][0].lower(), True, (10, 10, 10)), (10, int(self.display.height/2)))
+			self.surfaces[1].blit(self.fnt['DEFAULT'].render(dtb.CHAPTERS[res.CHAPTER][1], True, (250, 250, 250)), (10 * res.GSCALE, (int(self.display.height/2) + 80) * res.GSCALE))
+			self.surfaces[0].blit(srf, (0,0))
 		#SCORE COUNTERS
 		'''sz = 10 * res.GSCALE
 		srf = pygame.Surface((sz,sz * 10),pygame.SRCALPHA)
@@ -4927,7 +4826,7 @@ class Game:
 				for i in range(len(str(p['SCORE']))):
 					self.counter[x + 1][i + 10 - (len(str(p['SCORE'])))] += int(((int(str(p['SCORE'])[i]) * sz) - self.counter[x + 1][i + 10 - (len(str(p['SCORE'])))])/2)
 				for i in range(len(self.counter[x + 1])):
-					self.display[1].blit(srf, (20 + (i * sz), 20 + (x * sz)), (0,self.counter[x + 1][i],sz,sz))
+					self.surfaces[1].blit(srf, (20 + (i * sz), 20 + (x * sz)), (0,self.counter[x + 1][i],sz,sz))
 				x += 1'''
 		#TIME COUNTER
 		if 'TIME' in dtb.TASKINDEX[res.TASKS[0][0]][res.TASKS[0][1]]:
@@ -4941,15 +4840,14 @@ class Game:
 					else: nn = int(str(res.TIME[2])[0])
 				self.counter[0][i] += int(((nn * sz) - self.counter[0][i])/2)
 			for i in range(len(self.counter[0])):
-				self.display[1].blit(srf, (200 + (i * sz), 60), (0,self.counter[0][i],sz,sz))
-		#GUI WINDOWS
-		for i in [x for x in self.guis if x.gui]:
-			if i.show: self.display[1].blit(i.draw(), (i.rect.x,i.rect.y))
+				self.surfaces[1].blit(srf, (200 + (i * sz), 60), (0,self.counter[0][i],sz,sz))
 		#VKEYBOARD
 		if self.vkb.active:
-			self.display[1].blit(self.vkb.draw(),(0,self.vkb.size[1] - self.vkb.pos))
+			self.surfaces[1].blit(self.vkb.draw(),(0,self.vkb.size[1] - self.vkb.pos))
 			self.hpctrl = []
 		self.vkb.scroll()
+		#TRANSICTION
+		if self.trsction: self.surfaces[1].blit(self.trsction,(0,0))
 		#HELP CONTROLS
 		if self.hpctrl != [] and res.HINT:
 			hpsz = 0
@@ -4957,7 +4855,7 @@ class Game:
 				if isinstance(i,str):
 					hptxt = self.fnt['DEFAULT'].render(' ' + i + ' ', True, (250, 250, 250))
 					hpsz += self.fnt['DEFAULT'].size(' ' + i + ' ')[0]
-					self.display[1].blit(hptxt, (self.windoww - 40 - hpsz, self.windowh - 40))
+					self.surfaces[1].blit(hptxt, (self.window.width - 40 - hpsz, self.window.height - 40))
 				elif isinstance(i,int):
 					ky = res.CONTROLS[0]
 					if ky[i] == pygame.K_LSHIFT: out = 'À'
@@ -4974,16 +4872,16 @@ class Game:
 					elif ky[i] == pygame.K_RIGHT: out = 'Ë'
 					else: out = pygame.key.name(ky[i]).upper()
 					hpsz += self.fnt['CONTROLKEYS'].size(out)[0] + 20
-					self.display[0].blit(self.fnt['CONTROLKEYS'].render(out, True, (250, 250, 250)), (self.displayzw - 20 - math.floor(hpsz/res.GSCALE), self.displayzh - 20))
+					self.surfaces[0].blit(self.fnt['CONTROLKEYS'].render(out, True, (250, 250, 250)), (self.display.width - 20 - np.floor(hpsz/res.GSCALE), self.display.height - 20))
 		#TOUCH BUTTONS
 		if len(self.buttons) > 0 and self.battle == False and self.dlg['TEXT'] == []:
 			if self.player[0]['SPEED'] > 0: prs = str(self.player[0]['DIRECTION'])
 			else: prs = '0'
 			tchpad = pygame.image.load(res.SPRITES_PATH + 'tchpad_' + prs + '.png')
 			tchpad.fill(res.COLOR,None,pygame.BLEND_RGBA_MULT)
-			self.display[1].blit(tchpad,(20,self.windowh - 264))
-			for bt in [(4,(self.windoww - 190,self.windowh - 100)),(5,(self.windoww - 100,self.windowh - 100)),
-			(6,(self.windoww - 190,40)),(7,(self.windoww - 100,40))]:
+			self.surfaces[1].blit(tchpad,(20,self.window.height - 264))
+			for bt in [(4,(self.window.width - 190,self.window.height - 100)),(5,(self.window.width - 100,self.window.height - 100)),
+			(6,(self.window.width - 190,40)),(7,(self.window.width - 100,40))]:
 				abl = False
 				if self.inv.type == 0: abl = True
 				elif bt[0] in [6,7]: abl = True
@@ -4994,7 +4892,7 @@ class Game:
 					else: fr = str(int(self.pressed[bt[0]][0]))
 					img = pygame.image.load(res.SPRITES_PATH + 'tch_' + fr + '.png')
 					img.fill(res.COLOR,None,pygame.BLEND_RGBA_MULT)
-					self.display[1].blit(img,bt[1])
+					self.surfaces[1].blit(img,bt[1])
 		#DISDEBUG
 		if self.disdbg:
 			prs = ''
@@ -5003,8 +4901,8 @@ class Game:
 			for i in range(len(self.pressed)): prs += str(self.pressed[i][0]) + ','
 			for i in range(len(self.channels)):
 				if self.channels[i][1]: mix += 1
-			dinfo = ['DEVICE WIDTH: ' + str(self.windoww) + ' | DEVICE HEIGHT: ' + str(self.windowh) + ' | ',
-			'GAME WIDTH: ' + str(self.displayzw) + ' | GAME HEIGHT: ' + str(self.displayzh) + ' | FPS: ' + str(int(self.glock.get_time())) + ' | ',
+			dinfo = ['DEVICE WIDTH: ' + str(self.window.width) + ' | DEVICE HEIGHT: ' + str(self.window.height) + ' | ',
+			'GAME WIDTH: ' + str(self.display.width) + ' | GAME HEIGHT: ' + str(self.display.height) + ' | FPS: ' + str(int(self.glock.get_time())) + ' | ',
 			'CAMERA X: ' + str(self.cam.x) + ' | CAMERA Y: ' + str(self.cam.y) + ' | ',
 			'SYSTEM: ' + osinfo.system + ' | NODE: ' + osinfo.node + ' | RELEASE: ' + osinfo.release + ' | VERSION: ' + osinfo.version + ' | ',
 			'MACHINE: ' + osinfo.machine,
@@ -5012,15 +4910,16 @@ class Game:
 			'TIME: ' + str(res.TIME[0]) + ':' + str(res.TIME[1]) + ':' + str(res.TIME[2]) + ' | DATE: ' + str(res.DATE[0]) + '/' + str(res.DATE[1]) + '/' + str(res.DATE[2]) + ' | ',
 			'INVENTORY: ' + str(self.inv.type) + ' | PAUSE: ' + str(self.title.mnu)]
 			y = 0
-			for txt in self.guitools.wrap(dinfo,self.fnt['DISDBG'],int(self.windoww * 0.75)):
-				self.display[1].blit(self.fnt['DISDBG'].render(txt, True, (200,200,200)), (10, 10 + (y * 30)))
+			for txt in self.guitools.wrap(dinfo,self.fnt['DISDBG'],int(self.window.width * 0.75)):
+				self.surfaces[1].blit(self.fnt['DISDBG'].render(txt, True, (200,200,200)), (10, 10 + (y * 30)))
 				y += 1
 		#CAMERA
+		dlgcam = True
 		camfollow = True
 		camspd = int(res.CAMACC * res.GSCALE)
 		recam = [self.cam.x,self.cam.y]
-		if len(self.player) == 0: pcam = [int(self.displayzw/2),int(self.displayzh/2)]
-		elif self.dlg['CAMERA'] == 0:
+		if len(self.player) == 0: pcam = [int(self.display.width/2),int(self.display.height/2)]
+		elif dlgcam:#self.dlg['CAMERA'] == 0:
 			pcam = [0,0]
 			for i in self.player:
 				if i['POSTURE'] == 2: pcam[0] += i['RECT'].x; pcam[1] += i['RECT'].y - 200
@@ -5029,8 +4928,8 @@ class Game:
 		else: pcam = [self.dlg['CAMERA'].x,self.dlg['CAMERA'].y]
 
 		if self.map:
-			cmgrd = [[0,(self.map.width * self.map.tilewidth) - self.displayzw],[0,(self.map.height * self.map.tileheight) - self.displayzh]]
-			lst = [[self.map.width * self.map.tilewidth,self.map.height * self.map.tileheight],[self.displayzw,self.displayzh]]
+			cmgrd = [[0,(self.map.width * self.map.tilewidth) - self.display.width],[0,(self.map.height * self.map.tileheight) - self.display.height]]
+			lst = [[self.map.width * self.map.tilewidth,self.map.height * self.map.tileheight],[self.display.width,self.display.height]]
 			camscroll = [self.map.hscroll,self.map.vscroll]
 		else:
 			cmgrd = [[0,300],[0,200]]
@@ -5049,7 +4948,7 @@ class Game:
 					else:
 						if self.camgrid == 'screen': gg = lst[1][i]
 						else: gg = self.camgrid * self.map.tilewidth
-						recam[i] = math.floor(self.campos[i]/gg) * gg
+						recam[i] = np.floor(self.campos[i]/gg) * gg
 				if recam[i] < cmgrd[i][0]: recam[i] = cmgrd[i][0]
 				if recam[i] > cmgrd[i][1]: recam[i] = cmgrd[i][1]
 			else: recam[i] = -int((lst[1][i] - lst[0][i])/2)
@@ -5062,23 +4961,23 @@ class Game:
 			if i[0][0].startswith('head_glasses'): chk = True; break
 		if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['FLAW'] == 'myopia': chk = not chk
 		if chk == False:
-			srf = pygame.transform.scale(self.display[0], (self.displayzw * res.GSCALE, self.displayzh * res.GSCALE))
+			srf = pygame.transform.scale(self.surfaces[0], (self.display.width * res.GSCALE, self.display.height * res.GSCALE))
 			srf.set_alpha(100)
-			self.screen.blit(srf, (self.displayx - 20, self.displayy))
-			self.screen.blit(srf, (self.displayx + 10, self.displayy))
-			srf = self.display[1]
+			self.screen.blit(srf, (self.display.x - 20, self.display.y))
+			self.screen.blit(srf, (self.display.x + 10, self.display.y))
+			srf = self.surfaces[1]
 			srf.set_alpha(100)
-			self.screen.blit(srf, (self.displayx - 20, self.displayy))
-			self.screen.blit(srf, (self.displayx + 10, self.displayy))
+			self.screen.blit(srf, (self.display.x - 20, self.display.y))
+			self.screen.blit(srf, (self.display.x + 10, self.display.y))
 		else:
-			if self.displayx > self.displayzw * 0.25:
-				self.screen.blit(pygame.transform.scale(self.display[0], (self.displayzw * res.GSCALE, self.displayzh * res.GSCALE)), (self.displayx - int(self.displayzw * res.GSCALE * 1.25), self.displayy))
-				self.screen.blit(self.display[1], (self.displayx - int(self.displayzw * res.GSCALE * 1.25), self.displayy))
-			if self.displayy > self.displayzh * 0.25:
-				self.screen.blit(pygame.transform.scale(self.display[0], (self.displayzw * res.GSCALE, self.displayzh * res.GSCALE)), (self.displayx, self.displayy - int(self.displayzh * res.GSCALE * 1.25)))
-				self.screen.blit(self.display[1], (self.displayx, self.displayy - int(self.displayzh * res.GSCALE * 1.25)))
-			self.screen.blit(pygame.transform.scale(self.display[0], (self.displayzw * res.GSCALE, self.displayzh * res.GSCALE)), (self.displayx, self.displayy))
-			self.screen.blit(self.display[1], (self.displayx, self.displayy))
+			if self.display.x > self.display.width * 0.25:
+				self.screen.blit(pygame.transform.scale(self.surfaces[0], (self.display.width * res.GSCALE, self.display.height * res.GSCALE)), (self.display.x - int(self.display.width * res.GSCALE * 1.25), self.display.y))
+				self.screen.blit(self.surfaces[1], (self.display.x - int(self.display.width * res.GSCALE * 1.25), self.display.y))
+			if self.display.y > self.display.height * 0.25:
+				self.screen.blit(pygame.transform.scale(self.surfaces[0], (self.display.width * res.GSCALE, self.display.height * res.GSCALE)), (self.display.x, self.display.y - int(self.display.height * res.GSCALE * 1.25)))
+				self.screen.blit(self.surfaces[1], (self.display.x, self.display.y - int(self.display.height * res.GSCALE * 1.25)))
+			self.screen.blit(pygame.transform.scale(self.surfaces[0], (self.display.width * res.GSCALE, self.display.height * res.GSCALE)), (self.display.x, self.display.y))
+			self.screen.blit(self.surfaces[1], (self.display.x, self.display.y))
 		#MOUSE
 		if res.MOUSE == 1: self.screen.blit(pygame.image.load(res.SPRITES_PATH + 'cursor_' + str(res.CURSOR) + '.png'),(self.click.x,self.click.y))
 
@@ -5086,25 +4985,22 @@ class Game:
 		for event in pygame.event.get():
 			#EXIT
 			if event.type == pygame.QUIT:
-				self.classrun = 0
-				pygame.quit()
-				sys.exit()
-				exit()
+				self.running = False
 			#RESIZE
 			if event.type == pygame.VIDEORESIZE:
-				self.windowh = event.h
+				self.window.height = event.h
 				sh = int(event.h/4)
-				self.windoww = 6 * sh
-				self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
-		self.screen.fill((0,0,0),pygame.Rect(self.windoww - 80, self.windowh - 80,30,30))
+				self.window.width = 6 * sh
+				self.screen = pygame.display.set_mode((self.window.width, self.window.height), pygame.RESIZABLE)
+		self.screen.fill((0,0,0),pygame.Rect(self.window.width - 80, self.window.height - 80,30,30))
 		if self.loadingif != None:
 			self.loadingif += 0.01
 			if str(self.loadingif)[2] == '0': upd = True
 			else: upd = False
 			if self.loadingif >= 8.0: self.loadingif = 0.0
 		if upd:
-			self.screen.blit(pygame.image.load(res.SPRITES_PATH + 'loading_' + str(math.floor(self.loadingif)) + '.png'), (self.windoww - 80, self.windowh - 80))
-			pygame.display.update(pygame.Rect(self.windoww - 80,self.windowh - 80,30,30))
+			self.screen.blit(pygame.image.load(res.SPRITES_PATH + 'loading_' + str(np.floor(self.loadingif)) + '.png'), (self.window.width - 80, self.window.height - 80))
+			pygame.display.update(pygame.Rect(self.window.width - 80,self.window.height - 80,30,30))
 
 	def crash(self):
 		from traceback import extract_tb
@@ -5136,10 +5032,10 @@ class Game:
 					exit()
 				#RESIZE
 				if event.type == pygame.VIDEORESIZE:
-					self.windowh = event.h
+					self.window.height = event.h
 					sh = int(event.h/4)
-					self.windoww = 6 * sh
-					self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE)
+					self.window.width = 6 * sh
+					self.screen = pygame.display.set_mode((self.window.width, self.window.height), pygame.RESIZABLE)
 				#SKIP
 				do = False
 				if event.type == pygame.KEYDOWN: do = True
@@ -5219,7 +5115,6 @@ class Game:
 					#CALLING
 					elif i[0].startswith('cal'):
 						self.ch_ton.play(res.SOUND['CALLING'],-1)
-						self.ch_rng.play(res.SOUND['RINGTONE_' + str(self.dev.pbg)],-1)
 						if self.rad.onoff: pygame.mixer.music.pause()
 						self.cal.nb = i[0][3:]
 						self.waitlst.append(['cutcal',self.waitime + 1200])
@@ -5227,7 +5122,6 @@ class Game:
 					elif i[0].startswith('cutcal'):
 						if self.cal.nb != '':
 							self.ch_ton.stop()
-							self.ch_rng.stop()
 							self.cal.nb = ''
 					#DELIVERY
 					elif i[0] == 'delivery':
@@ -5249,28 +5143,28 @@ class Game:
 						if self.dlg['FADE'] > 0:
 							self.dialog(dtb.DIALOGS['ADVICE'])
 			#RADIONEWS AND RADIOEE
-			if self.rad.onoff:
-				for i in dtb.RADIONEWS:
-					if i[1][0] == res.TIME[0] and i[1][1] == res.TIME[1]:
-						if i[0] == None: ply = True
-						elif i[0][0] == res.DATE[0] and i[1][1] == res.DATE[1]: ply = True
-						else: ply = False
-						if ply and self.rad.msc != -2:
-							self.rad.nwsw = 1
-							self.rad.nwsind = i[0][2]
-							pygame.mixer.music.stop()
-							self.ch_ton.play(res.SOUND['RADIONEWS'])
-							self.waitlst.append(['radionews',self.waitime + 20,i[0]])
-				for i in dtb.RADIOEE:
-					if int(i[2][0:2]) == res.TIME[0] and int(i[2][2:4]) == res.TIME[1]:
-						if i[1] == None: ply = True
-						elif int(i[1][0:2]) == res.DATE[0] and int(i[1][2:4]) == res.DATE[1]: ply = True
-						else: ply = False
-						if ply and self.rad.msc != -2:
-							self.rad.msc = -2
-							pygame.mixer.music.stop()
-							self.ch_ton.play(res.SOUND['NOISE'],-1)
-							self.waitlst.append(['radioee',self.waitime + 60,i[0]])
+			if self.guis[3].gui.onoff: pass
+			'''for i in dtb.RADIONEWS:
+				if i[1][0] == res.TIME[0] and i[1][1] == res.TIME[1]:
+					if i[0] == None: ply = True
+					elif i[0][0] == res.DATE[0] and i[1][1] == res.DATE[1]: ply = True
+					else: ply = False
+					if ply and self.rad.msc != -2:
+						self.rad.nwsw = 1
+						self.rad.nwsind = i[0][2]
+						pygame.mixer.music.stop()
+						self.ch_ton.play(res.SOUND['RADIONEWS'])
+						self.waitlst.append(['radionews',self.waitime + 20,i[0]])
+			for i in dtb.RADIOEE:
+				if int(i[2][0:2]) == res.TIME[0] and int(i[2][2:4]) == res.TIME[1]:
+					if i[1] == None: ply = True
+					elif int(i[1][0:2]) == res.DATE[0] and int(i[1][2:4]) == res.DATE[1]: ply = True
+					else: ply = False
+					if ply and self.rad.msc != -2:
+						self.rad.msc = -2
+						pygame.mixer.music.stop()
+						self.ch_ton.play(res.SOUND['NOISE'],-1)
+						self.waitlst.append(['radioee',self.waitime + 60,i[0]])'''
 			#ITEMS DURATION
 			"""u = 0
 			for b in res.INVENTORY:
@@ -5293,16 +5187,17 @@ class Game:
 			if 'TIME' in dtb.TASKINDEX[res.TASKS[0][0]][res.TASKS[0][1]] and dtb.TASKINDEX[res.TASKS[0][0]][res.TASKS[0][1]]['TIME'][0] < 0: pom = -1
 			else: pom = 1
 			#BATTERY
-			battery = res.INVENTORY[res.SHORTCUT[0]][res.SHORTCUT[1]][res.SHORTCUT[2]][1]
+			battery = '1000'
+			'''battery = res.INVENTORY[res.SHORTCUT[0]][res.SHORTCUT[1]][res.SHORTCUT[2]][1]
 			if battery != 'infinite' and self.dev != None:
 				battery = int(battery)
 				if battery < 0:
-					if self.rad.onoff:
-						self.rad.onoff = False
+					if self.guis[3].gui.onoff:
+						self.guis[3].gui.onoff = False
 						self.ch_ton.stop()
 						pygame.mixer.music.stop()
 					battery = 0
-				self.dev.battery = battery
+				self.dev.battery = battery'''
 			sleep = False
 			for p in self.player:
 				if sleep == False: sleep = p['SLEEP']
@@ -5314,11 +5209,7 @@ class Game:
 						res.CHARACTERS[p]['HP'] += 1
 					if res.CHARACTERS[p]['SLEEP'] < 10000: res.CHARACTERS[p]['SLEEP'] += 50
 			#NORMAL
-			else:
-				res.TIME[2] += 1 * pom
-				if self.phone > 0 and battery != None:
-					if res.CHAPTER > 0: battery -= 1
-					elif res.SCENE > 0: battery -= 1
+			else: res.TIME[2] += 1 * pom
 			res.INVENTORY[res.SHORTCUT[0]][res.SHORTCUT[1]][res.SHORTCUT[2]][1] = str(battery)
 			if res.TIME == [0,0,0]:
 				for i in res.PARTY[res.FORMATION]:
@@ -5359,22 +5250,39 @@ class Game:
 		self.events()
 		self.draw()
 		if int(self.glock.get_fps()) > 0:
-			jp = math.floor(res.FPS/int(self.glock.time()))
+			jp = np.floor(res.FPS/int(self.glock.time()))
 		else: jp = 1
 		res.FPS += 1
 		if res.FPS >= jp:
 			#UPDATE
 			try: pygame.display.flip()
-			except: self.screen = pygame.display.set_mode((self.windoww, self.windowh), pygame.RESIZABLE | pygame.DOUBLEBUF)
+			except: self.screen = pygame.display.set_mode((self.window.width, self.window.height), pygame.RESIZABLE | pygame.DOUBLEBUF)
 			#FPS
 			res.FPS = int()
-			if res.FPS > 0:
-				self.glock.tick(res.FPS)
+			if res.FPS > 0: self.glock.tick(res.FPS)
 			res.FPS = 0 
 			res.GAMETIME += self.glock.get_rawtime()
 
 Initialize()
+
 '''
+a = Avatar()
+while True: a.test()'''
+
+'''
+e = NPC('4.1.1',(50,50))
+while True: e.test()
+'''
+'''
+m = MapHandler('savetest.tmx')
+while True: m.test()'''
+
+#Dialog('POPCORN_KART')
+#Dialog('23778988')
+#Dialog('77904623')
+#Dialog('FARMACEUTIC')
+
+
 g = Game()
 while g.running:
 	try: g.run()
@@ -5382,6 +5290,6 @@ while g.running:
 
 f = open('log.txt','w')
 f.write(g.log)
-f.close()'''
+f.close()
 pygame.quit()
 exit()

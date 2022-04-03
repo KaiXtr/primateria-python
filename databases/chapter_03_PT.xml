@@ -1,0 +1,50 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="3">
+		<name value="14"/>: Lamento muito o que houve com você, <name value="4"/>.<br/>
+		<name value="4"/>: Obrigado...<br/>
+		<name value="14"/>: Você também não entendia com o que estava mexendo, certo?<br/>
+		<name value="4"/>: Não no momento. Com as pesquisas eu consegui extrair informações importantes das amostras, mas nada que realmente fosse uma descoberta.<br/>
+		<name value="14"/>: Se permitir, quero que minha equipe forense colete as amostras.<br/>
+		<name value="4"/>: Vamos precisar conversar antes, podemos acertar isso depois?<br/>
+		<name value="14"/>: Claro. Você.<br/>
+		<name value="0"/>: Olá.<br/>
+		<name value="14"/>: Voltando á questão da <name value="1"/>...vocês se encontraram na delegacia para fazer um teste de aptidão...é isso?<br/>
+		<name value="0"/>: Sim, isso mesmo.<br/>
+		<name value="14"/>: Me explique melhor.<br/>
+		<name value="0"/>: Eu já sou mercenário faz um bom tempo. E nunca tivemos uma boa reputação na população.<br/>
+		Graças aos surtos que houveram uns tempos atrás, precisamos tomar providências e a PRF foi a primeira a tomar uma atitude.<br/>
+		<name value="14"/>: Conheço dessa história...<br/>
+		<name value="0"/>: Mas no meio, muitos criminosos e gente ruim foi entrando de qualquer jeito para ganhar um dinheiro matando e usando armas.<br/>
+		Estava manchando muito a reputação dos mercenários.<br/>
+		E também estava dando muitos gastos, óbvio.<br/>
+		Então decidiram fazer um teste para permitir apenas os melhores dos melhores. E eu fui lá, é claro.<br/>
+	</chapter>
+	<!--
+	'CH3PROLOGUE': [['Hey?','...','Está me ouvindo?','hm?','Você entendeu o que eu disse?','Pra ser sincera, não','...','Estava pensando, com a cabeça em outro lugar...','...sobre o quê você estava pensando?','...eu...eu fiz\
+	 coisas...','...','...eu fiz coisas que...tantas coisas...que não...pensei direito','...','...eu me arrependo tanto, nada disso deveria ter acontecido, foi tudo por causa de uma briga, e eu trouxe essa desgraça\
+	 pra minha vida...eu achei que poderia ajudar nós dois, achei que eu seria aquela que iria nos tirar do buraco...','...','...mas no final eu só afundei ainda mais....','é natural pensar coisas assim, mas tente sempre\
+	 se lembrar que o que você fez você não fez por mal, você estava querendo ajudar, achar uma solução','...sim...','isso não te anima?','nem um pouco...porque eu atrapalhei ao invés de ajudar...não fui inteligente','é\
+	 difícil','muito...mesmo...','...','você está fazendo atitutes inteligentes agora, está procurando ajuda, reconhecendo seu erro, se afastando daquilo que te traz problema','...sim...','você precisa\
+	 continuar assim','...','ei','?','me prometa de que você nunca mais vai voltar a pegar em uma arma, certo?','certo! certo!','nem que um monstro apareça no mato ou um bandido invada sua casa, nunca, NUNCA MAIS, encoste\
+	 em nenhum arma!','...','está me ouvindo?','sim','ótimo...','...','já está na hora de ir','não pode ficar mais um pouco?','desculpa, mas pode continuar amanhã, eu também tenho sanidade mental','claro, \
+	desculpa...',[2,'990435671',True]]],
+	    
+	'CH3MAICON': [['Então...',1,'Como tá o trampo?',1,0,'Que trampo?',1,0,'Você sabe,','o de mercenário',1,(27,60),'Tá muito puxado?',1,0,'...bastante.',1,0,'Acho que já ouviu','alguns comentários sobre eles.',1,0,'Sim...',1,'Até demais, mas nem ligo.',1,0,
+	'Como não?',1,0,'Mano, foi graças á essa vida','que tô onde tô agora.',1,'Não vou deixar que alguns comentários','mudem minha cabeça.',1,'Eu gosto do que faço',1,0,'Sim, mas seria melhor você arranjar','alguma outra coisa né?',1,0,'Isso até eu quero né?',1,0,'Então por que você',' não sai dessa?',1,0,'Porque não dá cara!','Não vão contratar alguém','com ficha suja',1,0,'Ah, é mesmo...',1,0,'Além do mais eu já','me garanto onde eu tô,','se eu trocar de emprego ','posso ser demitido de novo',1,0,'Já passou perrengue demais, não é?',1,0,'Sim',1,0,'...sei não.','Ainda acho melhor você fazer','alguma outra coisa.',1,'Esse negócio de matar e','arriscar a própria vida...',1,0,'Que vida?',(27,300),0,'Ficou parecendo aqueles','adolescentes sadboys.',1,0,'É eu sei...',1,
+	'Eu já tô indo',1,0,'Deixa que eu pago essa',1,0,'Sério?',1,0,'Sim','É por minha conta',1,0,'Você é demais cara',(6,None,False)]],
+
+	'CH3JANE': [[0,'Teria sido melhor','ficar lá no bar',1,(27,300),0,'BORA LOGO!',1,'NÃO TENHO O DIA TODO!',1,'Que saco...',1,'Que demora',1,'Pra você ver né,','Até pra isso tem','toda essa baboseira',1,0,'Hã?','Ah, sim, sim, sim...',1,0,'Era pra ser um negócio rapidinho...','tranquilo, de boa, mas não!','Eu sou obrigada a ficar','aqui esperando!',1,0,'Eu já tô até acostumado',1,0,'Ai não ia me acostumar nunquinha,','deus me livre',1,0,'É que já é coisa da rotina,','todo ano tem isso.',1,0,
+	'É?',1,0,'Ahã...','só que agora saiu mais cedo,','geralmente é só lá pra setembro',1,0,'Você é mercenário?',1,0,'Sou.',1,0,'Ah...','Pra saber dessas coisas...',1,0,'Por que?','Você não é?',1,0,'Não, mas daqui a pouco','já tô virando uma!',1,0,'Mas aqui não é onde','renova a carteira?',1,0,'Não, disseram que o registro','é aqui também',1,0,'onde?',1,0,'no último guinchê',1,0,'Ah sim, agora eu vi',1,0,'Vem cá, e como é essa coisa','toda de mercenário, matar pessoas...',1,0,'A gente não mata pessoas',1,0,'Ah sim, desculpa...',1,0,'Não, tudo bem, é normal',1,0,'Então o que vocês fazem exatamente?',1,0,'Olha, a primeira coisa que','você deve saber se quiser','virar mercenária, é que certas','coisas são totalmente confidenciais',1,0,
+	'Uh! sério?',1,0,'Sim, sigiloso',1,0,'Tipo homens de preto né?',1,0,'Não é pra tanto,','Mas é tipo',1,0,'Mas eu achava que era só','matar e ganhar dinheiro!',1,0,'ihhhh...',1,'Vai sonhando, é um bicho chato',1,0,'Sério?',1,0,'Quer dizer, tirando toda a diversão,','ainda é um trabalho, tem que','estar sempre disposto, te chamam na','hora que querem, é cansativo,','tem os chefes, a gente recebe pouco...',0,'QUÊ?',0,'fala baixo!',0,'desculpa',1,(27,120),'...recebe pouco?',1,0,'depende do quanto você caça.',1,0,'Ah...então se eu','caço bastante...',0,'ganha bastante, isso aí',1,0,'Mas o que vocês caçam exatamente?',1,0,'segredo',1,0,'Ah! deixa disso!','Fala logo!',1,0,'Se quiser saber mesmo,','Vai ter que esperar até lá dentro',1,0,'tá bom então...',1,'Ô agente G',1,'Beleza James Bond',1,0,'tá já chega',1,0,'ei já tá na sua vez',1,0,'ah sim',1],
+	['Então esse é seu nome?',1,0,'Sim...',(3,0,0),1,0,
+	'Prazer, ',(3,1,1),1,0,'Prazer',1,0,'Então...o que tem que fazer agora?',1,0,'Bom, agora você pode','pegar sua primeira arma ali.',1,'E se quiser já pode treinar','Um pouco de tiro',1,0,'Você vem comigo?',1,0,
+	'Não...eu já tenho que ir',0,'Ah por favor!','Eu não entendo das coisas aqui!',1,'please!',1,(10,['Tá bom','YASS',0,'Não se empolga, tá.',1,0,'Então tá,','Onde que pega o brinquedinho?',1,0,'Me segue',(11,1)],['Agora não','Tudo bem então...',1,'A gente se vê por aí',1,0,'Eu tô aqui todo dia',1,0,'Beleza!',1,(27,180),'Ah! eu só posso vir','aqui nos sábados!',1,0,'Beleza!',1,0,'Tchau!',1,(27,210),0,'Essa garota tá querendo alguma coisa comigo...',(11,3)])],
+	['É aqui que faz o treinamento?',1,0,'exatamente',1,0,'Ok...',1,(27,60),'me ensina a atirar?',1,0,'Tudo bem',1,(9,2),'Primeiro põe esses óculos aí',1,0,'esses?',1,0,'sim, agora mira','Não põe muito perto','senão machuca o olho',1,0,'Já sei disso',1,0,'e...aperta o gatilho',1,(13,['target'])],
+	['Nossa!',1,'Mandou muito!',1,0,'Eu sou demais!',1,0,'Não sério,','Você já atirou antes?',1,0,'Um pouquinho',1,0,'Um pouquinho?!',1,0,'Tá, eu sei atirar',1,0,'Se você já sabia atirar,','por que pediu minha ajuda?',1,0,
+	'Ai,ai...','Faz muito tempo já,',1, 'Começei quando...',(5,0),0,'Pera aí rapidinho',1,0,'O que foi?',1,0,'Chegou email',1,(27,200),'Desculpa ',(3,1,', eu tenho que ir!'),1,0,'De novo?',1,0,
+	'É um caso pra resolver',1,0,'Agora?',1,0,'É o que eu te falei antes',1,0,'Posso ir com você?',1,0,'Vai devagar querida,','Eu tô em outro nível',1,0,'Por que não posso ir?',1,0,'Muita coisa ainda, muita coisa,','Te explico depois',1,0,'Pera aí! Mizera...']],
+
+	'CH3VINICIUS': [[(15,'battle_incoming',1),'O que tá fazendo aqui?',1,0,'Quem pergunta sou eu!','O que VOCÊ tá fazendo aqui?',1,0,'Com certeza não é deixar você','roubar minha recompensa',1,0,'E quem disse que ela é sua?',1,0,'Garoto,melhor sair do meio,','ou vai dar muito mal','pra nós dois',1,0,'que assim seja então!',1,(13,['madladcat','vinicius'])],
+	['Lembra de mim, filho da mãe?',1,0,'você!',1,0,'Essa é pra aprender a não mexer comigo!',(9,2),'???','O que você estava fazendo?',(10,[],[])]],
+	-->
+</data>

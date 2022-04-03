@@ -1,5 +1,6 @@
 import sqlite3
 import pygame
+import sys
 import os
 
 FNAME = 'Mutation Purge BETA'
@@ -69,7 +70,7 @@ CHAPTER = 0
 MAP = None
 PX = 0
 PY = 0
-SIGNAL = 4
+SIGNAL = 0
 TIME = [14,30,0] #hour-minute-second
 DATE = [25,12,2007,1,1] #day-month-year-week-moon
 CALENDAR = []
@@ -111,16 +112,20 @@ COLOR = (255,10,10) #UI color
 CAMACC = 10 #player camera acceleration
 BORDER = 0 #UI border
 FONT = 'BohemianTypewriter.ttf' #custom font
-CENSORSHIP = True #censor mature content
-HINT = True #tutorials and hints along the game
-HELP = True #display instructions on bottom of screen
+CENSORSHIP = 2 #censor mature content
+HELP = True #tutorials and hints along the game
+HINT = True #display instructions on bottom of screen
 CURSOR = 0 #custom cursor
 TMNU = False #option to start on title screen or jump right into the first file
-TTS = True #text-to-speech
-CC = True #close caption
+TTS = False #text-to-speech
+CC = False #close caption
 DISLEXIC = False #spaced font
 BTYPE = 2 #1=turns,2=dynamic,3=action
 AUTOSAVE = 10#in minutes
+AUTOBATTLE = False
+
+HOVERTEXT = None
+HINTEXT = None
 
 PARTY = [[0,1]]
 FORMATION = 0
@@ -142,7 +147,7 @@ INVENTORY[0] = [
 	[['clth_shirt1','7'],['til_grass','infinite'],['til_color','infinite'],['til_metalbars','infinite'],['food_pizza_4cheese','0000']],
 	[['head_glasses1','0000'],['guit_load','0'],['guit_save','0000'],['guit_undo','0000'],['guit_redo','0000']],
 	[['head_hairclip','0000'],['guit_pencil','0000'],['guit_erase','0000'],['guit_dropper','0000'],['_','0000']],
-	[['bag1','0000'],['bomb_regular','3'],['pow_triplebubble','3'],['cigar','0000'],['_','0000']]
+	[['bag1','0000'],['_','0000'],['_','0000'],['cigar','0000'],['_','0000']]
 	]
 STORAGE = [['amulet2','0000'],['amulet3','0000'],['_','0000'],['_','0000'],['_','0000']]
 PRODUCTS = []
@@ -223,18 +228,8 @@ for i in range(15):
 		if i > j: RELATIONS[i].append(RELATIONS[j][i])
 		elif i == j: RELATIONS[i].append(0)
 		else: RELATIONS[i].append(0)
-RELATIONS[0][3] = 70
-RELATIONS[0][5] = 10
-RELATIONS[0][6] = 30
-RELATIONS[0][11] = 10
-RELATIONS[0][12] = 60
-RELATIONS[1][7] = 80
-RELATIONS[2][8] = 50
-RELATIONS[2][12] = 70
-RELATIONS[3][0] = 80
-RELATIONS[3][9] = 70
-RELATIONS[4][10] = 70
-RELATIONS[5][11] = 50
+for i in [(0,3,70),(0,5,10),(0,6,30),(0,11,10),(0,12,60),(1,7,80),(2,8,50),(2,12,70),(3,0,80),(3,9,70),(4,10,70),(5,11,50)]:
+	RELATIONS[i[0]][i[1]] = i[2]
 
 DLGSAV = {}
 DISITEMS = {}
@@ -769,12 +764,18 @@ def battlesprites():
 				i += 1
 			except: break
 
-def sfx(j):
-	if j.endswith('.wav'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
+def sfx():
+	for j in os.listdir(SFX_PATH[:-1]):
+		if j[:-4].upper() in SOUND.keys(): print(dtb.ERROR['sound_exists'].format(j))
+		if j.endswith('.wav'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
+		elif j.endswith('.ogg'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
+		else:
+			for i in os.listdir(SFX_PATH + j):
+				if i.endswith('.wav'):
+					if i[:-4].upper() in SOUND.keys(): print(dtb.ERROR['sound_exists'].format(i))
+					SOUND[i[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j + '/' + i)
 
-if FILES != []:
-	dtb = __import__('database_' + FILES[0][4])
+sys.path.insert(0,'databases')
+if FILES != []: dtb = __import__('database_' + FILES[0][4])
 else: dtb = __import__('database_' + MAINLANG)
 recent_data(0)
-pygame.mixer.init()
-for j in os.listdir(SFX_PATH[:-1]): sfx(j)

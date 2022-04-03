@@ -1,0 +1,16 @@
+<data lang="PT" charset="utf-8">
+	<chapter id="4">
+		<name value="14"/>: Você não soube quem matou Vinícius?<br/>
+		<name value="0"/>: Não, foi um acaso muito estranho para mim.<br/>
+		<name value="14"/>: Entendido. Bom, <name value="5"/>?<br/>
+		<name value="5"/>: Ao seu dispor.<br/>
+		<name value="14"/>: Você ficou bastante ansiosa para compartilhar sua investigação comigo.<br/>
+		<name value="5"/>: É uma honra poder trabalhar com o senhor!<br/>
+		<name value="14"/>: Muito obrigado. Mas lembre-se que você ainda é minha testemunha.<br/>
+		<name value="5"/>: Sim, Senhor Dalibor.<br/>
+		<name value="14"/>: Continuando...Numa dessas investigações, você foi atrás de um idoso do interior que podia estar escondendo "informações importantes"?<br/>
+		<name value="5"/>: Sim, eu soube desse tal de Hermes graças á investigações anteriores.<br/>
+		Eu fui junto com minha equipe até a fazenda desse homem...'
+	</chapter>
+	<dialog key="CH4PAUL">Vocês já estão chegando no local?<answer/>Não se preocupe. Nós estamos a caminho.<input/></dialog>
+</data>
