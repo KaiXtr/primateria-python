@@ -7,7 +7,7 @@ FNAME = 'Mutation Purge BETA'
 GNAME = 'Setesalém: Mutation Purge BETA'
 AUTHOR = 'Matt Kai'
 DESCRIPTION = 'Setesalém: Mutation Purge BETA (2021)'
-VERSION = '0.1'
+VERSION = '0.1.0'
 YEAR = '2021'
 MAINLANG = 'PT'
 DEBUG = True
@@ -26,12 +26,6 @@ MAPS_PATH = 'maps/'
 TILES_PATH = 'tiles/'
 TILESETS_PATH = 'tiles/files/'
 FONTS_PATH = 'fonts/'
-
-#None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip
-CLICK = [None,None]
-ACTION = ['walk','walk','walk','walk','equip','run','inventory','pause']
-EQUIP = [0,0,0]
-SHORTCUT = [1,0,1]
 
 SPRITES = {}
 SOUND = {}
@@ -97,15 +91,21 @@ WEATHER = 0
 CHAPTER = 0
 SCENE = 0
 
-SFX = 1.0
-MSC = 1.0
-CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,
-pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
-[pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,
-pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS],[],[]]
+CLICK = [None,None]
+#None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip/inventory/chat/pause
+ACTION = ['walk','walk','walk','walk','equip','run','inventory','pause','shortcut']
+EQUIP = [0,0,0]
+SHORTCUT = [1,0,1]
+CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
+	[pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS,pygame.K_KP_MINUS],
+	[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
+	[pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS,pygame.K_KP_MINUS]]
 JOYSTICK = [0,1,2,3,4,5,6,7,None,None,None,8,None,6,7,0,1,2,3,0,1,None,None]
 MOUSE = 1 #keyboard only/keyboard and mouse/touchpad/joystick
 VIBRATE = False #vibrate controlller
+
+SFX = 1.0
+MSC = 1.0
 DTYPE = 1 #type of dialog
 SPEED = 2 #dialog speed
 COLOR = (255,10,10) #UI color
@@ -144,7 +144,7 @@ for u in range(6):
 			INVENTORY[u][y].append(['_','0000'])
 INVENTORY[0] = [
 	[['amulet1','0000'],['phone','3600','simcard1','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
-	[['clth_shirt1','7'],['til_grass','infinite'],['til_color','infinite'],['til_metalbars','infinite'],['food_pizza_4cheese','0000']],
+	[['clth_shirt1','7'],['_','0000'],['_','0000'],['_','0000'],['food_pizza_4cheese','0000']],
 	[['head_glasses1','0000'],['guit_load','0'],['guit_save','0000'],['guit_undo','0000'],['guit_redo','0000']],
 	[['head_hairclip','0000'],['guit_pencil','0000'],['guit_erase','0000'],['guit_dropper','0000'],['_','0000']],
 	[['bag1','0000'],['_','0000'],['_','0000'],['cigar','0000'],['_','0000']]

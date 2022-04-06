@@ -8,7 +8,7 @@ import numpy as np
 import sys
 import os
 
-from PIL import Image
+import PIL.Image
 import PIL.ImageOps
 
 import resources as res
@@ -26,10 +26,10 @@ class Test:
 		#self.font = pygame.font.Font(res.FONTS_PATH + 'reglisse/Reglisse.otf', 30)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Popup('Inventory',(0,0),miniature=True),Popup('Phone',(100,200),miniature=True)]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
+		self.menu = []#[Popup('Inventory',(0,0),miniature=True),Popup('Phone',(100,200),miniature=True)]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
 		self.files = None#Files((800,1280))
 		self.guitools = Guitools()
-		self.battlemation = None#VectorialDraw()
+		self.battlemation = VectorialDraw()
 		self.pseudo3d = None#Pseudo3d()
 		self.levelmenu = None#LevelMenu((800,600))
 		self.tsrf = None
@@ -118,37 +118,21 @@ class Guitools:
 	def measure_convert(self,input):
 		return str(float(input[1] * dtb.MEASURINGS[input[0]][1])) + ' ' + dtb.MEASURINGS[input[0]][0]
 	
-	def audioedit(self,snd,function,value):
-		snd = pygame.sndarray.array(snd)
-		if value > 0:
-			window_size=2**13
-			h=2**11
-			if function == 'velocity':
-				indices = np.round(np.arange(0, len(snd), value))
-				indices = indices[indices < len(snd)].astype(int)
-				snd = snd[indices.astype(int)]	     
-			if function in ['stretch','pitch']:
-				if function == 'pitch': factor = 1.0/(2**(1.0 * value/12.0))
-				else: factor = value
-				phase = np.zeros(window_size)
-				hanning_window = np.hanning(window_size)
-				result = np.zeros(int(len(snd)/value + window_size))
-				for i in np.arange(0,len(snd)-(window_size+h), h*factor):
-					ind = int(i)
-					a1 = snd[ind: ind + window_size]
-					a2 = snd[ind + h: ind + window_size + h]
-					s1 = np.fft.fft(hanning_window * a1)
-					s2 = np.fft.fft(hanning_window * a2)
-					phase = (phase + np.angle(s2/s1)) % 2*np.pi
-					a2_rephased = np.fft.ifft(np.abs(s2)*np.exp(1j*phase))
-					i2 = int(i/f)
-					result[i2 : i2 + window_size] += hanning_window*a2_rephased
-				result = ((2**(16-4)) * result/result.max()).astype('int16')
-				if function == 'pitch':
-					indices = np.round(np.arange(0, len(snd[window_size:]), 2**(1.0 * value/12.0)))
-					indices = indices[indices < len(snd[window_size:])].astype(int)
-					snd = snd[indices.astype(int)]
-		return pygame.sndarray.make_sound(snd)
+	def sound_wave(self, wave, f=1000, length=1, fs=44100):
+		if wave == 'sine': x = np.sin(2 * np.pi * f * np.arange(length * fs) / fs)
+		if wave == 'square': x = [i for i in [[1,-1][i%2] for i in range(int(f/2))] for ff in range(int((length * fs)/int(f/2)))]
+		if wave == 'saw': x = [ff for i in range(int(f/2)) for ff in range(-int((length * fs)/(f/2)),int((length * fs)/(f/2)))]
+		if wave == 'som_interessante_e_estranho': x = [i - int((i/f) * f) for i in range(int(length * fs))]
+		if wave == 'noise': x = np.random.uniform(-1,1,length * fs)
+
+		x = np.int16(x/np.max(np.abs(x)) * 5000)
+		return pygame.sndarray.make_sound(np.tile(x,(2,1)).T.copy(order='c'))
+
+	def audio_velocity(self,snd,value):
+		x = pygame.sndarray.array(snd)
+		if int(value): x = x[::int(value)]
+		if value%1: x = np.array([i for i in x for v in range(int(1/value))])
+		return pygame.sndarray.make_sound(x.copy(order='c'))
 
 	def audio_display(self,snd,offset=0,zoomt=0.1,zooma=0.01):
 		snd = pygame.sndarray.array(snd)
@@ -160,13 +144,6 @@ class Guitools:
 			if i > 0: pygame.draw.aaline(srf,(10,200,10),prv,cor)
 			prv = cor
 		return srf
-
-	def audio_reverse(self,snd):
-		snd = pygame.sndarray.array(snd)
-		print(snd)
-		snd = snd[::-1]
-		print(snd)
-		return pygame.sndarray.make_sound(snd)
 
 	def follow(self,rct1,rct2):
 		offstx = [rct1.x + int(rct1.width/2),rct2.x + int(rct2.width/2)]
@@ -189,17 +166,10 @@ class Guitools:
 			else: return 5
 
 	def get_pressed(self,event):
-		pressed = []
-		for i in range(len(res.CONTROLS[0])):
-			pressed.append([])
-			for p in range(4):
-				pressed[i].append(0)
+		pressed = [[0 for p in range(4)] for i in range(len(res.CONTROLS[0]))]
+		click = pygame.Rect(pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1],2,2)
 		#KEYBOARD/MOUSE
-		if res.MOUSE < 2:
-			ky = pygame.key.get_pressed()
-			for p in range(4):
-				for i in range(len(res.CONTROLS[p])):
-					pressed[i][p] = ky[res.CONTROLS[p][i]]
+		if res.MOUSE < 2: pressed = [[pygame.key.get_pressed()[res.CONTROLS[p][i]] for p in range(4)] for i in range(len(res.ACTION))]
 		#JOYSTICK
 		pygame.joystick.init()
 		connect = pygame.joystick.get_count()
@@ -207,6 +177,7 @@ class Guitools:
 			res.MOUSE = 3
 			joystick = pygame.joystick.Joystick(0)
 			joystick.init()
+			print(joystick.get_numbuttons())
 			#for i in range(6 + joystick.get_numbuttons()): pressed.append([0])
 			for b in range(4):
 				if pressed[res.JOYSTICK[b]][0] == 0:
@@ -221,8 +192,6 @@ class Guitools:
 			for i in pressed:
 				while len(i) < 3: i.append(0)
 		#TOUCH
-		mp = pygame.mouse.get_pos()
-		click = pygame.Rect(mp[0],mp[1],2,2)
 		self.buttons = []
 		if len(self.buttons) > 0:
 			res.MOUSE = 2
@@ -237,6 +206,8 @@ class Guitools:
 					if chk: pressed[i] = [1,0,0,0]
 					elif pressed[i][0] == 0: pressed[i] = [0,0,0,0]
 				elif pressed[i][0] == 0: pressed[i] = [0,0,0,0]
+		#SHOW DEBUG
+		#print(['PLAYER ' + str(p + 1) + ': ' + str([int(pressed[i][p]) for i in range(len(res.ACTION))]) for p in range(4)])
 		return pressed, click
 	
 	def align(self,input,value):
@@ -327,9 +298,9 @@ class Guitools:
 					acc += 1'''
 		return lst
 
-	def noise(self, mean, std, size):
+	def noise_img(self, mean, std, size):
 		return pygame.surfarray.make_surface(np.random.normal(mean,std,size))
-  
+
 	def gradient(self,size,top,bottom,value=0,direction='vertical'):
 		srf = pygame.Surface(size,pygame.SRCALPHA)
 		srf.fill(top)
@@ -474,7 +445,6 @@ class Popup:
 		self.optrects = [pygame.Rect(self.bdsz,self.bdsz,30,30),pygame.Rect(self.surface.get_width() - self.bdsz - 30,self.bdsz,30,30)]
 		if miniature != None: self.optrects.append(pygame.Rect(self.surface.get_width() - self.bdsz - 70,self.bdsz,30,30))
 		self.guitools = Guitools()
-		#self.sfx.play(self.guitools.audio_reverse(res.SOUND['BATTLE_LOST']))
 		
 	def inside_events(self,pressed):
 		mp = pygame.mouse.get_pos()
@@ -603,27 +573,26 @@ class Popup:
 		return self.surface
 
 class Vkeyboard:
-	def __init__(self,size,type='QWERTY',display=False):
+	def __init__(self,rect,type='QWERTY',display=False):
 		type = type.upper()
 		if type == 'NUMPAD': cl = 3
 		elif type == 'CALC': cl = 4
 		else: cl = 10
-		sz = int((size[0] - (cl * 12))/cl)
+		sz = int((rect.width - (cl * 12))/cl)
 		sp = 10 + sz
 		self.display = display
-		self.surface = pygame.Surface((size[0],sp * 5.5))
+		self.surface = pygame.Surface((rect.width,sp * 5.5))
 		self.font = pygame.font.SysFont("Arial", 44)
 		self.sfx = pygame.mixer.Channel(0)
 		self.sfx.set_volume(res.SFX)
 		self.type = type
-		self.size = size
+		self.rect = rect
 		self.active = False
 		self.caps = 1
 		self.page = 0
 		self.hold = 0
 		self.opt = 0
 		self.output = ''
-		self.pos = 0
 		
 		if type == 'QWERTY': lst = '1234567890qwertyuiopasdfghjklzxcvbnm, .'
 		elif type == 'DVORAK': lst = "1234567890',.pyfgcrlaoeuidhtnsjkxbmwvq z"
@@ -667,12 +636,15 @@ class Vkeyboard:
 					if letters[p][x] in [1,2]: add += sz * 0.5
 					x += 1
 	
-	def events(self):
+	def events(self,event):
 		#if self.pos == 0: self.output = ''
 		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1] - self.pos,2,2)
+		mr = pygame.Rect(mp[0],mp[1] - self.rect.y,2,2)
 		for i in self.buttons[self.page]:
-			if pygame.Rect.colliderect(mr,i[0]):
+			do = False
+			if pygame.Rect.colliderect(mr,i[0]) and event.type == pygame.MOUSEBUTTONDOWN: do = True
+			elif event.type == pygame.KEYDOWN and pygame.key.get_pressed()[0]: pass #do = True digit from keyboard
+			if do:
 				#BACKSPACE
 				if i[1] == 0:
 					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['DELETE'])
@@ -716,8 +688,8 @@ class Vkeyboard:
 				i[2] = 0
 	
 	def scroll(self):
-		if self.active and self.pos < self.surface.get_height(): self.pos += 10
-		if self.active == False and self.pos > 0: self.pos -= 10
+		if self.active and self.rect.y < self.rect.height: self.rect.y += 10
+		if self.active == False and self.rect.y > 0: self.rect.y -= 10
 
 	def draw(self):
 		self.surface.fill((0,0,0))
@@ -759,12 +731,12 @@ class Backgrounds:
 		for t in range(14):
 			self.lst.append([])
 			for r in range(2):
-				img = Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+				img = PIL.Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
 				if img.mode == 'RGBA':
-					nw = Image.new("RGB", img.size, (255, 255, 255))
+					nw = PIL.Image.new("RGB", img.size, (255, 255, 255))
 					nw.paste(img, mask=img.split()[3])
 					nw.save(res.BACKG_PATH + 'chp_' + str(t) + '.png', 'PNG', quality=100)
-					img = Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+					img = PIL.Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
 				if r: img = PIL.ImageOps.invert(img)
 				img = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
 				sz = img.get_width()
@@ -839,6 +811,9 @@ class Backgrounds:
 				if self.transform['TYPE'] in [1,4]:
 					self.rectrot = self.img.get_rect(center=pygame.Rect(0,0,600,400).center)
 	
+	def events(self,event):
+		pass
+
 	def menu(self):
 		self.screen.fill((0,0,0))
 		for i in self.display: i.fill((0,0,0,0))
@@ -970,7 +945,7 @@ class Backgrounds:
 	def draw(self):
 		self.surface.fill((0,0,0))
 		sz = 400
-		bimg = self.lst[self.img][np.floor(self.blink)]
+		bimg = self.lst[self.img][np.floor(self.blink).astype(int)]
 		ww = bimg.get_width() - sz
 		hh = bimg.get_height() - sz
 		if self.transform == 0:
@@ -1000,7 +975,7 @@ class VectorialDraw:
 		sz = pygame.display.Info()
 		self.surface = pygame.Surface((sz.current_w,sz.current_h))
 		self.font = pygame.font.SysFont("Arial", 64)
-		self.type = 'symbol'
+		self.type = 'lines'
 		self.index = 0
 		self.wait = 0
 		self.gif = 1 
@@ -1037,6 +1012,13 @@ class VectorialDraw:
 					pos = ((vrtx[i][0] * ani) + cc - (5 * ani),(vrtx[i][1] * ani) + cc - (5 * ani))
 					if i > 0: pygame.draw.aaline(self.surface,col,prv,pos,st)
 					prv = pos
+		if self.type == 'lines':
+			rng = 0
+			if self.index == 0: vrtx = [(0,0),(2,5)]
+			for i in range(len(vrtx)):
+				pos = ((vrtx[i][0] * sz) + cc,(int(vrtx[i][1]/self.gif) * sz) + cc)
+				if i > 0: pygame.draw.aaline(self.surface,col,prv,pos,st)
+				prv = pos
 		if self.type == 'wave':
 			rng = 0
 			aa = 50
@@ -1411,7 +1393,7 @@ class Files:
 		return self.display
 
 class Inventory:
-	def __init__(self,srf,typ=0):
+	def __init__(self,srf=None,typ=0):
 		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 12 * res.GSCALE),'DESCRIPTION': pygame.font.Font(res.FONTS_PATH + res.FONT, 9 * res.GSCALE),
 		'ALT': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', 10)}
 		self.guitools = Guitools()
@@ -1443,7 +1425,7 @@ class Inventory:
 		self.arrdir = False
 		self.doneimages = {}
 		self.exzoom = 0
-		self.tilset = self.guitools.get_tiles()
+		#self.tilset = self.guitools.get_tiles()
 		self.battle = False
 		xx = 0
 		yy = 0

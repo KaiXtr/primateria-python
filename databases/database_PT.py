@@ -1333,27 +1333,6 @@ ITEMS = {
 'jewel_gold': ['ouro',['Essa jóia deve custar uma fortuna!'],2000,1,3,0],
 'jewel_quartz': ['quartzo',['Essa jóia deve custar uma fortuna!'],2000,1,3,0],
 'mysterious': ['???',['Você não faz idéia do que é isso.'],0,1,1,0],
-
-#TILES (name,description,price,volume,weight,gid)
-'til_grass': ['grama',['graminha vedinha'],0,0,0,348],
-'til_color': ['piso colorido',['graminha vedinha'],0,0,0,397],
-'til_metalbars': ['barras de ferro',['graminha vedinha'],0,0,0,410],
-
-#GUITOOLS (name,description,price,volume,weight,function)
-'guit_pencil': ['lápis',['pinta o mapa.'],0,0,0,1],
-'guit_erase': ['borracha',['apaga tiles.'],0,0,0,0],
-'guit_dropper': ['conta gotas',['use para obter a tile selecionada.'],0,0,0,2],
-'guit_bucket': ['balde',['pinta tiles.'],0,0,0,3],
-'guit_select': ['seleção',['seleciona tiles.'],0,0,0,4],
-'guit_transform': ['transformar',['move tiles.'],0,0,0,5],
-'guit_copy': ['copiar',['copia tiles.'],0,0,0,8],
-'guit_scissors': ['tesoura',['recorta tiles.'],0,0,0,6],
-'guit_glue': ['cola',['cola tiles.'],0,0,0,7],
-'guit_rect': ['retângulo',['apaga tiles.'],0,0,0,8],
-'guit_undo': ['desfazer',['volta no histórico.'],0,0,0,8],
-'guit_redo': ['refazer',['avança no histórico.'],0,0,0,8],
-'guit_load': ['carregar',['carrega um mapa.'],0,0,0,8],
-'guit_save': ['salvar',['salva um mapa.'],0,0,0,8],
 }
 
 GLUTEN_FOOD =  ['food_bread']
@@ -1608,6 +1587,17 @@ ABOUT = ['Source code por Matt Kai','Feito em Python','Twitter','GitHub','GNU Ge
 DISCLAIMER = ['Esta é uma obra de ficção,','e quaisquer semelhanças com','acontecimentos reais são','mera coincidência.','',
 'Uma certa porcentagem da','população sofre de condições','como eplepsia e convulsões,','por isso sempre consulte','seu médico antes de jogar']
 
+BUILDING = ['Preparando uma nova executável da aplicação.\nPor favor, aguarde...','Aplicação .exe compilada com sucesso em ','Instalador .msi compilado com sucesso em ']
+
+MAPTOOLS = {'select': ['seleção','seleciona tiles a partir de uma área retangular.'],
+'transform': ['transformar','move tiles dentro de uma área retangular.'],
+'pencil': ['lápis','pinta o mapa com a tile selecionada.'],'erase': ['borracha','apaga tiles.'],
+'pick': ['conta gotas','use para obter a tile selecionada.'],'fill': ['preencher','pinta tiles.'],'rect': ['retângulo','apaga tiles.'],
+'copy': ['copiar','copia tiles da seleção.'],'cut': ['recortar','copia tiles da seleção e em seguida as remove.'],'paste': ['colar','cola tiles de uma seleção.'],
+'undo': ['desfazer','volta um passo no histórico.'],'redo': ['refazer','avança um passo no histórico.'],
+'load': ['carregar','carrega um mapa.'],'save': ['salvar','salva um mapa.'],
+'zoomin': ['ampliar','aumenta o zoom.'],'zoomout': ['reduzir','diminui o zoom.']}
+
 ERROR = {'crash': 'Oops! Alguma coisa deu errado... =(','press': 'Aperte qualquer botão para fechar','file': 'Arquivo','line': 'linha','in': 'em','restart': 'Reiniciando...',
 	'img_noload': 'ATENÇÃO! imagem não foi carregada.','tileset_save': 'Não foi possível salvar a tileset: está sendo utilizada.','dialog_key': 'ATENÇÃO: Não foi possível carregar o diálogo. Chave inexistente: ',
 	'sound_exists': 'ATENÇÃO! Este arquivo ou outro com um nome semelhante já foi carregado: "{}" | Considere renomear os arquivos para evitar problemas.'
@@ -1622,7 +1612,7 @@ MINIGAMES = {
 'Solitaire': 'Paciência','SpiderSolitaire': 'Paciência Spider','Freecell': 'Freecell','Mahjong': 'Mahjong','PegSolitaire': 'Resta 1',
 'Dominoes': 'Dominó','Truco': 'Truco','Sueca': 'Sueca','Cacheta': 'Cacheta','Pife': 'Pife','Buraco': 'Buraco','Poker': 'Poker','Copas': 'Copas','Espadas': 'Espadas','Maumau': 'Maumau',
 'Matchingwords': 'Palavras Cruzadas','TicTacToe': 'Jogo da Velha','LinesNBoxes': 'Timbiriche','Nonogram': 'Nonograma','HuntingWords': 'Caça Palavras','Sudoku': 'Sudoku','Hangman': 'Jogo da Forca',
-'Yatzy': 'Yatzy','Stop': 'Adedonha'
+'Yatzy': 'Yatzy','Stop': 'Adedonha','Piano': 'Piano'
 }
 
 ACHIEVEMENTS = [

@@ -18,18 +18,18 @@ play = False
 
 class Game:
 	def __init__(self):
-		self.display = pygame.display.set_mode((800, 1280),pygame.RESIZABLE | pygame.SRCALPHA)
+		self.display = pygame.display.set_mode((600, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		#self.font = pygame.font.Font(res.FONTS_PATH + 'reglisse/Reglisse.otf', 30)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.minigame = Backgrounds()
+		self.minigame = Piano()
 		self.guitools = GUI.Guitools()
 		self.bkg = self.guitools.gradient((800,1280),(100,100,200),(200,100,100))
 		pygame.event.set_allowed([pygame.QUIT,pygame.VIDEORESIZE,pygame.MOUSEBUTTONDOWN,pygame.MOUSEBUTTONUP,pygame.KEYDOWN,pygame.KEYUP])
 
 		self.mglstg = [[],
 			['Pinball','Tetris','Minesweeper','Pong','Differences','Jigsaw','Maze','Pool','Snake','HittheMole','FallingItems','Jumping','FlappyBird','Breakout','BubbleBubble','CannonBattle','ColorMatch','MusicTiles','Footrace','Hops'],
-			['Twothousandforthyeight','Memory','Simon','FindtheCup','ImageMatch','Cassino','Roulette','NumberPuzzle'],
+			['Twothousandforthyeight','Memory','Simon','FindtheCup','ImageMatch','Cassino','Roulette','NumberPuzzle','Piano'],
 			['Chess','Checkers','Trilha','Blackgammon','Ludo','Reversi','SnakesNLadders'],
 			['Solitaire','SpiderSolitaire','Freecell','Mahjong','PegSolitaire'],
 			['Dominoes','Truco','Sueca','Cacheta','Pife','Buraco','Poker','Copas','Espadas','Maumau'],
@@ -44,7 +44,7 @@ class Game:
 		for i in range(len(self.mglstg)):
 			self.bgames.append([])
 			self.cbts.append(pygame.Rect(i * int(self.display.get_width()/len(self.mglstg)),0,int(self.display.get_width()/len(self.mglstg)),40))
-			for y in range(np.floor(len(self.mglstg[i])/3)):
+			for y in range(np.floor(len(self.mglstg[i])/3).astype(int)):
 				for x in range(3):
 					self.bgames[i].append(pygame.Rect(10 + (x * int((self.display.get_width() - 10)/3)), 50 + (y * 60), int((self.display.get_width() - 10)/3) - 10, 50))
 			if len(self.bgames[i]) < len(self.mglstg[i]):
@@ -55,7 +55,7 @@ class Game:
 		mr = pygame.Rect(mp[0],mp[1],2,2)
 		#EVENTS
 		for event in pygame.event.get():
-			if event.type == QUIT:
+			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
 				exit()
@@ -65,11 +65,11 @@ class Game:
 			#IN MINIGAME
 			if self.minigame:
 				self.minigame.events(event)
-				if event.type == MOUSEBUTTONDOWN and pygame.Rect.colliderect(mr,self.bbtt):
+				if event.type == pygame.MOUSEBUTTONDOWN and pygame.Rect.colliderect(mr,self.bbtt):
 					self.minigame = None
 			#MAIN MENU
 			else:
-				if event.type == MOUSEBUTTONDOWN:
+				if event.type == pygame.MOUSEBUTTONDOWN:
 					for i in range(len(self.cbts)):
 						if pygame.Rect.colliderect(mr,self.cbts[i]):
 							self.mn = i
@@ -96,7 +96,7 @@ class Game:
 		pygame.display.flip()
 		self.clock.tick(res.FPS)
 
-class Temp:
+class Template:
 	def __init__(self):
 		sz = pygame.display.Info()
 		self.surface = pygame.Surface((sz.current_w,sz.current_h))
@@ -121,49 +121,40 @@ class Temp:
 		
 		return self.surface
 
-class Dice:
+class Piano:
 	def __init__(self):
-		self.surface = pygame.Surface((640,1280))
+		sz = pygame.display.Info()
+		self.surface = pygame.Surface((sz.current_w,sz.current_h))
 		self.font = pygame.font.SysFont("Arial", 64)
-		self.dices = [
-		#1d6
-		[(0,0,0),(0,1,0),(1,0,0),(1,1,0),
-		(0,0,1),(0,1,1),(1,0,1),(1,1,1)]
-		]
-		self.sz = 100
-		self.spin = [0,0,0]
+		self.sfx = pygame.mixer.Channel(0)
+		self.sfx.set_volume(res.SFX)
+		self.guitools = GUI.Guitools()
+		self.grid = [pygame.Rect(10 + (x * 22), 220, 20, 50) for x in range(12)]
+		self.wave = None
 		
 	def events(self,event):
+		pressed, mr = self.guitools.get_pressed(event)
+		tune = [262,278,294,311,330,349,370,392,415,440,466,494]
 		if event.type == pygame.MOUSEBUTTONDOWN:
-			self.sz += 50
-	
+			for i in range(len(self.grid)):
+				if pygame.Rect.colliderect(mr,self.grid[i]):
+					self.wave = self.guitools.sound_wave('square',f=tune[i],length=0.2)
+					self.sfx.play(self.wave)
+		for i in range(8):
+			if pressed[i][0]:
+				self.wave = self.guitools.sound_wave('sine',f=tune[i],length=0.2)
+				self.sfx.play(self.wave)
+		
 	def draw(self):
 		self.surface.fill((0,0,0))
-		xx = 100
-		yy = 200
-		cc = [xx + (0.5 * self.sz),yy + (0.5 * self.sz)]
-		sp = (self.spin[0])
-		for d in self.dices:
-			for v1 in d:
-				for v2 in d:
-					"""s2 = [(np.cos((self.spin[1] + v1[0]) * (0.5 * self.sz)) + cc[0],
-					np.sin(self.spin[1] * (0.5 * self.sz)) + cc[1]),
-					(np.cos(self.spin[1] * (0.5 * self.sz)) + cc[0],
-					np.sin(self.spin[1] * (0.5 * self.sz)) + cc[1])]
-					
-					pygame.draw.line(self.surface,(200,200,200),
-					(s2[0][0],s2[0][1]),(s2[1][0],s2[1][1]))"""
-					
-					srf1 = pygame.Surface((self.sz,self.sz),pygame.SRCALPHA)
-					pygame.draw.line(srf1,(200,200,200),
-					(v1[0] * self.sz,v1[1] * self.sz),
-					(v2[0] * self.sz,v2[2] * self.sz))
-					self.surface.blit(srf1,(xx,yy))
-		self.spin[1] += 1
-		self.surface.blit(self.font.render(str(self.spin),1,(200,200,200)), (10,10))
+		if self.wave: self.surface.blit(self.guitools.audio_display(self.wave,zoomt=1),(0,0))
+		for i in range(len(self.grid)):
+			if i in [1,3,6,8,10]: col = (50,50,50)
+			else: col = (200,200,200)
+			pygame.draw.rect(self.surface,col,self.grid[i])
 		
 		return self.surface
-		
+
 class Footrace:
 	def __init__(self):
 		sz = pygame.display.Info()
@@ -284,7 +275,7 @@ class Tetris:
 		for x in range(10):
 			for y in range(20):
 				self.grid.append([x,y])
-		self.pieces = [[0,0,np.random.randint(0,6)]]
+		self.pieces = [[0,0,np.random.randint(0,7)]]
 		self.bricks = [
 			[[0,0],[1,0],[2,0],[3,0]],
 			[[0,0],[0,1],[1,1],[2,1]],
@@ -316,7 +307,7 @@ class Tetris:
 		else:
 			ck = [[b[0] + self.pieces[0][0],b[1] + self.pieces[0][1]] for b in self.bricks[self.pieces[0][2]]]
 			if 19 in ck or self.endy in ck:
-				self.pieces.insert(0,[0,0,np.random.randint(0,6)])
+				self.pieces.insert(0,[0,0,np.random.randint(0,7)])
 			else: self.pieces[0][1] += 1
 			self.spd = 30
 
@@ -353,8 +344,8 @@ class Minesweeper:
 				self.grid[y].append([pygame.Rect(10 + (x * 22), 50 + (y * 22), 20, 20), None, 0])
 		self.mines = 0
 		while self.mines < self.flgs:
-			mx = np.random.randint(0,9)
-			my = np.random.randint(0,29)
+			mx = np.random.randint(0,10)
+			my = np.random.randint(0,30)
 			if self.grid[my][mx][1] == None:
 				self.grid[my][mx][1] = 'X'
 				self.mines += 1
@@ -829,7 +820,7 @@ class BubbleBubble:
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			self.balls.append([pygame.Rect(200,500,30,30),5,self.nxt[0]])
 			del self.nxt[0]
-			self.nxt.append(np.random.randint(0,6))
+			self.nxt.append(np.random.randint(0,7))
 		
 	def draw(self):
 		self.surface.fill((0,0,0))
@@ -852,7 +843,7 @@ class ColorMatch:
 		for i in range(20): bbs += [0,1,2,3,4]
 		for y in range(10):
 			for x in range(10):
-				rr = np.random.randint(0,len(bbs)-1)
+				rr = np.random.randint(0,len(bbs))
 				self.grid.append([x,y,bbs[rr]])
 				del bbs[rr]
 		self.select = None
@@ -941,7 +932,7 @@ class Pool:
 		self.colors = [(200,200,10),(10,10,200),(200,10,10),(200,10,200),(200,10,10),(10,200,10),(100,50,10),(10,10,10),(200,200,10),(10,10,200),(200,10,10),(200,10,200),(200,100,10),(10,200,10),(100,50,10)]
 		
 	def events(self,event):
-		if event.type == MOUSEBUTTONDOWN:
+		if event.type == pygame.MOUSEBUTTONDOWN:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			if pygame.Rect.colliderect(mr,self.pbll[0]):
@@ -1075,7 +1066,7 @@ class Twothousandforthyeight:
 					if i[1][0] == cor[j][0] and i[1][1] == cor[j][1]:
 						del cor[j]; j -= 1
 					j += 1
-			self.blocks.append([[len(self.blocks),2],cor[np.random.randint(0,len(cor) - 1)],0,-10])
+			self.blocks.append([[len(self.blocks),2],cor[np.random.randint(0,len(cor))],0,-10])
 			for i in self.blocks: i[2] = 1
 		
 	def draw(self):
@@ -1129,12 +1120,12 @@ class Memory:
 				self.values.append(i + 1)
 		for x in range(4):
 			for y in range(3):
-				v = np.random.randint(0,len(self.values) - 1)
+				v = np.random.randint(0,len(self.values))
 				self.buttons.append([pygame.Rect(100 + (x * 60),200 + (y * 60),50,50),self.values[v],2])
 				del self.values[v]
 		
 	def events(self,event):
-		if event.type == MOUSEBUTTONDOWN and self.time == 0:
+		if event.type == pygame.MOUSEBUTTONDOWN and self.time == 0:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			for i in self.buttons:
@@ -1184,7 +1175,7 @@ class Simon:
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.score = 0
 		self.time = 1
-		self.sequence = [np.random.randint(0,3)]
+		self.sequence = [np.random.randint(0,4)]
 		self.mimic = []
 		self.turn = 0
 		
@@ -1195,7 +1186,7 @@ class Simon:
 		self.buttons[self.sequence[0]][1] = 20
 		
 	def events(self,event):
-		if event.type == MOUSEBUTTONDOWN and self.time == len(self.sequence):
+		if event.type == pygame.MOUSEBUTTONDOWN and self.time == len(self.sequence):
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			v = 0
@@ -1207,13 +1198,13 @@ class Simon:
 			if self.mimic[self.turn] == self.sequence[self.turn]:
 				self.turn += 1
 				if self.turn == len(self.sequence):
-					self.sequence.append(np.random.randint(0,3))
+					self.sequence.append(np.random.randint(0,4))
 					self.mimic = []
 					self.turn = 0
 					self.time = -60
 					self.score += 1
 			else:
-				self.sequence = [np.random.randint(0,3)]
+				self.sequence = [np.random.randint(0,4)]
 				self.mimic = []
 				self.turn = 0
 				self.time = -60
@@ -1281,10 +1272,10 @@ class FindtheCup:
 			for i in range(len(self.cups)): self.cups[i] = int(self.cups[i])
 			self.mov = []
 			while len(self.mov) < 1:
-				j = np.random.randint(0,len(self.cups)-1)
+				j = np.random.randint(0,len(self.cups))
 				if j not in self.mov and int(self.cups[j] != 2): self.mov.append(j)
 			while len(self.mov) < 2:
-				j = np.random.randint(0,len(self.cups)-1)
+				j = np.random.randint(0,len(self.cups))
 				if j not in self.mov and int(self.cups[j] != 0): self.mov.append(j)
 			self.moves -= 1
 			self.wait = 50
@@ -1334,7 +1325,7 @@ class Cassino:
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.slots = []
 		self.sltsz = 90
-		for i in range(3): self.slots.append(np.random.randint(0,9) * self.sltsz)
+		for i in range(3): self.slots.append(np.random.randint(0,10) * self.sltsz)
 		self.stop = 0
 		self.acc = 10.0
 		self.img = pygame.Surface((self.sltsz,self.sltsz * 11))
@@ -1403,7 +1394,7 @@ class NumberPuzzle:
 		for y in range(3):
 			for x in range(3):
 				if len(self.grid) < 8:
-					rr = np.random.randint(0,len(lst) - 1)
+					rr = np.random.randint(0,len(lst))
 					self.grid.append([x,y,lst[rr]])
 					del lst[rr]
 		self.hole = [2,2]
@@ -1837,9 +1828,9 @@ class Blackgammon:
 		if self.time >= 1:
 			self.time += 1
 			if self.time%5 == 0:
-				if self.turn < 0: self.dice[self.turn + 2] = np.random.randint(1,6)
+				if self.turn < 0: self.dice[self.turn + 2] = np.random.randint(1,7)
 				else:
-					for i in range(2): self.dice[i] = np.random.randint(1,6)
+					for i in range(2): self.dice[i] = np.random.randint(1,7)
 		if self.time > 120:
 			self.time = 0
 			if self.turn < 0:
@@ -1916,38 +1907,39 @@ class Ludo:
 	
 	def draw(self):
 		self.surface.fill((0,0,0))
-		clst = [(100,200,100),(200,100,100),(100,200,200),(200,200,100)]
+		plst = [0,1,3,2]
+		clst = [(100,200,100),(200,100,100),(100,200,200),(200,200,100),(200,200,200)]
 		for y in range(len(self.grid)):
 			for x in range(len(self.grid[y])):
-				if y == 7 and x in [1,2,3,4,5]: cc = (100,200,100)
-				elif y == 6 and x == 1: cc = (100,200,100)
-				elif y == 7 and x in [9,10,11,12,13]: cc = (100,200,200)
-				elif y == 8 and x == 13: cc = (100,200,200)
-				elif x == 1 and y in [1,2,3,4,5]: cc = (200,100,100)
-				elif y == 1 and x == 2: cc = (200,100,100)
-				elif x == 1 and y in [9,10,11,12,13]: cc = (200,200,100)
-				elif y == 13 and x == 0: cc = (200,200,100)
-				else: cc = (200,200,200)
-				pygame.draw.rect(self.surface,cc,self.grid[y][x][0])
-				for i in range(len(self.players)):
-					for p in range(len(self.players[i])):
-						if self.finish[i][p] != None: pass
-						elif self.players[i][p] != None and [x,y] == self.path[self.players[i][p]]:
-							if self.opt not in [-1,4] and self.turn == i: pygame.draw.rect(self.surface,(0,200,0),self.grid[y][x][0])
+				if y == 7 and x in [1,2,3,4,5]: cc = 0
+				elif y == 6 and x == 1: cc =0
+				elif y == 7 and x in [9,10,11,12,13]: cc = 3
+				elif y == 8 and x == 13: cc = 3
+				elif x == 1 and y in [1,2,3,4,5]: cc = 1
+				elif y == 1 and x == 2: cc = 1
+				elif x == 1 and y in [9,10,11,12,13]: cc = 2
+				elif y == 13 and x == 0: cc = 2
+				else: cc = 4
+				pygame.draw.rect(self.surface,clst[cc],self.grid[y][x][0])
+				for i in range(len(plst)):
+					for p in range(len(plst)):
+						if self.finish[plst[i]][plst[p]] != None: pass
+						elif self.players[plst[i]][plst[p]] != None and [x,y] == self.path[self.players[plst[i]][plst[p]]]:
+							if self.opt not in [-1,4] and self.turn == plst[i]: pygame.draw.rect(self.surface,(0,200,0),self.grid[y][x][0])
 							pygame.draw.ellipse(self.surface,(10,10,10),pygame.Rect(self.grid[y][x][0].x + 5,self.grid[y][x][0].y + 5,self.grid[y][x][0].width - 10,self.grid[y][x][0].height - 10))
 							pygame.draw.ellipse(self.surface,clst[i],pygame.Rect(self.grid[y][x][0].x + 10,self.grid[y][x][0].y + 10,self.grid[y][x][0].width - 20,self.grid[y][x][0].height - 20))
 		plg = [[(295,295),(295,418)],[(295,295),(418,295)],[(418,295),(418,418)],[(295,418),(418,418)]]
-		for i in range(len(self.players)):
+		for i in range(len(plst)):
 			pygame.draw.rect(self.surface,clst[i],pygame.Rect(50 + (368 * (i - (2 * np.floor(i/2)))), 50 + (368 * np.floor(i/2)), 246, 246))
 			pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(100 + (368 * (i - (2 * np.floor(i/2)))), 100 + (368 * np.floor(i/2)), 146, 146))
-			pygame.draw.polygon(self.surface,clst[i],(plg[i][0],plg[i][1],(355,355)))
-			for j in range(len(self.players[i])):
-				if self.players[i][j] == None:
+			pygame.draw.polygon(self.surface,clst[i],(plg[plst[i]][0],plg[plst[i]][1],(355,355)))
+			for j in range(len(self.players[plst[i]])):
+				if self.players[plst[i]][j] == None:
 					pygame.draw.ellipse(self.surface,(10,10,10),pygame.Rect(120 + (368 * (i - (2 * np.floor(i/2)))) + (80 * (j - (2 * np.floor(j/2)))),120 + (368 * np.floor(i/2)) + (80 * np.floor(j/2)),30,30))
 					pygame.draw.ellipse(self.surface,clst[i],pygame.Rect(125 + (368 * (i - (2 * np.floor(i/2)))) + (80 * (j - (2 * np.floor(j/2)))),125 + (368 * np.floor(i/2)) + (80 * np.floor(j/2)),20,20))
 		if self.time >= 1:
 			self.time += 1
-			if self.time%5 == 0: self.dice = np.random.randint(1,6)
+			if self.time%5 == 0: self.dice = np.random.randint(1,7)
 		if self.time > 120:
 			self.time = 0
 			if self.dice == 5 and self.players[self.turn][-1] == None: self.opt = 4
@@ -2088,7 +2080,7 @@ class SnakesNLadders:
 				for i in range(len(self.pawns)):
 					if i == 0: cc = (200,100,100)
 					else: cc = (100,200,100)
-					if self.pawns[np.floor(i)] == vl: pygame.draw.ellipse(self.surface,cc,pygame.Rect(25 + (x * 30),325 - (y * 30),20,20))
+					if self.pawns[np.floor(i).astype(int)] == vl: pygame.draw.ellipse(self.surface,cc,pygame.Rect(25 + (x * 30),325 - (y * 30),20,20))
 				self.pos[vl] = [30 + (x * 30),330 - (y * 30)]
 				bw = not bw
 			bw = not bw
@@ -2103,7 +2095,7 @@ class SnakesNLadders:
 			way = -way
 		if self.time >= 1:
 			self.time += 1
-			if self.time%5 == 0: self.dice = np.random.randint(1,6)
+			if self.time%5 == 0: self.dice = np.random.randint(1,7)
 		if self.time > 120:
 			self.time = 0
 			self.walk = (self.dice) * 10
@@ -2144,7 +2136,7 @@ class SpiderSolitaire:
 			for n in range(len(nb)): self.mount.append(n)
 		for i in range(5):
 			for n in self.table:
-				rr = np.random.randint(0,len(self.mount) - 1)
+				rr = np.random.randint(0,len(self.mount))
 				n.append(self.mount[rr])
 				del self.mount[rr]
 		self.mrct = pygame.Rect(20,50,70,100)
@@ -2152,25 +2144,25 @@ class SpiderSolitaire:
 	def events(self,event):
 		mp = pygame.mouse.get_pos()
 		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == MOUSEBUTTONUP:
+		if event.type == pygame.MOUSEBUTTONUP:
 			if self.drgdrp != [None,None]:
-				if self.table[np.floor((mr.x - 100)/80)] == [] or self.table[self.drgdrp[0]][self.drgdrp[1]] == self.table[np.floor((mr.x - 100)/80)][-1] - 1:
+				if self.table[np.floor((mr.x - 100)/80).astype(int)] == [] or self.table[self.drgdrp[0]][self.drgdrp[1]] == self.table[np.floor((mr.x - 100)/80).astype(int)][-1] - 1:
 					for i in self.table[self.drgdrp[0]][self.drgdrp[1]:]:
-						self.table[np.floor((mr.x - 100)/80)].append(i)
+						self.table[np.floor((mr.x - 100)/80).astype(int)].append(i)
 					del self.table[self.drgdrp[0]][self.drgdrp[1]:]
 				self.drgdrp = [None,None]
 				chk = 12
 				stt = -1
-				for i in range(len(self.table[np.floor((mr.x - 100)/80)])):
-					if self.table[np.floor((mr.x - 100)/80)][i] == chk:
+				for i in range(len(self.table[np.floor((mr.x - 100)/80).astype(int)])):
+					if self.table[np.floor((mr.x - 100)/80).astype(int)][i] == chk:
 						if stt == -1: stt = i
 						chk -= 1
 					else: chk = 12; stt = -1
-				if chk < 0: del self.table[np.floor((mr.x - 100)/80)][stt:]
-		if event.type == MOUSEBUTTONDOWN:
+				if chk < 0: del self.table[np.floor((mr.x - 100)/80).astype(int)][stt:]
+		if event.type == pygame.MOUSEBUTTONDOWN:
 			if len(self.mount) > 0 and pygame.Rect.colliderect(mr,self.mrct):
 				for n in self.table:
-					rr = np.random.randint(0,len(self.mount) - 1)
+					rr = np.random.randint(0,len(self.mount))
 					n.append(self.mount[rr])
 					del self.mount[rr]
 			for i in range(len(self.table)):
@@ -2205,7 +2197,7 @@ class Mahjong:
 			for y in range(2):
 				self.blocks[z].append([])
 				for x in range(4):
-					rr = np.random.randint(0,len(bbs)-1)
+					rr = np.random.randint(0,len(bbs))
 					self.blocks[z][y].append([pygame.Rect(150 + (x * 45) + (z * 20), 150 + (y * 65) + (z * 30), 40, 60), bbs[rr], 0])
 					del bbs[rr]
 		
@@ -2321,7 +2313,7 @@ class Dominoes:
 					if d != ():
 						pygame.draw.circle(srf,(10,10,10),(d[0],d[1] + 50),5)
 				self.dominoes.append([srf,(i,j)])
-		random.shuffle(self.dominoes)
+		np.random.shuffle(self.dominoes)
 		self.hands = [self.dominoes[0:12],self.dominoes[12:24],self.dominoes[24:36],self.dominoes[36:48]]
 		self.dominoes[48][0] = pygame.transform.rotate(self.dominoes[48][0],90)
 		self.tree = [self.dominoes[48]]
@@ -2333,7 +2325,7 @@ class Dominoes:
 		self.mn = 0
 			
 	def events(self,event):
-		if event.type == MOUSEBUTTONDOWN and self.turn == 0:
+		if event.type == pygame.MOUSEBUTTONDOWN and self.turn == 0:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			x = 0
@@ -2401,28 +2393,28 @@ class Sueca:
 		self.table = []
 		self.deck = []
 		self.ww = None
-		np = ('C','O','E','P')
-		nb = ('2','3','4','5','6','Q','J','K','7','A')
+		lp = ('C','O','E','P')
+		lb = ('2','3','4','5','6','Q','J','K','7','A')
 		for p in range(4):
 			self.cards.append([])
-			for n in range(len(nb)):
+			for n in range(len(lb)):
 				if p < 2: cl = (240,10,10)
 				else: cl = (10,10,10)
 				srf = pygame.Surface((70,100),pygame.SRCALPHA)
 				srf.fill((240,240,240))
-				srf.blit(self.sft.render(nb[n],True,cl),(5,5))
+				srf.blit(self.sft.render(lb[n],True,cl),(5,5))
 				#srf.blit(pygame.image.load('minigames/cardfront.png'),(0,0))
 				#srf.blit(pygame.image.load('minigames/suit' + str(p - 1) + '.png'),(5,40))
-				srf.blit(self.sft.render(nb[n],True,cl),(5,5))
-				srf.blit(self.sft.render(nb[n],True,cl),(45,75))
+				srf.blit(self.sft.render(lb[n],True,cl),(5,5))
+				srf.blit(self.sft.render(lb[n],True,cl),(45,75))
 				self.cards[p].append(srf)
 				self.deck.append([n,p])
-		for i in range(7): random.shuffle(self.deck)
+		for i in range(7): np.random.shuffle(self.deck)
 		self.trunfo = self.deck[-1][1]
 		self.deck = [self.deck[0:10],self.deck[10:20],self.deck[20:30],self.deck[30:40]]
 		
 	def events(self,event):
-		if event.type == MOUSEBUTTONDOWN and self.time == 0:
+		if event.type == pygame.MOUSEBUTTONDOWN and self.time == 0:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			if self.turn == 0:
@@ -2463,7 +2455,7 @@ class Sueca:
 		elif self.turn != 0 and self.time == 0:
 			do = False
 			if self.table != []: print('NAIPE: '+str(self.table))
-			rr = np.random.randint(0,len(self.deck[self.turn]) - 1)
+			rr = np.random.randint(0,len(self.deck[self.turn]))
 			if len(self.table) == 0: do = True
 			elif [i for i in self.deck[self.turn] if i[1] == self.table[0][1]] == []: do = True
 			else:
@@ -2513,7 +2505,7 @@ class Copas:
 				self.cards.append(srf)
 		
 	def events(self,event):
-		if event.type == MOUSEBUTTONDOWN and self.time == 0:
+		if event.type == pygame.MOUSEBUTTONDOWN and self.time == 0:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			for i in self.buttons:
@@ -2610,7 +2602,7 @@ class Matchingwords:
 		self.time = 0
 			
 	def events(self,event):
-		if event.type == MOUSEBUTTONDOWN:
+		if event.type == pygame.MOUSEBUTTONDOWN:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			for i in self.buttons:
@@ -2658,7 +2650,7 @@ class TicTacToe:
 		self.turn = 1
 			
 	def events(self,event):
-		if event.type == MOUSEBUTTONDOWN:
+		if event.type == pygame.MOUSEBUTTONDOWN:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			grd = []
@@ -2677,7 +2669,7 @@ class TicTacToe:
 						pl.append(x)
 					x += 1
 				if len(pl) > 0:
-					ch = np.random.randint(0,len(pl) - 1)
+					ch = np.random.randint(0,len(pl))
 					self.buttons[pl[ch]][1] = 2
 			if self.mode == 1:
 				if self.turn == 1: self.turn = 2
@@ -2863,12 +2855,12 @@ class HuntingWords:
 				self.buttons.append([pygame.Rect(10 + (x * 50),200 + (y * 50),50,50),0])
 				self.grid.append('_')
 		for i in range(10):
-			t = np.random.randint(0,3)
+			t = np.random.randint(0,4)
 			t = 1
-			w = np.random.randint(0,len(self.words) - 1)
+			w = np.random.randint(0,len(self.words))
 			while len(self.words[w]) >= 10:
-				w = np.random.randint(0,len(self.words) - 1)
-			s = np.random.randint(0,10 - len(self.words[w]))
+				w = np.random.randint(0,len(self.words))
+			s = np.random.randint(0,11 - len(self.words[w]))
 			for l in range(len(self.words[w])):
 				if t == 0:
 					self.grid[i + s + (l * 10)] = self.words[w][l]
@@ -2879,12 +2871,12 @@ class HuntingWords:
 		letters = 'abcdefghijklmnopqrstuvwxyz'
 		for i in range(len(self.grid)):
 			if self.grid[i] == '_':
-				c = np.random.randint(0,len(letters) - 1)
+				c = np.random.randint(0,len(letters))
 				self.grid[i] = letters[c]
 		
 	def events(self,event):
-		if event.type == MOUSEBUTTONUP: self.hold = 0
-		if event.type == MOUSEBUTTONDOWN: self.hold = 1
+		if event.type == pygame.MOUSEBUTTONUP: self.hold = 0
+		if event.type == pygame.MOUSEBUTTONDOWN: self.hold = 1
 		if self.hold:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
@@ -2923,8 +2915,8 @@ class Sudoku:
 		self.font = pygame.font.SysFont("Arial", 20)
 		self.smll = pygame.font.SysFont("Arial", 8)
 		self.grid = []
-		rows  = [g*3 + r for g in random.sample(range(3),len(range(3))) for r in random.sample(range(3),len(range(3)))] 
-		cols  = [g*3 + c for g in random.sample(range(3),len(range(3))) for c in random.sample(range(3),len(range(3)))]
+		rows  = [g*3 + r for gr in np.random.sample([range(3),len(range(3))]) for g in gr for rr in np.random.sample([range(3),len(range(3))]) for r in rr] 
+		cols  = [g*3 + c for gr in np.random.sample([range(3),len(range(3))]) for g in gr for cr in np.random.sample([range(3),len(range(3))]) for c in cr]
 		nums  = random.sample(range(1,10),len(range(1,10)))
 		brd = [[nums[(3*(r%3)+r//3+c)%9] for c in cols] for r in rows]
 		spc = []
@@ -3021,7 +3013,7 @@ class Hangman:
 		for i in range(3):
 			for j in range(10):
 				if x >= len(letters): break
-				self.buttons.append([pygame.Rect(20 + (j * 60), 800 + (i * 60),50,50),letters[x]])
+				self.buttons.append([pygame.Rect(20 + (j * 60), 200 + (i * 60),50,50),letters[x]])
 				x += 1
 		self.words = ['galinha','foca','gato','bola','fogão','geladeira','porta','mesa','blusa','casa','óculos','cadeira','janela','lençol','luz','sol','cachorro','mochila','guarda-roupa','travesseiro','carregador','telefone','televisão','cesta','chapéu','igreja','padre','avião','vovó','chocolate','gelo','ar condicionado','barco','pessoa','olhos','interruptor','parede','vidro','garrafa','banheiro','cozinha','quarto','caixa','mala','cobertor','short','dente','nariz','coração','sobrancelhas']
 		self.word = ''
@@ -3030,14 +3022,14 @@ class Hangman:
 		self.doll = 0
 		self.time = 0
 		
-		p = np.random.randint(0,len(self.words) - 1)
+		p = np.random.randint(0,len(self.words))
 		self.word = self.words[p]
 		for i in self.word:
 			if i != ' ': self.guess += '_'
 			else: self.guess = ' '
 			
 	def events(self,event):
-		if event.type == MOUSEBUTTONDOWN:
+		if event.type == pygame.MOUSEBUTTONDOWN:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			for i in self.buttons:
@@ -3067,14 +3059,14 @@ class Hangman:
 			self.doll = 0
 			self.time = 0
 		
-			p = np.random.randint(0,len(self.words) - 1)
+			p = np.random.randint(0,len(self.words))
 			self.word = self.words[p]
 			for i in self.word:
 				if i != ' ': self.guess += '_'
 				else: self.guess = ' '
 		
 		self.surface.blit(self.font.render(self.mistakes,1,(200,200,200)),(20,20))
-		self.surface.blit(self.font.render(self.guess,1,(200,200,200)),(200,700))
+		self.surface.blit(self.font.render(self.guess,1,(200,200,200)),(200,100))
 		
 		if self.doll > 0: pygame.draw.circle(self.surface,(200,200,200),(300,300),50,3)
 		if self.doll > 1: pygame.draw.line(self.surface,(200,200,200),(300,350),(300,500),3)
@@ -3151,7 +3143,7 @@ class Yatzy:
 			self.time += 1
 			if self.time%5 == 0:
 				for i in range(5):
-					if self.lock[i] == 0: self.dice[i] = np.random.randint(1,6)
+					if self.lock[i] == 0: self.dice[i] = np.random.randint(1,7)
 		if self.time > 120:
 			self.time = 0
 			for i in range(13):

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tileset version="1.2" name="streets" tilewidth="32" tileheight="32" rows="3" columns="5">
+ <img source="../streets.png" width="160" height="96"/>
+ <tile id="0" type="street"/>
+ <tile id="1" type="street"/>
+ <tile id="2" type="street"/>
+ <tile id="3" type="crossing"/>
+ <tile id="4" type="street"/>
+ <tile id="5" type="street"/>
+ <tile id="6" type="street"/>
+ <tile id="7" type="street"/>
+ <tile id="8" type="crossing"/>
+ <tile id="9" type="street"/>
+ <tile id="10" type="street"/>
+ <tile id="11" type="sidewalk"/>
+ <tile id="12" type="sidewalk"/>
+ <tile id="13" type="sidewalk"/>
+</tileset>
