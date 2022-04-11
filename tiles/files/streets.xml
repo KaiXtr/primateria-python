@@ -12,7 +12,7 @@
  <tile id="8" type="crossing"/>
  <tile id="9" type="street"/>
  <tile id="10" type="street"/>
- <tile id="11" type="sidewalk"/>
- <tile id="12" type="sidewalk"/>
+ <tile id="11" type="fall"/>
+ <tile id="12" type="moving"/>
  <tile id="13" type="sidewalk"/>
 </tileset>

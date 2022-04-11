@@ -98,3 +98,5 @@ ITEMS = {
 'pow_invert': ['inversor',['Inverte os controles dos jogadores.'],0,0,0,9],
 'pow_bolt': ['relâmpago',['Solta um raio congelante no seu advesário, que fica 10 segundos sem se mexer.'],0,0,0,10]
 }
+
+MENU = {}

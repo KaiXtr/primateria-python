@@ -1495,6 +1495,15 @@ SIGNS = {
 'GAS': 'posto','HOSPITAL': 'hospital','POLICE': 'delegacia', 'SHOP': 'loja', 'BATHROOM': 'banheiro'
 }
 
+AVATAR = {
+'spaceship_base': ['mandíbula','escaravelho','redondo','pontudo'],
+'spaceship_wing': ['para trás','pontudo','propulsores','duplo','redondo','plano','caça'],
+'spaceship_cockpit': ['redondo','estreito','duplo','janela'],
+'spaceship_spoiler': ['duplo','traseiro','pequeno','nenhum'],
+'spaceship_propulsor': ['convencional'],
+'spaceship_texture': ['nenhum'],
+}
+
 TUTORIALS = {
 'BEGIN': [1,' - para cima',0,2,' - para baixo',0,5,' - selecionar',0,6,' - voltar',['phone',17]],
 'WALK': ['Pressione os botões',0,1,2,3,4,' para andar',['wait',100,'RUN']],
@@ -1573,7 +1582,9 @@ MENU = {'new_file': 'nova sessão','load_file': 'iniciar sessão','save_file': '
 'bt_choose': 'escolba o botão','vibrate': 'vibrar',
 'conf': 'confirmar','info': 'info','yes': 'sim','no': 'não','ok': 'ok','cancel': 'cancelar',
 'Phone': 'celular','PC': 'computador','PDA': 'pda',
-'not_email': 'Novo Email','not_contact': 'Novo contato adicionado!','not_wash': 'Sua roupa foi lavada!'}
+'not_email': 'Novo Email','not_contact': 'Novo contato adicionado!','not_wash': 'Sua roupa foi lavada!',
+'spaceship_colors': 'cores','spaceship_base': 'calota','spaceship_wing': 'asas','spaceship_cockpit': 'cabine','spaceship_spoiler': 'spoiler',
+'spaceship_propulsor': 'propulsor','spaceship_texture': 'textura','spaceship_stickers': 'adesivos'}
 
 HOLIDAYS = [(1,1,'Feliz ano novo!'),(3,8,'Feliz dia da mulher!'),(3,15,'É aniversário do autor!'),(4,7,'Feliz páscoa!'),(4,22,'Feliz dia da terra!'),(10,31,'Feliz Halloween!'),(12,25,'Feliz natal!')]
 

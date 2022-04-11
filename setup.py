@@ -50,7 +50,7 @@ setup(
 			shortcut_name = fn,
 			shortcut_dir = os.path.join(os.environ['USERPROFILE'], 'Desktop'),
 			copyright = 'GNU General Public License {}'.format(res.YEAR),
-			icon = 'icon.ico',
+			icon = res.ICON,
 			base = 'Win32GUI',
 			)
 		],
@@ -60,13 +60,13 @@ setup(
 			'no_compress': True,
 			'includes': INCLUDES,
 			'excludes': EXCLUDES,
-			'include_files': FOLDERS + ['GUI.py','minigames.py','resources.py','icon.ico','README.md','LICENSE','CREDITS.txt'],
+			'include_files': FOLDERS + ['GUI.py','minigames.py','resources.py',res.ICON,'README.md','LICENSE','CREDITS.txt'],
 			'include_msvcr': True,
 			'optimize': 1,
 			},
 		'bdist_msi': {
 			'target_name': '{}-setup'.format(fn),
-			'install_icon': 'icon.ico',
+			'install_icon': res.ICON,
 			'initial_target_dir': r'[ProgramFilesFolder]\\Primateria\%s' % fn,
 			'product_code': None, #inserir um código massa aqui viu
 			'upgrade_code': '{96a85bac-52af-4019-9e94-3afcc9e1ad0c}',
@@ -74,13 +74,13 @@ setup(
 			'all_users': False,
 			'data': {
 				'Directory': [(r'[ProgramFilesFolder]\\Primateria\%s' % fn,r'[ProgramFilesFolder]\\Primateria', r'[ProgramFilesFolder]\\Primateria\%s' % fn)],
-				'Icon': [('IconId','icon.ico')],
+				'Icon': [('IconId',res.ICON)],
 				'ProgId': [('ID',None,None,res.DESCRIPTION,'IconId',None)],
 				#'Shortcut':  [('ShortcutId',fn,res.GNAME,'TARGETDIR','[TARGETDIR]OpenCvAPI.exe',None,res.DESCRIPTION,None,'IconId',0,1,'TARGETDIR')]
 				},
 			},
 		'bdist_mac': {
-			'iconfile': 'icon.ico',
+			'iconfile': res.ICON,
 			'bundle_name': fn,
 			}
 		}

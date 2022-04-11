@@ -11,43 +11,38 @@ import os
 import PIL.Image
 import PIL.ImageOps
 
+import tools
+import minigames
 import resources as res
 sys.path.insert(0,'databases')
 if res.FILES != []: dtb = __import__('database_' + res.FILES[0][4])
 else: dtb = __import__('database_' + res.MAINLANG)
 
-test = False
-
 class Test:
 	def __init__(self):
 		pygame.init()
 		res.sfx()
+		res.fonts()
+		pygame.mixer.init(frequency = 44100, size = -16, channels = 1, buffer = 2**12)
+		pygame.mixer.music = pygame.mixer.Channel(1)
+		pygame.mixer.music.set_volume(res.MSC)
+		for i in range(4):
+			res.MIXER.append(pygame.mixer.Channel(i))
+			res.MIXER[i].set_volume(res.SFX)
 		self.display = pygame.display.set_mode((800, 600),pygame.RESIZABLE | pygame.SRCALPHA)
-		#self.font = pygame.font.Font(res.FONTS_PATH + 'reglisse/Reglisse.otf', 30)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = []#[Popup('Inventory',(0,0),miniature=True),Popup('Phone',(100,200),miniature=True)]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
-		self.files = None#Files((800,1280))
-		self.guitools = Guitools()
-		self.battlemation = VectorialDraw()
-		self.pseudo3d = None#Pseudo3d()
-		self.levelmenu = None#LevelMenu((800,600))
-		self.tsrf = None
-		self.wvsnd = 0
-		#for i in self.guitools.transiction((800,600),100,100,'aim'): self.tsrf = i; self.run()
+		self.menu = [Backgrounds('stars'),Files((800,1280)),VectorialDraw(),Pseudo3d(),Popup('Inventory',(0,0),miniature=True),Popup('Phone',(100,200),miniature=True),Popup('minigames.Snake',(200,50))]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
 		
 	def run(self):
 		res.HOVERTEXT = None
 		for event in pygame.event.get():
-			pressed, click = self.guitools.get_pressed(event)
+			pressed, mouse = tools.event.get_pressed(event)
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				exit()
 			if event.type == pygame.VIDEORESIZE:
 				self.display = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE | pygame.SRCALPHA)
-			if event.type == pygame.MOUSEBUTTONDOWN:
-				if pygame.mouse.get_pressed()[0]: pressed[4][0] = 1
-				if pygame.mouse.get_pressed()[2]: pressed[5][0] = 1
 			rcts = []
 			for i in range(len(self.menu))[::-1]:
 				mp = pygame.mouse.get_pos()
@@ -55,28 +50,21 @@ class Test:
 				do = True
 				for r in rcts:
 					if pygame.Rect.colliderect(mr,r): do = False
-				if do: self.menu[i].inside_events(pressed)
-				rcts.append(self.menu[i].rect)
-				self.menu = [x for x in self.menu if x.gui != None]
-			if self.files: self.files.inside_events(pressed)
-			if self.battlemation: self.battlemation.events(event)
-
-		pressed, click = self.guitools.get_pressed(None)
+				if do: self.menu[i].inside_events(pressed,mouse)
+				if type(self.menu[i]).__name__ == 'Popup': rcts.append(self.menu[i].rect)
+				nw = []
+				for x in self.menu:
+					if type(x).__name__ == 'Popup':
+						if x.gui != None: nw.append(x)
+					else: nw.append(x)
+				self.menu = nw
+		pressed, click = tools.event.get_pressed(None)
 		for i in self.menu: i.outside_events(pressed)
-		if self.files: self.files.outside_events(pressed)
-		if self.pseudo3d: self.pseudo3d.events()
 
 		self.display.fill((100,100,100))
-
-		self.wvsnd += 20
-		#self.display.blit(self.guitools.audio_display(res.SOUND['BANG'],offset=self.wvsnd),(0,20))
-		for i in self.menu: self.display.blit(i.draw(),(i.rect.x,i.rect.y))
-		if self.battlemation: self.display.blit(self.battlemation.draw(),(0,0))
-		if self.pseudo3d: self.display.blit(self.pseudo3d.draw(),(0,0))
-		if self.files: self.display.blit(self.files.draw()[1],(0,0))
-		if self.levelmenu: self.display.blit(self.levelmenu.draw(),(0,0))
-		if self.tsrf: self.display.blit(self.tsrf,(0,0))
-
+		for i in self.menu:
+			if type(i).__name__ == 'Popup': self.display.blit(i.draw(),(i.rect.x,i.rect.y))
+			else: self.display.blit(i.draw(),(0,0))
 		if res.HOVERTEXT:
 			sz = self.font.size(res.HOVERTEXT)
 			mp = pygame.mouse.get_pos()
@@ -85,308 +73,10 @@ class Test:
 			self.display.blit(self.font.render(res.HOVERTEXT,True,res.COLOR),(mr.x + 5,mr.y + 5))
 		pygame.display.flip()
 		self.clock.tick(60)
-			
-class Guitools:
-	def digitstring(self,number,digits):
-		value = ''
-		for i in range(digits):
-			if len(str(number)) == i:
-				add = ''
-				for d in range(digits - i):
-					add += '0'
-				value = add + str(number)
-		if value == '': return str(number)
-		else: return value
-		
-	def stripacc(self,txt):
-		lst = [('a','äåæªáãàâ'),('c','ćçč'),('e','ëėēèéêę'),('i','íìîįïī'),('n','ñń'),('o','ºōœøöòôóõ'),
-		('u','ūùúüû')]
-		txt = txt.lower()
-		nw = ''
-		for i in range(len(txt)):
-			nn = True
-			for x in lst:
-				if txt[i] in [y for y in x[1]]:
-					nw += x[0]
-					nn = False
-			if nn: nw += txt[i]
-		return nw
-	
-	def date_convert(self,input):
-		pass
 
-	def measure_convert(self,input):
-		return str(float(input[1] * dtb.MEASURINGS[input[0]][1])) + ' ' + dtb.MEASURINGS[input[0]][0]
-	
-	def sound_wave(self, wave, f=1000, length=1, fs=44100):
-		if wave == 'sine': x = np.sin(2 * np.pi * f * np.arange(length * fs) / fs)
-		if wave == 'square': x = [i for i in [[1,-1][i%2] for i in range(int(f/2))] for ff in range(int((length * fs)/int(f/2)))]
-		if wave == 'saw': x = [ff for i in range(int(f/2)) for ff in range(-int((length * fs)/(f/2)),int((length * fs)/(f/2)))]
-		if wave == 'som_interessante_e_estranho': x = [i - int((i/f) * f) for i in range(int(length * fs))]
-		if wave == 'noise': x = np.random.uniform(-1,1,length * fs)
-
-		x = np.int16(x/np.max(np.abs(x)) * 5000)
-		return pygame.sndarray.make_sound(np.tile(x,(2,1)).T.copy(order='c'))
-
-	def audio_velocity(self,snd,value):
-		x = pygame.sndarray.array(snd)
-		if int(value): x = x[::int(value)]
-		if value%1: x = np.array([i for i in x for v in range(int(1/value))])
-		return pygame.sndarray.make_sound(x.copy(order='c'))
-
-	def audio_display(self,snd,offset=0,zoomt=0.1,zooma=0.01):
-		snd = pygame.sndarray.array(snd)
-		srf = pygame.Surface((300,300))
-		srf.fill((0,0,0))
-
-		for i in range(len(snd)):
-			cor = ((i * zoomt) - offset,(snd[i][0] * zooma) + 150)
-			if i > 0: pygame.draw.aaline(srf,(10,200,10),prv,cor)
-			prv = cor
-		return srf
-
-	def follow(self,rct1,rct2):
-		offstx = [rct1.x + int(rct1.width/2),rct2.x + int(rct2.width/2)]
-		offsty = [rct1.y + int(rct1.height/2),rct2.y + int(rct2.height/2)]
-		if offsty[0] > offsty[1]:
-			if offstx[0] < offstx[1]: return 8
-			elif offstx[0] > offstx[1]: return 6
-			else: return 7
-		elif offsty[0] < offsty[1]: 
-			if offstx[0] < offstx[1]: return 2
-			elif offstx[0] > offstx[1]: return 4
-			else: return 3
-		elif offstx[0] < offstx[1]:
-			if offsty[0] > offsty[1]: return 8
-			elif offsty[0] < offsty[1]: return 2
-			else: return 1
-		elif offstx[0] > offstx[1]:
-			if offsty[0] > offsty[1]: return 6
-			elif offsty[0] < offsty[1]: return 4
-			else: return 5
-
-	def get_pressed(self,event):
-		pressed = [[0 for p in range(4)] for i in range(len(res.CONTROLS[0]))]
-		click = pygame.Rect(pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1],2,2)
-		#KEYBOARD/MOUSE
-		if res.MOUSE < 2: pressed = [[pygame.key.get_pressed()[res.CONTROLS[p][i]] for p in range(4)] for i in range(len(res.ACTION))]
-		#JOYSTICK
-		pygame.joystick.init()
-		connect = pygame.joystick.get_count()
-		if connect > 1:
-			res.MOUSE = 3
-			joystick = pygame.joystick.Joystick(0)
-			joystick.init()
-			print(joystick.get_numbuttons())
-			#for i in range(6 + joystick.get_numbuttons()): pressed.append([0])
-			for b in range(4):
-				if pressed[res.JOYSTICK[b]][0] == 0:
-					pressed[res.JOYSTICK[b]][0] = int(joystick.get_axis(b))
-			for b in range(joystick.get_numbuttons()):
-				if res.JOYSTICK[b + 4] == None and pressed[b + 4][0] == 0: pressed[b + 4][0] = 0
-				elif pressed[res.JOYSTICK[b + 4]][0] == 0: pressed[res.JOYSTICK[b + 4]][0] = joystick.get_button(b)
-			for b in range(2):
-				if res.JOYSTICK[b + 4 + joystick.get_numbuttons()] == None: pressed[b + 4 + joystick.get_numbuttons()][0] = 0
-				elif pressed[res.JOYSTICK[b + 4 + joystick.get_numbuttons()]][0] == 0:
-					pressed[res.JOYSTICK[b + 4 + joystick.get_numbuttons()]][0] = int(joystick.get_axis(b + 4))
-			for i in pressed:
-				while len(i) < 3: i.append(0)
-		#TOUCH
-		self.buttons = []
-		if len(self.buttons) > 0:
-			res.MOUSE = 2
-			if event != None:
-				if event.type == pygame.MOUSEBUTTONDOWN:
-					if res.VIBRATE: plyer.vibrator.vibrate(0.1)
-					chk = 1
-				else: chk = 0
-			else: chk = pygame.mouse.get_pressed()[0]
-			for i in range(len(self.buttons)):
-				if self.colide(click,self.buttons[i]):
-					if chk: pressed[i] = [1,0,0,0]
-					elif pressed[i][0] == 0: pressed[i] = [0,0,0,0]
-				elif pressed[i][0] == 0: pressed[i] = [0,0,0,0]
-		#SHOW DEBUG
-		#print(['PLAYER ' + str(p + 1) + ': ' + str([int(pressed[i][p]) for i in range(len(res.ACTION))]) for p in range(4)])
-		return pressed, click
-	
-	def align(self,input,value):
-		xx = np.floor(input.x/value[0]) * value[0]
-		yy = np.floor(input.y/value[1]) * value[1]
-		return (xx,yy)
-	
-	def transiction(self, size, limit, spd=5, typ='fade', col=(0,0,0)):
-		lst = []
-		if limit < 1: limit = 1
-		trs = int(100/limit)
-		sq = [(x,y) for x in range(10) for y in range(10)]
-		sd = None
-		while trs != limit:
-			srf = pygame.Surface(size,pygame.SRCALPHA)
-			if typ == 'fade':
-				srf.fill((col[0],col[1],col[2],trs * (250/100)))
-			elif typ == 'bars':
-				pygame.draw.rect(srf,col,pygame.Rect(0,0,size[0],int(trs * ((size[1]/2)/100))))
-				pygame.draw.rect(srf,col,pygame.Rect(0,size[1] - int(trs * ((size[1]/2)/100)),size[0],int(trs * ((size[1]/2)/100))))
-			elif typ.startswith('side'):
-				if typ.endswith('top'): pygame.draw.rect(srf,col,pygame.Rect(0,0,size[0],int(trs * (size[1]/100))))
-				if typ.endswith('left'): pygame.draw.rect(srf,col,pygame.Rect(0,0,int(trs * (size[0]/100)),size[1]))
-				if typ.endswith('bottom'): pygame.draw.rect(srf,col,pygame.Rect(0,size[1] - int(trs * (size[1]/100)),size[0],int(trs * (size[1]/100))))
-				if typ.endswith('right'): pygame.draw.rect(srf,col,pygame.Rect(size[0] - int(trs * (size[0]/100)),0,int(trs * (size[0]/100)),size[1]))
-			elif typ in ['hole','aim']:
-				srf.fill(col)
-				c = pygame.Surface((int(trs * (size[0]/80)),int(trs * (size[0]/80))),pygame.SRCALPHA)
-				pygame.draw.ellipse(c,(200,0,0),pygame.Rect(0,0,c.get_width(),c.get_height()))
-				srf.blit(c,(int(size[0]/2) - int(c.get_width()/2),int(size[1]/2) - int(c.get_height()/2)),None,pygame.BLEND_RGBA_SUB)
-				if typ == 'aim':
-					pygame.draw.line(srf,col,(int(size[0]/2),int(size[1]/2) + int(c.get_height()/2)),(int(size[0]/2),int(size[1]/2) - int(c.get_height()/2)),5)
-					pygame.draw.line(srf,col,(int(size[0]/2) + int(c.get_width()/2),int(size[1]/2)),(int(size[0]/2) - int(c.get_width()/2),int(size[1]/2)),5)
-			elif typ == 'cover':
-				for y in range(int(size[0]/10)):
-					for x in range(int(size[1]/10)):
-						if x + (y * 10) < trs: pygame.draw.rect(srf,col,pygame.Rect(x * int(size[0]/10),y * int(size[1]/10),int(size[0]/10),int(size[1]/10)))
-			elif typ == 'squares':
-				prb = np.random.randint(0,len(sq)-1)
-				if sd: srf = sd.copy()
-				pygame.draw.rect(srf,col,pygame.Rect(sq[prb][0] * int(size[0]/10),sq[prb][1] * int(size[1]/10),int(size[0]/10),int(size[1]/10)))
-				sd = srf.copy()
-				del sq[prb]
-			lst.append(srf)
-			trs += int(100/spd)
-		lst.append(None)
-		'''
-		if type == 'zoom':
-			if fade == False:
-				acc = 1
-				while True:
-					self.displayzw += dw * acc
-					self.displayzh += dh * acc
-					self.cam.x += int(acc * (dw/2))
-					self.cam.y += int(acc * (dh/2))
-					self.cam.width = self.displayzw
-					self.cam.height = self.displayzh
-					if self.displayzw < dw * limit:
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-					else:
-						self.displayzw = dw * limit
-						self.displayzh = dh * limit
-						self.cam.width = dw * limit
-						self.cam.height = dh * limit
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-						break
-					self.run(False)
-					acc += 1
-			else:
-				acc = 1
-				while True:
-					self.displayzw -= dw * acc
-					self.displayzh -= dh * acc
-					self.cam.x += int(acc * (dw/2))
-					self.cam.y += int(acc * (dh/2))
-					self.cam.width = self.displayzw
-					self.cam.height = self.displayzh
-					if self.displayzw > dw * limit:
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-					else:
-						self.displayzw = dw * limit
-						self.displayzh = dh * limit
-						self.cam.width = dw * limit
-						self.cam.height = dh * limit
-						self.display[0] = pygame.Surface((self.displayzw, self.displayzh))
-						break
-					self.run(False)
-					acc += 1'''
-		return lst
-
-	def noise_img(self, mean, std, size):
-		return pygame.surfarray.make_surface(np.random.normal(mean,std,size))
-
-	def gradient(self,size,top,bottom,value=0,direction='vertical'):
-		srf = pygame.Surface(size,pygame.SRCALPHA)
-		srf.fill(top)
-		if direction == 'vertical':
-			if value == 0: number = size[1]; dv = 1
-			else: number = value; dv = int(size[0]/value)
-			line = (size[0],dv)
-		else:
-			if value == 0: number = size[1]; dv = 1
-			else: number = value; dv = int(size[1]/value)
-			line = (dv,size[0])
-		for i in range(number):
-			ln = pygame.Surface(line,pygame.SRCALPHA)
-			ln.fill(tuple([abs(np.floor((top[x] + bottom[x])/(number/(i + 1))) - bottom[x]) for x in range(3)]))
-			if direction == 'vertical': srf.blit(ln,(0,i * dv))
-			else: srf.blit(ln,(i * dv,0))
-		return srf
-	
-	def get_tiles(self):
-		tlsz = (30,30)
-		tilset = os.listdir(res.TILES_PATH)
-		tilset.remove('files')
-		tilset.sort()
-		srf = pygame.Surface(tlsz)
-		srf.fill((0,0,0))
-		tls = [srf]
-		for t in tilset:
-			tst = pygame.image.load(res.TILES_PATH + t)
-			for y in range(int(tst.get_height()/tlsz[1])):
-				for x in range(int(tst.get_width()/tlsz[0])):
-					rct = pygame.Rect(x * tlsz[0],y * tlsz[1],tlsz[0],tlsz[1])
-					tls.append(tst.subsurface(rct).copy())
-		return tls
-		
-	def sign(self,birth):
-		dd = birth[0] + (birth[1] * 31)
-		return 0
-
-	def pathfinding(self, rct, tgt, map): pass
-
-	def wait(self):
-		waiting = True
-		'''pressed = self.get_pressed(None)
-		for i in pressed:
-			for j in i:
-				if j: waiting = False'''
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT: pygame.quit(); exit()
-			if event.type == pygame.MOUSEBUTTONDOWN: waiting = False
-			if event.type == pygame.KEYDOWN: waiting = False
-		return waiting
-		
-	def dislexic(self,txt):
-		if res.DISLEXIC == True:
-			out = ''
-			for t in txt: out += t + ' '
-		else: out = txt
-		return out
-	
-	def wrap(self,text,font,width):
-		txt = []
-		t = ''
-		for y in text:
-			if isinstance(y,int):
-				if t != '': t += ' '
-				t += res.CHARACTERS[y]['NAME']
-			elif y == '':
-				txt.append(t)
-				txt.append('')
-				t = ''
-			else:
-				for w in y.split():
-					if font.size(t + ' ' + w)[0] > width:
-						txt.append(t)
-						t = ' ' + w
-					elif w in [':','.','?','!']: t += w
-					else: t += ' ' + w
-		txt.append(t)
-		return txt
-	
 class Popup:
 	def __init__(self,gui,rect=(100,100),msg=None,miniature=None,deletable=True):
-		self.fnt = {'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40),'MESSAGE': pygame.font.Font(res.FONTS_PATH + res.FONT, 6 * res.GSCALE),
-		'DATETIME': pygame.font.Font(res.FONTS_PATH + res.FONT, 10 * res.GSCALE)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		res.FONTS = {**res.FONTS,'MESSAGE': tools.text.font_size(res.FONTS['DEFAULT'],6)}
 		self.bdsz = 10
 		self.top = 50
 		self.apps = []
@@ -418,13 +108,11 @@ class Popup:
 		#DISPLAY GUIS
 		else:
 			sz = (400,300)
-			if gui == 'Inventory': self.gui = eval('Inventory')(sz,0)
-			elif gui == 'Trash': self.gui = eval('Inventory')(sz,1)
-			elif gui == 'Storage': self.gui = eval('Inventory')(sz,2)
-			elif gui == 'Products': self.gui = eval('Inventory')(sz,3)
-			elif gui == 'Basket': self.gui = eval('Inventory')(sz,4)
+			lst = ['Inventory','Trash','Storage','Products','Basket']
+			for i in range(len(lst)):
+				if gui == lst[i]: self.gui = eval('Inventory')(sz,i)
 			else: self.gui = eval(gui)()
-			self.ratio = [self.gui.scr[1].get_width() + (self.bdsz * 2),self.gui.scr[1].get_height() + (self.bdsz * 2) + self.top]
+			self.ratio = [self.gui.surface.get_width() + (self.bdsz * 2),self.gui.surface.get_height() + (self.bdsz * 2) + self.top]
 
 		self.title = gui
 		self.surface = pygame.Surface(tuple(self.ratio))
@@ -438,19 +126,19 @@ class Popup:
 		for x in range(int(self.ratio[0]/10)):
 			for y in range(int(self.ratio[1]/10)):
 				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
-		self.brd.blit(self.fnt['TITLE'].render(dtb.MENU[self.title], True, (0, 0, 0)), (10, 10))
+		if gui.startswith('minigames.'): tt = dtb.MINIGAMES[self.title[10:]].lower()
+		else: tt = dtb.MENU[self.title]
+		self.brd.blit(res.FONTS['TITLE'].render(tt, True, (0, 0, 0)), (10, 10))
 
 		self.msg = msg
 		self.rect = pygame.Rect(rect[0],rect[1],self.surface.get_width(),self.surface.get_height())
 		self.optrects = [pygame.Rect(self.bdsz,self.bdsz,30,30),pygame.Rect(self.surface.get_width() - self.bdsz - 30,self.bdsz,30,30)]
 		if miniature != None: self.optrects.append(pygame.Rect(self.surface.get_width() - self.bdsz - 70,self.bdsz,30,30))
-		self.guitools = Guitools()
 		
-	def inside_events(self,pressed):
-		mp = pygame.mouse.get_pos()
-		mr1 = pygame.Rect(int((mp[0] - self.rect.x)/res.GSCALE),int((mp[1] - self.rect.y)/res.GSCALE),20,20)
-		mr2 = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),20,20)
-		if pygame.Rect.colliderect(self.rect,pygame.Rect(mp[0],mp[1],2,2)):
+	def inside_events(self,pressed,mouse):
+		mr1 = pygame.Rect(int((mouse.x - self.rect.x)/res.GSCALE),int((mouse.y - self.rect.y)/res.GSCALE),mouse.width,mouse.height)
+		mr2 = pygame.Rect(int(mouse.x - self.rect.x),int(mouse.y - self.rect.y),mouse.width,mouse.height)
+		if pygame.Rect.colliderect(self.rect,mouse):
 			#POPUP MESSAGE OPTIONS
 			if self.gui in ['conf','info'] and self.battery > 0:
 				if pygame.Rect.colliderect(self.btrects[0],mr2): self.gui = None; return True
@@ -459,35 +147,42 @@ class Popup:
 			elif self.gui in ['Phone','PC','PDA']:
 				for i in range(len(self.btrects)):
 					if pygame.Rect.colliderect(mr2,self.btrects[i]):
-						res.HOVERTEXT = dtb.MENU[self.apps[i]]
 						if pressed[4][0]:
-							self.sfx.play(res.SOUND['MENU_GO'])
+							res.MIXER[0].play(res.SOUND['MENU_GO'])
 							self.title = self.apps[i]
 							self.goback = self.gui
 							self.gui = eval(self.apps[i])()
-							self.ratio = [self.gui.scr[1].get_width() + (self.bdsz * 2),self.gui.scr[1].get_height() + (self.bdsz * 2) + self.top]
+							self.ratio = [self.gui.surface.get_width() + (self.bdsz * 2),self.gui.surface.get_height() + (self.bdsz * 2) + self.top]
 			#GUI OPTIONS
 			else: self.gui.inside_events(pressed,mr2)
 			#EXIT AND MINIMIZE BUTTONS
 			if pressed[4][0]:
 				if self.min == False:
 					if pygame.Rect.colliderect(self.optrects[1],mr2):
-						self.sfx.play(res.SOUND['MENU_BACK'])
+						res.MIXER[0].play(res.SOUND['MENU_BACK'])
 						if self.goback:
 							self.title = self.goback
 							self.gui = self.goback
 						elif self.deletable: self.gui = None
 						else: self.show = False
 					if len(self.optrects) > 2 and pygame.Rect.colliderect(self.optrects[2],mr2):
-						self.sfx.play(res.SOUND['MENU_GO'])
+						res.MIXER[0].play(res.SOUND['MENU_GO'])
 						self.min = not self.min
 	
 	def outside_events(self,pressed):
 		mp = pygame.mouse.get_pos()
 		mr1 = pygame.Rect(int((mp[0] - self.rect.x)/res.GSCALE),int((mp[1] - self.rect.y)/res.GSCALE),20,20)
 		mr2 = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),20,20)
-		if self.gui not in ['conf','info','Phone','PC','PDA'] and self.battery > 0: self.gui.outside_events(pressed)
-		if pygame.Rect.colliderect(self.optrects[0],mr2): self.rect.x = mp[0] - 10; self.rect.y = mp[1] - 10
+		if pygame.Rect.colliderect(self.rect,pygame.Rect(mp[0],mp[1],2,2)):
+			#HOVER TEXT
+			if self.gui in ['Phone','PC','PDA']:
+				for i in range(len(self.btrects)):
+					if pygame.Rect.colliderect(mr2,self.btrects[i]):
+						res.HOVERTEXT = dtb.MENU[self.apps[i]]
+			#GUI OPTIONS
+			elif self.battery > 0: self.gui.outside_events(pressed)
+			#DRAG POPUP
+			if pygame.Rect.colliderect(self.optrects[0],mr2): self.rect.x = mp[0] - 10; self.rect.y = mp[1] - 10
 	
 	def draw(self):
 		if self.min == False:
@@ -500,12 +195,12 @@ class Popup:
 		pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(self.bdsz,yy,self.ratio[0] - (self.bdsz * 2),self.ratio[1] - self.top - (self.bdsz * 2)))
 		#INFO BAR
 		if self.infobar and not self.min and self.battery > 0:
-			dt = self.guitools.digitstring(res.TIME[0],2) + ':' + self.guitools.digitstring(res.TIME[1],2)
-			dtsz = self.ratio[0] - (self.bdsz * 2) - self.fnt['DATETIME'].size(dt)[0] - 10
+			dt = tools.text.digitstring(res.TIME[0],2) + ':' + tools.text.digitstring(res.TIME[1],2)
+			dtsz = self.ratio[0] - (self.bdsz * 2) - res.FONTS['DATETIME'].size(dt)[0] - 10
 			infbr = pygame.Surface((self.ratio[0] - (self.bdsz * 2),self.infobar))
 
-			infbr.blit(self.fnt['DATETIME'].render(self.guitools.digitstring(res.DATE[0],2) + '/' + self.guitools.digitstring(res.DATE[1],2) + '/' + self.guitools.digitstring(res.DATE[2],4), True, (255, 255, 255)), (3, 0))
-			infbr.blit(self.fnt['DATETIME'].render(dt, True, (255, 255, 255)), (dtsz, 0))
+			infbr.blit(res.FONTS['DATETIME'].render(tools.text.digitstring(res.DATE[0],2) + '/' + tools.text.digitstring(res.DATE[1],2) + '/' + tools.text.digitstring(res.DATE[2],4), True, (255, 255, 255)), (3, 0))
+			infbr.blit(res.FONTS['DATETIME'].render(dt, True, (255, 255, 255)), (dtsz, 0))
 			#BATTERY ICON
 			pygame.draw.rect(infbr,(255,255,255),pygame.Rect(dtsz - 50,5,40,20),2)
 			pygame.draw.rect(infbr,(255,255,255),pygame.Rect(dtsz - 52,10,2,10))
@@ -528,8 +223,8 @@ class Popup:
 			for i in self.optrects[1:]: pygame.draw.rect(self.surface,(200,100,100),i)
 			pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(self.bdsz,yy,350,100))
 			for i in self.btrects: pygame.draw.rect(self.surface,(100,100,100),i)
-			xx = int((350 - (self.bdsz * 2))/2) - int(self.fnt['MESSAGE'].size(self.msg)[0]/2)
-			self.surface.blit(self.fnt['MESSAGE'].render(self.msg, True, (200, 200, 200)), (xx,yy + 5))
+			xx = int((350 - (self.bdsz * 2))/2) - int(res.FONTS['MESSAGE'].size(self.msg)[0]/2)
+			self.surface.blit(res.FONTS['MESSAGE'].render(self.msg, True, (200, 200, 200)), (xx,yy + 5))
 		#APP MENUS
 		elif self.gui in ['Phone','PC','PDA']:
 			if self.gui in ['Phone','PDA']: img = pygame.image.load(res.BACKG_PATH + 'phn_' + str(res.PARTY[res.FORMATION][0]) + '.png')
@@ -539,7 +234,7 @@ class Popup:
 				self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'ph_' + self.apps[i].lower() + '.png'),(self.btrects[i].x,self.btrects[i].y))
 		#DISPLAY UI
 		else:
-			sz = (self.gui.scr[1].get_width() + (self.bdsz * 2),self.gui.scr[1].get_height() + (self.bdsz * 2) + self.top)
+			sz = (self.gui.surface.get_width() + (self.bdsz * 2),self.gui.surface.get_height() + (self.bdsz * 2) + self.top)
 			#MINIMIZED WINDOW
 			if self.min:
 				if (round(self.ratio[0]),round(self.ratio[1])) != self.gui.ratio[1]:
@@ -556,20 +251,23 @@ class Popup:
 				elif self.battery > 0:
 					#GUI SURFACE
 					self.gui.draw()
-					self.surface.blit(pygame.transform.scale(self.gui.scr[0],(self.gui.scr[0].get_width() * res.GSCALE,self.gui.scr[0].get_height() * res.GSCALE)),(self.bdsz,yy))
-					self.surface.blit(self.gui.scr[1],(self.bdsz,yy))
+					self.surface.blit(self.gui.surface,(self.bdsz,yy))
 				#NO BATTERY
 				else:
 					self.surface.blit(self.brd,(0,0))
-					pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(self.bdsz,yy,self.gui.scr[1].get_width(),self.gui.scr[1].get_height()))
-					pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(self.bdsz + int(self.gui.scr[1].get_width()/2) - 25,yy + int(self.gui.scr[1].get_height()/2) - 110,50,10),5)
-					pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(self.bdsz + int(self.gui.scr[1].get_width()/2) - 50,yy + int(self.gui.scr[1].get_height()/2) - 100,100,200),5)
-					pygame.draw.line(self.surface,(200,200,200),(self.bdsz + int(self.gui.scr[1].get_width()/2) - 20,yy + int(self.gui.scr[1].get_height()/2) - 20),(self.bdsz + int(self.gui.scr[1].get_width()/2) + 20,self.bdsz + self.top + int(self.gui.scr[1].get_height()/2) + 20),5)
-					pygame.draw.line(self.surface,(200,200,200),(self.bdsz + int(self.gui.scr[1].get_width()/2) + 20,yy + int(self.gui.scr[1].get_height()/2) - 20),(self.bdsz + int(self.gui.scr[1].get_width()/2) - 20,self.bdsz + self.top + int(self.gui.scr[1].get_height()/2) + 20),5)
+					pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(self.bdsz,yy,self.gui.surface.get_width(),self.gui.surface.get_height()))
+					pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(self.bdsz + int(self.gui.surface.get_width()/2) - 25,yy + int(self.gui.surface.get_height()/2) - 110,50,10),5)
+					pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(self.bdsz + int(self.gui.surface.get_width()/2) - 50,yy + int(self.gui.surface.get_height()/2) - 100,100,200),5)
+					pygame.draw.line(self.surface,(200,200,200),(self.bdsz + int(self.gui.surface.get_width()/2) - 20,yy + int(self.gui.surface.get_height()/2) - 20),(self.bdsz + int(self.gui.surface.get_width()/2) + 20,self.bdsz + self.top + int(self.gui.surface.get_height()/2) + 20),5)
+					pygame.draw.line(self.surface,(200,200,200),(self.bdsz + int(self.gui.surface.get_width()/2) + 20,yy + int(self.gui.surface.get_height()/2) - 20),(self.bdsz + int(self.gui.surface.get_width()/2) - 20,self.bdsz + self.top + int(self.gui.surface.get_height()/2) + 20),5)
 
 		mp = pygame.mouse.get_pos()
 		mr = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),2,2)
 		pygame.draw.rect(self.surface,(200,200,200),mr)
+
+		for i in res.MIXER:
+			if pygame.display.get_active(): i.set_volume(res.SFX)
+			elif res.MUTE: i.set_volume(0)
 		return self.surface
 
 class Vkeyboard:
@@ -583,8 +281,6 @@ class Vkeyboard:
 		self.display = display
 		self.surface = pygame.Surface((rect.width,sp * 5.5))
 		self.font = pygame.font.SysFont("Arial", 44)
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
 		self.type = type
 		self.rect = rect
 		self.active = False
@@ -648,32 +344,32 @@ class Vkeyboard:
 				#BACKSPACE
 				if i[1] == 0:
 					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['DELETE'])
-					else: self.sfx.play(res.SOUND['MENU_BACK'])
+					else: res.MIXER[0].play(res.SOUND['MENU_BACK'])
 					self.output = self.output[0:-1]
 				#CAPS
 				elif i[1] == 1:
 					self.caps += 1
 					if self.caps > 2: self.caps = 0
 					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['CAPS' + str(self.caps + 1)])
-					else: self.sfx.play(res.SOUND['MENU_GO'])
-					self.sfx.play(res.SOUND['MENU_GO'])
+					else: res.MIXER[0].play(res.SOUND['MENU_GO'])
+					res.MIXER[0].play(res.SOUND['MENU_GO'])
 				#NEXT PAGE
 				elif i[1] == 2:
 					self.page += 1
 					if self.page > 1: self.page = 0
 					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['PAGE'] + ' ' + str(self.page + 1))
-					else: self.sfx.play(res.SOUND['MENU_GO'])
+					else: res.MIXER[0].play(res.SOUND['MENU_GO'])
 				#ENTER
 				elif i[1] == 3:
 					if res.TTS: plyer.tts.speak(dtb.TTSTEXT['CONFIRM'])
-					else: self.sfx.play(res.SOUND['MENU_GO'])
+					else: res.MIXER[0].play(res.SOUND['MENU_GO'])
 					self.active = False
 				else:
 					if res.TTS:
 						if i[1][self.opt] in dtb.TTSTEXT: vv = dtb.TTSTEXT[i[1][self.opt]]
 						else: vv = i[1][self.opt]
 						plyer.tts.speak(vv)
-					else: self.sfx.play(res.SOUND['TEXT_INPUT'])
+					else: res.MIXER[0].play(res.SOUND['TEXT_INPUT'])
 					#OPERATIONS
 					if self.type == 'CALC' and i[1][self.opt] in '+-÷×=':
 						if i[1][self.opt] == '=': self.output = str(eval(self.output.replace('÷','/').replace('×','*')))
@@ -714,9 +410,11 @@ class Vkeyboard:
 		return self.surface
 
 class Backgrounds:
-	def __init__(self):
-		self.surface = pygame.Surface((640,1280))
+	def __init__(self,type):
+		self.surface = pygame.Surface((600,600))
 		self.font = pygame.font.SysFont("Arial", 64)
+		self.type = type
+		self.show = False
 
 		self.btime = 100
 		self.banimation = {'INDEX': None, 'GIF': 0}
@@ -724,34 +422,37 @@ class Backgrounds:
 
 		self.lst = []
 		self.img = 0
-		self.transform = 4
+		self.transform = 1
 		self.blink = 0.0
 		self.x = 0
 		self.palette = [[(196,206,228),(250,0,0)],[(18,46,85),(0,250,0)]]
-		for t in range(14):
-			self.lst.append([])
-			for r in range(2):
-				img = PIL.Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
-				if img.mode == 'RGBA':
-					nw = PIL.Image.new("RGB", img.size, (255, 255, 255))
-					nw.paste(img, mask=img.split()[3])
-					nw.save(res.BACKG_PATH + 'chp_' + str(t) + '.png', 'PNG', quality=100)
+		if self.type == 'stars':
+			self.lst = [[np.random.randint(0,self.surface.get_width()),np.random.randint(0,self.surface.get_height()),np.random.uniform(0.1,1)] for i in range(50)]
+		elif self.type in ['mirrors','kaleidoscope']:
+			for t in range(14):
+				self.lst.append([])
+				for r in range(2):
 					img = PIL.Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
-				if r: img = PIL.ImageOps.invert(img)
-				img = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
-				sz = img.get_width()
-				srf = pygame.Surface((sz * 2,sz * 2))
-				srf.blit(img, (0,0))
-				srf.blit(pygame.transform.flip(img,True,False), (sz,0))
-				srf.blit(pygame.transform.flip(img,False,True), (0,sz))
-				srf.blit(pygame.transform.flip(img,True,True), (sz,sz))
-				self.lst[t].append(srf)
+					if img.mode == 'RGBA':
+						nw = PIL.Image.new("RGB", img.size, (255, 255, 255))
+						nw.paste(img, mask=img.split()[3])
+						nw.save(res.BACKG_PATH + 'chp_' + str(t) + '.png', 'PNG', quality=100)
+						img = PIL.Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+					if r: img = PIL.ImageOps.invert(img)
+					img = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
+					sz = img.get_width()
+					srf = pygame.Surface((sz * 2,sz * 2))
+					srf.blit(img, (0,0))
+					srf.blit(pygame.transform.flip(img,True,False), (sz,0))
+					srf.blit(pygame.transform.flip(img,False,True), (0,sz))
+					srf.blit(pygame.transform.flip(img,True,True), (sz,sz))
+					self.lst[t].append(srf)
 		
 	def random(self,i=None):
 		from mutagen.mp3 import MP3
 		self.msc.pause()
 		pygame.mixer.music.pause()
-		self.ton.play(res.SOUND['NOISE'],-1)
+		res.MIXER[1].play(res.SOUND['NOISE'],-1)
 		kp = str(self.tv)
 		self.tv = 0
 		self.rectrot = 0
@@ -791,10 +492,10 @@ class Backgrounds:
 						except: self.mscinfo = {'TITLE': res.RADIO[rd][sng],'ARTIST': 'unknown','ALBUM': 'unknown'}
 					elif msc.endswith('.wav'):
 						audio = pygame.mixer.Sound(msc)
-						self.msc.play(audio)
+						res.MIXER[2].play(audio)
 					elif msc.endswith('.ogg'):
 						audio = pygame.mixer.Sound(msc)
-						self.msc.play(audio)
+						res.MIXER[2].play(audio)
 			else: self.msc.unpause(); pygame.mixer.music.unpause()
 			#CHANGE TRANSFORMATION
 			if chg > 75:
@@ -811,8 +512,9 @@ class Backgrounds:
 				if self.transform['TYPE'] in [1,4]:
 					self.rectrot = self.img.get_rect(center=pygame.Rect(0,0,600,400).center)
 	
-	def events(self,event):
-		pass
+	def inside_events(self,pressed,mouse): pass
+
+	def outside_events(self,pressed): pass
 
 	def menu(self):
 		self.screen.fill((0,0,0))
@@ -824,17 +526,17 @@ class Backgrounds:
 			if self.rndtxt < (100 + round(np.random.randint(5,20))): self.rndtxt += 1
 			else: self.rndtxt = 0
 			if self.rndtxt >= 100:
-				dt = self.fnt.keys()
+				dt = res.FONTS.keys()
 				lst = []
 				for i in dt: lst.append(i)
-				self.curfnt = lst[round(np.random.randint(0,len(self.fnt) - 1))]
+				self.curfnt = lst[round(np.random.randint(0,len(res.FONTS) - 1))]
 			else: self.curfnt = 'DEFAULT'
 			area = (0,-self.winbar,self.windoww,self.windowh - self.winbar)
 			#NOISE
 			if self.tv in [0,len(self.bbgs)]:
 				self.noise += 1
 				if self.noise == 3: self.noise = 0
-				self.display[0].blit(self.img[self.noise], (0, 0))
+				self.surface.blit(self.img[self.noise], (0, 0))
 			else:
 				self.transform['VALUE'] += self.transform['SPEED'] * res.FPS
 				if self.blink < (100 + round(np.random.randint(1,10))): self.blink += 1
@@ -843,55 +545,55 @@ class Backgrounds:
 				#SCALE
 				if self.transform['TYPE'] == 0:
 					img = pygame.transform.scale(img,(img.get_rect().width + round(self.transform['VALUE'] * 2),img.get_rect().height + round(self.transform['VALUE'] * 2)))
-					self.display[0].blit(img, (600 - img.get_rect().width, 600 - img.get_rect().height),area)
+					self.surface.blit(img, (600 - img.get_rect().width, 600 - img.get_rect().height),area)
 				#ROTATE
 				elif self.transform['TYPE'] == 1:
 					img = pygame.transform.scale(img,(800,800))
 					trs = pygame.transform.rotate(img,self.transform['VALUE'])
 					self.rectrot = trs.get_rect(center = self.rectrot.center)
-					self.display[0].blit(trs, self.rectrot,area)
+					self.surface.blit(trs, self.rectrot,area)
 				#MOVE HORIZONTAL
 				elif self.transform['TYPE'] == 2:
-					self.display[0].blit(img, (self.transform['VALUE'], int(self.windowh/2) - int(img.get_rect().height/2)))
-					if self.transform['VALUE'] < 0: self.display[0].blit(img, (img.get_rect().width + self.transform['VALUE'], 0),area)
-					if self.transform['VALUE'] > 0: self.display[0].blit(img, (-img.get_rect().width + self.transform['VALUE'], 0),area)
+					self.surface.blit(img, (self.transform['VALUE'], int(self.windowh/2) - int(img.get_rect().height/2)))
+					if self.transform['VALUE'] < 0: self.surface.blit(img, (img.get_rect().width + self.transform['VALUE'], 0),area)
+					if self.transform['VALUE'] > 0: self.surface.blit(img, (-img.get_rect().width + self.transform['VALUE'], 0),area)
 				#MOVE VERTICAL
 				elif self.transform['TYPE'] == 3:
-					self.display[0].blit(img, (0, self.transform['VALUE']))
-					if self.transform['VALUE'] < 0: self.display[0].blit(img, (0, img.get_rect().height + self.transform['VALUE']),area)
-					if self.transform['VALUE'] > 0: self.display[0].blit(img, (0, -img.get_rect().height + self.transform['VALUE']),area)
+					self.surface.blit(img, (0, self.transform['VALUE']))
+					if self.transform['VALUE'] < 0: self.surface.blit(img, (0, img.get_rect().height + self.transform['VALUE']),area)
+					if self.transform['VALUE'] > 0: self.surface.blit(img, (0, -img.get_rect().height + self.transform['VALUE']),area)
 				#SCALE AND ROTATE
 				if self.transform['TYPE'] == 4:
 					img = pygame.transform.scale(img,(img.get_rect().width + round(self.transform['VALUE']/6),img.get_rect().height + round(self.transform['VALUE']/4)))
 					trs = pygame.transform.rotate(img,self.transform['VALUE'])
 					self.rectrot = trs.get_rect(center = self.rectrot.center)
-					self.display[0].blit(trs, self.rectrot,area)
+					self.surface.blit(trs, self.rectrot,area)
 				#RANDOM
 				if self.transform['TYPE'] == 5:
 					if self.transform['VALUE'] > 13: self.transform['VALUE'] = 1
 					img = pygame.image.load(res.BACKG_PATH + 'chp_' + str(self.transform['VALUE']) + str(self.blink) + '.png')
-					self.display[0].blit(img, (0,0),area)
+					self.surface.blit(img, (0,0),area)
 		
 		#INFO
 		if self.mnu > 1 and self.mnu < 6:
-			'''self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[0] + ' ' + res.VERSION + ':' + str(self.glock.get_fps()), True, (240,240,240)), ((-35 + int(self.displayzw/(self.displayzh/self.winbar))), (-35 + self.winbar)))
+			'''self.surface.blit(res.FONTS['DEFAULT'].render(dtb.ABOUT[0] + ' ' + res.VERSION + ':' + str(self.glock.get_fps()), True, (240,240,240)), ((-35 + int(self.displayzw/(self.displayzh/self.winbar))), (-35 + self.winbar)))
 			if self.stime > 0:
-				self.display[1].blit(self.fnt['DEFAULT'].render(dtb.ABOUT[1], True, (240,240,240)), ((self.windoww - 140 - int(self.displayzw/(self.displayzh/self.winbar))), (self.windowh + 35) - self.winbar))'''
-			self.display[1].blit(self.fnt[self.curfnt].render(dtb.ABOUT[0][:9], True, (240,240,240)), (50,25))
-			self.display[1].blit(self.fnt['MINI'].render(dtb.ABOUT[0][11:] + ' ' + res.VERSION, True, (240,240,240)), (50,55))
+				self.surface.blit(res.FONTS['DEFAULT'].render(dtb.ABOUT[1], True, (240,240,240)), ((self.windoww - 140 - int(self.displayzw/(self.displayzh/self.winbar))), (self.windowh + 35) - self.winbar))'''
+			self.surface.blit(res.FONTS[self.curfnt].render(dtb.ABOUT[0][:9], True, (240,240,240)), (50,25))
+			self.surface.blit(res.FONTS['MINI'].render(dtb.ABOUT[0][11:] + ' ' + res.VERSION, True, (240,240,240)), (50,55))
 			if self.stime > 0:
-				self.display[1].blit(self.fnt[self.curfnt].render(dtb.ABOUT[1], True, (240,240,240)), (self.windoww - 200,self.windowh - 35))
+				self.surface.blit(res.FONTS[self.curfnt].render(dtb.ABOUT[1], True, (240,240,240)), (self.windoww - 200,self.windowh - 35))
 			#HOLIDAYS
 			for i in dtb.HOLIDAYS:
 				if self.holiday.month == i[0] and self.holiday.day == i[1]:
-					sz = self.fnt[self.curfnt].size(i[2])[0] + 50
-					self.display[1].blit(self.fnt[self.curfnt].render(i[2], True, (240,240,240)), (self.windoww - sz, 65))
+					sz = res.FONTS[self.curfnt].size(i[2])[0] + 50
+					self.surface.blit(res.FONTS[self.curfnt].render(i[2], True, (240,240,240)), (self.windoww - sz, 65))
 			#SECRETS
 			if self.stime > 0: self.stime -= 1 * res.FPS
 			if self.stime <= 0:
-				if self.sscroll > -20 - self.fnt[self.curfnt].size(self.stext)[0]:
+				if self.sscroll > -20 - res.FONTS[self.curfnt].size(self.stext)[0]:
 					self.sscroll -= 3 * res.FPS
-					self.display[1].blit(self.fnt[self.curfnt].render(self.stext, True, (240,240,240)),(self.sscroll,self.windowh - 50))
+					self.surface.blit(res.FONTS[self.curfnt].render(self.stext, True, (240,240,240)),(self.sscroll,self.windowh - 50))
 				else:
 					self.sscroll = self.windoww + 20
 					self.stext = dtb.TSECRETS[np.random.randint(0,len(dtb.TSECRETS) - 1)]
@@ -906,7 +608,7 @@ class Backgrounds:
 		if self.mnu == 8:
 			if self.wait > 0: self.wait -= 1 * res.FPS
 			if self.wait == 0 and self.tv == 0:
-				self.msc.play(pygame.mixer.Sound(res.MUSIC_PATH + 'fate_occurrences.mp3'),-1)
+				res.MIXER[2].play(pygame.mixer.Sound(res.MUSIC_PATH + 'fate_occurrences.mp3'),-1)
 				self.ton.stop()
 				self.mnu = 6
 		return self.display
@@ -945,50 +647,62 @@ class Backgrounds:
 	def draw(self):
 		self.surface.fill((0,0,0))
 		sz = 400
-		bimg = self.lst[self.img][np.floor(self.blink).astype(int)]
-		ww = bimg.get_width() - sz
-		hh = bimg.get_height() - sz
-		if self.transform == 0:
-			self.surface.blit(bimg, (0,0),(ww - self.x,0,sz,sz))
-			self.surface.blit(pygame.transform.flip(bimg,True,False), (sz,0),(self.x,0,sz,sz))
-		if self.transform > 0:
-			if self.transform in [1,2]: xx = self.x
-			if self.transform in [3,4]: xx = -self.x
-			if self.transform in [1,3]: yy = self.x
-			if self.transform in [2,4]: yy = -self.x
-			self.surface.blit(bimg, (0,0),(ww - xx,hh - yy,sz,sz))
-			self.surface.blit(pygame.transform.flip(bimg,True,False), (sz,0),(xx,hh - yy,sz,sz))
-			self.surface.blit(pygame.transform.flip(bimg,False,True), (0,sz),(ww - xx,yy,sz,sz))
-			self.surface.blit(pygame.transform.flip(bimg,True,True), (sz,sz),(xx,yy,sz,sz))
-		self.x += 2
-		if self.x > 0:
-			self.x = -ww
-			self.img += 1
-		if self.img > len(self.lst) - 1: self.img = 0
-		self.blink += 0.02
-		if self.blink >= np.random.randint(1.0,2.0): self.blink = 0.0
+		if self.type == 'stars':
+			xx = 0; yy = 0
+			if self.transform in [1,2,8]: xx = self.x
+			if self.transform in [4,5,6]: xx = -self.x
+			if self.transform in [2,3,4]: yy = self.x
+			if self.transform in [6,7,8]: yy = -self.x
+			for i in self.lst:
+				pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(i[0] + int(xx * i[2]),i[1] + int(yy * i[2]),2,2))
+			self.x += 2
+			'''if self.x%120 == 0:
+				add = [[np.random.randint(0,self.surface.get_width()),np.random.randint(0,self.surface.get_height()),np.random.uniform(0.1,1)] for i in range(50)]
+				for i in add: self.lst.append(i)'''
+		elif self.type == 'mirrors':
+			bimg = self.lst[self.img][np.floor(self.blink).astype(int)]
+			ww = bimg.get_width() - sz
+			hh = bimg.get_height() - sz
+			if self.transform == 0:
+				self.surface.blit(bimg, (0,0),(ww - self.x,0,sz,sz))
+				self.surface.blit(pygame.transform.flip(bimg,True,False), (sz,0),(self.x,0,sz,sz))
+			if self.transform > 0:
+				if self.transform in [1,2]: xx = self.x
+				if self.transform in [3,4]: xx = -self.x
+				if self.transform in [1,3]: yy = self.x
+				if self.transform in [2,4]: yy = -self.x
+				self.surface.blit(bimg, (0,0),(ww - xx,hh - yy,sz,sz))
+				self.surface.blit(pygame.transform.flip(bimg,True,False), (sz,0),(xx,hh - yy,sz,sz))
+				self.surface.blit(pygame.transform.flip(bimg,False,True), (0,sz),(ww - xx,yy,sz,sz))
+				self.surface.blit(pygame.transform.flip(bimg,True,True), (sz,sz),(xx,yy,sz,sz))
+			self.x += 2
+			if self.x > 0:
+				self.x = -ww
+				self.img += 1
+			if self.img > len(self.lst) - 1: self.img = 0
+			self.blink += 0.02
+			if self.blink >= np.random.randint(1.0,2.0): self.blink = 0.0
 		
 		return self.surface
 
 class VectorialDraw:
 	def __init__(self):
 		sz = pygame.display.Info()
-		self.surface = pygame.Surface((sz.current_w,sz.current_h))
+		self.surface = pygame.Surface((sz.current_w,sz.current_h),pygame.SRCALPHA)
 		self.font = pygame.font.SysFont("Arial", 64)
-		self.type = 'lines'
+		self.type = 'spiral'
 		self.index = 0
+		self.show = False
 		self.wait = 0
 		self.gif = 1 
 		self.crc = 0
 	
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
-			pass
+	def inside_events(self,pressed,mouse): pass
+
+	def outside_events(self,pressed): pass
 		
 	def draw(self):
-		self.surface.fill((50,50,50))
+		self.surface.fill((0,0,0,0))
 		sz = 50
 		cc = 300
 		col = (200,200,200)
@@ -1112,8 +826,9 @@ class VectorialDraw:
 
 class Pseudo3d:
 	def __init__(self):
-		self.surface = pygame.Surface((300,300))
+		self.surface = pygame.Surface((300,300),pygame.SRCALPHA)
 		self.clock = pygame.time.Clock()
+		self.show = False
 		self.axis = [0,0,0]
 		self.index = 3
 		self.center = [(2,2,2),(2,2,2),(2,2,2),(3,3,3),(2,2,2),(2,2,2)]
@@ -1152,14 +867,15 @@ class Pseudo3d:
 				[0,9],[1,9],[1,11],[2,11],[3,11],[3,10],[4,10],[5,10],[5,9]]
 			self.faces = []
 
-	def events(self):
-		pressed = pygame.key.get_pressed()
-		if pressed[pygame.K_w]: self.axis[0] += 0.1
-		if pressed[pygame.K_s]: self.axis[0] -= 0.1
-		if pressed[pygame.K_a]: self.axis[1] += 0.1
-		if pressed[pygame.K_d]: self.axis[1] -= 0.1
-		if pressed[pygame.K_t]: self.axis[2] += 0.1
-		if pressed[pygame.K_g]: self.axis[2] -= 0.1
+	def inside_events(self,pressed,mouse): pass
+
+	def outside_events(self,pressed):
+		if pressed[0][0]: self.axis[0] += 0.1
+		if pressed[1][0]: self.axis[0] -= 0.1
+		if pressed[2][0]: self.axis[1] += 0.1
+		if pressed[3][0]: self.axis[1] -= 0.1
+		if pressed[4][0]: self.axis[2] += 0.1
+		if pressed[5][0]: self.axis[2] -= 0.1
 				
 	def rotate(self,vrtx,theta,axis):
 		sinTheta = np.sin(theta);
@@ -1182,7 +898,7 @@ class Pseudo3d:
 		return vrtx
 
 	def draw(self):
-		self.surface.fill((0,0,0))
+		self.surface.fill((0,0,0,0))
 		
 		sz = 30
 		cc = 200
@@ -1211,12 +927,8 @@ class Pseudo3d:
 
 class Files:
 	def __init__(self,sz):
-		self.display = [pygame.Surface(sz,pygame.SRCALPHA),pygame.Surface(sz, pygame.SRCALPHA)]
-		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 22),'RECAP': pygame.font.Font(res.FONTS_PATH + 'BohemianTypewriter.ttf', 26),
-		'CALIBRI': pygame.font.SysFont('Calibri', 30),'MINI': pygame.font.SysFont('Calibri', 20), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 22)}
-		self.guitools = Guitools()
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface(sz,pygame.SRCALPHA)
+		self.show = False
 		self.wdw = None
 		self.curfnt = 'DEFAULT'
 		self.opt = 0
@@ -1225,6 +937,9 @@ class Files:
 		self.txt = []
 		self.classrun = True
 		self.gmtim = []
+
+		#self.grd = [self.guitools.gradient((self.windoww,200),(0,0,0,200),(0,0,0,0)),
+		#self.guitools.gradient((self.windoww,200),(0,0,0,200),(0,0,0,0))]
 		
 		res.recent_data(0)
 		self.optrects = []
@@ -1245,10 +960,10 @@ class Files:
 			else: hh = str(hh)
 			self.gmtim.append(hh + ' : ' + mm + ' : ' + ss)
 		for i in range(15): self.optrects.append(pygame.Rect(abs(halign - 40),100 + (i * 101),460,100))
-		self.grd = [self.guitools.gradient((sz[0],200),(0,0,0,200),(0,0,0,0)),
-		self.guitools.gradient((sz[0],200),(0,0,0,200),(0,0,0,0))]
+		self.grd = [tools.draw.gradient((sz[0],200),(0,0,0,200),(0,0,0,0)),
+		tools.draw.gradient((sz[0],200),(0,0,0,200),(0,0,0,0))]
 	
-	def inside_events(self,pressed):
+	def inside_events(self,pressed,mouse):
 		rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0]
 		if self.wdw:
 			self.wdw.inside_events(pressed)
@@ -1259,9 +974,7 @@ class Files:
 			if not self.wdw:
 				self.opt = -1
 				for i in range(rng[self.mnu]):
-					mp = pygame.mouse.get_pos()
-					mr = pygame.Rect(mp[0],mp[1],2,2)
-					if pygame.Rect.colliderect(mr,pygame.Rect(self.optrects[i].x,self.optrects[i].y + self.scroll,self.optrects[i].width,self.optrects[i].height)):
+					if pygame.Rect.colliderect(mouse,pygame.Rect(self.optrects[i].x,self.optrects[i].y + self.scroll,self.optrects[i].width,self.optrects[i].height)):
 						self.opt = i
 						if pressed[5][0]: #and self.optrects[i].width == 250:
 							#TITLE AND PAUSE MENU
@@ -1284,7 +997,7 @@ class Files:
 								#NEW GAME
 								else:
 									res.ID = self.opt
-									self.sfx.play(res.SOUND['FILE_NEW'])
+									res.MIXER[0].play(res.SOUND['FILE_NEW'])
 									res.new_data()
 									#res.recent_data(2,self.opt)
 									pygame.mixer.music.fadeout(3000)
@@ -1295,17 +1008,17 @@ class Files:
 							elif self.mnu == 3:
 								#LOAD GAME
 								if i < res.FILES[res.ID][2] + 1:
-									self.sfx.play(res.SOUND['FILE_LOAD'])
+									res.MIXER[0].play(res.SOUND['FILE_LOAD'])
 									res.load_data()
 									res.CHAPTER = self.opt
 									self.msc.stop()
 									self.scroll = int(50/res.GSCALE)
 									self.wait = 50
 									self.mnu = 8
-									self.txt = self.guitools.wrap(dtb.CHAPTERS[res.CHAPTER][2],self.fnt['RECAP'],self.display[1].get_width() - 200)
+									self.txt = tools.text.wrap(dtb.CHAPTERS[res.CHAPTER][2],res.FONTS['RECAP'],self.surface.get_width() - 200)
 								#DELETE GAME
 								else:
-									self.sfx.play(res.SOUND['FILE_DELETE'])
+									res.MIXER[0].play(res.SOUND['FILE_DELETE'])
 									res.delete_data()
 									self.mnu -= 1
 									self.scroll = 0
@@ -1314,8 +1027,8 @@ class Files:
 				if pressed[5][0]:
 					if self.mnu == 4: self.mnu = 3
 				#SELECT
-				if pressed[0][0] and self.mnu == 3: self.opt -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[1][0] and self.mnu == 3: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+				if pressed[0][0] and self.mnu == 3: self.opt -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[1][0] and self.mnu == 3: self.opt += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
 
 			#RANGE LIMIT
 			if res.MOUSE == 0:
@@ -1326,7 +1039,7 @@ class Files:
 		if self.wdw: self.wdw.outside_events(pressed)
 	
 	def draw(self):
-		for i in self.display: i.fill((0,0,0,0))
+		self.surface.fill((0,0,0,0))
 		rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0]
 		#FILES/CHAPTERS MENU
 		scrl = 0
@@ -1335,8 +1048,8 @@ class Files:
 				if self.optrects[i].width < 250:
 					self.optrects[i].width += 4
 					self.optrects[i].x -= 4
-				if self.optrects[i].y > int(self.display[1].get_height()/2): scrl = -(self.optrects[i].height * i)
-				else: scrl = int(self.display[1].get_height()/2) - int(self.optrects[i].height/2) - self.optrects[i].y
+				if self.optrects[i].y > int(self.surface.get_height()/2): scrl = -(self.optrects[i].height * i)
+				else: scrl = int(self.surface.get_height()/2) - int(self.optrects[i].height/2) - self.optrects[i].y
 				col = (255,255,0)
 			else:
 				if self.optrects[i].width > 230:
@@ -1346,38 +1059,38 @@ class Files:
 			shd = pygame.Surface((self.optrects[i].width,self.optrects[i].height))
 			shd.set_alpha(100)
 			shd.fill((10,10,10))
-			self.display[1].blit(shd,(self.optrects[i].x + 5,self.optrects[i].y + 5 + self.scroll))
-			pygame.draw.rect(self.display[1], col, pygame.Rect(self.optrects[i].x,self.optrects[i].y + self.scroll,self.optrects[i].width,self.optrects[i].height))
+			self.surface.blit(shd,(self.optrects[i].x + 5,self.optrects[i].y + 5 + self.scroll))
+			pygame.draw.rect(self.surface, col, pygame.Rect(self.optrects[i].x,self.optrects[i].y + self.scroll,self.optrects[i].width,self.optrects[i].height))
 			#TITLE AND PAUSE
 			if self.mnu in [0,1]:
 				if self.mnu == 1: lst = ['resume','load_file','save_file','Settings','About','exit']
 				else: lst = ['load_file','Settings','About','exit']
-				self.display[1].blit(self.fnt[self.curfnt].render(dtb.MENU[lst[i]], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
+				self.surface.blit(res.FONTS[self.curfnt].render(dtb.MENU[lst[i]], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
 			#FILES MENU
 			if self.mnu in [2,4]:
 				if i != len(res.FILES):
-					self.display[1].blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[res.FILES[i][2]][0], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
-					self.display[1].blit(self.fnt[self.curfnt].render(self.gmtim[i], True, (0, 0, 0)), (self.optrects[i].x + 10, self.optrects[i].y + 30 + self.scroll))
-				else: self.display[1].blit(self.fnt[self.curfnt].render(dtb.MENU['new_file'], True, (0,0,0)), (self.optrects[i].x + 50, self.optrects[i].y + 20 + self.scroll))
+					self.surface.blit(res.FONTS[self.curfnt].render(dtb.CHAPTERS[res.FILES[i][2]][0], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
+					self.surface.blit(res.FONTS[self.curfnt].render(self.gmtim[i], True, (0, 0, 0)), (self.optrects[i].x + 10, self.optrects[i].y + 30 + self.scroll))
+				else: self.surface.blit(res.FONTS[self.curfnt].render(dtb.MENU['new_file'], True, (0,0,0)), (self.optrects[i].x + 50, self.optrects[i].y + 20 + self.scroll))
 			#CHAPTERS MENU
 			if self.mnu == 3:
 				if i != res.FILES[res.ID][2] + 1:
-					self.display[1].blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[i][0], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
-					self.display[1].blit(self.fnt[self.curfnt].render(dtb.CHAPTERS[i][1], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 30 + self.scroll))
-				else: self.display[1].blit(self.fnt[self.curfnt].render(dtb.MENU['delete_file'], True, (0,0,0)), (self.optrects[i].x + 70, self.optrects[i].y + 20 + self.scroll))
+					self.surface.blit(res.FONTS[self.curfnt].render(dtb.CHAPTERS[i][0], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
+					self.surface.blit(res.FONTS[self.curfnt].render(dtb.CHAPTERS[i][1], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 30 + self.scroll))
+				else: self.surface.blit(res.FONTS[self.curfnt].render(dtb.MENU['delete_file'], True, (0,0,0)), (self.optrects[i].x + 70, self.optrects[i].y + 20 + self.scroll))
 		#SETTINGS/ABOUT MENU
-		if self.wdw: srf = self.display[1].blit(self.wdw.draw(),(100,100))
+		if self.wdw: srf = self.surface.blit(self.wdw.draw(),(100,100))
 		if self.mnu in [3,4]:
 			if self.scroll > scrl and self.scroll - 1 != scrl: self.scroll -= 2
 			if self.scroll < scrl and self.scroll + 1 != scrl: self.scroll += 2
 		#RECAP
 		if self.mnu == 7:
-			self.display[0].blit(self.bbgs[res.CHAPTER + 1][0], (0,np.floor(-self.scroll)))
+			self.surface.blit(self.bbgs[res.CHAPTER + 1][0], (0,np.floor(-self.scroll)))
 			lt = 0
 			for y in self.txt:
-				self.display[1].blit(self.fnt['RECAP'].render(y, True, (0,0,0)), (101, (self.displayzh - np.floor(self.scroll * 1.5) + lt) * res.GSCALE))
-				self.display[1].blit(self.fnt['RECAP'].render(y, True, (0,0,0)), (102, (self.displayzh - np.floor(self.scroll * 1.5) + lt) * res.GSCALE))
-				self.display[1].blit(self.fnt['RECAP'].render(y, True, (255,255,255)), (100, (self.displayzh - np.floor(self.scroll * 1.5) + lt) * res.GSCALE))
+				self.surface.blit(res.FONTS['RECAP'].render(y, True, (0,0,0)), (101, (self.displayzh - np.floor(self.scroll * 1.5) + lt) * res.GSCALE))
+				self.surface.blit(res.FONTS['RECAP'].render(y, True, (0,0,0)), (102, (self.displayzh - np.floor(self.scroll * 1.5) + lt) * res.GSCALE))
+				self.surface.blit(res.FONTS['RECAP'].render(y, True, (255,255,255)), (100, (self.displayzh - np.floor(self.scroll * 1.5) + lt) * res.GSCALE))
 				lt += 25
 			self.scroll += 1 * res.FPS
 			if self.scroll > (self.displayzh + int(lt/res.GSCALE)) - int(100/res.GSCALE) or self.skip:
@@ -1390,18 +1103,15 @@ class Files:
 				pygame.mixer.music.play(pygame.mixer.Sound(res.MUSIC_PATH + 'fate_occurrences.mp3'),-1)
 				self.mnu = 7
 		
-		return self.display
+		return self.surface
 
 class Inventory:
 	def __init__(self,srf=None,typ=0):
-		self.fnt = {'DEFAULT': pygame.font.Font(res.FONTS_PATH + res.FONT, 12 * res.GSCALE),'DESCRIPTION': pygame.font.Font(res.FONTS_PATH + res.FONT, 9 * res.GSCALE),
-		'ALT': pygame.font.Font(res.FONTS_PATH + 'PrestigeEliteStd.otf', 10)}
-		self.guitools = Guitools()
+		res.FONTS = {**res.FONTS,'DESCRIPTION': pygame.font.Font(res.FONTS_PATH + 'BohemianTypewriter.ttf', 9 * res.GSCALE)}
 		self.allowlimit = False
 		self.allowtrash = False
 		self.allowbag = False
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		srf = (400,300)
 		if srf:
 			self.ratio = [srf,(100,40)]
 			self.itbor = pygame.Surface((130, 40))
@@ -1409,9 +1119,9 @@ class Inventory:
 			for x in range(13):
 				for y in range(4):
 					self.itbor.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
-			self.scr = [pygame.Surface(srf),pygame.Surface((srf[0] * res.GSCALE,srf[1] * res.GSCALE), pygame.SRCALPHA)]
-			self.dsrf = pygame.Surface((self.scr[0].get_width(),50))
+			self.surface = pygame.Surface((srf[0] * res.GSCALE,srf[1] * res.GSCALE), pygame.SRCALPHA)
 			self.fade = srf[0] + 400
+		else: self.surface = pygame.Surface((0,0))
 		self.whl = pygame.Surface((60,60),pygame.SRCALPHA)
 		self.srf = None
 		self.hld = 0
@@ -1425,12 +1135,11 @@ class Inventory:
 		self.arrdir = False
 		self.doneimages = {}
 		self.exzoom = 0
-		#self.tilset = self.guitools.get_tiles()
 		self.battle = False
 		xx = 0
 		yy = 0
-		w = 30
-		h = 30
+		w = 30 * res.GSCALE
+		h = 30 * res.GSCALE
 		b = 2
 		ptinv = [res.INVENTORY[x] for x in range(len(res.INVENTORY)) if x in res.PARTY[res.FORMATION]]
 		lst = [[ptinv],[ptinv],[ptinv,res.STORAGE],[ptinv,res.PRODUCTS],[ptinv,res.BASKET],[res.BASKET,res.PRODUCTS]]
@@ -1440,7 +1149,7 @@ class Inventory:
 			y = 45
 			self.optrects.append([])
 			for u in range(3):
-				if self.type < 2: xx = (200 * u)
+				if self.type < 2: xx = (200 * u * res.GSCALE)
 				else: yy = (200 * u)
 				self.optrects[l].append([])
 				for j in range(5):
@@ -1456,6 +1165,11 @@ class Inventory:
 					y += h + b
 				x = 10
 				y = 45
+		img = pygame.image.load(res.ITEMS_PATH + 'shade.png').convert_alpha()
+		self.imgs = {'shade': pygame.transform.scale(img,(img.get_width() * res.GSCALE,img.get_height() * res.GSCALE))}
+		for i in res.PARTY[res.FORMATION]:
+			img = pygame.image.load(res.SPRITES_PATH + 'who_' + str(i) + '.png').convert_alpha()
+			self.imgs[i] = pygame.transform.scale(img,(img.get_width() * res.GSCALE,img.get_height() * res.GSCALE))
 			
 	def dev(self,d=None):
 		if d == None:
@@ -1564,7 +1278,7 @@ class Inventory:
 		elif i[0].startswith('grenade') and int(i[1]) > 0:
 			if int(i[1]) > 0: i[1] = str(int(i[1]) - 1)
 			if int(i[1]) == 0:
-				self.sfx.play(res.SOUND['HIT'])
+				res.MIXER[0].play(res.SOUND['HIT'])
 				res.CHARACTERS[u]['HP'] -= dtb.ITEMS[i[0]][5]['DAMAGE']
 		elif i[0] == 'cigar' and float(i[1]) > 0: i[1] = str(float(i[1]) - 0.2)
 			
@@ -1574,26 +1288,27 @@ class Inventory:
 			for i in range(len(self.optrects[0][self.opt[2]][self.opt[1]][self.opt[0]][self.opt[3]])):
 				if pygame.Rect.colliderect(mouse,pygame.Rect(optrct.x - self.scroll[0],optrct.y,optrct.width,optrct.height)):
 					self.opt[3] = i
-			if pressed[2][0] and self.opt[3] > 1: self.opt[3] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-			if pressed[3][0] and self.opt[3] < len(self.itmov): self.opt[3] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+			if pressed[2][0] and self.opt[3] > 1: self.opt[3] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+			if pressed[3][0] and self.opt[3] < len(self.itmov): self.opt[3] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 		#SELECT ITEM
 		else:
 			for l in range(len(self.optrects)):
 				for u in range(len(self.optrects[l])):
 					for j in range(len(self.optrects[l][u])):
 						for i in range(len(self.optrects[l][u][j])):
-							optrct = pygame.Rect(self.optrects[l][u][j][i][0].x * res.GSCALE,self.optrects[l][u][j][i][0].y * res.GSCALE,self.optrects[l][u][j][i][0].width * res.GSCALE,self.optrects[l][u][j][i][0].height * res.GSCALE)
-							if pygame.Rect.colliderect(mouse,pygame.Rect(optrct.x - self.scroll[0],optrct.y,optrct.width,optrct.height)):
+							rct = self.optrects[l][u][j][i][0]
+							optrct = pygame.Rect(rct.x + int(rct.width/2) - self.scroll[0],rct.y + int(rct.height*2) - self.scroll[1],rct.width,rct.height)
+							if pygame.Rect.colliderect(mouse,optrct):
 								self.opt[0] = i
 								self.opt[1] = j
 								self.opt[2] = u
 								if res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0] != '_':
 									res.HOVERTEXT = dtb.ITEMS[res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0]][0]
 								
-			if pressed[2][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-			if pressed[3][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
-			if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-			if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])	
+			if pressed[2][0]: self.opt[0] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+			if pressed[3][0]: self.opt[0] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+			if pressed[0][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+			if pressed[1][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])	
 		if self.type < 2:
 			if self.opt[0] < 0: self.opt[0] = 4; self.opt[2] -= 1
 			if self.opt[0] > 4: self.opt[0] = 0; self.opt[2] += 1
@@ -1641,7 +1356,7 @@ class Inventory:
 							else: good = True
 						else: good = True
 						if good:
-							self.sfx.play(res.SOUND['HEAL'])
+							res.MIXER[0].play(res.SOUND['HEAL'])
 							hl = dtb.ITEMS[drk][5]
 							if it in res.CHARACTERS[self.opt[2]]['FAVFOOD']: hl += int(hl/2)
 							ch['HP'] += hl
@@ -1651,7 +1366,7 @@ class Inventory:
 							if ch['HP'] > dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]:
 								ch['HP'] = dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]
 						else:
-							self.sfx.play(res.SOUND['INCONSCIOUS'])
+							res.MIXER[0].play(res.SOUND['INCONSCIOUS'])
 							ch['HEALTH'] = 10
 						if amt > 0: amt -= 1
 						if amt == 0:
@@ -1662,23 +1377,23 @@ class Inventory:
 								else: it = ['_','0000']
 							res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]] = it
 						self.notification.append({'TEXT': 'hp_' + str(hl), 'COLOR': (255, 0, 0), 'HALIGN': 'left','X': 0})
-					else: self.sfx.play(res.SOUND['ERROR'])
+					else: res.MIXER[0].play(res.SOUND['ERROR'])
 				#TOOLS
 				elif it[0].startswith('tool_'):
 					try: t = self.tilrect[0][(np.floor((self.player[self.opt[2]]['RECT'].y + 15)/self.map.tilewidth) * self.map.width) + np.floor((self.player[p]['RECT'].x + 15)/self.map.tilewidth)]
 					except: t = None
 					if t != None and len(dtb.ITEMS[it[0]]) > 5:
 						if t[0] == dtb.ITEMS[it[0]][5]['UNLOCK']:
-							self.sfx.play(res.SOUND['MENU_GO'])
+							res.MIXER[0].play(res.SOUND['MENU_GO'])
 				#GRENADES
 				elif it[0].startswith('grenade') and it in res.INVENTORY[res.PARTY[res.FORMATION][self.turn]][4][1:]:
-					self.sfx.play(res.SOUND['MELEE'])
+					res.MIXER[0].play(res.SOUND['MELEE'])
 					it = ['_','0000']
 					self.opt[2] = 1
 					self.type = 0
 				#REPELLENTS
 				elif it[0].startswith('repellent'):
-					self.sfx.play(res.SOUND['MENU_GO'])
+					res.MIXER[0].play(res.SOUND['MENU_GO'])
 					ch['HEALTH'] = 2
 					self.waitlst.append(['repellent' + str(res.PARTY[res.FORMATION][self.opt[2]]),self.waitime + dtb.ITEMS[it[0]][5]])
 					it = ['_','0000']
@@ -1686,16 +1401,16 @@ class Inventory:
 				elif it[0].startswith('pill_'):
 					for i in range(len(dtb.PROFNAMES.keys())):
 						if it[0].endswith(dtb.PROFNAMES.keys()[i]):
-							self.sfx.play(res.SOUND['ATTRIBUTE_GAIN'])
+							res.MIXER[0].play(res.SOUND['ATTRIBUTE_GAIN'])
 							ch['BONUS'][i] += 1
 							it = ['_','0000']
 				#ACCESORIES ACCESS
 				elif it[0].startswith('phone' or 'wallet' or 'bag' or 'locksmith'):
-					self.sfx.play(res.SOUND['MENU_GO'])
+					res.MIXER[0].play(res.SOUND['MENU_GO'])
 					self.opt[3] = 1
 				#TENTS
 				elif it[0].startswith('tent_'):
-					self.sfx.play(res.SOUND['INVENTORY_CLOSE'])
+					res.MIXER[0].play(res.SOUND['INVENTORY_CLOSE'])
 					self.build = it[0]
 					self.type = 0
 					if it[1] != 'infinite':
@@ -1703,12 +1418,12 @@ class Inventory:
 						else: it = ['_','0000']
 				#EXAMINE
 				elif it[0].startswith('newspaper' or 'id_'):
-					self.sfx.play(res.SOUND['PAGE_FLIP'])
+					res.MIXER[0].play(res.SOUND['PAGE_FLIP'])
 					if it[0].startswith('id_'): self.read = GUI.ID(res.PARTY[res.FORMATION][self.opt[2]])
 					else: self.read = GUI.Newspaper()
 				#PAINT TILES
 				elif it[0].startswith('til_'):
-					self.sfx.play(res.SOUND['INVENTORY_CLOSE'])
+					res.MIXER[0].play(res.SOUND['INVENTORY_CLOSE'])
 					self.paint = dtb.ITEMS[it[0]][5]
 					self.player[0]['PAUSE'] = 0
 					self.type = 0
@@ -1717,10 +1432,10 @@ class Inventory:
 						else: it = ['_','0000']
 				#GUI TOOLS
 				elif it[0].startswith('guit_'):
-					if it[0] == 'guit_save': self.sfx.play(res.SOUND['FILE_SAVE']); self.savemap()
-					elif it[0] == 'guit_load': self.sfx.play(res.SOUND['FILE_LOAD']); self.loadmap()
-					elif it[0] == 'guit_undo' and self.ihist > 0: self.sfx.play(res.SOUND['MENU_BACK']); self.ihist -= 1
-					elif it[0] == 'guit_redo' and self.ihist < len(self.shist): self.sfx.play(res.SOUND['MENU_GO']); self.ihist += 1
+					if it[0] == 'guit_save': res.MIXER[0].play(res.SOUND['FILE_SAVE']); self.savemap()
+					elif it[0] == 'guit_load': res.MIXER[0].play(res.SOUND['FILE_LOAD']); self.loadmap()
+					elif it[0] == 'guit_undo' and self.ihist > 0: res.MIXER[0].play(res.SOUND['MENU_BACK']); self.ihist -= 1
+					elif it[0] == 'guit_redo' and self.ihist < len(self.shist): res.MIXER[0].play(res.SOUND['MENU_GO']); self.ihist += 1
 					elif it[0] in ['guit_scissors','guit_glue','guit_copy']:
 						if it[0] == 'guit_scissors': self.sstore = []
 						pos = [0,0]
@@ -1736,12 +1451,12 @@ class Inventory:
 							if pos[0] >= self.mapdata['WIDTH']:
 								pos[0] = 0; pos[1] += 1
 					else:
-						self.sfx.play(res.SOUND['INVENTORY_CLOSE'])
+						res.MIXER[0].play(res.SOUND['INVENTORY_CLOSE'])
 						self.guit = dtb.ITEMS[it[0]][5]
 						self.player[0]['PAUSE'] = 0
 						self.type = 0
 				#ERROR
-				else: self.sfx.play(res.SOUND['ERROR'])
+				else: res.MIXER[0].play(res.SOUND['ERROR'])
 				if self.battle:
 					self.turn += 1
 					self.opt[2] = 1
@@ -1749,10 +1464,10 @@ class Inventory:
 			#ACCESORIES EXIT
 			elif self.itmov[0] == 0:
 				if self.opt[3] == len(self.itmov):
-					self.sfx.play(res.SOUND['MENU_GO'])
+					res.MIXER[0].play(res.SOUND['MENU_GO'])
 					self.itmov = ''
 					self.opt[3] = 0
-				else: self.sfx.play(res.SOUND['ERROR'])
+				else: res.MIXER[0].play(res.SOUND['ERROR'])
 			#CRAFTING
 			elif it[0] != '_':
 				craft = False
@@ -1773,7 +1488,7 @@ class Inventory:
 				if self.itmov[0].startswith('ammo') and it[0].startswith('gun'):
 					if dtb.ITEMS[self.itmov[0]][5] == dtb.ITEMS[it[0]][5]['GAUGE']:
 						craft = True
-						self.sfx.play(res.SOUND['GUN_RECHARGE'])
+						res.MIXER[0].play(res.SOUND['GUN_RECHARGE'])
 						it[3] = dtb.ITEMS[it[0]][5]['CAPACITY']
 						if self.opt[1] == 4 and self.opt[0]> 0:
 							if int(it[3]) > 0:
@@ -1785,38 +1500,38 @@ class Inventory:
 				if craft:
 					for a in range(len(it[::2])):
 						if it[a] == '_':
-							self.sfx.play(res.SOUND['CRAFT'])
+							res.MIXER[0].play(res.SOUND['CRAFT'])
 							it[(a + 1) * 2] = self.itmov[0]
 							it[((a + 1) * 2) + 1] = self.itmov[1]
 							self.itmov = ''
 							break
-						else: self.sfx.play(res.SOUND['ERROR']); self.shake = 5
+						else: res.MIXER[0].play(res.SOUND['ERROR']); self.shake = 5
 				#MERGE ITEMS
 				merge = False
 				for a in dtb.CRAFTING:
 					if it[0] in a[0:2] and self.itmov[0] in a[0:2]:
-						self.sfx.play(res.SOUND['CRAFT'])
+						res.MIXER[0].play(res.SOUND['CRAFT'])
 						it = [a[2],'9999']
 						self.itmov = ''
 						merge = True
-				if merge == False and craft == False: self.sfx.play(res.SOUND['ERROR']); self.shake = 5
+				if merge == False and craft == False: res.MIXER[0].play(res.SOUND['ERROR']); self.shake = 5
 				if self.battle:
 					self.turn += 1
 					self.opt[2] = 1
 					self.type = 0
-			else: self.sfx.play(res.SOUND['ERROR'])
+			else: res.MIXER[0].play(res.SOUND['ERROR'])
 		#MOVE ITEMS
 		if pressed[5][0]:
 			#TRASH
-			if self.type == 1 and it[0] != '_': it = ['_','0000']; self.sfx.play(res.SOUND['FILE_DELETE'])
+			if self.type == 1 and it[0] != '_': it = ['_','0000']; res.MIXER[0].play(res.SOUND['FILE_DELETE'])
 			elif self.itmov != '':
 				#TAKE SUB-ITEM
 				if self.itmov[0] == 0:
 					if self.opt[3] < len(self.itmov) and self.itmov[self.opt[3]][0] != '_':
-						self.sfx.play(res.SOUND['MENU_GO'])
+						res.MIXER[0].play(res.SOUND['MENU_GO'])
 						self.itmov = [self.itmov[self.opt[3]][0],self.itmov[self.opt[3]][1]]
 						for i in range(2): del it[2 * self.opt[3]]
-					else: self.sfx.play(res.SOUND['ERROR']); self.shake = 5
+					else: res.MIXER[0].play(res.SOUND['ERROR']); self.shake = 5
 				#PLACE ITEM
 				elif it[0] == '_' and self.space(res.PARTY[res.FORMATION][self.opt[2]],self.opt[3],self.opt[0],self.opt[1],self.type):
 					#CLOTHING
@@ -1836,7 +1551,7 @@ class Inventory:
 							if j[0] == '_': chk = False
 						if chk:
 							for i in range(5): res.STORAGE.append(['_','0000'])
-					self.sfx.play(res.SOUND['EQUIP'])
+					res.MIXER[0].play(res.SOUND['EQUIP'])
 					if self.type == 4:
 						if res.TIME[0] >= 10: hh = str(res.TIME[0])
 						else: hh = '0' + str(res.TIME[0])
@@ -1853,14 +1568,14 @@ class Inventory:
 						self.type = 0
 				#SWITCH ITEMS
 				elif self.space(res.PARTY[res.FORMATION][self.opt[2]],self.opt[3],self.opt[0],self.opt[1],self.type):
-					self.sfx.play(res.SOUND['EQUIP'])
+					res.MIXER[0].play(res.SOUND['EQUIP'])
 					trd = it.copy()
 					it = self.itmov
 					if self.itmov[0].startswith('clth'):
 						self.player[self.opt[2]]['COSTUME'] = dtb.ITEMS[self.itmov[0]][5]
 					self.itmov = trd
 				#ERROR
-				else: self.sfx.play(res.SOUND['ERROR']); self.shake = 5
+				else: res.MIXER[0].play(res.SOUND['ERROR']); self.shake = 5
 			#TAKE ITEM
 			elif it[0] != '_':
 				if self.opt[0] > 4:
@@ -1872,10 +1587,10 @@ class Inventory:
 								self.dialog(dtb.DIALOGS['MERCATOR'][2])
 							elif self.confirmation() == 1:
 								self.add(res.PARTY[res.FORMATION][0],it[0])
-								self.sfx.play(res.SOUND['BUY'])
+								res.MIXER[0].play(res.SOUND['BUY'])
 								mny[1] -= int(dtb.ITEMS[it[0]][2] * it[0])
 						else:
-							self.sfx.play(res.SOUND['ERROR'])
+							res.MIXER[0].play(res.SOUND['ERROR'])
 							self.dialog(dtb.DIALOGS['MERCATOR'][1])
 					#WASH
 					elif self.type == 4:
@@ -1886,12 +1601,12 @@ class Inventory:
 						self.itmov = [it[0],prp]
 						del it
 				else:
-					self.sfx.play(res.SOUND['MENU_GO'])
+					res.MIXER[0].play(res.SOUND['MENU_GO'])
 					self.itmov = it.copy()
 					it = ['_','0000']
-			else: self.sfx.play(res.SOUND['ERROR'])
+			else: res.MIXER[0].play(res.SOUND['ERROR'])
 		#DEVICES SHORTCUT
-		if pressed[7][0]: res.SHORTCUT = [res.PARTY[res.FORMATION][self.opt[2]],self.opt[1],self.opt[0]]; self.sfx.play(res.SOUND['MENU_GO'])
+		if pressed[7][0]: res.SHORTCUT = [res.PARTY[res.FORMATION][self.opt[2]],self.opt[1],self.opt[0]]; res.MIXER[0].play(res.SOUND['MENU_GO'])
 
 		if self.type == 6 and self.opt[0] < 5: res.PRODUCTS[self.opt[0] + (self.opt[1] * 5) - 5] = it
 		elif self.opt[0] > 4 and self.type > 1: lst[self.type - 2][self.opt[0] + (self.opt[1] * 5) - 5] = it
@@ -1906,33 +1621,38 @@ class Inventory:
 	def itimg(self,it):
 		img = None
 		if it in self.doneimages: img = self.doneimages[it]
-		elif it.startswith('letter'): img = pygame.image.load(res.ITEMS_PATH + it + '_H.png')
-		elif it.startswith('til_'): img = self.tilset[dtb.ITEMS[it][5]]
-		elif it.startswith('clth_') or it.startswith('tool_lighter') or it.startswith('bottle'):
-			img = pygame.image.load(res.ITEMS_PATH + it[:-1] + '.png')
-			img.fill(res.PALETTES[2][int(it[-1]) - 1],None,pygame.BLEND_RGBA_MULT)
-		elif it.endswith('_wasted'):
-			img = pygame.image.load(res.ITEMS_PATH + it.replace('_wasted','') + '.png')
-			img.fill((50,50,50),None,pygame.BLEND_RGBA_MULT)
-		elif it != '_':
-			if it.startswith('bed_'):
-				img = pygame.image.load(res.ITEMS_PATH + 'bed.png')
-				if it.endswith('single'): ad = pygame.image.load(res.ITEMS_PATH + 'wS.png')
-				if it.endswith('couple'): ad = pygame.image.load(res.ITEMS_PATH + 'wC.png')
-				img.blit(ad,(img.get_width() - ad.get_width() - 1, 1))
-			else:
-				nrml = False
-				for i in ['cage_','tent_']:
-					if it.startswith(i):
-						img = pygame.image.load(res.ITEMS_PATH + i + '.png')
-						if it.endswith('big'): ad = pygame.image.load(res.ITEMS_PATH + 'wB.png')
-						if it.endswith('medium'): ad = pygame.image.load(res.ITEMS_PATH + 'wM.png')
-						if it.endswith('small'): ad = pygame.image.load(res.ITEMS_PATH + 'wP.png')
+		else:
+			for pth in ['./'] + ['./plugins/' + i + '/' for i in os.listdir('plugins')]:
+				if it.startswith('letter'): img = pygame.image.load(pth + res.ITEMS_PATH + it + '_H.png')
+				elif it.startswith('til_'): img = self.tilset[dtb.ITEMS[it][5]]
+				elif it.startswith('clth_') or it.startswith('tool_lighter') or it.startswith('bottle'):
+					img = pygame.image.load(pth + res.ITEMS_PATH + it[:-1] + '.png')
+					img.fill(res.PALETTES[2][int(it[-1]) - 1],None,pygame.BLEND_RGBA_MULT)
+				elif it.endswith('_wasted'):
+					img = pygame.image.load(pth + res.ITEMS_PATH + it.replace('_wasted','') + '.png')
+					img.fill((50,50,50),None,pygame.BLEND_RGBA_MULT)
+				elif it != '_':
+					if it.startswith('bed_'):
+						img = pygame.image.load(pth + res.ITEMS_PATH + 'bed.png')
+						if it.endswith('single'): ad = pygame.image.load(pth + res.ITEMS_PATH + 'wS.png')
+						if it.endswith('couple'): ad = pygame.image.load(pth + res.ITEMS_PATH + 'wC.png')
 						img.blit(ad,(img.get_width() - ad.get_width() - 1, 1))
-						nrml = True
-				if nrml == False: img = pygame.image.load(res.ITEMS_PATH + it + '.png')
+					else:
+						nrml = False
+						for i in ['cage_','tent_']:
+							if it.startswith(i):
+								img = pygame.image.load(pth + res.ITEMS_PATH + i + '.png')
+								if it.endswith('big'): ad = pygame.image.load(pth + res.ITEMS_PATH + 'wB.png')
+								if it.endswith('medium'): ad = pygame.image.load(pth + res.ITEMS_PATH + 'wM.png')
+								if it.endswith('small'): ad = pygame.image.load(pth + res.ITEMS_PATH + 'wP.png')
+								img.blit(ad,(img.get_width() - ad.get_width() - 1, 1))
+								nrml = True
+						if nrml == False:
+							try: img = pygame.image.load(pth + res.ITEMS_PATH + it + '.png')
+							except: img = None
+				if img != None: break
 		self.doneimages[it] = img
-		return img
+		return pygame.transform.scale(img,(img.get_width() * res.GSCALE,img.get_height() * res.GSCALE))
 		
 	def wheel(self):
 		self.whl.fill((0,0,0,0))
@@ -1971,17 +1691,16 @@ class Inventory:
 		return srf
 	
 	def draw(self):
-		for i in self.scr: i.fill((0,0,0,0))
-		self.dsrf.fill((0,0,0))
+		self.surface.fill((0,0,0,0))
 		mnc = 0
 		dscr = '_'
 		#SCROLL
-		if self.type == 0:
+		'''if self.type == 0:
 			if self.scroll[0] < (self.opt[2] * 200):
 				self.scroll[0] += 40
 			if self.scroll[0] > (self.opt[2] * 200):
 				self.scroll[0] -= 40
-		if self.scroll[0] < 0: self.scroll[0] = 0
+		if self.scroll[0] < 0: self.scroll[0] = 0'''
 
 		#if self.type in [1,5]: rct.x = self.optrects[mnc][j][i].x - self.scroll[0]
 		#else: rct.y = self.optrects[mnc][j][i].y - self.scroll[0]
@@ -2015,7 +1734,7 @@ class Inventory:
 						if ll == 1: rct = self.optrects[ll][0][n][j][0]
 						else: rct = self.optrects[ll][n][j][i][0]
 						if trigg == True:
-							pygame.draw.rect(self.scr[0],cl,rct)
+							pygame.draw.rect(self.surface,cl,rct)
 							#ITEM DURATION
 							for dr in [['tube',(10,200,10),5],['bottle',(100,100,200),5],['vest',(153,153,153),6],['cigar',(153,153,153),500],
 								['gun',(255,183,183),'CAPACITY'],['phone',(255,226,173),3600]]:
@@ -2027,33 +1746,30 @@ class Inventory:
 										drct = rct.copy()
 										drct.height = int(rct.height/(dv/float(it[1])))
 										drct.y += rct.height - drct.height
-										pygame.draw.rect(self.scr[0],dr[1],drct)
+										pygame.draw.rect(self.surface,dr[1],drct)
 							#DRAW SPRITES
 							if it[0] != '_':
-								img = self.itimg(it[0])
-								self.scr[0].blit(img,(rct.x,rct.y))
+								self.surface.blit(self.itimg(it[0]),(rct.x,rct.y))
 								if i > 0 and j < 4:
 									vlm += dtb.ITEMS[it[0]][3]
 									wei += dtb.ITEMS[it[0]][4]
 				#VOLUME AND WEIGHT
 				lst = [['volume',vlm],['weight',wei]]
-				sz = self.fnt['DEFAULT'].size(res.CHARACTERS[n]['NAME'])[0]
+				sz = res.FONTS['DEFAULT'].size(res.CHARACTERS[n]['NAME'])[0]
 				if self.type in [0,1]:
-					pos = [[(93 + (210 * mnc) - self.scroll[0],10),(93 + (210 * mnc) - self.scroll[0],25),(15 + (210 * mnc) - self.scroll[0], 20)],
-					[((55 + (210 * mnc) - self.scroll[0]) * res.GSCALE, 15 * res.GSCALE),((55 + (210 * mnc) - self.scroll[0]) * res.GSCALE, 30 * res.GSCALE),(((40 + (210 * mnc) - self.scroll[0]) * res.GSCALE) - sz, 15 * res.GSCALE)]]
+					pos = [((55 + (210 * mnc) - self.scroll[0]) * res.GSCALE, 15 * res.GSCALE),((55 + (210 * mnc) - self.scroll[0]) * res.GSCALE, 30 * res.GSCALE),(((40 + (210 * mnc) - self.scroll[0]) * res.GSCALE) - sz, 15 * res.GSCALE)]
 				else:
-					pos = [[(93,10 + (210 * mnc) - self.scroll[0]),(93,25 + (210 * mnc) - self.scroll[0]),(15, 20 + (210 * mnc) - self.scroll[0])],
-					[(55 * res.GSCALE, (15 + (210 * mnc) - self.scroll[0]) * res.GSCALE),(55 * res.GSCALE, (30 + (210 * mnc) - self.scroll[0]) * res.GSCALE),((40 * res.GSCALE) - sz, (15 + (210 * mnc) - self.scroll[0]) * res.GSCALE)]]
+					pos = [(55 * res.GSCALE, (15 + (210 * mnc) - self.scroll[0]) * res.GSCALE),(55 * res.GSCALE, (30 + (210 * mnc) - self.scroll[0]) * res.GSCALE),((40 * res.GSCALE) - sz, (15 + (210 * mnc) - self.scroll[0]) * res.GSCALE)]
 				if self.allowlimit:
 					for i in range(2):
-						self.scr[1].blit(self.fnt['DEFAULT'].render(dtb.MENU[lst[i][0]], True, (255, 255, 255)), pos[1][i])
-						pygame.draw.rect(self.scr[0], (100, 100, 100), pygame.Rect(pos[0][i][0],pos[0][i][1],80,10))
+						self.surface.blit(res.FONTS['DEFAULT'].render(dtb.MENU[lst[i][0]], True, (255, 255, 255)), pos[i])
+						pygame.draw.rect(self.surface, (100, 100, 100), pygame.Rect(pos[i][0],pos[i][1],80,10))
 						if vlm > 0 and res.INVENTORY[n][4][0][0] != '_':
-							pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(pos[0][i][0],pos[0][i][1],int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/lst[i][1])),10))
+							pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(pos[i][0],pos[i][1],int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/lst[i][1])),10))
 							if self.itmov != '' and self.itmov[0] != 0:
-								pygame.draw.rect(self.scr[0], (200, 10, 10), pygame.Rect(pos[0][i][0] + int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/lst[i][1])),pos[0][i][1],int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/dtb.ITEMS[self.itmov[0]][3])),10))
-				self.scr[1].blit(self.fnt['DEFAULT'].render(res.CHARACTERS[n]['NAME'], True, (255, 255, 255)),pos[1][2])
-				self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(n) + '.png'),pos[0][2])
+								pygame.draw.rect(self.surface, (200, 10, 10), pygame.Rect(pos[i][0] + int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/lst[i][1])),pos[i][1],int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/dtb.ITEMS[self.itmov[0]][3])),10))
+				self.surface.blit(res.FONTS['DEFAULT'].render(res.CHARACTERS[n]['NAME'], True, (255, 255, 255)),pos[2])
+				self.surface.blit(self.imgs[n],(pos[2]))
 				mnc += 1
 			ll += 1
 		#HOLDING ITEM
@@ -2067,28 +1783,28 @@ class Inventory:
 			if self.itmov[0] != 0:
 				img = self.itimg(self.itmov[0])
 				if self.type < 2:
-					self.scr[0].blit(pygame.image.load(res.ITEMS_PATH + 'shade.png'), (14 + (self.opt[2] * 200) + ox - self.scroll[0],62 + lox))
-					self.scr[0].blit(img, (10 + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,35 + lox))
+					self.surface.blit(self.imgs['shade'], (14 + (self.opt[2] * 200) + ox - self.scroll[0],62 + lox))
+					self.surface.blit(img, (10 + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,35 + lox))
 				else:
-					self.scr[0].blit(pygame.image.load(res.ITEMS_PATH + 'shade.png'), (14 + ox,62 + (self.opt[2] * 200) + lox - self.scroll[0]))
-					self.scr[0].blit(img, (10 + ox + self.shake,35 + (self.opt[2] * 200) + lox - self.scroll[0]))
+					self.surface.blit(pygame.image.load(res.ITEMS_PATH + 'shade.png'), (14 + ox,62 + (self.opt[2] * 200) + lox - self.scroll[0]))
+					self.surface.blit(img, (10 + ox + self.shake,35 + (self.opt[2] * 200) + lox - self.scroll[0]))
 			#SUB-ITEMS
 			else:
 				srf = pygame.Surface((70,40))
 				srf.set_alpha(100)
 				srf.fill((0, 0, 0))
-				self.scr[0].blit(srf, (25 + (self.opt[2] * 200) + ox - self.scroll[0],40 + lox),pygame.Rect(0,0,10 + (len(self.itmov) * 30),40))
-				self.scr[0].blit(self.itbor, (20 + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,35 + lox),pygame.Rect(0,0,10 + (len(self.itmov) * 30),40))
+				self.surface.blit(srf, (25 + (self.opt[2] * 200) + ox - self.scroll[0],40 + lox),pygame.Rect(0,0,10 + (len(self.itmov) * 30),40))
+				self.surface.blit(self.itbor, (20 + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,35 + lox),pygame.Rect(0,0,10 + (len(self.itmov) * 30),40))
 				for it in range(len(res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]][2::2]) + 1):
 					if self.opt[3] == it + 1:
-						pygame.draw.rect(self.scr[0], res.COLOR, pygame.Rect(25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox,30,30))
+						pygame.draw.rect(self.surface, res.COLOR, pygame.Rect(25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox,30,30))
 						if self.opt[3] != len(self.itmov): dscr = [self.itmov[self.opt[3]][0],res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]][it * 2]]
-					else: pygame.draw.rect(self.scr[0], (255,255,255), pygame.Rect(25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox,30,30))
+					else: pygame.draw.rect(self.surface, (255,255,255), pygame.Rect(25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox,30,30))
 					if it + 1 == len(self.itmov):
-						self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'e_run.png'), (25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox))
+						self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'e_run.png'), (25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox))
 					elif self.itmov[it + 1][0] != '_':
 						img = self.itimg(self.itmov[it + 1][0])
-						self.scr[0].blit(img, (25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox))
+						self.surface.blit(img, (25 + (30 * it) + (self.opt[2] * 200) + ox - self.scroll[0] + self.shake,40 + lox))
 		#ARROWS
 		if self.arrdir == False:
 			self.arrow += 1
@@ -2097,14 +1813,14 @@ class Inventory:
 			self.arrow -= 1
 			if self.arrow == 0: self.arrdir = False
 		if self.type < 2:
-			if self.opt[2] > 0: self.scr[0].blit(pygame.transform.rotate(pygame.image.load(res.SPRITES_PATH + 'arw.png'),270), (0 + self.arrow,110))
-			if self.opt[2] < len(res.PARTY[res.FORMATION]) - 1: self.scr[0].blit(pygame.transform.rotate(pygame.image.load(res.SPRITES_PATH + 'arw.png'),90), ((self.scr[0].get_width() - 12) - self.arrow,110))
+			if self.opt[2] > 0: self.surface.blit(pygame.transform.rotate(pygame.image.load(res.SPRITES_PATH + 'arw.png'),270), (0 + self.arrow,110))
+			if self.opt[2] < len(res.PARTY[res.FORMATION]) - 1: self.surface.blit(pygame.transform.rotate(pygame.image.load(res.SPRITES_PATH + 'arw.png'),90), ((self.surface.get_width() - 12) - self.arrow,110))
 		else:
-			if self.opt[2] > 0: self.scr[0].blit(pygame.transform.flip(pygame.image.load(res.SPRITES_PATH + 'arw.png'),False,True), (80,0 + self.arrow))
-			if self.opt[2] < len(res.PARTY[res.FORMATION]) - 1: self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (80,208 - self.arrow))
+			if self.opt[2] > 0: self.surface.blit(pygame.transform.flip(pygame.image.load(res.SPRITES_PATH + 'arw.png'),False,True), (80,0 + self.arrow))
+			if self.opt[2] < len(res.PARTY[res.FORMATION]) - 1: self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'arw.png'), (80,208 - self.arrow))
 		
 		#TRASH
-		if self.type == 1: self.scr[1].blit(self.fnt['DESCRIPTION'].render(dtb.MENU['drop'], True, (255, 255, 255)), (20, self.scr[1].get_height() - 50))
+		if self.type == 1: self.surface.blit(res.FONTS['DESCRIPTION'].render(dtb.MENU['drop'], True, (255, 255, 255)), (20, self.surface.get_height() - 50))
 		else:
 			#ITEM DESCRIPTION
 			if self.itmov != '' and self.opt[3] < len(self.itmov):
@@ -2129,11 +1845,11 @@ class Inventory:
 					if dscr[0].startswith('credit_card'): txt[1] += ' - $' + str(dscr[1])
 					if dscr[0].startswith('bottle') and len(dscr) > 2: txt[1] += ' - ' + str(dscr[1]) + 'm: ' + str(dtb.ITEMS[dscr[2]][0])
 					y = 0
-					for t in self.guitools.wrap(txt,self.fnt['DESCRIPTION'],self.scr[1].get_width() - 40):
-						self.scr[1].blit(self.fnt['DESCRIPTION'].render(self.guitools.dislexic(t), True, (255, 255, 255)), (20, self.scr[1].get_height() - 80 + y))
+					for t in tools.text.wrap(txt,res.FONTS['DESCRIPTION'],self.surface.get_width() - 40):
+						self.surface.blit(res.FONTS['DESCRIPTION'].render(tools.text.dislexic(t), True, (255, 255, 255)), (20, self.surface.get_height() - 80 + y))
 						y += 30
 				#NOT DISCOVERED
-				elif dtp == 2: self.scr[1].blit(self.fnt['DESCRIPTION'].render(dtb.MENU['discover'], True, (255, 255, 255)), (20, self.scr[1].get_height() - 50))
+				elif dtp == 2: self.surface.blit(res.FONTS['DESCRIPTION'].render(dtb.MENU['discover'], True, (255, 255, 255)), (20, self.surface.get_height() - 50))
 				#ITEM STATS
 				elif dtp > 2 and self.itmov[0] != 0:
 					xbr = 0
@@ -2147,14 +1863,14 @@ class Inventory:
 						if shw:
 							if len(p) > 3: it = dtb.ITEMS[self.itmov[0]][p[2]][p[3]]
 							else: it = dtb.ITEMS[self.itmov[0]][p[2]]
-							self.scr[1].blit(self.fnt['DESCRIPTION'].render(dtb.MENU[p[1]], True, (255, 255, 255)), (80 + (xbr * 200), self.scr[1].get_height() - 80 + (ybr * 30)))
-							pygame.draw.rect(self.scr[1],(100,100,100),pygame.Rect(80 + (xbr * 160),self.scr[1].get_height() - (ybr * 20),50,10))
-							pygame.draw.rect(self.scr[1],(255,255,255),pygame.Rect(80 + (xbr * 160),self.scr[1].get_height() - (ybr * 20),np.floor(50/it),10))
+							self.surface.blit(res.FONTS['DESCRIPTION'].render(dtb.MENU[p[1]], True, (255, 255, 255)), (80 + (xbr * 200), self.surface.get_height() - 80 + (ybr * 30)))
+							pygame.draw.rect(self.surface,(100,100,100),pygame.Rect(80 + (xbr * 160),self.surface.get_height() - (ybr * 20),50,10))
+							pygame.draw.rect(self.surface,(255,255,255),pygame.Rect(80 + (xbr * 160),self.surface.get_height() - (ybr * 20),np.floor(50/it),10))
 							if dtp == 4:
 								df = np.floor(50/dtb.ITEMS[self.itmov[0]][5]) - np.floor(50/dtb.ITEMS[dscr[0]][5])
 								if df != 0:
-									if df < 0: pygame.draw.rect(self.scr[1],(200,10,10),pygame.Rect(80 + (xbr * 160) + np.floor(50/it),self.scr[1].get_height() - (ybr * 20),abs(df),10))
-									if df > 0: pygame.draw.rect(self.scr[1],(10,200,10),pygame.Rect(80 + (xbr * 160) + np.floor(50/it) - abs(df),self.scr[1].get_height() - (ybr * 20),abs(df),10))
+									if df < 0: pygame.draw.rect(self.surface,(200,10,10),pygame.Rect(80 + (xbr * 160) + np.floor(50/it),self.surface.get_height() - (ybr * 20),abs(df),10))
+									if df > 0: pygame.draw.rect(self.surface,(10,200,10),pygame.Rect(80 + (xbr * 160) + np.floor(50/it) - abs(df),self.surface.get_height() - (ybr * 20),abs(df),10))
 							ybr += 1
 							if ybr == 2:
 								xbr += 1
@@ -2163,14 +1879,12 @@ class Inventory:
 		if self.shake > 0: self.shake = -self.shake
 		elif self.shake < 0: self.shake = -self.shake - 1
 		
-		return self.scr
+		return self.surface
 
 class LevelMenu:
 	def __init__(self,sz):
 		self.surface = pygame.Surface(sz)
-		self.fnt = {'DEFAULT': pygame.font.SysFont('Calibri', 12 * res.GSCALE),'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 20 * res.GSCALE),'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.show = False
 		self.scroll = self.surface.get_width() + 50
 		self.inv = Inventory(None)
 		self.optrects = []
@@ -2182,19 +1896,19 @@ class LevelMenu:
 
 		if self.mnu == 2:
 			pygame.mixer.music.fadeout(500)
-			self.sfx.play(res.SOUND['BATTLE_LOST'])
+			res.MIXER[0].play(res.SOUND['BATTLE_LOST'])
 		
 	def inside_events(self,pressed,mouse):
 		for i in range(len(self.optrects)):
 			if pygame.Rect.colliderect(mouse,self.optrects[i]): self.opt[0] = i
-		if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[2][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-		if pressed[3][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[0][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[2][0]: self.opt[0] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt[0] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 		if pressed[4][0]:
 			if self.mnu == 2:
-				self.sfx.play(res.SOUND['MENU_GO'])
+				res.MIXER[0].play(res.SOUND['MENU_GO'])
 				self.inv.find('money')
 				#restart level
 				res.MAP = 'hospital_0'
@@ -2213,13 +1927,13 @@ class LevelMenu:
 
 		#LEVEL START
 		if self.mnu == 0:
-			self.surface.blit(self.fnt['DEFAULT'].render(dtb.CITIES[0][0],True,(200,200,200)),(0,0))
+			self.surface.blit(res.FONTS['DEFAULT'].render(dtb.CITIES[0][0],True,(200,200,200)),(0,0))
 		#WIN SCREEN
 		if self.mnu == 1:
 			pd = 200 - (50 * res.GSCALE) + self.scroll
 			#LABEL
-			if self.hpl < 0: self.surface.blit(self.fnt['TITLE'].render(dtb.MENU['victory'], True, (255,255,255)), (pd + 30, 100))
-			else: self.surface.blit(self.fnt['TITLE'].render(dtb.MENU['perfect'], True, (255,255,255)), (pd, 100))
+			if self.hpl < 0: self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU['victory'], True, (255,255,255)), (pd + 30, 100))
+			else: self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU['perfect'], True, (255,255,255)), (pd, 100))
 			
 			#GREENBLOOD
 			for it in ['tube100','tube250']:
@@ -2234,7 +1948,7 @@ class LevelMenu:
 					if int(btls[1]) < 90:
 						pygame.draw.ellipse(self.surface, (32, 219, 166), pygame.Rect(self.surface.get_width() - pd + 40,250 - int(200/(dtb.ITEMS[it][5]/btls[1])),30,13))
 					pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(self.surface.get_width() - pd,280 - int(200/(dtb.ITEMS[it][5]/btls[1])),50,20))
-					self.surface.blit(self.fnt['DEFAULT'].render(str(btls[1]) + 'ml', True, (0,0,0)), ((self.surface.get_width() - 5 + pd) * res.GSCALE, (285 - int(200/(dtb.ITEMS[it][5]/int(btls[1])))) * res.GSCALE))
+					self.surface.blit(res.FONTS['DEFAULT'].render(str(btls[1]) + 'ml', True, (0,0,0)), ((self.surface.get_width() - 5 + pd) * res.GSCALE, (285 - int(200/(dtb.ITEMS[it][5]/int(btls[1])))) * res.GSCALE))
 			self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'gbbar.png'), (self.surface.get_width() - pd, 150))
 			pygame.draw.ellipse(self.surface,(200,200,200),pygame.Rect(pd + 400, 150,30,15),1)
 			pygame.draw.arc(self.surface,(200,200,200),pygame.Rect(pd + 400, 160,30,15),np.pi,np.pi * 2,1)
@@ -2251,7 +1965,7 @@ class LevelMenu:
 			bw = (self.surface.get_width() * 2) - pd
 			if self.opt[1] > 0:
 				for i in range(len(dtb.PROFNAMES)):
-					#self.display[1].blit(self.fnt['DEFAULT'].render(dtb.BATTLE[39] + ' +' + str(ch['STRENGHT'][ch['LEVEL']] - ch['STRENGHT'][ch['LEVEL'] - 1]), True, (255,255,255)), ((1000 + self.scroll) * 2, 260))
+					#self.surface.blit(res.FONTS['DEFAULT'].render(dtb.BATTLE[39] + ' +' + str(ch['STRENGHT'][ch['LEVEL']] - ch['STRENGHT'][ch['LEVEL'] - 1]), True, (255,255,255)), ((1000 + self.scroll) * 2, 260))
 					pygame.draw.rect(self.surface, (50, 50, 50), pygame.Rect(bw + self.scroll,120,100,15))
 					pygame.draw.rect(self.surface, (255, 255, 0), pygame.Rect(bw + self.scroll,120,np.floor(100/(100/(dtb.CLASSES[ch['CLASS']][dtb.PROFNAMES.keys()[i]][ch['LEVEL']] + ch['BONUS'][i]))),15))
 					if dtb.CLASSES[ch['CLASS']][dtb.PROFNAMES.keys()[i]][ch['LEVEL'] - 1] > 0: pygame.draw.rect(self.display, (0, 255, 100), pygame.Rect(bw + self.scroll,120,np.floor(100/(100/(dtb.CLASSES[ch['CLASS']][dtb.PROFNAMES.keys()[i]][ch['LEVEL'] - 1] + ch['BONUS'][i]))),15))
@@ -2260,138 +1974,28 @@ class LevelMenu:
 				elif self.opt[0] == 1: n = ' '
 				else: n = self.opt[0]
 				pygame.draw.rect(self.surface, (50, 50, 50), pygame.Rect(bw + 110 + self.scroll,145,15,15))
-				self.surface.blit(self.fnt['DEFAULT'].render(str(n), True, (240,240,240)), ((bw + 115 + self.scroll) * res.GSCALE, 295))
+				self.surface.blit(res.FONTS['DEFAULT'].render(str(n), True, (240,240,240)), ((bw + 115 + self.scroll) * res.GSCALE, 295))
 				
 				if self.mnu <= 0:
-					pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,0,self.displayzw,self.winbar))
-					pygame.draw.rect(self.display[0], (0, 0, 0), pygame.Rect(0,self.displayzh - self.winbar,self.displayzw,self.winbar))
+					pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(0,0,self.displayzw,self.winbar))
+					pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(0,self.displayzh - self.winbar,self.displayzw,self.winbar))
 				
-				self.display[0].blit(self.fnt['TITLE'].render(ch['NAME'].lower(), True, (255,255,255)), (800 + self.scroll, 30))
-				self.display[1].blit(self.fnt['DEFAULT'].render(dtb.MENU['level_up'] + str(dtb.CNAMES[ch['CLASS']][ch['LEVEL'] - 1]) + ' !', True, (255,255,255)), ((800 + self.scroll) * res.GSCALE, 70 * res.GSCALE))
+				self.surface.blit(res.FONTS['TITLE'].render(ch['NAME'].lower(), True, (255,255,255)), (800 + self.scroll, 30))
+				self.surface.blit(res.FONTS['DEFAULT'].render(dtb.MENU['level_up'] + str(dtb.CNAMES[ch['CLASS']][ch['LEVEL'] - 1]) + ' !', True, (255,255,255)), ((800 + self.scroll) * res.GSCALE, 70 * res.GSCALE))
 		#LOST SCREEN
 		elif self.mnu == 2:
-			sz = int(self.surface.get_width()/2) - int(self.fnt['TITLE'].size(dtb.MENU['lost'])[0]/2)
-			self.surface.blit(self.fnt['TITLE'].render(dtb.MENU['lost'], True, (255,255,255)), (sz + self.scroll, 100))
-			self.surface.blit(self.fnt['DEFAULT'].render('-$100', True, (255,255,255)), (sz + self.scroll, 240))
+			sz = int(self.surface.get_width()/2) - int(res.FONTS['TITLE'].size(dtb.MENU['lost'])[0]/2)
+			self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU['lost'], True, (255,255,255)), (sz + self.scroll, 100))
+			self.surface.blit(res.FONTS['DEFAULT'].render('-$100', True, (255,255,255)), (sz + self.scroll, 240))
 		#LEVEL END
 		elif self.mnu == 3:
 			pass
 		
 		return self.surface
 
-class Maps:
-	def __init__(self,t):
-		self.img = pygame.image.load(res.BACKG_PATH + 'phone.png')
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((360,464), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 30), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
-			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
-		self.scroll = 0
-		self.opt = [0,0]
-		self.optrects = []
-		if t == 0: rng = 3
-		if t == 1: rng = 4
-		i = 0
-		for y in range(3):
-			for x in range(rng):
-				self.optrects.append([i,x,y])
-				i += 1
-		self.app = None
-		self.type = t
-		self.hpctrl = 'PHONE_APPS'
-		
-	def inside_events(self,pressed,mouse):
-		if self.app == None:
-			if pressed[0][0]: self.opt[1] -=1; self.sfx.play(res.SOUND['MENU_VER'])
-			if pressed[1][0]: self.opt[1] +=1; self.sfx.play(res.SOUND['MENU_VER'])
-			if pressed[2][0]: self.opt[0] -=1; self.sfx.play(res.SOUND['MENU_HOR'])
-			if pressed[3][0]: self.opt[0] +=1; self.sfx.play(res.SOUND['MENU_HOR'])
-			
-			if self.opt[0] < 0: self.opt[0] = 2
-			if self.opt[0] > 2: self.opt[0] = 0
-			if self.opt[1] < 0: self.opt[1] = self.type + 3
-			if self.opt[1] > self.type + 3: self.opt[1] = 0
-
-			if pressed[4][0]:
-				self.sfx.play(res.SOUND['MENU_GO'])
-				if self.type == 0:
-					if self.opt == [0,0]: self.app = Contacts(); self.hpctrl = 'PHONE_CONTACTS'
-					if self.opt == [1,0]: self.app = Stats(); self.hpctrl = 'PHONE_STATS'
-					if self.opt == [2,0]: self.app = Tactics(); self.hpctrl = 'PHONE_TACTICS'
-					if self.opt == [0,1]: self.app = Tasks(); self.hpctrl = 'PHONE_TASKS'
-					if self.opt == [1,1]: self.app = Achievements(); self.hpctrl = 'PHONE_ACHIEVEMENTS'
-					if self.opt == [2,1]: self.app = Ranking(); self.hpctrl = 'PHONE_RANK'
-					if self.opt == [0,2]: self.app = Help(); self.hpctrl = 'PHONE_MANUAL'
-					if self.opt == [1,2]: self.app = About(); self.hpctrl = 'PHONE_ABOUT'
-					if self.opt == [2,2]: self.app = Settings(); self.hpctrl = 'PHONE_SETTINGS'
-				if self.type == 1:
-					if self.opt == [0,0]: self.app = Contacts(); self.hpctrl = 'PHONE_CONTACTS'
-					if self.opt == [1,0]: self.app = Email(); self.hpctrl = 'PHONE_EMAIL'
-					if self.opt == [2,0]: self.app = Radio(); self.hpctrl = 'PHONE_RADIO'
-					if self.opt == [0,1]: self.app = Camera(); self.hpctrl = 'PHONE_CAMERA'
-					if self.opt == [1,1]: self.app = Tasks(); self.hpctrl = 'PHONE_TASKS'
-					if self.opt == [2,1]: self.app = Stats(); self.hpctrl = 'PHONE_STATS'
-					if self.opt == [0,2]: self.app = Tactics(); self.hpctrl = 'PHONE_TACTICS'
-					if self.opt == [1,2]: self.app = Achievements(); self.hpctrl = 'PHONE_ACHIEVEMENTS'
-					if self.opt == [2,2]: self.app = Ranking(); self.hpctrl = 'PHONE_RANK'
-					if self.opt == [0,3]: self.app = Help(); self.hpctrl = 'PHONE_MANUAL'
-					if self.opt == [1,3]: self.app = About(); self.hpctrl = 'PHONE_ABOUT'
-					if self.opt == [2,3]: self.app = Settings(); self.hpctrl = 'PHONE_SETTINGS'
-		else:
-			self.app.inside_events(pressed,mouse)
-			self.ingame = self.app.ingame
-			if self.opt == [0,0]: self.nb = self.app.nb
-			if pressed[5][0]:
-				self.sfx.play(res.SOUND['MENU_BACK'])
-				if res.CHAPTER == 0 and res.SCENE == 0:
-					self.ingame = 5
-				self.app = None
-						
-	def outside_events(self,pressed):
-		if self.app != None: self.app.outside_events(pressed)
-	
-	def draw(self):
-		self.rqst = False
-		if self.app == None:
-			for i in self.scr: i.fill((10,10,10,0))
-	
-			if self.opt[1] > 2:
-				if self.scroll < (self.opt[1] - 2) * 60:
-					self.scroll += 10
-			elif self.opt[1] > 0 and self.opt[1] < 3:
-				if self.scroll > (self.opt[1] - 1) * 60:
-					self.scroll -= 10
-			elif self.opt[1] == 0 and self.scroll > 0:
-				self.scroll -= 10
-	
-			self.scr[0].blit(pygame.image.load(res.BACKG_PATH + 'phn_' + str(res.PARTY[res.FORMATION][0]) + '.png'), (0, 0))
-			if self.type == 0:
-				imgs = ['call','stts','tact','task','achi','rank','help','info','sett']
-			if self.type == 1:
-				imgs = ['call','mail','radi','camr','task','stts','tact','achi','rank','help','info','sett']
-			if self.type == 2:
-				imgs = ['maps','call','mail','news','radi','camr','best','task','stts','tact','achi','rank','help','sett','info']
-			dvd3 = np.floor(self.scr[0].get_width()/3)
-			pdd = 10
-			for i in self.optrects:
-				img = pygame.image.load(res.SPRITES_PATH + 'ph_' + imgs[i[0]] + '.png')
-				if self.opt[0] == i[1] and self.opt[1] == i[2]: self.scr[0].blit(pygame.transform.scale(img, (50, 50)), (pdd - 3 + (dvd3 * i[1]), 2 + (60 * i[2]) - self.scroll))
-				else: self.scr[0].blit(img, (pdd + (dvd3 * i[1]), 5 + (60 * i[2]) - self.scroll))
-				
-			bsrf = PhoneBar(self.battery).draw()
-			self.scr[0].blit(bsrf[0], (0,0))
-			self.scr[1].blit(bsrf[1], (0,0))
-			
-			return self.scr
-		else: self.scr = self.app.draw()
-
 class Calendar:
-	def __init__(self):
-		self.scr = [pygame.Surface((160,160)), pygame.Surface((160 * res.GSCALE,160 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 12 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+	def __init__(self, size=(160 * res.GSCALE,160 * res.GSCALE)):
+		self.surface = pygame.Surface(size, pygame.SRCALPHA)
 		self.scroll = 0
 		self.optrects = []
 		dvd3 = np.floor((160 * res.GSCALE)/3)
@@ -2406,10 +2010,10 @@ class Calendar:
 	def inside_events(self,pressed,mouse):
 		'''for i in range(len(self.optrects[self.mnu])):
 			if pygame.Rect.colliderect(mouse,self.optrects[self.mnu][i]): self.opt[0] = i'''
-		if pressed[0][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[1][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[2][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-		if pressed[3][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[0][0]: self.opt[0] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt[0] += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[2][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 		if self.opt[0] < 0: self.opt[0] = len(res.CALENDAR) - 1; self.opt[1] = 0
 		if self.opt[0] > len(res.CALENDAR) - 1: self.opt[0] = 0; self.opt[1] = 0
@@ -2422,31 +2026,29 @@ class Calendar:
 		pass
 
 	def draw(self):
-		sz = self.scr[0].get_width() #button width
-					
-		for i in self.scr: i.fill((10,10,10,0))
+		self.surface.fill((10,10,10,0))
 		if self.mnu == 0:
-			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MONTHS[self.opt[1]].capitalize() + ' ' + str(2005 + self.opt[0]), True, (200,200,200)), (20, 10))
+			self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MONTHS[self.opt[1]].capitalize() + ' ' + str(2005 + self.opt[0]), True, (200,200,200)), (20, 10))
 			lst = ['D','S','T','Q','Q','S','S']
 			for i in range(7):
 				rct = pygame.Rect(self.optrects[self.opt[0]][i].x,self.optrects[self.opt[0]][i].y - 20,self.optrects[self.opt[0]][i].width,20)
-				pygame.draw.rect(self.scr[1],(100,100,100),rct)
-				self.scr[1].blit(self.fnt['CALIBRI'].render(lst[i], True, (10,10,10)), (rct.x + 10, rct.y))
+				pygame.draw.rect(self.surface,(100,100,100),rct)
+				self.surface.blit(res.FONTS['CALIBRI'].render(lst[i], True, (10,10,10)), (rct.x + 10, rct.y))
 			col = (200,200,200)
 			dd = res.CALENDAR[self.opt[0]][self.opt[1]][self.opt[2]]
 			for d in range(7):
 				for i in range(7):
-					pygame.draw.rect(self.scr[1],col,self.optrects[self.opt[0]][i + (d * 7)])
+					pygame.draw.rect(self.surface,col,self.optrects[self.opt[0]][i + (d * 7)])
 					if i + (d * 7) - dd >= 0 and i + (d * 7) - dd < len(res.CALENDAR[self.opt[0]][self.opt[1]]):
-						self.scr[1].blit(self.fnt['CALIBRI'].render(str(i + (d * 7) - dd + 1), True, (10,10,10)), (self.optrects[self.opt[0]][i + (d * 7)].x + 5, self.optrects[self.opt[0]][i + (d * 7)].y + 5))
+						self.surface.blit(res.FONTS['CALIBRI'].render(str(i + (d * 7) - dd + 1), True, (10,10,10)), (self.optrects[self.opt[0]][i + (d * 7)].x + 5, self.optrects[self.opt[0]][i + (d * 7)].y + 5))
 
-		return self.scr
+		return self.surface
 
 class GPS:
-	def __init__(self, mn, rm, tl, pl, en, sig):
+	def __init__(self, mn, rm, tl, pl, en, sig, size=(360,400)):
 		self.img = pygame.image.load(res.BACKG_PATH + 'GPS.png')
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((360,464), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 30), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
+		self.surface = pygame.Surface(size, pygame.SRCALPHA)
+		res.FONTS = {'CALIBRI': pygame.font.SysFont('Calibri', 30), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
 			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
 		self.scrpos = (60,49)
 		self.rqst = True
@@ -2518,13 +2120,12 @@ class GPS:
 			img = pygame.transform.rotate(pygame.image.load(res.SPRITES_PATH + 'mp_compass.png'),(np.degrees((np.arctan2(-dir[1],dir[0]))) + 90))
 			try: self.mpcrct = img.get_rect(center = self.mpcrct.center)
 			except: self.mpcrct = img.get_rect(center=pygame.Rect(self.displayzw - 70,20,50,50).center)
-			self.display[0].blit(img,self.mpcrct)
+			self.surface.blit(img,self.mpcrct)
 			if self.colide(self.player[0]['RECT'],pygame.Rect(res.MARKER[0][1] - 40,res.MARKER[0][2] - 40,80,80)):
 				del res.MARKER[0]
 
 	def draw(self):
 		self.rqst = False
-		sz = self.scr[0].get_width() #button width
 		if self.mn == False: scr = [pygame.Surface((sz,232)),pygame.Surface((sz * 2,464),pygame.SRCALPHA)]
 		if self.mn == True: scr = [pygame.Surface((100,100)),pygame.Surface((200,200),pygame.SRCALPHA)]
 		for i in scr: i.fill((0,0,0,0))
@@ -2551,25 +2152,19 @@ class GPS:
 				yy = (i['RECT'].y - 15) * self.mp.get_height()/(self.rm.height * self.rm.tileheight)
 				if i['HP'] > 0 and i['RECT'].x > 0 and i['RECT'].y > 0:
 					scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'mp_anomaly.png'), (mpx + ((self.zoom/self.mp.get_width()) * xx),mpy + ((self.zoom/self.mp.get_height()) * yy)))
-		else: scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[15], True, (255, 255, 255)), (25, 200))
+		else: scr[1].blit(res.FONTS['CALIBRI'].render(dtb.MENU[15], True, (255, 255, 255)), (25, 200))
 
 		if self.mn == False:
 			pygame.draw.rect(scr[1], (140, 255, 253), pygame.Rect(0,0,sz * 2,80))
-			scr[1].blit(self.fnt['TITLE'].render(dtb.MENU[0], True, (0, 0, 0)), (5, 4))
+			scr[1].blit(res.FONTS['TITLE'].render(dtb.MENU[0], True, (0, 0, 0)), (5, 4))
 
 		return scr
 
 class Contacts:
 	def __init__(self):
 		self.img = pygame.image.load(res.BACKG_PATH + 'phone.png')
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 15 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
-			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
+		self.surface = pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)
 		self.vkb = Vkeyboard((160 * res.GSCALE,200 * res.GSCALE),type='CALC',display=True)
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
-		self.ton = pygame.mixer.Channel(1)
-		self.ton.set_volume(res.SFX)
 		self.scrpos = (39,46)
 		self.rqst = True
 		self.hpctrl = 'PHONE_CONTACTS'
@@ -2593,22 +2188,22 @@ class Contacts:
 		#SELECT OPTIONS
 		if pressed[5][0]: self.vkb.events()
 		if self.nb != None:
-			if pressed[2][0] and self.opt == 1: self.opt = 0; self.sfx.play(res.SOUND['MENU_VER'])
-			if pressed[3][0] and self.opt == 0: self.opt = 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[2][0] and self.opt == 1: self.opt = 0; res.MIXER[0].play(res.SOUND['MENU_VER'])
+			if pressed[3][0] and self.opt == 0: self.opt = 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
 			if pressed[4][0]:
 				self.sfx.stop()
 				self.ch_rng.stop()
 				if self.opt == 0:
 					self.ingame = 4
 				elif self.opt == 1:
-					self.sfx.play(res.SOUND['MENU_BACK'])
+					res.MIXER[0].play(res.SOUND['MENU_BACK'])
 					self.phone = 1
 				if self.radonoff == True: pygame.mixer.music.unpause()
 				if res.CHAPTER == 0 and res.SCENE == 0:
 					self.ingame = 5
 		else:
 			if pressed[2][0]:
-				self.sfx.play(res.SOUND['MENU_HOR'])
+				res.MIXER[0].play(res.SOUND['MENU_HOR'])
 				if self.mnu == 0: self.opt[0] -= 1; self.opt[1] = 0
 				elif self.mnu < 3: self.mnu = 1
 				else:
@@ -2616,7 +2211,7 @@ class Contacts:
 					if self.mnu < 3: self.mnu = 5
 	
 			if pressed[3][0]:
-				self.sfx.play(res.SOUND['MENU_HOR'])
+				res.MIXER[0].play(res.SOUND['MENU_HOR'])
 				if self.mnu == 0: self.opt[0] += 1; self.opt[1] = 0
 				elif self.mnu < 3: self.mnu = 2
 				else:
@@ -2624,7 +2219,7 @@ class Contacts:
 					if self.mnu > 5: self.mnu = 3
 	
 			if pressed[0][0]:
-				self.sfx.play(res.SOUND['MENU_VER'])
+				res.MIXER[0].play(res.SOUND['MENU_VER'])
 				if self.mnu < 3: self.opt[1] -= 1
 				else:
 					self.exvar -= 1
@@ -2632,7 +2227,7 @@ class Contacts:
 					res.PARTY[self.opt[1]][self.mnu - 3] = self.exvar
 	
 			if pressed[1][0]:
-				self.sfx.play(res.SOUND['MENU_VER'])
+				res.MIXER[0].play(res.SOUND['MENU_VER'])
 				if self.mnu < 3: self.opt[1] += 1
 				else:
 					self.exvar += 1
@@ -2644,7 +2239,7 @@ class Contacts:
 				if self.opt[1] > len(res.PARTY): self.opt[1] = 0
 	
 				if pressed[4][0]:
-					self.sfx.play(res.SOUND['MENU_GO'])
+					res.MIXER[0].play(res.SOUND['MENU_GO'])
 					if self.opt[1] < len(res.PARTY):
 						if self.mnu == 0:
 							self.mnu = 1
@@ -2652,7 +2247,7 @@ class Contacts:
 							res.FORMATION = self.opt[1]
 							for i in res.PARTY[res.FORMATION]:
 								res.CHARACTERS[i]['HP'] = dtb.CLASSES[res.CHARACTERS[i]['CLASS']]['RESISTANCE'][res.CHARACTERS[i]['LEVEL']]
-							self.ton.play(res.SOUND['PARTY_CHANGE'])
+							res.MIXER[1].play(res.SOUND['PARTY_CHANGE'])
 							self.mnu = 0
 							self.opt = [0,0]
 						elif self.mnu > 2:
@@ -2692,37 +2287,37 @@ class Contacts:
 		pass
 	
 	def call(self):
-		for i in self.scr: i.fill((10,10,10,0))
-		sz = self.scr[1].get_width() #button width
+		self.surface.fill((10,10,10,0))
+		sz = self.surface.get_width() #button width
 		num = 0
 		for i in dtb.NUMBERS:
 			if i[1] == self.nb: break
 			num += 1
-		self.scr[0].blit(pygame.image.load(res.BACKG_PATH + 'call_' + self.nb + '.png'), (0, 90))
-		pygame.draw.rect(self.scr[0], (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(0,0,sz,90))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.NUMBERS[num][0], True, (255, 255, 255)), (100, 20))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(self.nb, True, (255, 255, 255)), (100, 40))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[32] + str(self.credit), True, (255, 255, 255)), (100, 80))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[33], True, (255, 255, 255)), (100, 120))
+		self.surface.blit(pygame.image.load(res.BACKG_PATH + 'call_' + self.nb + '.png'), (0, 90))
+		pygame.draw.rect(self.surface, (res.COLOR[0], res.COLOR[1], res.COLOR[2]), pygame.Rect(0,0,sz,90))
+		self.surface.blit(res.FONTS['CALIBRI'].render(dtb.NUMBERS[num][0], True, (255, 255, 255)), (100, 20))
+		self.surface.blit(res.FONTS['CALIBRI'].render(self.nb, True, (255, 255, 255)), (100, 40))
+		self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[32] + str(self.credit), True, (255, 255, 255)), (100, 80))
+		self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[33], True, (255, 255, 255)), (100, 120))
 
-		if self.opt == 0: self.scr[0].blit(pygame.transform.scale(pygame.image.load(res.SPRITES_PATH + 'cl_ys.png'), (40, 40)), (25, 185))
-		else: self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'cl_ys.png'), (30, 190))
-		if self.opt == 1: self.scr[0].blit(pygame.transform.scale(pygame.image.load(res.SPRITES_PATH + 'cl_no.png'), (40, 40)), (sz - 55, 185))
-		else: self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'cl_no.png'), (sz - 50, 190))
+		if self.opt == 0: self.surface.blit(pygame.transform.scale(pygame.image.load(res.SPRITES_PATH + 'cl_ys.png'), (40, 40)), (25, 185))
+		else: self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'cl_ys.png'), (30, 190))
+		if self.opt == 1: self.surface.blit(pygame.transform.scale(pygame.image.load(res.SPRITES_PATH + 'cl_no.png'), (40, 40)), (sz - 55, 185))
+		else: self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'cl_no.png'), (sz - 50, 190))
 
-		return self.scr
+		return self.surface
 		
 	def draw(self):
-		for i in self.scr: i.fill((0,0,0,0))
-		self.scr[1].blit(self.vkb.draw(),(20,20))
-		return self.scr
+		self.surface.fill((0,0,0))
+		self.surface.blit(self.vkb.draw(),(20,20))
+		return self.surface
 	
 	def dd(self):
 		if self.nb != None: self.call()
 		else:
-			sz = self.scr[0].get_width() #button width
-			for i in self.scr: i.fill((0,0,0,0))
-			self.scr[0].blit(pygame.image.load(res.BACKG_PATH + 'phn_' + str(res.PARTY[res.FORMATION][0]) + '.png'), (0, 0))
+			sz = self.surface.get_width() #button width
+			self.surface.fill((0,0,0))
+			self.surface.blit(pygame.image.load(res.BACKG_PATH + 'phn_' + str(res.PARTY[res.FORMATION][0]) + '.png'), (0, 0))
 			
 			if self.opt[0] == 0: em = res.PARTY
 			if self.opt[0] == 1: em = res.CONTACTS
@@ -2741,62 +2336,59 @@ class Contacts:
 			for i in em:
 				if self.opt[1] != y/51: col = (255, 255, 255)
 				else: col = (15, 255, 0)
-				pygame.draw.rect(self.scr[0], col, pygame.Rect(0,66 + y - self.scroll,sz,50))
+				pygame.draw.rect(self.surface, col, pygame.Rect(0,66 + y - self.scroll,sz,50))
 	
-				if self.opt[0] > 0: self.scr[1].blit(self.fnt['CALIBRI'].render(i[0], True, (0, 0, 0)), (20, (76 + y - self.scroll) * 2))
+				if self.opt[0] > 0: self.surface.blit(res.FONTS['CALIBRI'].render(i[0], True, (0, 0, 0)), (20, (76 + y - self.scroll) * 2))
 				else:
 					if self.opt[1] == y/51:
-						if self.mnu == 1: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 52,74 + y - self.scroll,24,24))
-						self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'tc_9.png'), (sz - 50, 76 + y - self.scroll))
-						if self.mnu == 2: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(sz - 30,74 + y - self.scroll,24,24))
-						self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'tc_8.png'), (sz - 28, 76 + y - self.scroll))
-						if self.mnu == 3: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(8,74 + y - self.scroll,24,24))
-						if self.mnu == 4: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(30,74 + y - self.scroll,24,24))
-						if self.mnu == 5: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(52,74 + y - self.scroll,24,24))
+						if self.mnu == 1: pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(sz - 52,74 + y - self.scroll,24,24))
+						self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'tc_9.png'), (sz - 50, 76 + y - self.scroll))
+						if self.mnu == 2: pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(sz - 30,74 + y - self.scroll,24,24))
+						self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'tc_8.png'), (sz - 28, 76 + y - self.scroll))
+						if self.mnu == 3: pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(8,74 + y - self.scroll,24,24))
+						if self.mnu == 4: pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(30,74 + y - self.scroll,24,24))
+						if self.mnu == 5: pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(52,74 + y - self.scroll,24,24))
 					x = 0
 					for p in i:
-						self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(p) + '.png'), (10 + x, 76 + y - self.scroll))
+						self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(p) + '.png'), (10 + x, 76 + y - self.scroll))
 						x += 22
-				if self.opt[0] == 0: self.scr[1].blit(self.fnt['CALIBRI'].render('grupo ' + str(int((y + 51)/51)), True, (0, 0, 0)), (20, (96 + y - self.scroll) * 2))
-				if self.opt[0] == 1: self.scr[1].blit(self.fnt['CALIBRI'].render(i[1], True, (0, 0, 0)), (20, (92 + y - self.scroll) * 2))
-				if self.opt[0] == 2: self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(i[1]).lower() + '.png'), (160, 43 + y - self.scroll))
+				if self.opt[0] == 0: self.surface.blit(res.FONTS['CALIBRI'].render('grupo ' + str(int((y + 51)/51)), True, (0, 0, 0)), (20, (96 + y - self.scroll) * 2))
+				if self.opt[0] == 1: self.surface.blit(res.FONTS['CALIBRI'].render(i[1], True, (0, 0, 0)), (20, (92 + y - self.scroll) * 2))
+				if self.opt[0] == 2: self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(i[1]).lower() + '.png'), (160, 43 + y - self.scroll))
 				y += 51
 			if self.opt[0] == 0:
-				if self.opt[1] != y/51: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,66 + y - self.scroll,sz,50))
-				else: pygame.draw.rect(self.scr[0], (15, 255, 0), pygame.Rect(0,66 + y - self.scroll,sz,50))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[31], True, (0, 0, 0)), (170, (83 + y - self.scroll) * 2))
+				if self.opt[1] != y/51: pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(0,66 + y - self.scroll,sz,50))
+				else: pygame.draw.rect(self.surface, (15, 255, 0), pygame.Rect(0,66 + y - self.scroll,sz,50))
+				self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[31], True, (0, 0, 0)), (170, (83 + y - self.scroll) * 2))
 			if y == 0 and self.opt[0] == 1:
-				self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[16], True, (255, 255, 255)), (100, 280))
+				self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[16], True, (255, 255, 255)), (100, 280))
 			dvd3 = np.floor(sz/3)
 			if self.opt[0] == 0:
-				pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(0,45,dvd3,20))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[23], True, (0, 0, 0)), (16, 94))
+				pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(0,45,dvd3,20))
+				self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[23], True, (0, 0, 0)), (16, 94))
 			else:
-				pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(0,40,dvd3,25))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[23], True, (255, 255, 255)), (16, 94))
+				pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(0,40,dvd3,25))
+				self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[23], True, (255, 255, 255)), (16, 94))
 			if self.opt[0] == 1:
-				pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(dvd3,45,dvd3,20))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[24], True, (0, 0, 0)), ((dvd3 * 2) + 20, 94))
+				pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(dvd3,45,dvd3,20))
+				self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[24], True, (0, 0, 0)), ((dvd3 * 2) + 20, 94))
 			else:
-				pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(dvd3,40,dvd3,25))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[24], True, (255, 255, 255)), ((dvd3 * 2) + 20, 94))
+				pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(dvd3,40,dvd3,25))
+				self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[24], True, (255, 255, 255)), ((dvd3 * 2) + 20, 94))
 			if self.opt[0] == 2:
-				pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(dvd3 * 2,45,dvd3,20))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[25], True, (0, 0, 0)), ((dvd3 * 4) + 20, 94))
+				pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(dvd3 * 2,45,dvd3,20))
+				self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[25], True, (0, 0, 0)), ((dvd3 * 4) + 20, 94))
 			else:
-				pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(dvd3 * 2,40,dvd3,25))
-				self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[25], True, (255, 255, 255)), ((dvd3 * 4) + 20, 94))
-			pygame.draw.rect(self.scr[1], (15, 255, 0), pygame.Rect(0,0,sz * 2,80))
-			self.scr[1].blit(self.fnt['TITLE'].render(dtb.MENU[1], True, (0, 0, 0)), (10, 10))
+				pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(dvd3 * 2,40,dvd3,25))
+				self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[25], True, (255, 255, 255)), ((dvd3 * 4) + 20, 94))
+			pygame.draw.rect(self.surface, (15, 255, 0), pygame.Rect(0,0,sz * 2,80))
+			self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU[1], True, (0, 0, 0)), (10, 10))
 	
-			return self.scr
+			return self.surface
 		
 class Email:
 	def __init__(self):
-		self.scr = [pygame.Surface((180,200)), pygame.Surface((180 * res.GSCALE,200 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 15 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface((180 * res.GSCALE,200 * res.GSCALE), pygame.SRCALPHA)
 		self.scroll = 0
 		self.optrects = []
 		dvd3 = np.floor((180 * res.GSCALE)/3)
@@ -2807,15 +2399,15 @@ class Email:
 	def inside_events(self,pressed,mouse):
 		if res.SIGNAL > 0:
 			if self.mnu == 0:
-				if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-				if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-				if pressed[2][0]: self.opt[0] -= 1; self.opt[1] = 0; self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: self.opt[0] += 1; self.opt[1] = 0; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[0][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+				if pressed[1][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+				if pressed[2][0]: self.opt[0] -= 1; self.opt[1] = 0; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: self.opt[0] += 1; self.opt[1] = 0; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 			if pressed[4][0] and res.SIGNAL > 0:
-				if self.mnu == 0: self.mnu = 1; self.sfx.play(res.SOUND['MENU_GO'])
+				if self.mnu == 0: self.mnu = 1; res.MIXER[0].play(res.SOUND['MENU_GO'])
 				elif self.mnu > 0:
-					self.sfx.play(res.SOUND['MENU_BACK'])
+					res.MIXER[0].play(res.SOUND['MENU_BACK'])
 					if self.opt[0] == 0: self.phn.e_unread[self.opt[1]][3] = 1
 					if self.opt[0] == 2: res.INBOX[self.opt[1]][3] = 1
 					self.mnu = 0
@@ -2846,33 +2438,29 @@ class Email:
 			if self.mnu > 1000: self.mnu = 1000
 	
 	def draw(self):
-		sz = self.scr[1].get_width() #button width
-		for i in self.scr: i.fill((10,10,10,0))
+		sz = self.surface.get_width() #button width
+		self.surface.fill((10,10,10,0))
 		if res.SIGNAL > 0:
 			if self.mnu == 0:
 				lst = ['unread','read','all']
 				for i in range(3):
-					if self.opt[0] == i: col = (10,10,10); pygame.draw.rect(self.scr[1], (200, 200, 200), self.optrects[i])
+					if self.opt[0] == i: col = (10,10,10); pygame.draw.rect(self.surface, (200, 200, 200), self.optrects[i])
 					else: col = (200,200,200)
-					self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[lst[i]], True, col), (self.optrects[i].x + 10, self.optrects[i].y + 10))
+					self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[lst[i]], True, col), (self.optrects[i].x + 10, self.optrects[i].y + 10))
 				lst = [[x for x in res.INBOX if x[1] < 100],[x for x in res.INBOX if x[1] == 100],res.INBOX]
 				for i in range(len(lst[self.opt[0]])):
 					if self.opt[1] != i: col = (200, 200, 200)
 					else: col = (255, 123, 0)
-					pygame.draw.rect(self.scr[1], col, pygame.Rect(0,40 + (i * 81) - self.scroll,sz * res.GSCALE,80))
-					self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.TASKINDEX[lst[self.opt[0]][i][0]][0][0], True, (10, 10, 10)), (20, 50 + (i * 81) - self.scroll))
-				if len(lst[self.opt[0]]) == 0: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU['empty'], True, (200, 200, 200)), (80, 280))
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU['no_signal'], True, (200, 200, 200)), (100, 200))
+					pygame.draw.rect(self.surface, col, pygame.Rect(0,40 + (i * 81) - self.scroll,sz * res.GSCALE,80))
+					self.surface.blit(res.FONTS['CALIBRI'].render(dtb.TASKINDEX[lst[self.opt[0]][i][0]][0][0], True, (10, 10, 10)), (20, 50 + (i * 81) - self.scroll))
+				if len(lst[self.opt[0]]) == 0: self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU['empty'], True, (200, 200, 200)), (80, 280))
+		else: self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU['no_signal'], True, (200, 200, 200)), (100, 200))
 
-		return self.scr
+		return self.surface
 
 class Newspaper:
 	def __init__(self):
-		self.scr = [pygame.Surface((300,300)), pygame.Surface((600,600), pygame.SRCALPHA)]
-		self.fnt = {'TITLE': pygame.font.SysFont('Times New Roman', 42),'MEDIUM': pygame.font.SysFont('Calibri', 30), 'SMALL': pygame.font.SysFont('Calibri', 20)}
-		self.ingame = 0
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface((600,600), pygame.SRCALPHA)
 		self.page = 0
 		self.rdnws = []
 		for i in range(5):
@@ -2897,75 +2485,63 @@ class Newspaper:
 			self.rdnws.append(nw)
 		
 	def inside_events(self,pressed,mouse):
-		if pressed[2][0]: self.page -= 1; self.sfx.play(res.SOUND['PAGE_FLIP'])
-		if pressed[3][0]: self.page += 1; self.sfx.play(res.SOUND['PAGE_FLIP'])
+		if pressed[2][0]: self.page -= 1; res.MIXER[0].play(res.SOUND['PAGE_FLIP'])
+		if pressed[3][0]: self.page += 1; res.MIXER[0].play(res.SOUND['PAGE_FLIP'])
 		
 	def outside_events(self,pressed):
 		pass
 		
 	def draw(self):
-		sz = self.scr[0].get_width() #button width
-		for i in self.scr: i.fill((200,200,200,0))
+		self.surface.fill((200,200,200,0))
 		
-		pygame.draw.rect(self.scr[0],(50,50,200),pygame.Rect(5,5,sz - 10,40))
-		fsz = self.fnt['TITLE'].size('O LOBO')[0]
-		self.scr[1].blit(self.fnt['TITLE'].render('O LOBO', True, (200,200,200)), (int(((sz * 2)/2) - (fsz/2)), 15))
-		self.scr[1].blit(self.fnt['SMALL'].render(str(res.DATE[0]) + '/' + str(res.DATE[1]) + ' - 1ª edição', True, (10,10,10)), (30, 70))
+		pygame.draw.rect(self.surface,(50,50,200),pygame.Rect(5,5,sz - 10,40))
+		fsz = res.FONTS['TITLE'].size('O LOBO')[0]
+		self.surface.blit(res.FONTS['TITLE'].render('O LOBO', True, (200,200,200)), (int(((sz * 2)/2) - (fsz/2)), 15))
+		self.surface.blit(res.FONTS['SMALL'].render(str(res.DATE[0]) + '/' + str(res.DATE[1]) + ' - 1ª edição', True, (10,10,10)), (30, 70))
 		for y in range(5):
-			if y == 0: self.scr[1].blit(self.fnt['MEDIUM'].render(self.rdnws[y], True, (10,10,10)), (25, 100))
-			else: self.scr[1].blit(self.fnt['SMALL'].render(self.rdnws[y], True, (10,10,10)), (25, 150 + (y * 20)))
+			if y == 0: self.surface.blit(res.FONTS['MEDIUM'].render(self.rdnws[y], True, (10,10,10)), (25, 100))
+			else: self.surface.blit(res.FONTS['SMALL'].render(self.rdnws[y], True, (10,10,10)), (25, 150 + (y * 20)))
 
-		return self.scr
+		return self.surface
 		
 class ID:
 	def __init__(self,n):
-		self.scr = [pygame.Surface((250,150)), pygame.Surface((500,300), pygame.SRCALPHA)]
-		self.fnt = {'MEDIUM': pygame.font.SysFont('Calibri', 30), 'SMALL': pygame.font.SysFont('Calibri', 20)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface((500,300), pygame.SRCALPHA)
 		self.page = 0
 		self.who = n
 		
 	def inside_events(self,pressed):
 		if pygame.event == pygame.MOUSEBUTTONDOWN: self.page = int(not bool(self.page))
-		if pressed[2][0]: self.page = 0; self.sfx.play(res.SOUND['PAGE_FLIP'])
-		if pressed[3][0]: self.page = 1; self.sfx.play(res.SOUND['PAGE_FLIP'])
+		if pressed[2][0]: self.page = 0; res.MIXER[0].play(res.SOUND['PAGE_FLIP'])
+		if pressed[3][0]: self.page = 1; res.MIXER[0].play(res.SOUND['PAGE_FLIP'])
 		
 	def outside_events(self,pressed):
 		pass
 		
 	def draw(self):
-		sz = self.scr[0].get_width() #button width
-		for i in self.scr: i.fill((0,0,0,0))
-		self.scr[0].fill((100,200,100))
-		pygame.draw.rect(self.scr[0],(10,40,10),pygame.Rect(0,0,250,150),10)
+		self.surface.fill((0,0,0))
+		self.surface.fill((100,200,100))
+		pygame.draw.rect(self.surface,(10,40,10),pygame.Rect(0,0,250,150),10)
 		
 		if self.page == 0:
 			img = pygame.image.load(res.SPRITES_PATH + 'pht_' + str(self.who) + '.png')
-			pygame.draw.rect(self.scr[0],(250,250,250),pygame.Rect(30,30,img.get_rect().width,img.get_rect().height))
-			self.scr[0].blit(img, (30, 30))
+			pygame.draw.rect(self.surface,(250,250,250),pygame.Rect(30,30,img.get_rect().width,img.get_rect().height))
+			self.surface.blit(img, (30, 30))
 		if self.page == 1:
 			lsttxt = [('rg','XX.XXX.XXX-X'),('name',res.CHARACTERS[self.who]['NAME'] + ' ' + res.CHARACTERS[self.who]['LASTNAME']),
 			('hometown',res.CHARACTERS[self.who]['HOMETOWN']),('birth',str(res.CHARACTERS[self.who]['BIRTH'][0]) + '/' + str(res.CHARACTERS[self.who]['BIRTH'][1]) + '/' + str(res.CHARACTERS[self.who]['BIRTH'][2])),
 			('cpf','XXX.XXX.XXX-XX')]
 			lstpos = [((30, 30),(120, 30)),((30, 60),(30, 75)),((30, 200),(30, 215)),((300, 200),(300, 215)),((30, 240),(30, 255))]
 			for i in range(len(lsttxt)):
-				self.scr[1].blit(self.fnt['SMALL'].render(lsttxt[i][0], True, (10,40,10)), lstpos[i][0])
-				self.scr[1].blit(self.fnt['MEDIUM'].render(lsttxt[i][1], True, (10,10,10)), lstpos[i][1])
+				self.surface.blit(res.FONTS['SMALL'].render(lsttxt[i][0], True, (10,40,10)), lstpos[i][0])
+				self.surface.blit(res.FONTS['MEDIUM'].render(lsttxt[i][1], True, (10,10,10)), lstpos[i][1])
 			
-		return self.scr
+		return self.surface
 
 class Radio:
 	def __init__(self):
-		self.scr = [pygame.Surface((160,110)), pygame.Surface((160 * res.GSCALE,110 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 15 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
-			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
+		self.surface = pygame.Surface((160 * res.GSCALE,110 * res.GSCALE), pygame.SRCALPHA)
 		self.rdsrf = pygame.Surface((90 * res.GSCALE,25 * res.GSCALE))
-		self.guitools = Guitools()
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
-		self.noi = pygame.mixer.Channel(1)
-		self.noi.set_volume(res.SFX)
 		self.ratio = [(160 * res.GSCALE,110 * res.GSCALE),(90 * res.GSCALE,25 * res.GSCALE)]
 		self.hpctrl = 'PHONE_RADIO'
 		self.onoff = False
@@ -2991,12 +2567,12 @@ class Radio:
 			if do:
 				self.onoff = not self.onoff
 				if self.onoff == False:
-					self.sfx.play(res.SOUND['MENU_BACK'])
-					self.noi.stop()
+					res.MIXER[0].play(res.SOUND['MENU_BACK'])
+					res.MIXER[1].stop()
 					pygame.mixer.music.stop()
 				else:
-					self.sfx.play(res.SOUND['MENU_GO'])
-					self.noi.play(res.SOUND['NOISE'],-1)
+					res.MIXER[0].play(res.SOUND['MENU_GO'])
+					res.MIXER[1].play(res.SOUND['NOISE'],-1)
 					self.song = res.MUSIC_PATH + res.RADIO[np.floor(self.fm/20)][self.msc] + '.mp3'
 					audio = MP3(self.song)
 					try: self.mscinfo = {'TITLE': audio['TIT2'].text[0],'ARTIST': audio['TPE1'].text[0],'ALBUM': audio['TALB'].text[0]}
@@ -3004,7 +2580,7 @@ class Radio:
 					pygame.mixer.music.load(self.song)
 					pygame.mixer.music.play()
 			if pressed[7][0]:
-				self.noi.stop()
+				res.MIXER[1].stop()
 						
 	def outside_events(self,pressed):
 		if pressed[2][0]: self.fm -= 1; self.vm -= 0.05
@@ -3016,7 +2592,7 @@ class Radio:
 		if self.vm > 1.0: self.vm = 0.0
 
 		pygame.mixer.music.set_volume(self.vm)
-		self.noi.set_volume(1 - self.vm)
+		res.MIXER[1].set_volume(1 - self.vm)
 		ind = np.floor(self.fm/(res.RANGE_RADIO * 2))
 		if ind > 6: ind = 6
 		if self.vm == 0.0 and self.onoff == True:
@@ -3033,16 +2609,16 @@ class Radio:
 		self.rdsrf = pygame.Surface((360 + self.nwsw,50))
 		self.rdsrf.fill((255, 0, 135))
 		if self.msc < 0:
-			ttsz = np.floor(self.fnt['CALIBRI'].size('?????')[0]/2)
-			self.rdsrf.blit(self.fnt['CALIBRI'].render('?????', True, (10, 10, 10)), (-self.scroll * 2, 5 * 2))
+			ttsz = np.floor(res.FONTS['CALIBRI'].size('?????')[0]/2)
+			self.rdsrf.blit(res.FONTS['CALIBRI'].render('?????', True, (10, 10, 10)), (-self.scroll * 2, 5 * 2))
 		else:
 			if self.nwsw > 0: txt = dtb.RADIONEWS[self.nwind][2]
 			else:
 				txt = self.mscinfo['TITLE']
 				if self.mscinfo['ARTIST'] != 'unknown': txt += ' – ' + self.mscinfo['ARTIST']
-			out = self.guitools.dislexic(txt)
-			ttsz = np.floor(self.fnt['CALIBRI'].size(out)[0]/2)
-			self.rdsrf.blit(self.fnt['CALIBRI'].render(out, True, (10, 10, 10)), (-self.scroll * 2, 5 * 2))
+			out = tools.text.dislexic(txt)
+			ttsz = np.floor(res.FONTS['CALIBRI'].size(out)[0]/2)
+			self.rdsrf.blit(res.FONTS['CALIBRI'].render(out, True, (10, 10, 10)), (-self.scroll * 2, 5 * 2))
 		self.scroll += 1
 		if self.scroll > ttsz: self.scroll = -180
 		if self.nwsw > 0 and self.nwsw < ttsz: self.nwsw += 3
@@ -3061,39 +2637,34 @@ class Radio:
 		return self.rdsrf
 
 	def draw(self):
-		sz = self.scr[1].get_width()
-		for i in self.scr: i.fill((0,0,0,0))
+		sz = self.surface.get_width()
+		self.surface.fill((0,0,0,0))
 		f = 0
 		sp = np.floor(sz/res.RANGE_RADIO)
 		for i in range((res.RANGE_RADIO * 2) - 1):
-			pygame.draw.line(self.scr[1], (200, 200, 200), (0 + f,80),(0 + f,119),1)
-			pygame.draw.line(self.scr[1], (200, 200, 200), (round(sp/2) + f,100),(round(sp/2) + f,119),1)
+			pygame.draw.line(self.surface, (200, 200, 200), (0 + f,80),(0 + f,119),1)
+			pygame.draw.line(self.surface, (200, 200, 200), (round(sp/2) + f,100),(round(sp/2) + f,119),1)
 			f += sp
-		pygame.draw.rect(self.scr[1], (255, 0, 0), pygame.Rect(int((160 * res.GSCALE)/(((res.RANGE_RADIO - 1) * 20)/(self.fm + 1))) - 4,80,4,40))
-		pygame.draw.rect(self.scr[1], (255, 0, 135), self.button)
+		pygame.draw.rect(self.surface, (255, 0, 0), pygame.Rect(int((160 * res.GSCALE)/(((res.RANGE_RADIO - 1) * 20)/(self.fm + 1))) - 4,80,4,40))
+		pygame.draw.rect(self.surface, (255, 0, 135), self.button)
 		ind = np.floor(self.fm/(res.RANGE_RADIO * 2))
 		if ind > 6: ind = 6
 		if res.RADIO[ind] != []:
 			txt = self.mscinfo['TITLE']
 			if self.mscinfo['ARTIST'] != 'unknown': txt += ' – ' + self.mscinfo['ARTIST']
-			self.scr[1].blit(self.fnt['CALIBRI'].render(txt, True, (10, 10, 10)), (self.button.x + 10, self.button.y + 20))
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[20], True, (255, 255, 255)), (self.button.x + 10, self.button.y + 20))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(str(self.fm/10) + 'MHz', True, (10, 10, 10)), (self.button.x + 10, self.button.y + 60))
+			self.surface.blit(res.FONTS['CALIBRI'].render(txt, True, (10, 10, 10)), (self.button.x + 10, self.button.y + 20))
+		else: self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[20], True, (255, 255, 255)), (self.button.x + 10, self.button.y + 20))
+		self.surface.blit(res.FONTS['CALIBRI'].render(str(self.fm/10) + 'MHz', True, (10, 10, 10)), (self.button.x + 10, self.button.y + 60))
 		
-		return self.scr
+		return self.surface
 
 class Camera:
 	def __init__(self):
 		self.img = pygame.image.load(res.BACKG_PATH + 'camera.png')
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((360,464), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 30), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 30),
-		'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
+		self.surface = pygame.Surface((360,464), pygame.SRCALPHA)
 		self.scrpos = (57,89)
 		self.rqst = True
-		self.ingame = 0
 		self.battle = False
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
 		self.scroll = 0
 		self.optrects = []
 		self.opt = 0
@@ -3101,12 +2672,12 @@ class Camera:
 		res.recent_data(0)
 		self.optrects = []
 		for i in range(len(res.FILES[0]) + 1):
-			self.optrects.append(pygame.Rect(0,41 + (i * 51),self.scr[0].get_width(),50))
+			self.optrects.append(pygame.Rect(0,41 + (i * 51),self.surface.get_width(),50))
 	
 	def inside_events(self,pressed,mouse):
 		if res.SIGNAL > 0:
-			if pressed[0][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-			if pressed[1][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[0][0]: self.opt -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+			if pressed[1][0]: self.opt += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
 
 			if self.opt < 0: self.opt = 2
 			if self.opt > 2: self.opt = 0
@@ -3119,7 +2690,7 @@ class Camera:
 					#do = True
 			if do:
 				if self.battle == False and res.SIGNAL > 0:
-					self.sfx.play(res.SOUND['FILE_SAVE'])
+					res.MIXER[0].play(res.SOUND['FILE_SAVE'])
 					res.ID = self.opt
 					res.CHAPTER = 13
 					self.ingame = 6
@@ -3143,7 +2714,7 @@ class Camera:
 							res.BESTIARY[j]['SEEN'] = 2
 							rsg = True
 					if rsg == True:
-						self.sfx.play(res.SOUND['CAMERA'])
+						res.MIXER[0].play(res.SOUND['CAMERA'])
 						self.ingame = 7
 	
 	def outside_events(self,pressed):
@@ -3152,19 +2723,19 @@ class Camera:
 	def photo(self,bg,foes,xpos):
 		self.rqst = False
 		self.hpctrl = 'PHONE_PHOTO'
-		for i in self.scr: i.fill((0,0,0,0))
-		self.scr[0].blit(bg, (-xpos, -88))
+		self.surface.fill((0,0,0))
+		self.surface.blit(bg, (-xpos, -88))
 		for i in foes:
-			self.scr[0].blit(i['SPRITE'], (-xpos + i['MASK'].x, -88 + i['MASK'].y))
+			self.surface.blit(i['SPRITE'], (-xpos + i['MASK'].x, -88 + i['MASK'].y))
 
-		return self.scr
+		return self.surface
 		
 	def draw(self):
 		self.rqst = False
 		self.hpctrl = 'PHONE_CAMERA'
-		sz = self.scr[0].get_width() #button width
-		for i in self.scr: i.fill((0,0,0,0))
-		self.scr[0].blit(pygame.image.load(res.BACKG_PATH + 'phn_' + str(res.PARTY[res.FORMATION][0]) + '.png'), (0, 0))
+		sz = self.surface.get_width() #button width
+		self.surface.fill((0,0,0))
+		self.surface.blit(pygame.image.load(res.BACKG_PATH + 'phn_' + str(res.PARTY[res.FORMATION][0]) + '.png'), (0, 0))
 
 		if res.SIGNAL > 0:
 			y = 0
@@ -3174,9 +2745,9 @@ class Camera:
 				rct = pygame.Surface((i.width,i.height))
 				rct.fill(col)
 				rct.set_alpha(100)
-				self.scr[0].blit(rct,(i.x,i.y))
+				self.surface.blit(rct,(i.x,i.y))
 				if y < len(res.FILES[0]):
-					self.scr[1].blit(self.fnt['MONOTYPE'].render(dtb.CHAPTERS[res.FILES[1][y]][0], True, (0, 0, 0)), (20, (51 + (y * 51)) * 2))
+					self.surface.blit(res.FONTS['MONOTYPE'].render(dtb.CHAPTERS[res.FILES[1][y]][0], True, (0, 0, 0)), (20, (51 + (y * 51)) * 2))
 					ss = np.floor(res.FILES[2][y]/1000)
 					mm = 0
 					hh = 0
@@ -3188,55 +2759,50 @@ class Camera:
 					else: mm = str(mm)
 					if hh < 10: hh = '0' + str(hh)
 					else: hh = str(hh)
-					self.scr[1].blit(self.fnt['MONOTYPE'].render(hh + ' : ' + mm + ' : ' + ss, True, (0, 0, 0)), (20, (65 + (y * 51)) * 2))
+					self.surface.blit(res.FONTS['MONOTYPE'].render(hh + ' : ' + mm + ' : ' + ss, True, (0, 0, 0)), (20, (65 + (y * 51)) * 2))
 					x = 0
 					for p in res.FILES[4][y][::-1]:
-						self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(p) + '.png'), (sz - 30 - x, 65 + (y * 51)))
+						self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(p) + '.png'), (sz - 30 - x, 65 + (y * 51)))
 						x += 22
-				else: self.scr[1].blit(self.fnt['MONOTYPE'].render(dtb.MENU[61], True, (0, 0, 0)), (20, (61 + (y * 51)) * 2))
+				else: self.surface.blit(res.FONTS['MONOTYPE'].render(dtb.MENU[61], True, (0, 0, 0)), (20, (61 + (y * 51)) * 2))
 				y += 1
-		else: self.scr[1].blit(self.fnt['MONOTYPE'].render(dtb.MENU[15], True, (255, 255, 255)), (50, 280))
+		else: self.surface.blit(res.FONTS['MONOTYPE'].render(dtb.MENU[15], True, (255, 255, 255)), (50, 280))
 
-		pygame.draw.rect(self.scr[1], (255, 255, 255), pygame.Rect(0,0,sz * 2,80))
-		self.scr[1].blit(self.fnt['TITLE'].render(dtb.MENU[5], True, (0, 0, 0)), (10, 10))
+		pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(0,0,sz * 2,80))
+		self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU[5], True, (0, 0, 0)), (10, 10))
 		
-		return self.scr
+		return self.surface
 
 class Bestiary:
 	def __init__(self):
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 15 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 10 * res.GSCALE),
-			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 20 * res.GSCALE)}
-		self.guitools = Guitools()
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)
 		self.scroll = 0
 		self.optrects = [[]]
 		self.opt = [0,0]
 		self.mnu = 0
 		for i in range(len(res.BESTIARY)):
-			if res.BESTIARY[i]['SEEN'] > 1: self.optrects[0].append(pygame.Rect(0,41 + (i * 51),self.scr[0].get_width(),50))
+			if res.BESTIARY[i]['SEEN'] > 1: self.optrects[0].append(pygame.Rect(0,41 + (i * 51),self.surface.get_width(),50))
 		
 	def inside_events(self,pressed,mouse):
 		if res.SIGNAL > 0:
-			if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-			if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
+			if pressed[0][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+			if pressed[1][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
 
 			if pressed[4][0]:
-				if self.mnu == 0: self.mnu = 1; self.sfx.play(res.SOUND['MENU_GO'])
-				elif self.mnu > 0: self.mnu = 0; self.sfx.play(res.SOUND['MENU_BACK'])
+				if self.mnu == 0: self.mnu = 1; res.MIXER[0].play(res.SOUND['MENU_GO'])
+				elif self.mnu > 0: self.mnu = 0; res.MIXER[0].play(res.SOUND['MENU_BACK'])
 
 			lst = [x for x in res.BESTIARY if x['SEEN'] > 1]
 			if self.mnu == 0:
 				for i in range(len(self.optrects[0])):
-					if pygame.Rect.colliderect(self.optrects[0][i],mouse): self.opt[1] = i; self.mnu = 1; self.sfx.play(res.SOUND['MENU_GO'])
+					if pygame.Rect.colliderect(self.optrects[0][i],mouse): self.opt[1] = i; self.mnu = 1; res.MIXER[0].play(res.SOUND['MENU_GO'])
 				if self.opt[1] < 0: self.opt[1] = len(lst)
 				if self.opt[1] > len(lst): self.opt[1] = 0
 
 			if self.mnu > 0:
-				if pygame.event == pygame.MOUSEBUTTONDOWN: self.mnu = 0; self.sfx.play(res.SOUND['MENU_BACK'])
-				if pressed[2][0]: self.mnu = 1; self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: self.mnu = 2; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pygame.event == pygame.MOUSEBUTTONDOWN: self.mnu = 0; res.MIXER[0].play(res.SOUND['MENU_BACK'])
+				if pressed[2][0]: self.mnu = 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: self.mnu = 2; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 				if self.opt[1] < 0: self.opt[1] = 3
 				if self.opt[1] > 3: self.opt[1] = 0
@@ -3245,13 +2811,13 @@ class Bestiary:
 		pass
 		
 	def draw(self):
-		sz = self.scr[0].get_width() #button width
+		sz = self.surface.get_width()
 		self.scroll = 0
 		if self.opt[0] > 2: self.scroll += (self.opt[0] - 2) * 51
 
-		for i in self.scr: i.fill((220,220,200,0))
-		pygame.draw.line(self.scr[1],(100,50,50),(20,10),(20,630),1)
-		for i in range(20): pygame.draw.line(self.scr[1],(10,10,20),(30,45 + (i * 30)),((sz * res.GSCALE) - 30,45 + (i * 30)),1)
+		self.surface.fill((220,220,200,0))
+		pygame.draw.line(self.surface,(100,50,50),(20,10),(20,630),1)
+		for i in range(20): pygame.draw.line(self.surface,(10,10,20),(30,45 + (i * 30)),((sz * res.GSCALE) - 30,45 + (i * 30)),1)
 		if res.SIGNAL > 0:
 			lst = [x for x in res.BESTIARY if x['SEEN'] > 1]
 			frk = lst[self.opt[1]]
@@ -3262,39 +2828,39 @@ class Bestiary:
 					for i in range(len(self.optrects[0])):
 						if self.opt[1] != i: cl = (255, 255, 255)
 						else: cl = (134, 0, 211)
-						pygame.draw.rect(self.scr[0], cl, pygame.Rect(self.optrects[0][i].x,self.optrects[0][i].y - self.scroll,self.optrects[0][i].width,self.optrects[0][i].height))
-						self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.FREAKS[lst[i]['N']]['NAME'], True, (0, 0, 0)), ((self.optrects[0][i].x + 10) * res.GSCALE, (self.optrects[0][i].y + 10 - self.scroll) * res.GSCALE))
-						self.scr[1].blit(self.fnt['CALIBRI'].render(lst[i]['ID'], True, (0, 0, 0)), ((self.optrects[0][i].x + 10) * res.GSCALE, (self.optrects[0][i].y + 25 - self.scroll) * res.GSCALE))
+						pygame.draw.rect(self.surface, cl, pygame.Rect(self.optrects[0][i].x,self.optrects[0][i].y - self.scroll,self.optrects[0][i].width,self.optrects[0][i].height))
+						self.surface.blit(res.FONTS['CALIBRI'].render(dtb.FREAKS[lst[i]['N']]['NAME'], True, (0, 0, 0)), ((self.optrects[0][i].x + 10) * res.GSCALE, (self.optrects[0][i].y + 10 - self.scroll) * res.GSCALE))
+						self.surface.blit(res.FONTS['CALIBRI'].render(lst[i]['ID'], True, (0, 0, 0)), ((self.optrects[0][i].x + 10) * res.GSCALE, (self.optrects[0][i].y + 25 - self.scroll) * res.GSCALE))
 				#FREAK INFORMATION
 				if self.mnu == 1:
-					self.scr[1].blit(self.fnt['DESCRIPTION'].render('TAM.' + frk['N'], True, fc), ((sz * res.GSCALE) - 40, 30))
-					#self.scr[0].blit(pygame.image.load(res.FREAKS_PATH + frk['N'] + '_stand.png'), (40, 70))
-					self.scr[1].blit(self.fnt['DESCRIPTION'].render(dtb.FREAKS[frk['N']]['NAME'], True, fc), (300, 70))
-					self.scr[1].blit(self.fnt['DESCRIPTION'].render('OA: ' + str(dtb.FREAKS[frk['N']]['OA']), True, fc), (300, 80))
-					self.scr[1].blit(self.fnt['DESCRIPTION'].render('RG: ' + str(frk['DATE'][0]) + '/' + str(frk['DATE'][1]) + '/' + str(frk['DATE'][2]), True, fc), (300, 90))
-					self.scr[1].blit(self.fnt['DESCRIPTION'].render('HG: ' + dtb.FREAKS[frk['N']]['HEIGHT'], True, fc), (300, 100))
-					self.scr[1].blit(self.fnt['DESCRIPTION'].render('HT: ' + dtb.FHABITATS[dtb.FREAKS[frk['N']]['HABITAT']], True, fc), (300, 120))
+					self.surface.blit(res.FONTS['DESCRIPTION'].render('TAM.' + frk['N'], True, fc), ((sz * res.GSCALE) - 40, 30))
+					#self.surface.blit(pygame.image.load(res.FREAKS_PATH + frk['N'] + '_stand.png'), (40, 70))
+					self.surface.blit(res.FONTS['DESCRIPTION'].render(dtb.FREAKS[frk['N']]['NAME'], True, fc), (300, 70))
+					self.surface.blit(res.FONTS['DESCRIPTION'].render('OA: ' + str(dtb.FREAKS[frk['N']]['OA']), True, fc), (300, 80))
+					self.surface.blit(res.FONTS['DESCRIPTION'].render('RG: ' + str(frk['DATE'][0]) + '/' + str(frk['DATE'][1]) + '/' + str(frk['DATE'][2]), True, fc), (300, 90))
+					self.surface.blit(res.FONTS['DESCRIPTION'].render('HG: ' + dtb.FREAKS[frk['N']]['HEIGHT'], True, fc), (300, 100))
+					self.surface.blit(res.FONTS['DESCRIPTION'].render('HT: ' + dtb.FHABITATS[dtb.FREAKS[frk['N']]['HABITAT']], True, fc), (300, 120))
 					#DESCRIPTION
 					j = 0
-					for l in self.guitools.wrap([dtb.FREAKS[frk['N']]['INFO']],self.fnt['DESCRIPTION'],(sz - 30) * res.GSCALE):
-						self.scr[1].blit(self.fnt['DESCRIPTION'].render(l, True, (0, 0, 0)), (20 * res.GSCALE, (100 + j) * res.GSCALE))
+					for l in tools.text.wrap([dtb.FREAKS[frk['N']]['INFO']],res.FONTS['DESCRIPTION'],(sz - 30) * res.GSCALE):
+						self.surface.blit(res.FONTS['DESCRIPTION'].render(l, True, (0, 0, 0)), (20 * res.GSCALE, (100 + j) * res.GSCALE))
 						j += 10
 				#FREAK HABILITIES INFORMATION
 				if self.mnu == 2:
-					pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(5,45,sz - 10,200))
-					pygame.draw.rect(self.scr[0], (134, 0, 211), pygame.Rect(92,243,83,3))
-					pygame.draw.rect(self.scr[0], (0, 0, 0), pygame.Rect(10,50,160,77))
+					'''pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(5,45,sz - 10,200))
+					pygame.draw.rect(self.surface, (134, 0, 211), pygame.Rect(92,243,83,3))
+					pygame.draw.rect(self.surface, (0, 0, 0), pygame.Rect(10,50,160,77))'''
 
 					y = 0
 					for i in dtb.FREAKS[res.BESTIARY[opt]['N']]['HABILITIES']:
-						if lopt != y/19: pygame.draw.rect(self.scr[0], (255, 255, 255), pygame.Rect(11,51 + y,158,18))
-						else: pygame.draw.rect(self.scr[0], (134, 0, 211), pygame.Rect(11,51 + y,158,18))
-						self.scr[1].blit(self.fnt['CALIBRI'].render(i[0], True, (0, 0, 0)), (40, (53 + y) * 2))
+						if lopt != y/19: pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(11,51 + y,158,18))
+						else: pygame.draw.rect(self.surface, (134, 0, 211), pygame.Rect(11,51 + y,158,18))
+						self.surface.blit(res.FONTS['CALIBRI'].render(i[0], True, (0, 0, 0)), (40, (53 + y) * 2))
 						y += 19
 
 					j = 0
 					for l in dtb.FREAKS[res.BESTIARY[opt]['N']]['HABILITIES'][lopt][1]:
-						self.scr[1].blit(self.fnt['DESCRIPTION'].render(l, True, (0, 0, 0)), (40, 360 + j))
+						self.surface.blit(res.FONTS['DESCRIPTION'].render(l, True, (0, 0, 0)), (40, 360 + j))
 						j += 30
 
 					if dtb.FREAKS[res.BESTIARY[opt]['N']]['HABILITIES'][lopt][3] == 1: dmg = dtb.MENU[37] + str(dtb.FREAKS[res.BESTIARY[opt]['N']]['HABILITIES'][lopt][2])
@@ -3317,18 +2883,15 @@ class Bestiary:
 					elif dtb.FREAKS[res.BESTIARY[opt]['N']]['HABILITIES'][lopt][3] == 8: dmg = dtb.MENU[53]
 					else: dmg = ''
 
-					self.scr[1].blit(self.fnt['CALIBRI'].render(dmg, True, (0, 0, 0)), (20, 210))
-			else: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[21], True, (255, 255, 255)), (40, 140))
-		else: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[15], True, (255, 255, 255)), (50, 280))
+					self.surface.blit(res.FONTS['CALIBRI'].render(dmg, True, (0, 0, 0)), (20, 210))
+			else: self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU['no_freaks'], True, (255, 255, 255)), (40, 140))
+		else: self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU['no_signal'], True, (255, 255, 255)), (50, 280))
 
-		return self.scr
+		return self.surface
 		
 class Tasks:
 	def __init__(self):
-		self.scr = [pygame.Surface((160,160)), pygame.Surface((160 * res.GSCALE,160 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 12 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface((160 * res.GSCALE,160 * res.GSCALE), pygame.SRCALPHA)
 		self.scroll = 0
 		self.optrects = []
 		dvd3 = np.floor((160 * res.GSCALE)/3)
@@ -3339,10 +2902,10 @@ class Tasks:
 	def inside_events(self,pressed,mouse):
 		for i in range(len(self.optrects)):
 			if pygame.Rect.colliderect(mouse,self.optrects[i]): self.opt[0] = i
-		if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[2][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-		if pressed[3][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[0][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[2][0]: self.opt[0] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt[0] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 		if self.opt[0] < 0: self.opt[0] = 2
 		if self.opt[0] > 2: self.opt[0] = 0
@@ -3353,8 +2916,7 @@ class Tasks:
 		pass
 
 	def draw(self):
-		sz = self.scr[0].get_width() #button width
-
+		sz = self.surface.get_width()
 		if self.opt[1] > 2:
 			if self.scroll < (self.opt[1] - 2) * 31:
 				self.scroll += 6.2
@@ -3364,31 +2926,26 @@ class Tasks:
 		elif self.opt[1] == 0 and self.scroll > 0:
 			self.scroll -= 6.2
 			
-		for i in self.scr: i.fill((10,10,10,0))
+		self.surface.fill((10,10,10,0))
 		lst = ['to_do','done','all']
 		for i in range(3):
-			if self.opt[0] == i: col = (10,10,10); pygame.draw.rect(self.scr[1], (200, 200, 200), self.optrects[i])
+			if self.opt[0] == i: col = (10,10,10); pygame.draw.rect(self.surface, (200, 200, 200), self.optrects[i])
 			else: col = (200,200,200)
-			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[lst[i]], True, col), (self.optrects[i].x + 10, self.optrects[i].y + 10))
+			self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[lst[i]], True, col), (self.optrects[i].x + 10, self.optrects[i].y + 10))
 		lst = [[x for x in res.TASKS if x[1] < 100],[x for x in res.TASKS if x[1] == 100],res.TASKS]
 		for i in range(len(lst[self.opt[0]])):
 			if self.opt[1] != i: col = (200, 200, 200)
 			else: col = (255, 123, 0)
-			pygame.draw.rect(self.scr[1], col, pygame.Rect(0,40 + (i * 81) - self.scroll,sz * res.GSCALE,80))
-			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.TASKINDEX[lst[self.opt[0]][i][0]][0][0], True, (10, 10, 10)), (20, 50 + (i * 81) - self.scroll))
-		if len(lst[self.opt[0]]) == 0: self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU['no_tasks'], True, (200, 200, 200)), (80, 280))
+			pygame.draw.rect(self.surface, col, pygame.Rect(0,40 + (i * 81) - self.scroll,sz * res.GSCALE,80))
+			self.surface.blit(res.FONTS['CALIBRI'].render(dtb.TASKINDEX[lst[self.opt[0]][i][0]][0][0], True, (10, 10, 10)), (20, 50 + (i * 81) - self.scroll))
+		if len(lst[self.opt[0]]) == 0: self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU['no_tasks'], True, (200, 200, 200)), (80, 280))
 		
-		return self.scr
+		return self.surface
 		
 class Status:
 	def __init__(self):
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)]
+		self.surface = pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)
 		self.mnsrf = pygame.Surface((90 * res.GSCALE,90 * res.GSCALE))
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 12 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10),
-		'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 20 * res.GSCALE),'DESCRIPTION': pygame.font.SysFont('Calibri', 25),}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
-		self.guitools = Guitools()
 		self.ratio = [(180 * res.GSCALE,232 * res.GSCALE),(90 * res.GSCALE,90 * res.GSCALE)]
 		self.scroll = 0
 		self.optrects = []
@@ -3397,12 +2954,16 @@ class Status:
 		self.opt = 0
 		self.bars = []
 		for i in range(3): self.bars.append([100,100])
+		self.imgs = {}
+		for i in res.PARTY[res.FORMATION]:
+			img = pygame.image.load(res.SPRITES_PATH + 'who_' + str(i) + '.png').convert_alpha()
+			self.imgs[i] = pygame.transform.scale(img,(img.get_width() * res.GSCALE,img.get_height() * res.GSCALE))
 	
 	def inside_events(self,pressed,mouse):
 		for i in range(len(self.optrects)):
 			if pressed[4][0] and pygame.Rect.colliderect(mouse,self.optrects[i]): self.opt = i
-		if pressed[2][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-		if pressed[3][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[2][0]: self.opt -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 		if self.opt < 0: self.opt = len(res.PARTY[res.FORMATION]) - 1
 		if self.opt > len(res.PARTY[res.FORMATION]) - 1: self.opt = 0
@@ -3417,7 +2978,7 @@ class Status:
 		eq = res.INVENTORY[res.PARTY[res.FORMATION][self.opt]][4][res.EQUIP[self.opt]]
 		nn = ch['NICK']
 		if nn == None: nn = ch['NAME']
-		self.mnsrf.blit(self.fnt['TITLE'].render(nn.lower(), True, (255, 255, 255)), (20, 20))
+		self.mnsrf.blit(res.FONTS['TITLE'].render(nn.lower(), True, (255, 255, 255)), (20, 20))
 		
 		low = 0
 		lst = [(ch['HP'],dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']])]
@@ -3430,44 +2991,44 @@ class Status:
 			else: col = (250, 10, 10); low = 1
 			if lst[i][0] > 0:
 				if self.bars[self.opt][i] > int(100/(lst[i][1]/lst[i][0])):
-					self.sfx.play(res.SOUND['HP_LOSS'])
+					res.MIXER[0].play(res.SOUND['HP_LOSS'])
 					self.bars[self.opt][i] -= 1
 				pygame.draw.rect(self.mnsrf, col, pygame.Rect(20,120 + (i * 60),int((sz - 40)/(lst[i][1]/lst[i][0])),40))
 		
 		if len(ch['HEALTH']) > 0: self.mnsrf.blit(pygame.image.load(res.SPRITES_PATH + 'hl_' + str(ch['HEALTH'][0]) + '.png'), (22, 122))
 				
 		#if self.equip[p] == 6: hpcol = (100, 100, 100)
-		if low == 1 and self.sfx.get_busy() == False: self.sfx.play(res.SOUND['HP_LOW'])
-		if low == 2 and self.sfx.get_busy() == False: self.sfx.play(res.SOUND['DYING'])
+		if low == 1 and self.sfx.get_busy() == False: res.MIXER[0].play(res.SOUND['HP_LOW'])
+		if low == 2 and self.sfx.get_busy() == False: res.MIXER[0].play(res.SOUND['DYING'])
 		
 		return self.mnsrf
 
 	def draw(self):
+		sz = self.surface.get_width()
 		self.scroll = 0
-		sz = self.scr[0].get_width() #button width
 		if self.opt > 2: self.scroll += (self.opt - 2) * 60
-		for i in self.scr: i.fill((10,10,10,0))
+		self.surface.fill((10,10,10,0))
 
 		for i in range(len(res.PARTY[res.FORMATION])):
-			tsz = self.fnt['CALIBRI'].size(res.CHARACTERS[res.PARTY[res.FORMATION][i]]['NAME'])[0]
-			if self.opt == i: pygame.draw.rect(self.scr[1], (200, 200, 200), self.optrects[i]); cl = (10, 10, 10)
-			else: pygame.draw.rect(self.scr[1], (100, 200, 200), self.optrects[i]); cl = (10, 10, 10)
+			tsz = res.FONTS['CALIBRI'].size(res.CHARACTERS[res.PARTY[res.FORMATION][i]]['NAME'])[0]
+			if self.opt == i: pygame.draw.rect(self.surface, (200, 200, 200), self.optrects[i]); cl = (10, 10, 10)
+			else: pygame.draw.rect(self.surface, (100, 200, 200), self.optrects[i]); cl = (10, 10, 10)
 			#else: cl = (200, 200, 200)
-			self.scr[1].blit(self.fnt['CALIBRI'].render(res.CHARACTERS[res.PARTY[res.FORMATION][i]]['NAME'], True, cl), (self.optrects[i].x + int(self.optrects[i].width/2) - int(tsz/2), 5))
+			self.surface.blit(res.FONTS['CALIBRI'].render(res.CHARACTERS[res.PARTY[res.FORMATION][i]]['NAME'], True, cl), (self.optrects[i].x + int(self.optrects[i].width/2) - int(tsz/2), 5))
 		#TEXT
 		ch = res.CHARACTERS[res.PARTY[res.FORMATION][self.opt]]
-		self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'who_' + str(res.PARTY[res.FORMATION][self.opt]) + '.png'), (10, 40))
+		self.surface.blit(self.imgs[self.opt], (10, 40))
 		lst = [ch['NAME'] + ' ' + res.CHARACTERS[res.PARTY[res.FORMATION][self.opt]]['LASTNAME'] + ' nv.' + str(ch['LEVEL']),dtb.CNAMES[ch['CLASS']][0].capitalize() + ' ' + dtb.CNAMES[ch['SUBCLASS']],
-			dtb.PRONOUNS[ch['PRONOUN']] + ' | ' + ch['BLOOD'] + ' | ' + dtb.ZODIAC[self.guitools.sign(ch['BIRTH'])]]
+			dtb.PRONOUNS[ch['PRONOUN']] + ' | ' + ch['BLOOD'] + ' | ' + dtb.ZODIAC[tools.data.sign(ch['BIRTH'])]]
 		for i in range(len(lst)):
-			txsz = self.fnt['CALIBRI'].size(lst[i])
-			self.scr[1].blit(self.fnt['CALIBRI'].render(lst[i], True, (255, 255, 255)), ((sz * res.GSCALE) - 40 - txsz[0], 100 + (i * 30)))
+			txsz = res.FONTS['CALIBRI'].size(lst[i])
+			self.surface.blit(res.FONTS['CALIBRI'].render(lst[i], True, (255, 255, 255)), ((sz * res.GSCALE) - 40 - txsz[0], 100 + (i * 30)))
 		#BARS
 		lst = [(ch['HP'],dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]),(ch['SANITY'],100),(ch['HUNGER'],1000),(ch['THIRST'],1000),(ch['SLEEP'],1000)]
 		for i in range(len(lst)):
-			#self.scr[1].blit(self.fnt['CALIBRI'].render('hp:', True, (255, 255, 255)), (20, 260))
-			pygame.draw.rect(self.scr[1], (50, 50, 50), pygame.Rect(40,200 + (i * 30),200,20))
-			if lst[i][0] > 0: pygame.draw.rect(self.scr[1], (200, 200, 200), pygame.Rect(40,200 + (i * 30),int(200/(lst[i][1]/lst[i][0])),20))
+			#self.surface.blit(res.FONTS['CALIBRI'].render('hp:', True, (255, 255, 255)), (20, 260))
+			pygame.draw.rect(self.surface, (50, 50, 50), pygame.Rect(40,200 + (i * 30),200,20))
+			if lst[i][0] > 0: pygame.draw.rect(self.surface, (200, 200, 200), pygame.Rect(40,200 + (i * 30),int(200/(lst[i][1]/lst[i][0])),20))
 		#PENTACLE
 		xx = 40
 		yy = 400
@@ -3478,20 +3039,17 @@ class Status:
 			p = -((2 * 3.14)/len(lst)) * i
 			vl = (rr/(5/dtb.CLASSES[ch['CLASS']][lst[i]][ch['LEVEL']]))
 			pnt.append((int(np.cos(p) * vl) + xx + rr,int(np.sin(p) * vl) + yy + rr))
-			pygame.draw.line(self.scr[1],(200,50,50),(xx + rr,yy + rr),(int(np.cos(p) * rr) + xx + rr,int(np.sin(p) * rr) + yy + rr),1)
-			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.PROFNAMES[lst[i]], True, (255, 255, 255)), (int(np.cos(p) * rr) + xx + rr + 10,int(np.sin(p) * rr) + yy + rr + 10))
+			pygame.draw.line(self.surface,(200,50,50),(xx + rr,yy + rr),(int(np.cos(p) * rr) + xx + rr,int(np.sin(p) * rr) + yy + rr),1)
+			self.surface.blit(res.FONTS['CALIBRI'].render(dtb.PROFNAMES[lst[i]], True, (255, 255, 255)), (int(np.cos(p) * rr) + xx + rr + 10,int(np.sin(p) * rr) + yy + rr + 10))
 			ord = [0,2,4,1,3,0]
-		for i in range(len(ord) - 1): pygame.draw.line(self.scr[1],(200,200,200),pnt[ord[i]],pnt[ord[i + 1]],2)
-		pygame.draw.ellipse(self.scr[1],(200,200,200),pygame.Rect(xx,yy,rr * 2,rr * 2),3)
+		for i in range(len(ord) - 1): pygame.draw.line(self.surface,(200,200,200),pnt[ord[i]],pnt[ord[i + 1]],2)
+		pygame.draw.ellipse(self.surface,(200,200,200),pygame.Rect(xx,yy,rr * 2,rr * 2),3)
 		
-		return self.scr
+		return self.surface
 
 class Tactics:
 	def __init__(self):
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 15 * res.GSCALE),'DESCRIPTION': pygame.font.SysFont('Calibri', 10 * res.GSCALE)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)
 		self.ratio = [(180 * res.GSCALE,232 * res.GSCALE),(210,50)]
 		self.scroll = 0
 		self.optrects = []
@@ -3502,10 +3060,10 @@ class Tactics:
 		self.mnu = 0
 		
 	def inside_events(self,pressed,mouse):
-		if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[2][0]: self.opt[0] -= 1; self.sfx.play(res.SOUND['MENU_HOR'])
-		if pressed[3][0]: self.opt[0] += 1; self.sfx.play(res.SOUND['MENU_HOR'])
+		if pressed[0][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[2][0]: self.opt[0] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt[0] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 		if self.opt[0] < 0: self.opt[0] = len(res.PARTY[res.FORMATION])
 		if self.opt[0] > len(res.PARTY[res.FORMATION]): self.opt[0] = 0
@@ -3530,58 +3088,51 @@ class Tactics:
 		return srf
 
 	def draw(self):
-		sz = self.scr[0].get_width() #button width
-		for i in self.scr: i.fill((10,10,10,0))
+		self.surface.fill((10,10,10,0))
 		if self.opt[1] > 2: self.scroll += (self.opt[1] - 2) * 51
 
 		for i in range(len(res.TACTICAL[res.PARTY[res.FORMATION][self.opt[0]]])):
 			if self.opt[1] == i: col = (33, 75, 127)
 			else: col = (200,200,200)
-			pygame.draw.rect(self.scr[1], col, self.optrects[i])
+			pygame.draw.rect(self.surface, col, self.optrects[i])
 			j = dtb.TRICKS[res.TACTICAL[res.PARTY[res.FORMATION][self.opt[0]]][i]]
-			self.scr[1].blit(self.fnt['CALIBRI'].render(j['NAME'], True, (10, 10, 10)), (self.optrects[i].x + 10, self.optrects[i].y + 10))
-			self.scr[1].blit(self.fnt['DESCRIPTION'].render(j['DESCRIPTION'], True, (10, 10, 10)), (self.optrects[i].x + 10, self.optrects[i].y + 40))
+			self.surface.blit(res.FONTS['CALIBRI'].render(j['NAME'], True, (10, 10, 10)), (self.optrects[i].x + 10, self.optrects[i].y + 10))
+			self.surface.blit(res.FONTS['DESCRIPTION'].render(j['DESCRIPTION'], True, (10, 10, 10)), (self.optrects[i].x + 10, self.optrects[i].y + 40))
 	
-		return self.scr
+		return self.surface
 		
 class Achievements:
 	def __init__(self):
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 12 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)
 		self.scroll = 0
 		self.optrects = []
 		for i in range(len(dtb.ACHIEVEMENTS)): self.optrects.append(pygame.Rect(0,102 * i,180 * res.GSCALE,100))
 		self.opt = 0
 		
 	def inside_events(self,pressed,mouse):
-		if pressed[0][0]: self.opt -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[1][0]: self.opt += 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[0][0]: self.opt -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
 		if self.opt < 0: self.opt = len(dtb.ACHIEVEMENTS) - 1
 		if self.opt > len(dtb.ACHIEVEMENTS) - 1: self.opt = 0
 					
 	def outside_events(self,pressed): pass
 
 	def draw(self):
-		sz = self.scr[0].get_width() #button width
-		for i in self.scr: i.fill((10,10,10,0))
+		self.surface.fill((10,10,10,0))
 		for i in range(len(self.optrects)):
 			if self.opt != i: col = (200, 200, 200)
 			else: col = (255, 191, 0)
-			pygame.draw.rect(self.scr[1], col, self.optrects[i])
+			pygame.draw.rect(self.surface, col, self.optrects[i])
 			if dtb.ACHIEVEMENTS[i][2] == True: tcol = (0,0,0)
 			else: tcol = (80,80,80)
-			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.ACHIEVEMENTS[i][0], True, tcol), (10, 20 + (102 * i)))
-			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.ACHIEVEMENTS[i][1], True, tcol), (10, 50 + (102 * i)))
+			self.surface.blit(res.FONTS['CALIBRI'].render(dtb.ACHIEVEMENTS[i][0], True, tcol), (10, 20 + (102 * i)))
+			self.surface.blit(res.FONTS['CALIBRI'].render(dtb.ACHIEVEMENTS[i][1], True, tcol), (10, 50 + (102 * i)))
 		
-		return self.scr
+		return self.surface
 
 class Ranking:
 	def __init__(self):
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((360,464), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 30), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
-			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
+		self.surface = pygame.Surface((360,464), pygame.SRCALPHA)
 		self.scroll = 0
 		
 	def inside_events(self,pressed):
@@ -3591,26 +3142,18 @@ class Ranking:
 		pass
 		
 	def draw(self):
-		sz = self.scr[0].get_width() #button width
 		self.scroll = 0
 		if opt > 2: self.scroll += (opt - 2) * 51
 
-		for i in self.scr: i.fill((10,10,10,0))
+		self.surface.fill((10,10,10,0))
 		if res.SIGNAL > 0: pass
-		else: self.scr[1].blit(self.fnt.render(dtb.MENU[15], True, (255, 255, 255)), (25, 140))
+		else: self.surface.blit(res.FONTS.render(dtb.MENU[15], True, (255, 255, 255)), (25, 140))
 
-		pygame.draw.rect(self.scr[1], (55, 255, 0), pygame.Rect(0,0,sz * 2,80))
-		self.scr[1].blit(self.fnt['TITLE'].render(dtb.MENU[11], True, (0, 0, 0)), (10, 10))
-		pygame.draw.rect(self.scr[0], (10, 10, 10), pygame.Rect(0,40,sz,210))
-
-		return self.scr
+		return self.surface
 		
 class Settings:
 	def __init__(self):
-		self.scr = [pygame.Surface((180,232)), pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 15 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface((180,232)), pygame.Surface((180 * res.GSCALE,232 * res.GSCALE), pygame.SRCALPHA)
 		self.scroll = 0
 		self.optrects = []
 		for i in range(15): self.optrects.append(pygame.Rect(0,i * 82,180 * res.GSCALE,80))
@@ -3622,11 +3165,15 @@ class Settings:
 		for i in range(len(btlst)):
 			self.buttons.append([])
 			for b in range(btlst[i]):
-				self.buttons[i].append(pygame.Rect(0,b * 35,self.scr[0].get_width(),30))
+				self.buttons[i].append(pygame.Rect(0,b * 35,self.surface.get_width(),30))
+		self.imgs = {}
+		for i in range(res.RANGE_BORDER):
+			img = pygame.image.load(res.SPRITES_PATH + 'border_' + str(i) + '.png').convert_alpha()
+			self.imgs[i] = pygame.transform.scale(img,(img.get_width() * res.GSCALE,img.get_height() * res.GSCALE))
 		
 	def inside_events(self,pressed,mouse):
-		if pressed[0][0]: self.opt[1] -= 1; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[1][0]: self.opt[1] += 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[0][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[1][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
 		if self.opt[1] < 0: self.opt[1] = len(self.buttons[self.mnu])
 		if self.opt[1] > len(self.buttons[self.mnu]): self.opt[1] = 0
 		#MAIN SETTINGS
@@ -3634,12 +3181,12 @@ class Settings:
 			if pressed[4][0]:
 				if self.opt[1] == 3:
 					res.save_data(1)
-					self.sfx.play(res.SOUND['MENU_GO'])
+					res.MIXER[0].play(res.SOUND['MENU_GO'])
 					self.opt[0] = 1
 					self.opt[1] = 4
 					self.phone = 1
 					if res.CHAPTER == 0 and res.SCENE == 0:
-						self.sfx.play(res.SOUND['CALLING'],-1)
+						res.MIXER[0].play(res.SOUND['CALLING'],-1)
 						self.ch_rng.play(res.SOUND['RINGTONE_' + str(self.phn.pbg)],-1)
 						self.phone = 17
 						self.nb = '977904623'
@@ -3651,30 +3198,30 @@ class Settings:
 		elif self.mnu == 1:
 			if self.opt[1] == 0:
 				if pressed[2][0]:
-					res.LANG = 'EN'; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+					res.LANG = 'EN'; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
 				if pressed[3][0]:
-					res.LANG = 'PT'; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+					res.LANG = 'PT'; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
 			if self.opt[1] == 1:
-				if pressed[2][0]: res.SPEED += 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.SPEED -= 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.SPEED += 1; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.SPEED -= 1; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 				if res.SPEED < 1: res.SPEED = 5
 				if res.SPEED > 5: res.SPEED = 1
 			if self.opt[1] == 5:
-				if pressed[2][0]: res.BORDER -= 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.BORDER += 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.BORDER -= 1; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.BORDER += 1; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 				if res.BORDER < 0: res.BORDER = res.RANGE_BORDER
 				if res.BORDER > res.RANGE_BORDER: res.BORDER = 0
 			if self.opt[1] == 6:
-				if pressed[2][0]: res.CENSORSHIP = False; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.CENSORSHIP = True; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.CENSORSHIP = False; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.CENSORSHIP = True; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
 			if self.opt[1] == 7:
-				if pressed[2][0]: res.HINT = False; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.HINT = True; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.HINT = False; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.HINT = True; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
 			if self.opt[1] == 8:
-				if pressed[2][0]: res.HELP = False; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.HELP = True; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.HELP = False; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.HELP = True; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
 		#CONTROLS MENU
 		elif self.mnu == 3:
 			if pressed[4][0]:
@@ -3684,8 +3231,8 @@ class Settings:
 		#MOUSE SETTINGS
 		elif self.mnu == 4:
 			if self.opt[1] == 1:
-				if pressed[2][0]: res.CURSOR -= 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.CURSOR += 1; self.sfx.set_volume(res.SFX); self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.CURSOR -= 1; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.CURSOR += 1; self.sfx.set_volume(res.SFX); res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 				if res.CURSOR < 0: res.CURSOR = res.RANGE_CURSOR
 				if res.CURSOR > res.RANGE_CURSOR: res.CURSOR = 0
@@ -3705,35 +3252,35 @@ class Settings:
 		#GO BACK
 		if pressed[5][0]:
 			if self.mnu > 0:
-				self.sfx.play(res.SOUND['MENU_BACK'])
+				res.MIXER[0].play(res.SOUND['MENU_BACK'])
 				self.mnu = 0
 							
 	def outside_events(self,pressed):
 		#COLORS SETTINGS
 		if self.mnu == 1:
 			if self.opt[1] == 2:
-				if pressed[2][0]: res.COLOR[0] -= 5; self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.COLOR[0] += 5; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.COLOR[0] -= 5; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.COLOR[0] += 5; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 				if res.COLOR[0] < 30: res.COLOR[0] = 242
 				if res.COLOR[0] > 242: res.COLOR[0] = 30
 			if self.lopt == 3:
-				if pressed[2][0]: res.COLOR[1] -= 5; self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.COLOR[1] += 5; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.COLOR[1] -= 5; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.COLOR[1] += 5; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 				if res.COLOR[1] < 30: res.COLOR[1] = 242
 				if res.COLOR[1] > 242: res.COLOR[1] = 30
 			if self.lopt == 4:
-				if pressed[2][0]: res.COLOR[2] -= 5; self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.COLOR[2] += 5; self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.COLOR[2] -= 5; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.COLOR[2] += 5; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 				if res.COLOR[2] < 30: res.COLOR[2] = 242
 				if res.COLOR[2] > 242: res.COLOR[2] = 30
 		#AUDIO SETTINGS
 		if self.mnu == 2:
 			if self.opt[1] == 0:
-				if pressed[2][0]: res.SFX -= 0.1; self.sfx.play(res.SOUND['MENU_HOR'])
-				if pressed[3][0]: res.SFX += 0.1;	self.sfx.play(res.SOUND['MENU_HOR'])
+				if pressed[2][0]: res.SFX -= 0.1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+				if pressed[3][0]: res.SFX += 0.1;	res.MIXER[0].play(res.SOUND['MENU_HOR'])
 				self.sfx.set_volume(res.SFX)
 				if res.SFX < 0.0: res.SFX = 0.0
 				if res.SFX > 1.0: res.SFX = 1.0
@@ -3745,8 +3292,8 @@ class Settings:
 				if res.MSC > 1.0: res.MSC = 1.0
 
 	def draw(self):
-		for i in self.scr: i.fill((10,10,10,0))
-		sz = self.scr[1].get_width() #button width
+		self.surface.fill((10,10,10,0))
+		sz = self.surface.get_width() #button width
 
 		rng = [4,10,10,10]
 		inpts = [
@@ -3759,14 +3306,14 @@ class Settings:
 			else: col = (200,200,200)
 			rct = self.optrects[i].copy()
 			rct.y += self.scroll
-			pygame.draw.rect(self.scr[1], col, rct)
+			pygame.draw.rect(self.surface, col, rct)
 			
 			txt = ''
 			if inpts[self.mnu][i] == 'lang': txt = ': ' + res.LANG
 			if self.mnu == 3:
 				if self.opt[0] == i and not self.trg: txt = dtb.MENU['bt_choose']
 				else: txt = ': ' + pygame.key.name(res.CONTROLS[0][i])
-			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.MENU[inpts[self.mnu][i]] + txt, True, (10,10,10)), (rct.x + 10, rct.y + 10))
+			self.surface.blit(res.FONTS['CALIBRI'].render(dtb.MENU[inpts[self.mnu][i]] + txt, True, (10,10,10)), (rct.x + 10, rct.y + 10))
 			
 			if inpts[self.mnu][i] in ['censorship','hints','tutorials']:
 				swrct = pygame.Rect(rct.x + rct.height - 60,rct.y + 10,50,rct.height - 20)
@@ -3775,40 +3322,36 @@ class Settings:
 				if inpts[self.mnu][i] == 'tutorials': vl = res.TUTORIALS
 				if vl: (140,255,124)
 				else: (255,61,61)
-				pygame.draw.rect(self.scr[1],col,swrct)
+				pygame.draw.rect(self.surface,col,swrct)
 			if inpts[self.mnu][i] in ['sfx','audio','speed']:
 				if inpts[self.mnu][i] == 'sfx': vl = (res.SFX,1.0)
 				if inpts[self.mnu][i] == 'audio': vl = (res.MSC,1.0)
 				if inpts[self.mnu][i] == 'speed': vl = (res.SPEED,5)
 				barct = pygame.Rect(rct.x + rct.height - 60,rct.y + 10,50,rct.height - 20)
-				pygame.draw.rect(self.scr[1],(100,100,100),barct)
-				pygame.draw.rect(self.scr[1],(200,100,100),pygame.Rect(barct.x + int(barct.width/(vl[1]/vl[0])),barct.y,10,10))
+				pygame.draw.rect(self.surface,(100,100,100),barct)
+				pygame.draw.rect(self.surface,(200,100,100),pygame.Rect(barct.x + int(barct.width/(vl[1]/vl[0])),barct.y,10,10))
 			if inpts[self.mnu][i] == 'cursor':
-				self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'cursor_' + str(res.CURSOR) + '.png'), (rct.x + 10, rct.y + 10))
+				self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'cursor_' + str(res.CURSOR) + '.png'), (rct.x + 10, rct.y + 10))
 			if inpts[self.mnu][i] == 'border':
 				for b in range(np.floor(sz/10) - 4):
-						for c in range(3): self.scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (rct.x + 10 + (b * 10), rct.y + 10 + (c * 10)))
+						for c in range(3): self.surface.blit(self.imgs[res.BORDER], (rct.x + 10 + (b * 10), rct.y + 10 + (c * 10)))
 
-		return self.scr
+		return self.surface
 		
 class About:
 	def __init__(self):
-		self.scr = [pygame.Surface((160,200)), pygame.Surface((160 * res.GSCALE,200 * res.GSCALE), pygame.SRCALPHA)]
-		self.fnt = {'CALIBRI': pygame.font.SysFont('Calibri', 10 * res.GSCALE), 'MONOTYPE': pygame.font.Font(res.FONTS_PATH + 'monotype.ttf', 10), 'DESCRIPTION': pygame.font.SysFont('Calibri', 25),
-			'TITLE': pygame.font.Font(res.FONTS_PATH + 'pixel-font.ttf', 40)}
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
+		self.surface = pygame.Surface((160 * res.GSCALE,200 * res.GSCALE), pygame.SRCALPHA)
 		self.optrects = []
 		for i in range(2): self.optrects.append(pygame.Rect(0,150 + (i * 40),160 * res.GSCALE,40))
 		self.opt = 0
 		
 	def inside_events(self,pressed,mouse):
-		if pressed[0][0] and self.opt == 1: self.opt = 0; self.sfx.play(res.SOUND['MENU_VER'])
-		if pressed[1][0] and self.opt == 0: self.opt = 1; self.sfx.play(res.SOUND['MENU_VER'])
+		if pressed[0][0] and self.opt == 1: self.opt = 0; res.MIXER[0].play(res.SOUND['MENU_VER'])
+		if pressed[1][0] and self.opt == 0: self.opt = 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
 		for i in range(len(self.optrects)):
 			if pygame.Rect.colliderect(self.optrects[i],mouse): self.opt = i
 		if pressed[4][0]:
-			self.sfx.play(res.SOUND['MENU_GO'])
+			res.MIXER[0].play(res.SOUND['MENU_GO'])
 			lst = ['twitter.com/kaixtr','github.com/kaixtr']
 			for i in range(len(lst)):
 				if self.opt == i: urllib.request.urlopen('https://' + lst[i])
@@ -3817,18 +3360,18 @@ class About:
 		pass
 
 	def draw(self):
-		for i in self.scr: i.fill((200,200,200,0))
+		self.surface.fill((200,200,200))
 		lst = [res.GNAME,res.AUTHOR + ' ' + res.YEAR,dtb.ABOUT[0],dtb.ABOUT[1]]
-		for i in range(4): self.scr[1].blit(self.fnt['CALIBRI'].render(lst[i], True, (10, 10, 10)), (20, 20 + (30 * i)))
+		for i in range(4): self.surface.blit(res.FONTS['CALIBRI'].render(lst[i], True, (10, 10, 10)), (20, 20 + (30 * i)))
 		for i in range(len(self.optrects)):
 			if self.opt == i: col = (150,150,150)
 			else: col = (200,200,200)
-			pygame.draw.rect(self.scr[1], col, self.optrects[i])
-			self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.ABOUT[2 + i], True, (10, 10, 10)), (self.optrects[i].x + 20, self.optrects[i].y + 10))
-		self.scr[1].blit(self.fnt['CALIBRI'].render(dtb.ABOUT[4], True, (0, 0, 0)), (40, 300))
+			pygame.draw.rect(self.surface, col, self.optrects[i])
+			self.surface.blit(res.FONTS['CALIBRI'].render(dtb.ABOUT[2 + i], True, (10, 10, 10)), (self.optrects[i].x + 20, self.optrects[i].y + 10))
+		self.surface.blit(res.FONTS['CALIBRI'].render(dtb.ABOUT[4], True, (0, 0, 0)), (40, 300))
 		
-		return self.scr
-		
-if test:
+		return self.surface
+
+if os.path.basename(sys.argv[0]) == os.path.basename(__file__):
 	t = Test()
 	while True: t.run()

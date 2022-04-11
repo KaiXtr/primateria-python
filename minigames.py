@@ -5,26 +5,30 @@ import plyer
 import queue
 from queue import LifoQueue
 import numpy as np
+import os
 
+import tools
 import resources as res
-import GUI
-
 sys.path.insert(0,'databases')
 if res.FILES != []: dtb = __import__('database_' + res.FILES[0][4])
 else: dtb = __import__('database_' + res.MAINLANG)
 
 pygame.init()
-play = False
 
 class Game:
 	def __init__(self):
+		res.fonts()
+		pygame.mixer.init(frequency = 44100, size = -16, channels = 1, buffer = 2**12)
+		pygame.mixer.music = pygame.mixer.Channel(1)
+		pygame.mixer.music.set_volume(res.MSC)
+		for i in range(4):
+			res.MIXER.append(pygame.mixer.Channel(i))
+			res.MIXER[i].set_volume(res.SFX)
 		self.display = pygame.display.set_mode((600, 600),pygame.RESIZABLE | pygame.SRCALPHA)
-		#self.font = pygame.font.Font(res.FONTS_PATH + 'reglisse/Reglisse.otf', 30)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
 		self.minigame = Piano()
-		self.guitools = GUI.Guitools()
-		self.bkg = self.guitools.gradient((800,1280),(100,100,200),(200,100,100))
+		self.bkg = tools.draw.gradient((800,1280),(100,100,200),(200,100,100))
 		pygame.event.set_allowed([pygame.QUIT,pygame.VIDEORESIZE,pygame.MOUSEBUTTONDOWN,pygame.MOUSEBUTTONUP,pygame.KEYDOWN,pygame.KEYUP])
 
 		self.mglstg = [[],
@@ -51,30 +55,29 @@ class Game:
 				for x in range(len(self.mglstg[i]) - len(self.bgames[i])): self.bgames[i].append(pygame.Rect(10 + (x * int((self.display.get_width() - 10)/3)), 50 + ((y + 1) * 60), int((self.display.get_width() - 10)/3) - 10, 50))
 			
 	def run(self):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
 		#EVENTS
 		for event in pygame.event.get():
+			pressed, mouse = tools.event.get_pressed(event)
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
 				exit()
 			if event.type == pygame.VIDEORESIZE:
 				self.display = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE | pygame.SRCALPHA)
-				self.bkg = self.guitools.gradient((event.w,event.h),(100,100,200),(200,100,100))
+				self.bkg = tools.draw.gradient((event.w,event.h),(100,100,200),(200,100,100))
 			#IN MINIGAME
 			if self.minigame:
-				self.minigame.events(event)
-				if event.type == pygame.MOUSEBUTTONDOWN and pygame.Rect.colliderect(mr,self.bbtt):
+				self.minigame.inside_events(pressed,mouse)
+				if pressed[4][0] and pygame.Rect.colliderect(mouse,self.bbtt):
 					self.minigame = None
 			#MAIN MENU
 			else:
-				if event.type == pygame.MOUSEBUTTONDOWN:
+				if pressed[4][0]:
 					for i in range(len(self.cbts)):
-						if pygame.Rect.colliderect(mr,self.cbts[i]):
+						if pygame.Rect.colliderect(mouse,self.cbts[i]):
 							self.mn = i
 					for i in range(len(self.bgames[self.mn])):
-						if pygame.Rect.colliderect(mr,self.bgames[self.mn][i]):
+						if pygame.Rect.colliderect(mouse,self.bgames[self.mn][i]):
 							self.minigame = eval(self.mglstg[self.mn][i])()
 		#DISPLAY STUFF
 		self.display.fill((100,100,100))
@@ -107,14 +110,14 @@ class Template:
 			for x in range(10):
 				self.grid[y].append([pygame.Rect(10 + (x * 22), 50 + (y * 22), 20, 20), None, 0])
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for i in self.grid:
-				if pygame.Rect.colliderect(mr,i[0]):
+				if pygame.Rect.colliderect(mouse,i[0]):
 					pass
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		self.surface.blit(self.font.render(self.txt,1,(200,200,200)), (10,10))
@@ -126,28 +129,27 @@ class Piano:
 		sz = pygame.display.Info()
 		self.surface = pygame.Surface((sz.current_w,sz.current_h))
 		self.font = pygame.font.SysFont("Arial", 64)
-		self.sfx = pygame.mixer.Channel(0)
-		self.sfx.set_volume(res.SFX)
-		self.guitools = GUI.Guitools()
 		self.grid = [pygame.Rect(10 + (x * 22), 220, 20, 50) for x in range(12)]
 		self.wave = None
 		
-	def events(self,event):
-		pressed, mr = self.guitools.get_pressed(event)
+	def inside_events(self,pressed,mouse):
 		tune = [262,278,294,311,330,349,370,392,415,440,466,494]
-		if event.type == pygame.MOUSEBUTTONDOWN:
+		if pressed[4][0]:
 			for i in range(len(self.grid)):
-				if pygame.Rect.colliderect(mr,self.grid[i]):
-					self.wave = self.guitools.sound_wave('square',f=tune[i],length=0.2)
-					self.sfx.play(self.wave)
-		for i in range(8):
-			if pressed[i][0]:
-				self.wave = self.guitools.sound_wave('sine',f=tune[i],length=0.2)
-				self.sfx.play(self.wave)
+				if pygame.Rect.colliderect(mouse,self.grid[i]):
+					self.wave = tools.mixer.sound_wave('square',f=tune[i],length=0.2)
+					res.MIXER[0].play(self.wave)
+		else:
+			for i in range(8):
+				if pressed[i][0]:
+					self.wave = tools.mixer.sound_wave('sine',f=tune[i],length=0.2)
+					res.MIXER[0].play(self.wave)
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
-		if self.wave: self.surface.blit(self.guitools.audio_display(self.wave,zoomt=1),(0,0))
+		if self.wave: self.surface.blit(tools.mixer.audio_display(self.wave,zoomt=1),(0,0))
 		for i in range(len(self.grid)):
 			if i in [1,3,6,8,10]: col = (50,50,50)
 			else: col = (200,200,200)
@@ -159,27 +161,30 @@ class Footrace:
 	def __init__(self):
 		sz = pygame.display.Info()
 		self.surface = pygame.Surface((sz.current_w,sz.current_h))
-		self.font = pygame.font.SysFont("Arial", 64)
+		self.font = pygame.font.SysFont("Arial", 40)
 		self.buttons = []
 		for x in range(2): self.buttons.append(pygame.Rect(10 + (x * 50), 300, 40, 40))
 		self.switch = False
 		self.dist = 0
 		self.speed = 0
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for i in range(len(self.buttons)):
-				if pygame.Rect.colliderect(mr,self.buttons[i]):
+				if pygame.Rect.colliderect(mouse,self.buttons[i]):
 					if i == int(self.switch):
-						self.speed += 1
+						self.speed += 0.2
 						self.switch = not self.switch
+						self.dist += self.speed
+		elif pressed[2][0] and self.switch == False: self.speed += 1; self.switch = True; self.dist += self.speed
+		elif pressed[3][0] and self.switch == True: self.speed += 1; self.switch = False; self.dist += self.speed
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
-		self.surface.blit(self.font.render(str(self.dist),1,(200,200,200)), (10,10))
-		self.dist += self.speed
+		self.surface.blit(self.font.render(str(int(self.dist)) + 'm',1,(200,200,200)), (10,10))
+		self.surface.blit(self.font.render(str(int(self.speed/10)) + 'km/h',1,(200,200,200)), (10,50))
 		if self.speed > 0: self.speed -= 0.1
 		dd = self.dist - (int(self.dist/50) * 50)
 		for i in range(20): pygame.draw.line(self.surface, (200,200,200), ((i * 50)-dd,200),((i * 50)-dd,220),3)
@@ -196,10 +201,12 @@ class Hops:
 		self.grvt = -5
 		self.score = 0
 		
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN and self.grvt == -5:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0] and self.grvt == -5:
 			self.grvt = 5
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		self.surface.blit(self.font.render(str(self.score),1,(200,200,200)), (10,10))
@@ -220,12 +227,12 @@ class Pinball:
 		self.bumpers = [[50,200],[100,300],[100,400]]
 		self.tables = [pygame.image.load(res.SPRITES_PATH + 'minigames/tablemask.png')]
 	
-	def events(self, event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			self.ball['XSPEED'] += 2
 	
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		
@@ -288,7 +295,7 @@ class Tetris:
 		self.endy = 0
 		self.spd = 20
 		
-	def events(self,event):
+	def inside_events(self,pressed,mouse):
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_w: self.spn += 1
 			if event.key == pygame.K_a: self.pieces[0][0] -= 1
@@ -300,6 +307,8 @@ class Tetris:
 				for j in [[b[0] + i[0],b[1] + i[1]] for b in self.bricks[i[2]]]:
 					if j[0] == self.pieces[0][0] and self.endy > j[1]: self.endy = j[1] - 1
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 
@@ -364,16 +373,14 @@ class Minesweeper:
 							elif self.grid[y][x][1] != 'X': self.grid[y][x][1] += 1
 		self.gend = False
 
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if self.gend == False:
 				cy = 0
 				for y in self.grid:
 					cx = 0
 					for x in y:
-						if pygame.Rect.colliderect(mr,x[0]):
+						if pygame.Rect.colliderect(mouse,x[0]):
 							if pygame.mouse.get_pressed()[0]:
 								x[2] = 1
 								if x[1] == 'X': self.gend = True
@@ -400,6 +407,8 @@ class Minesweeper:
 					cy += 1
 			else: self.__init__()
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		self.surface.blit(self.font.render(str(self.flgs),1,(200,200,200)), (10,10))
@@ -424,13 +433,15 @@ class Pong:
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.score = [0,0]
 	
-	def events(self, event):
+	def inside_events(self,pressed,mouse):
 		mp = pygame.mouse.get_pos()
 		if mp[1] < int(self.surface.get_height()/2): self.goals[0].x = mp[0]
 		if mp[1] > int(self.surface.get_height()/2): self.goals[1].x = mp[0]
-		if event.type == pygame.MOUSEBUTTONDOWN and self.ball['XSPEED'] == 0 and self.ball['YSPEED'] == 0:
+		if pressed[4][0] and self.ball['XSPEED'] == 0 and self.ball['YSPEED'] == 0:
 			self.ball['YSPEED'] = 5
 	
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		self.ball['X'] += self.ball['XSPEED']
@@ -466,16 +477,16 @@ class Differences:
 		self.errs = [[pygame.Rect(470,780,30,30),0],[pygame.Rect(440,800,30,30),0],[pygame.Rect(420,600,100,100),0],[pygame.Rect(110,610,50,50),0],
 		[pygame.Rect(260,670,60,60),0],[pygame.Rect(120,940,50,50),0],[pygame.Rect(480,920,30,30),0],[pygame.Rect(500,840,30,30),0]]
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if len([i for i in self.errs if i[1] == 1]) == len(self.errs): self.__init__()
 			for i in self.errs:
 				altrct = pygame.Rect(i[0].x,i[0].y - 500,i[0].width,i[0].height)
-				if pygame.Rect.colliderect(mr,i[0]) or pygame.Rect.colliderect(mr,altrct):
+				if pygame.Rect.colliderect(mouse,i[0]) or pygame.Rect.colliderect(mouse,altrct):
 					i[1] = 1
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		self.surface.blit(self.imgs[0], (100,100))
@@ -501,23 +512,23 @@ class Jigsaw:
 			for x in range(int(self.img.get_width()/self.size)):
 				self.pieces.append([self.img.subsurface(pygame.Rect(x * self.size, y * self.size, self.size, self.size)),pygame.Rect(100 + (x * (self.size + 1)), 100 + (y * (self.size + 1)), self.size, self.size)])
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
+	def inside_events(self,pressed,mouse):
 		if event.type == pygame.MOUSEBUTTONUP and self.drgdrp != None:
 			self.table[self.drgdrp][1].x = np.floor(mr.x/self.size) * self.size
 			self.table[self.drgdrp][1].y = np.floor(mr.y/self.size) * self.size
 			self.drgdrp = None
-		if event.type == pygame.MOUSEBUTTONDOWN:
+		if pressed[4][0]:
 			if len(self.pieces) > 0:
 				self.table.append(self.pieces[-1])
 				self.table[-1][1].x = np.floor(mr.x/self.size) * self.size
 				self.table[-1][1].y = np.floor(mr.y/self.size) * self.size
 				del self.pieces[-1]
 			for i in range(len(self.table)):
-				if pygame.Rect.colliderect(mr,self.table[i][1]):
+				if pygame.Rect.colliderect(mouse,self.table[i][1]):
 					self.drgdrp = i
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		for i in range(len(self.table)):
@@ -571,9 +582,11 @@ class Maze:
 				stack.put(neighbour)
 		self.mz = pygame.image.fromstring(self.mz.tobytes(), self.mz.size, self.mz.mode)
 		
-	def events(self,event):
+	def inside_events(self,pressed,mouse):
 		pass
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 
@@ -590,13 +603,14 @@ class Snake:
 		self.spd = 20
 		self.fd = [np.random.randint(2,20),np.random.randint(2,20)]
 		
-	def events(self,event):
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_w and self.dir != 3: self.dir = 1
-			if event.key == pygame.K_a and self.dir != 2: self.dir = 0
-			if event.key == pygame.K_s and self.dir != 1: self.dir = 3
-			if event.key == pygame.K_d and self.dir != 0: self.dir = 2
+	def inside_events(self,pressed,mouse):
+		if pressed[2][0] and self.dir != 2: self.dir = 0
+		if pressed[0][0] and self.dir != 3: self.dir = 1
+		if pressed[3][0] and self.dir != 0: self.dir = 2
+		if pressed[1][0] and self.dir != 1: self.dir = 3
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 
@@ -632,15 +646,15 @@ class HittheMole:
 		self.score = 0
 		self.time = 30
 	
-	def events(self, event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for i in self.holes:
-				if pygame.Rect.colliderect(mr,i[0]) and i[1] <= 0:
+				if pygame.Rect.colliderect(mouse,i[0]) and i[1] <= 0:
 					self.score += 1
 					i[1] = np.random.randint(100,400)
 	
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		for i in self.holes:
@@ -662,10 +676,11 @@ class FallingItems:
 		self.score = 0
 		self.time = 30
 	
-	def events(self, event):
-		mp = pygame.mouse.get_pos()
-		self.basket.x = mp[0]
+	def inside_events(self,pressed,mouse):
+		self.basket.x = mouse.x
 	
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		
@@ -698,9 +713,11 @@ class Jumping:
 		self.scroll = 1
 		self.height = 1
 		
-	def events(self,event):
+	def inside_events(self,pressed,mouse):
 		self.ball['X'] = pygame.mouse.get_pos()[0]
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		#SCROLL
@@ -733,10 +750,12 @@ class FlappyBird:
 		self.pipes = [[self.surface.get_width(),np.random.randint(0,650)]]
 		self.time = 200
 	
-	def events(self, event):
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			self.bird['YSPEED'] = -15
 	
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		if self.time > 0: self.time -= 1
@@ -770,10 +789,12 @@ class Breakout:
 			for y in range(7):
 				self.bricks.append([pygame.Rect(x * 50,100 + (y * 20),49,19),6 - y])
 	
-	def events(self, event):
+	def inside_events(self,pressed,mouse):
 		mp = pygame.mouse.get_pos()
 		self.basket.x = mp[0]
 	
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		self.ball['X'] += self.ball['XSPEED']
@@ -813,15 +834,15 @@ class BubbleBubble:
 		self.direction = 0
 		for x in range(10): self.balls.append([pygame.Rect(200 + (x * 35),20,30,30),0,0])
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
+	def inside_events(self,pressed,mouse):
 		self.mp = [mr.x - 200,mr.y - 500]
-		if event.type == pygame.MOUSEBUTTONDOWN:
+		if pressed[4][0]:
 			self.balls.append([pygame.Rect(200,500,30,30),5,self.nxt[0]])
 			del self.nxt[0]
 			self.nxt.append(np.random.randint(0,7))
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		self.balls[len(self.balls)-1][0].x += int(np.cos(self.direction) * 5)
@@ -849,12 +870,10 @@ class ColorMatch:
 		self.select = None
 		self.wait = 0
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for i in range(len(self.grid)):
-				if pygame.Rect.colliderect(mr,pygame.Rect(100 + (self.grid[i][0] * 42), 100 + (self.grid[i][1] * 42), 40, 40)):
+				if pygame.Rect.colliderect(mouse,pygame.Rect(100 + (self.grid[i][0] * 42), 100 + (self.grid[i][1] * 42), 40, 40)):
 					if self.select != None:
 						if self.grid[i][0:2] in [[self.grid[self.select][0] - 1,self.grid[self.select][1]],[self.grid[self.select][0] + 1,self.grid[self.select][1]],
 							[self.grid[self.select][0],self.grid[self.select][1] - 1],[self.grid[self.select][0],self.grid[self.select][1] + 1]]:
@@ -865,6 +884,8 @@ class ColorMatch:
 							self.wait = 50
 					else: self.select = i
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		cc = [(200,100,100),(200,200,100),(100,200,100),(100,100,200),(200,200,200),(0,0,0)]
@@ -894,14 +915,14 @@ class MusicTiles:
 			self.tiles.append([pygame.Rect(10 + (x * 65), -80, 60, 80), None, 0])
 		self.speed = 3
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for i in self.tiles:
-				if pygame.Rect.colliderect(mr,i[0]):
+				if pygame.Rect.colliderect(mouse,i[0]):
 					pass
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		#self.surface.blit(self.font.render(self.txt,1,(200,200,200)), (10,10))
@@ -931,15 +952,17 @@ class Pool:
 		self.holes = [pygame.Rect(10,10,50,50),pygame.Rect(265,10,50,50),pygame.Rect(580,10,50,50),pygame.Rect(10,645,50,50),pygame.Rect(580,645,50,50),pygame.Rect(10,1270,50,50),pygame.Rect(265,1270,50,50),pygame.Rect(580,1270,50,50)]
 		self.colors = [(200,200,10),(10,10,200),(200,10,10),(200,10,200),(200,10,10),(10,200,10),(100,50,10),(10,10,10),(200,200,10),(10,10,200),(200,10,10),(200,10,200),(200,100,10),(10,200,10),(100,50,10)]
 		
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
-			if pygame.Rect.colliderect(mr,self.pbll[0]):
+			if pygame.Rect.colliderect(mouse,self.pbll[0]):
 				self.pbll[1] = 20
 				self.pbll[2] = self.pang
 			self.pang += 0.5
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((10,200,100))
 		if self.time < 0:
@@ -1006,7 +1029,7 @@ class CannonBattle:
 		self.balls = []
 		self.strg = 0
 		
-	def events(self,event):
+	def inside_events(self,pressed,mouse):
 		mp = pygame.mouse.get_pos()
 		xx = mp[0]
 		if xx < 100: xx = 100
@@ -1014,8 +1037,10 @@ class CannonBattle:
 		yy = mp[1]
 		if yy < 300: yy = 300
 		if yy > 400: yy = 400
-		if event.type == pygame.MOUSEBUTTONDOWN: self.balls.append({'X': xx,'Y': yy, 'XSPEED': (xx - 100)/25, 'YSPEED': (yy - 400)/25})
+		if pressed[4][0]: self.balls.append({'X': xx,'Y': yy, 'XSPEED': (xx - 100)/25, 'YSPEED': (yy - 400)/25})
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		
@@ -1048,10 +1073,8 @@ class Twothousandforthyeight:
 		self.blocks = [[[0,2],[0,0],0,0]]
 		self.direction = 0
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if mr.y < 100: self.direction = 1
 			elif mr.x > 260: self.direction = 2
 			elif mr.y > 260: self.direction = 3
@@ -1069,6 +1092,8 @@ class Twothousandforthyeight:
 			self.blocks.append([[len(self.blocks),2],cor[np.random.randint(0,len(cor))],0,-10])
 			for i in self.blocks: i[2] = 1
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		
@@ -1124,13 +1149,13 @@ class Memory:
 				self.buttons.append([pygame.Rect(100 + (x * 60),200 + (y * 60),50,50),self.values[v],2])
 				del self.values[v]
 		
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN and self.time == 0:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0] and self.time == 0:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			for i in self.buttons:
 				if i[2] == 0:
-					if pygame.Rect.colliderect(mr,i[0]):
+					if pygame.Rect.colliderect(mouse,i[0]):
 						if self.match[0] == 0:
 							self.match[0] = i[1]
 						else: self.match[1] = i[1]
@@ -1151,6 +1176,8 @@ class Memory:
 				self.time = 100
 				self.shuffle()
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		if self.time > 0: self.time -= 1
@@ -1185,13 +1212,13 @@ class Simon:
 				self.buttons.append([pygame.Rect(100 + (x * 60),400 + (y * 60),50,50),0])
 		self.buttons[self.sequence[0]][1] = 20
 		
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN and self.time == len(self.sequence):
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0] and self.time == len(self.sequence):
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			v = 0
 			for i in self.buttons:
-				if pygame.Rect.colliderect(mr,i[0]):
+				if pygame.Rect.colliderect(mouse,i[0]):
 						self.mimic.append(v)
 						i[1] = 20
 				v += 1
@@ -1210,6 +1237,8 @@ class Simon:
 				self.time = -60
 				self.score = 0
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		if self.time < 0:
@@ -1250,14 +1279,14 @@ class FindtheCup:
 		self.moves = 20
 		self.wait = 50
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN and self.moves == 0 and self.wait == 0:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0] and self.moves == 0 and self.wait == 0:
 			for i in self.buttons:
-				if pygame.Rect.colliderect(mr,i):
+				if pygame.Rect.colliderect(mouse,i):
 					self.moves = 20
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		self.surface.blit(self.font.render(str(self.cups[0]),1,(200,200,200)), (10,10))
@@ -1295,10 +1324,12 @@ class ImageMatch:
 		for i in ['madladcat','flamencoflamingo','eggrapper1','peacockpigeon','bigeye']:
 			self.images.append(pygame.image.load(res.FREAKS_PATH + i + '_stand.png'))
 		
-	def events(self,event):
+	def inside_events(self,pressed,mouse):
 		if event.type == pygame.KEYDOWN:
 			self.lock += 1
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		for y in range(len(self.rows)):
@@ -1334,11 +1365,13 @@ class Cassino:
 			self.img.blit(self.font.render(str(y),True,(10,10,10)),(10,10 + (y * self.sltsz)))
 		self.img.blit(self.font.render("0",True,(10,10,10)),(10,10 + (11 * self.sltsz)))
 		
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if self.acc == 0.0: self.acc = 10.0
 			elif self.stop == 0: self.stop = 50
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		
@@ -1365,11 +1398,13 @@ class Roulette:
 		self.load = 0
 		self.prizes = [10,20,30,40,50,60,70,80]
 		
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN and self.load == 0:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0] and self.load == 0:
 			self.speed = 0.5
 			self.load = 100
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		#self.surface.blit(self.font.render(self.txt,1,(200,200,200)), (10,10))
@@ -1399,18 +1434,18 @@ class NumberPuzzle:
 					del lst[rr]
 		self.hole = [2,2]
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for i in self.grid:
-				if pygame.Rect.colliderect(mr,pygame.Rect(100 + (i[0] * 41), 150 + (i[1] * 41), 40, 40)):
+				if pygame.Rect.colliderect(mouse,pygame.Rect(100 + (i[0] * 41), 150 + (i[1] * 41), 40, 40)):
 					if [i[0],i[1]] in [[self.hole[0] + x,self.hole[1] + y] for x in [-1,0,1] for y in [-1,0,1] if abs(x) != abs(y)]:
 						pst = i.copy()
 						i[0] = self.hole[0]
 						i[1] = self.hole[1]
 						self.hole = [pst[0],pst[1]]
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		for i in self.grid:
@@ -1476,15 +1511,13 @@ class Chess:
 						elif self.turn + fy == tt and abs(fx) == 1: do = True
 						if do: self.places.append([x + fx,y + fy])
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if self.score[0] == 20: self.__init__()
 			if self.score[1] == 20: self.__init__()
 			for y in range(len(self.grid)):
 				for x in range(len(self.grid[y])):
-					if pygame.Rect.colliderect(mr,self.grid[y][x][0]):
+					if pygame.Rect.colliderect(mouse,self.grid[y][x][0]):
 						if self.piece == [None,None]:
 							if self.grid[y][x][1] == self.turn + 1:
 								self.piece = [x,y]
@@ -1513,6 +1546,8 @@ class Chess:
 								if att: self.search(x,y,True)
 								if self.places == []: self.turn = int(not self.turn)
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		bw = False
@@ -1589,15 +1624,13 @@ class Checkers:
 						elif self.turn + fy == tt and abs(fx) == 1: do = True
 						if do: self.places.append([x + fx,y + fy])
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if self.score[0] == 20: self.__init__()
 			if self.score[1] == 20: self.__init__()
 			for y in range(len(self.grid)):
 				for x in range(len(self.grid[y])):
-					if pygame.Rect.colliderect(mr,self.grid[y][x][0]):
+					if pygame.Rect.colliderect(mouse,self.grid[y][x][0]):
 						if self.piece == [None,None]:
 							if self.grid[y][x][1] == self.turn + 1:
 								self.piece = [x,y]
@@ -1626,6 +1659,8 @@ class Checkers:
 								if att: self.search(x,y,True)
 								if self.places == []: self.turn = int(not self.turn)
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		bw = False
@@ -1665,15 +1700,13 @@ class Trilha:
 		self.turn = 0
 		self.score = [9,9]
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if self.score[0] == -6: self.__init__()
 			if self.score[1] == -6: self.__init__()
 			for y in range(len(self.grid)):
 				for x in range(len(self.grid[y])):
-					if pygame.Rect.colliderect(mr,self.grid[y][x][0]):
+					if pygame.Rect.colliderect(mouse,self.grid[y][x][0]):
 						tt = int(not self.turn - 2)
 						if self.turn > 1 and self.grid[y][x][1] == tt:
 							self.grid[y][x][1] = 0
@@ -1722,6 +1755,8 @@ class Trilha:
 								if xa == 3 or 3 in ya: self.turn += 2
 								else: self.turn = int(not self.turn)
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		bw = False
@@ -1777,16 +1812,14 @@ class Blackgammon:
 			[(10,10),(40,10),(10,25),(40,25),(10,40),(40,40)]
 		]
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if self.score[0] == 15: self.__init__()
 			if self.score[1] == 15: self.__init__()
 			if self.time == 0 and self.walk == []: self.time += 1
 			if self.turn >= 0:
 				for i in range(len(self.grid)):
-					if pygame.Rect.colliderect(mr,self.grid[i][0]) and self.grid[i][1] == self.turn + 1:
+					if pygame.Rect.colliderect(mouse,self.grid[i][0]) and self.grid[i][1] == self.turn + 1:
 						do = 0
 						if self.turn == 0: ww = i - self.walk[0]
 						if self.turn == 1: ww = i + self.walk[0]
@@ -1804,6 +1837,8 @@ class Blackgammon:
 							del self.walk[0]
 							if self.walk == []: self.turn = int(not self.turn)
 	
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		pygame.draw.rect(self.surface,(100,50,10),pygame.Rect(50,50,560,500))
@@ -1886,10 +1921,8 @@ class Ludo:
 			[1,0],[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],
 			[0,7],[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[0,9],[0,10],[0,11],[0,12],[0,13],[0,14]]
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if self.time == 0 and self.opt == -1: self.time += 1
 			if self.opt == 4:
 				self.players[self.turn][len([i for i in self.players[self.turn] if i != None])] = self.starts[self.turn]
@@ -1898,13 +1931,15 @@ class Ludo:
 				if self.turn > 3: self.turn = 0
 			for y in range(len(self.grid)):
 				for x in range(len(self.grid[y])):
-					if pygame.Rect.colliderect(mr,self.grid[y][x][0]):
+					if pygame.Rect.colliderect(mouse,self.grid[y][x][0]):
 						for p in range(4):
 							if self.players[self.turn][p] != None and [x,y] == self.path[self.players[self.turn][p]]:
 								if self.opt == 5: self.walk = 20
 								else: self.walk = (self.dice) * 10
 								self.opt = p
 	
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		plst = [0,1,3,2]
@@ -1991,13 +2026,11 @@ class Reversi:
 		self.piece = [None,None]
 		self.turn = 0
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for y in range(len(self.grid)):
 				for x in range(len(self.grid[y])):
-					if pygame.Rect.colliderect(mr,self.grid[y][x][0]):
+					if pygame.Rect.colliderect(mouse,self.grid[y][x][0]):
 						if self.piece == [None,None]:
 							if self.grid[y][x][1] == self.turn + 1:
 								self.piece = [x,y]
@@ -2019,6 +2052,8 @@ class Reversi:
 														if self.turn > 1: self.turn = 0
 										except: pass
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		for y in range(len(self.grid)):
@@ -2057,14 +2092,14 @@ class SnakesNLadders:
 		self.ladders = {3:38,36:48,74:88,60:62,31:66}
 		self.pos = {}
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for i in self.pawns:
 				if i >= 99: self.__init__()
 			if self.time == 0: self.time += 1
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		bw = False
@@ -2141,9 +2176,7 @@ class SpiderSolitaire:
 				del self.mount[rr]
 		self.mrct = pygame.Rect(20,50,70,100)
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
+	def inside_events(self,pressed,mouse):
 		if event.type == pygame.MOUSEBUTTONUP:
 			if self.drgdrp != [None,None]:
 				if self.table[np.floor((mr.x - 100)/80).astype(int)] == [] or self.table[self.drgdrp[0]][self.drgdrp[1]] == self.table[np.floor((mr.x - 100)/80).astype(int)][-1] - 1:
@@ -2159,17 +2192,19 @@ class SpiderSolitaire:
 						chk -= 1
 					else: chk = 12; stt = -1
 				if chk < 0: del self.table[np.floor((mr.x - 100)/80).astype(int)][stt:]
-		if event.type == pygame.MOUSEBUTTONDOWN:
-			if len(self.mount) > 0 and pygame.Rect.colliderect(mr,self.mrct):
+		if pressed[4][0]:
+			if len(self.mount) > 0 and pygame.Rect.colliderect(mouse,self.mrct):
 				for n in self.table:
 					rr = np.random.randint(0,len(self.mount))
 					n.append(self.mount[rr])
 					del self.mount[rr]
 			for i in range(len(self.table)):
 				for j in range(len(self.table[i])):
-					if pygame.Rect.colliderect(mr,pygame.Rect(100 + (i * 80),50 + (j * 30),70,100)):
+					if pygame.Rect.colliderect(mouse,pygame.Rect(100 + (i * 80),50 + (j * 30),70,100)):
 						self.drgdrp = [i,j]
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((10,200,100))
 		if len(self.mount) > 0: pygame.draw.rect(self.surface,(200,10,10),self.mrct)
@@ -2201,15 +2236,13 @@ class Mahjong:
 					self.blocks[z][y].append([pygame.Rect(150 + (x * 45) + (z * 20), 150 + (y * 65) + (z * 30), 40, 60), bbs[rr], 0])
 					del bbs[rr]
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for z in range(len(self.blocks)):
 				for y in range(len(self.blocks[z])):
 					for x in range(len(self.blocks[z][y])):
 						el = self.blocks[z][y][x]
-						if el != None and pygame.Rect.colliderect(mr,el[0]):
+						if el != None and pygame.Rect.colliderect(mouse,el[0]):
 							if self.select != []:
 								cp = self.blocks[self.select[0]][self.select[1]][self.select[2]]
 								if el != cp and el[1] == cp[1]:
@@ -2219,6 +2252,8 @@ class Mahjong:
 								else: self.select = [z,y,x]
 							else: self.select = [z,y,x]
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		#self.surface.blit(self.font.render(self.txt,1,(200,200,200)), (10,10))
@@ -2247,13 +2282,11 @@ class PegSolitaire:
 		self.grid[3][3][1] = 0
 		self.piece = [None,None]
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for y in range(len(self.grid)):
 				for x in range(len(self.grid[y])):
-					if pygame.Rect.colliderect(mr,self.grid[y][x][0]):
+					if pygame.Rect.colliderect(mouse,self.grid[y][x][0]):
 						if self.piece == [None,None]:
 							if self.grid[y][x][1] == 1:
 								self.piece = [x,y]
@@ -2272,6 +2305,8 @@ class PegSolitaire:
 												self.grid[y][x][1] = 1
 												self.piece = [None,None]
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		for y in range(len(self.grid)):
@@ -2324,8 +2359,8 @@ class Dominoes:
 		self.turn = 0
 		self.mn = 0
 			
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN and self.turn == 0:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0] and self.turn == 0:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			x = 0
@@ -2333,7 +2368,7 @@ class Dominoes:
 				print(self.hands[0])
 				print('-------')
 				print(self.tree)
-				if pygame.Rect.colliderect(mr,pygame.Rect(10 + (x * 55),1000,50,100)):
+				if pygame.Rect.colliderect(mouse,pygame.Rect(10 + (x * 55),1000,50,100)):
 					if i[1][0] == self.tree[0][1][0]:
 						if i[1][0] != i[1][1]:
 							i[0] = pygame.transform.rotate(i[0],270)
@@ -2356,6 +2391,8 @@ class Dominoes:
 						del self.hands[self.turn][x]
 				x += 1
 			
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((10,200,100))
 		
@@ -2413,13 +2450,13 @@ class Sueca:
 		self.trunfo = self.deck[-1][1]
 		self.deck = [self.deck[0:10],self.deck[10:20],self.deck[20:30],self.deck[30:40]]
 		
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN and self.time == 0:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0] and self.time == 0:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			if self.turn == 0:
 				for i in range(len(self.deck[0])):
-					if pygame.Rect.colliderect(mr,pygame.Rect(20 + (i * 72),360,70,100)):
+					if pygame.Rect.colliderect(mouse,pygame.Rect(20 + (i * 72),360,70,100)):
 						do = False
 						if len(self.table) == 0: do = True
 						elif [i for i in self.deck[self.turn] if i[1] == self.table[0][1]] == []: do = True
@@ -2430,6 +2467,8 @@ class Sueca:
 							self.turn += 1
 							self.time = 60
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		if self.time > 0: self.time -= 1
 		if len(self.table) == 4:
@@ -2504,13 +2543,13 @@ class Copas:
 				srf.blit(self.sft.render(n,True,cl),(45,75))
 				self.cards.append(srf)
 		
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN and self.time == 0:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0] and self.time == 0:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			for i in self.buttons:
 				if i[2] == 0:
-					if pygame.Rect.colliderect(mr,i[0]):
+					if pygame.Rect.colliderect(mouse,i[0]):
 						if self.match[0] == 0:
 							self.match[0] = i[1]
 						else: self.match[1] = i[1]
@@ -2531,6 +2570,8 @@ class Copas:
 				self.time = 100
 				self.shuffle()
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		if self.time > 0: self.time -= 1
@@ -2601,19 +2642,21 @@ class Matchingwords:
 		self.hint = None
 		self.time = 0
 			
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			for i in self.buttons:
-				if pygame.Rect.colliderect(mr,i[0]):
+				if pygame.Rect.colliderect(mouse,i[0]):
 					self.ltt = i[1].upper()
 			for y in self.grid:
 				for x in y:
-					if pygame.Rect.colliderect(mr,x[0]):
+					if pygame.Rect.colliderect(mouse,x[0]):
 						if isinstance(x[1],int): self.hint = x[1]
 						else: x[1] = self.ltt
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		
@@ -2649,8 +2692,8 @@ class TicTacToe:
 		self.mode = 1
 		self.turn = 1
 			
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			grd = []
@@ -2659,7 +2702,7 @@ class TicTacToe:
 				for i in self.buttons: i[1] = 0
 			for i in self.buttons:
 				if i[1] == 0 and self.turn < 3:
-					if pygame.Rect.colliderect(mr,i[0]):
+					if pygame.Rect.colliderect(mouse,i[0]):
 						i[1] = self.turn
 						break
 			if self.mode == 0:
@@ -2695,6 +2738,8 @@ class TicTacToe:
 			if wn == 2: self.score[1] += 1
 			if wn != 0: self.turn = 3
 			
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		for x in range(2): pygame.draw.line(self.surface,(200,200,200),(195 + (x * 100),195),(195 + (x * 100),495),3)
@@ -2703,7 +2748,7 @@ class TicTacToe:
 			pdd = 3
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
-			if pygame.Rect.colliderect(mr,i[0]): pygame.draw.rect(self.surface,(50,50,50),i[0])
+			if pygame.Rect.colliderect(mouse,i[0]): pygame.draw.rect(self.surface,(50,50,50),i[0])
 			if i[1] == 1:
 				pygame.draw.line(self.surface,(200,200,200),(i[0].x + pdd,i[0].y + pdd),(i[0].x + i[0].width - (pdd * 2),i[0].y + i[0].height - (pdd * 2)),3)
 				pygame.draw.line(self.surface,(200,200,200),(i[0].x + i[0].width - pdd,i[0].y + pdd),(i[0].x + pdd,i[0].y + i[0].height - (pdd * 2)),3)
@@ -2726,12 +2771,10 @@ class LinesNBoxes:
 		self.turn = 0
 		self.lines = [[],[]]
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			for i in self.grid:
-				if pygame.Rect.colliderect(mr,pygame.Rect(100 + (20 * i[0]),100 + (20 * i[1]),19,19)):
+				if pygame.Rect.colliderect(mouse,pygame.Rect(100 + (20 * i[0]),100 + (20 * i[1]),19,19)):
 					if self.piece == [None,None]:
 						self.piece = i.copy()
 					elif i in [[self.piece[0] + x,self.piece[1] + y] for x in [-1,0,1] for y in [-1,0,1] if abs(x) != abs(y)]:
@@ -2739,6 +2782,8 @@ class LinesNBoxes:
 						self.turn = int(not self.turn)
 						self.piece = [None,None]
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(80,80,420,420))
@@ -2798,11 +2843,9 @@ class Nonogram:
 		self.paint = False
 		self.edit = False
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
+	def inside_events(self,pressed,mouse):
 		if event.type == pygame.MOUSEBUTTONUP: self.paint = False
-		if event.type == pygame.MOUSEBUTTONDOWN: self.paint = True
+		if pressed[4][0]: self.paint = True
 		if event.type == pygame.KEYDOWN:
 			if self.paint == False:
 				self.level = [[1 for i in range(15)] for j in range(15)]
@@ -2810,11 +2853,13 @@ class Nonogram:
 		if self.paint:
 			for y in self.grid:
 				for x in y:
-					if pygame.Rect.colliderect(mr,x[0]):
+					if pygame.Rect.colliderect(mouse,x[0]):
 						if pygame.mouse.get_pressed()[0]: x[2] = 2
 						if pygame.mouse.get_pressed()[2]: x[2] = 1
 						if x[1] != x[2]: x[2] = 0
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		for i in range(len(self.info[0])):
@@ -2874,15 +2919,15 @@ class HuntingWords:
 				c = np.random.randint(0,len(letters))
 				self.grid[i] = letters[c]
 		
-	def events(self,event):
+	def inside_events(self,pressed,mouse):
 		if event.type == pygame.MOUSEBUTTONUP: self.hold = 0
-		if event.type == pygame.MOUSEBUTTONDOWN: self.hold = 1
+		if pressed[4][0]: self.hold = 1
 		if self.hold:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			v = 0
 			for i in self.buttons:
-				if pygame.Rect.colliderect(mr,i[0]) and v not in self.index:
+				if pygame.Rect.colliderect(mouse,i[0]) and v not in self.index:
 					self.match += self.grid[v]
 					self.index.append(v)
 				v += 1
@@ -2892,6 +2937,8 @@ class HuntingWords:
 			self.match = ''
 			self.index = []
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((200,200,200))
 		
@@ -2936,16 +2983,14 @@ class Sudoku:
 		self.notes = False
 		self.block = [-1,-1]
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if [i for i in self.bts if i != None] == []: self.__init__()
 			yy = 0
 			for y in self.grid:
 				xx = 0
 				for x in y:
-					if pygame.Rect.colliderect(mr,x[0]):
+					if pygame.Rect.colliderect(mouse,x[0]):
 						if self.notes:
 							if isinstance(x[1],list) == False:
 								x[1] = [0,0,0,0,0,0,0,0,0]
@@ -2962,10 +3007,12 @@ class Sudoku:
 					xx += 1
 				yy += 1
 			for i in range(10):
-				if self.bts[i] != None and pygame.Rect.colliderect(mr,self.bts[i]):
+				if self.bts[i] != None and pygame.Rect.colliderect(mouse,self.bts[i]):
 					if i == 9: self.notes = not self.notes
 					else: self.select = i + 1
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		bw = False
@@ -3028,12 +3075,12 @@ class Hangman:
 			if i != ' ': self.guess += '_'
 			else: self.guess = ' '
 			
-	def events(self,event):
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(mp[0],mp[1],2,2)
 			for i in self.buttons:
-				if pygame.Rect.colliderect(mr,i[0]):
+				if pygame.Rect.colliderect(mouse,i[0]):
 					if i[1] in self.word:
 						x = 0
 						for w in self.word:
@@ -3048,6 +3095,8 @@ class Hangman:
 					if self.word == self.guess:
 							self.time = 60
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((10,200,100))
 		
@@ -3111,13 +3160,11 @@ class Yatzy:
 				if x == 0 and y == 6: break
 				self.vrct.append(pygame.Rect(100 + (x * 100),100 + (y * 50),40,40))
 		
-	def events(self,event):
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(mp[0],mp[1],2,2)
-		if event.type == pygame.MOUSEBUTTONDOWN:
+	def inside_events(self,pressed,mouse):
+		if pressed[4][0]:
 			if self.vlk == [1,1,1,1,1,1,1,1,1,1,1,1,1]: self.__init__()
 			for i in range(len(self.rcts)):
-				if pygame.Rect.colliderect(mr,self.rcts[i]):
+				if pygame.Rect.colliderect(mouse,self.rcts[i]):
 					if i < 5 and self.launch < 3: self.lock[i] = int(not self.lock[i])
 					elif i == 5 and self.launch > 0 and self.time == 0:
 						self.time += 1
@@ -3125,12 +3172,14 @@ class Yatzy:
 						for v in range(13):
 							if self.vlk[v] == 0: self.vls[v] = 0
 			for i in range(len(self.vrct)):
-				if pygame.Rect.colliderect(mr,self.vrct[i]) and self.vlk[i] == 0:
+				if pygame.Rect.colliderect(mouse,self.vrct[i]) and self.vlk[i] == 0:
 					self.vlk[i] = 1
 					self.score += self.vls[i]
 					self.launch = 3
 					self.lock = [0,0,0,0,0]
 		
+	def outside_events(self,pressed): pass
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		self.surface.blit(self.font.render(str(self.score),1,(200,200,200)), (10,50))
@@ -3179,6 +3228,6 @@ class Yatzy:
 
 class Stop: pass
 
-if play:
+if os.path.basename(sys.argv[0]) == os.path.basename(__file__):
 	g = Game()
 	while True: g.run()

@@ -1,5 +1,6 @@
 import sqlite3
 import pygame
+import numpy as np
 import sys
 import os
 
@@ -10,6 +11,8 @@ DESCRIPTION = 'Setesalém: Mutation Purge BETA (2021)'
 VERSION = '0.1.0'
 YEAR = '2021'
 MAINLANG = 'PT'
+SPLASH = None
+ICON = 'icon.ico'
 DEBUG = True
 GSCALE = 2 #game ratio ÷ window ratio
 FPS = 60
@@ -38,6 +41,8 @@ RADIO = {
 5: ['Sombra ou Dúvida','Elogio á Intuição do Cinismo','Give it Away'],
 6: ['Discipline','Elephant Talk','she_left_me','mayanman']
 }
+FONTS = {}
+MIXER = []
 
 PALETTES = [
 #SKIN COLOR
@@ -60,7 +65,7 @@ FILES = []
 ID = 0
 LANG = 'PT'
 GAMETIME = 0
-CHAPTER = 0
+CHAPTER = 1
 MAP = None
 PX = 0
 PY = 0
@@ -88,12 +93,11 @@ for y in range(10):
 			if ss >= 7: ss = 0
 TEMPERATURE = 25
 WEATHER = 0
-CHAPTER = 0
-SCENE = 0
 
-CLICK = [None,None]
+PAUSE = 0
 #None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip/inventory/chat/pause
-ACTION = ['walk','walk','walk','walk','equip','run','inventory','pause','shortcut']
+CLICK = ['move','equip']
+ACTION = ['walk','walk','walk','walk','shoot','run','inventory','pause','shortcut']
 EQUIP = [0,0,0]
 SHORTCUT = [1,0,1]
 CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
@@ -106,12 +110,12 @@ VIBRATE = False #vibrate controlller
 
 SFX = 1.0
 MSC = 1.0
+MUTE = 1 #mute when game is minimized
 DTYPE = 1 #type of dialog
 SPEED = 2 #dialog speed
 COLOR = (255,10,10) #UI color
 CAMACC = 10 #player camera acceleration
 BORDER = 0 #UI border
-FONT = 'BohemianTypewriter.ttf' #custom font
 CENSORSHIP = 2 #censor mature content
 HELP = True #tutorials and hints along the game
 HINT = True #display instructions on bottom of screen
@@ -145,9 +149,9 @@ for u in range(6):
 INVENTORY[0] = [
 	[['amulet1','0000'],['phone','3600','simcard1','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
 	[['clth_shirt1','7'],['_','0000'],['_','0000'],['_','0000'],['food_pizza_4cheese','0000']],
-	[['head_glasses1','0000'],['guit_load','0'],['guit_save','0000'],['guit_undo','0000'],['guit_redo','0000']],
-	[['head_hairclip','0000'],['guit_pencil','0000'],['guit_erase','0000'],['guit_dropper','0000'],['_','0000']],
-	[['bag1','0000'],['_','0000'],['_','0000'],['cigar','0000'],['_','0000']]
+	[['head_glasses1','0000'],['_','0'],['_','0000'],['_','0000'],['_','0000']],
+	[['head_hairclip','0000'],['_','0000'],['_','0000'],['_','0000'],['_','0000']],
+	[['bag1','0000'],['pow_bubble','0100'],['_','0000'],['cigar','0000'],['_','0000']]
 	]
 STORAGE = [['amulet2','0000'],['amulet3','0000'],['_','0000'],['_','0000'],['_','0000']]
 PRODUCTS = []
@@ -320,8 +324,6 @@ def new_data(add=False):
 		MAP = dtb.CHAPTERS[CHAPTER][5][0]
 		PX = dtb.CHAPTERS[CHAPTER][5][1]
 		PY = dtb.CHAPTERS[CHAPTER][5][2]
-		
-		GAS = 100.0
 		SHORTCUT = [1,1,4]
 		 
 		for i in range(6):
@@ -375,8 +377,7 @@ def new_data(add=False):
 			font text,censor integer,hint integer,help integer,btype integer,dislexic integer)")
 	com.execute("CREATE TABLE IF NOT EXISTS controls (id integer,player integer,key integer,value integer)")
 	com.execute("CREATE TABLE IF NOT EXISTS paths (id integer,backg text,sprites text,chars text,temp text,items text,freaks text,sfx text,music text,maps text,tiles text,fonts text)")
-	com.execute("CREATE TABLE IF NOT EXISTS data (id integer,gt integer,fr integer,map text,x integer,y integer,time text,date text,weather integer,chapter integer,scene integer,\
-			gas integer,shortcut text)")
+	com.execute("CREATE TABLE IF NOT EXISTS data (id integer,gt integer,fr integer,map text,x integer,y integer,time text,date text,weather integer,chapter integer,shortcut text)")
 	com.execute("CREATE TABLE IF NOT EXISTS characters (id integer,n integer,name text,lastname text,level integer,hp integer,xp integer,health integer,morality integer,hc integer,ht integer,fh integer,\
 	hunger integer,thirst integer,sleep integer,b1 integer,b2 integer,b3 integer,b4 integer,b5 integer,inspiration integer,intimidation integer,persuasion integer,animals integer,spirits integer,\
 	stamina integer,atletism integer,acrobatics integer,furtivity integer,perception integer,medicine integer,imunity integer,\
@@ -409,7 +410,7 @@ def new_data(add=False):
 	for i in range(len(CONTROLS)):
 		for l in range(len(CONTROLS[i])): com.execute("INSERT INTO controls VALUES ({},{},{},{})".format(ID,i,l,CONTROLS[i][l]))
 	com.execute("INSERT INTO paths VALUES (0,'{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}')".format(BACKG_PATH,SPRITES_PATH,CHARS_PATH,TEMP_PATH,ITEMS_PATH,FREAKS_PATH,SFX_PATH,MUSIC_PATH,MAPS_PATH,TILES_PATH,FONTS_PATH))
-	com.execute("INSERT INTO data VALUES ({},0,0,'hauntedhouse_0',0,0,'0030','2512200711',0,0,0,10,'001')".format(ID))
+	com.execute("INSERT INTO data VALUES ({},0,0,'hauntedhouse_0',0,0,'0030','2512200711',0,0,'001')".format(ID))
 	for i in range(len(CHARACTERS)): com.execute("INSERT INTO characters VALUES({},{},'','',0,0,0,0,0,100,100,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)".format(ID,i))
 	for i in range(len(dtb.CHAPTERS)): com.execute("INSERT INTO chapters VALUES ({},{},0)".format(ID,i))
 	for i in DLGSAV:
@@ -440,31 +441,19 @@ def load_data():
 	tbl = sqlite3.connect('userdata.db')
 	com = tbl.cursor()
 	
-	com.execute("SELECT lang,sfx,msc,ctrl,cursor,mouse,speed,color1,color2,color3,border,font,censor,hint,help,btype,dislexic FROM settings WHERE id=" + str(ID))
+	lst = ['lang','sfx','msc','ctrl','cursor','mouse','speed','color1','color2','color3','border','font','censor','hint','help','btype','dislexic']
+	com.execute("SELECT {} FROM settings WHERE id={}".format(",".join(map(str,lst)),str(ID)))
 	vl = com.fetchall()[0]
-	print(vl)
-	LANG = vl[0]
-	SFX = vl[1]
-	MSC = vl[2]
-	ctrl = vl[3]
-	MOUSE = vl[4]
-	CURSOR = vl[5]
-	SPEED = vl[6]
-	COLOR = [vl[7],vl[8],vl[9]]
-	BORDER = vl[10]
-	FONT = vl[11]
-	CENSORSHIP = bool(vl[12])
-	HINT = bool(vl[13])
-	HELP = bool(vl[14])
-	BTYPE = vl[15]
-	DISLEXIC = bool(vl[16])
-	
+	for v in range(len(lst)):
+		if v.startswith('color'): COLOR[int(lst[v][-1]) - 1] = vl[v]
+		else: eval(lst[v].upper() + '=vl[v]')
+
 	CONTROLS = []
 	for p in range(2):
 		com.execute("SELECT value FROM controls WHERE id={} AND p={} ORDER BY key".format(ctrl,p))
 		CONTROLS.append(com.fetchall()[0])
 	
-	com.execute("SELECT gt,fr,map,x,y,time,date,weather,chapter,scene,gas,shortcut FROM data WHERE id=" + str(ID))
+	com.execute("SELECT gt,fr,map,x,y,time,date,weather,chapter,shortcut FROM data WHERE id=" + str(ID))
 	vl = com.fetchall()[0]
 	GAMETIME = vl[0]
 	FORMATION = vl[1]
@@ -475,9 +464,7 @@ def load_data():
 	DATE = [int(vl[6][0:2]),int(vl[6][2:4]),int(vl[6][4:8]),int(vl[6][8]),int(vl[6][9])]
 	WEATHER = vl[7]
 	CHAPTER = vl[8]
-	SCENE = vl[9]
-	GAS = vl[10]
-	SHORTCUT = [int(vl[11][0]),int(vl[11][1]),(vl[11][2])]
+	SHORTCUT = [int(vl[9][0]),int(vl[9][1]),(vl[9][2])]
 	
 	com.execute("SELECT * FROM characters WHERE id=" + str(ID))
 	res = com.fetchall()
@@ -764,7 +751,25 @@ def battlesprites():
 				i += 1
 			except: break
 
+def fonts():
+	global FONTS
+	pygame.font.init()
+	FONTS = {
+		'DEFAULT': pygame.font.Font(FONTS_PATH + 'BohemianTypewriter.ttf', 5 * GSCALE),
+		'CALIBRI': pygame.font.SysFont('Calibri', 10 * GSCALE),
+		'PRESTIGE': pygame.font.Font(FONTS_PATH + 'PrestigeEliteStd.otf', int(7.5 * GSCALE)),
+		'MONOTYPE': pygame.font.Font(FONTS_PATH + 'monotype.ttf', 5 * GSCALE),
+		'TITLE': pygame.font.Font(FONTS_PATH + 'pixel-font.ttf', 20 * GSCALE),
+		'DATETIME': pygame.font.Font(FONTS_PATH + 'datetype.ttf', 8 * GSCALE),
+		'CONTROLKEYS': pygame.font.Font(FONTS_PATH + 'controlkeys.ttf', 15)}
+
 def sfx():
+	global SOUND
+
+	sys.path.insert(0,os.path.realpath('./') + '\\databases')
+	if FILES != []: dtb = __import__('database_' + FILES[0][4])
+	else: dtb = __import__('database_' + MAINLANG)
+
 	for j in os.listdir(SFX_PATH[:-1]):
 		if j[:-4].upper() in SOUND.keys(): print(dtb.ERROR['sound_exists'].format(j))
 		if j.endswith('.wav'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
@@ -775,7 +780,50 @@ def sfx():
 					if i[:-4].upper() in SOUND.keys(): print(dtb.ERROR['sound_exists'].format(i))
 					SOUND[i[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j + '/' + i)
 
-sys.path.insert(0,'databases')
-if FILES != []: dtb = __import__('database_' + FILES[0][4])
-else: dtb = __import__('database_' + MAINLANG)
+if os.path.basename(sys.argv[0]) == os.path.basename(__file__):
+	#SHOW TABLES ON TERMINAL
+	if len(sys.argv) > 1:
+		tbl = sqlite3.connect('userdata.db')
+		com = tbl.cursor()
+		if sys.argv[1] == 'sql':
+			if len(sys.argv) > 2: com.execute(" ".join(map(str,sys.argv[2:])))
+			else: cc = input("> "); com.execute(cc)
+			tbl.commit()
+		elif sys.argv[1] == 'tables':
+			com.execute("SELECT name FROM sqlite_schema WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY 1")
+			lst = [c[0] for c in com.fetchall()]
+			for i in lst: print('	' + i.upper())
+		elif sys.argv[1] == 'show':
+			com.execute("SELECT name FROM sqlite_schema WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY 1")
+			lst = [c[0] for c in com.fetchall()]
+			if sys.argv[2].lower() in lst: lst = [sys.argv[2]]
+			for i in lst:
+				com.execute("SELECT * FROM {}".format(i))
+				columns = [d[0] for d in com.description]
+				res = com.fetchall()
+				txt = '| '
+				for c in columns: txt += c.upper() + ' | '
+				ll = '\n--'
+				for c in columns:
+					for cc in range(len(c)): ll += '-'
+					ll += '---'
+				ll = ll[0:-1]
+				txt += ll
+				for r in range(len(res)):
+					txt += '\n| '
+					for rr in range(len(res[r])):
+						add = str(res[r][rr])
+						if len(str(res[r][rr])) < len(columns[rr]):
+							for s in range(len(columns[rr]) - len(str(res[r][rr]))): add += ' '
+						if len(str(res[r][rr])) > len(columns[rr]): add = add[:len(columns[rr])]
+						#txt += columns[rr] + ' | '
+						txt += add + ' | '
+				tt = '\n-' + i.upper()
+				for s in range(len(ll) - len(tt)): tt += '-'
+				txt += '\n'
+				for s in range(len(ll) - 1): txt += '-'
+				print(tt + '\n' + txt)
+
+		com.close()
+		tbl.close()
 recent_data(0)
