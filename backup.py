@@ -3,9 +3,9 @@ import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
 
-ACCESS_TOKEN = 'sl.BFMUJmAwTUFDD3MlAPLlXpogIf5RHOVbuw-Vay9AslIDQBWhEEsCfCHPw_JwSc9UWDCMI7DdhIBICl43-'
-APP_KEY = 'o1zpk36995qm337'
-APP_SECRET = 'hjagryc82t5fpw9'
+ACCESS_TOKEN = ''
+APP_KEY = ''
+APP_SECRET = ''
 BPATH = '/backuptest.db'
 
 print('Hello World!')

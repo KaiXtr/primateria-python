@@ -17,7 +17,7 @@ def digitstring(number,digits):
 	else: return value
 
 def font_size(font,size):
-	return pygame.font.Font(res.FONTS_PATH + 'BohemianTypewriter.ttf', size * res.GSCALE)
+	return pygame.freetype.Font(res.FONTS_PATH + 'BohemianTypewriter.ttf', size * res.GSCALE)
 	
 def stripacc(txt):
 	lst = [('a','äåæªáãàâ'),('c','ćçč'),('e','ëėēèéêę'),('i','íìîįïī'),('n','ñń'),('o','ºōœøöòôóõ'),

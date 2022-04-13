@@ -94,7 +94,7 @@ for y in range(10):
 TEMPERATURE = 25
 WEATHER = 0
 
-PAUSE = 0
+PAUSE = 2
 #None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip/inventory/chat/pause
 CLICK = ['move','equip']
 ACTION = ['walk','walk','walk','walk','shoot','run','inventory','pause','shortcut']
@@ -755,7 +755,7 @@ def fonts():
 	global FONTS
 	pygame.font.init()
 	FONTS = {
-		'DEFAULT': pygame.font.Font(FONTS_PATH + 'BohemianTypewriter.ttf', 5 * GSCALE),
+		'DEFAULT': pygame.font.Font(FONTS_PATH + 'BohemianTypewriter.ttf', 10 * GSCALE),
 		'CALIBRI': pygame.font.SysFont('Calibri', 10 * GSCALE),
 		'PRESTIGE': pygame.font.Font(FONTS_PATH + 'PrestigeEliteStd.otf', int(7.5 * GSCALE)),
 		'MONOTYPE': pygame.font.Font(FONTS_PATH + 'monotype.ttf', 5 * GSCALE),

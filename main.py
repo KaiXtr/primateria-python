@@ -204,7 +204,8 @@ class Initialize:
 		self.lspd += pygame.time.get_ticks()
 
 class Avatar:
-	def __init__(self,testing=False):
+	def __init__(self,index,testing=False):
+		self.index = index
 		self.testing = testing
 		if self.testing: self.window = pygame.display.set_mode((600, 600))
 		else: self.window = pygame.Surface((600, 600))
@@ -213,8 +214,23 @@ class Avatar:
 			for y in range(np.ceil(self.brd.get_height()/10).astype(int)):
 				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10, y * 10))
 
+		'''self.guis['INVENTORY'].gui = GUI.Inventory((0,0),0)
+		self.player = {'HEAT': res.TEMPERATURE,'HEAD': 'D','SPRITE': 'STANDD',
+			'HAIR': res.CHARACTERS[0]['HAIR'],'SKIN': res.CHARACTERS[0]['SKIN'],
+			'ACCESORIES': self.guis['INVENTORY'].gui.find(0,['head'],'position'),'COSTUME': self.guis['INVENTORY'].gui.find(0,['clth_shirt1'],'position'),
+			'INVFRM': 0,'DMGTIM': 100,'SHK': 0,'NODES': []}'''
+		self.humanoid = {'HEAD': None,'SPRITE': None,'SKIN': 0,'HAIR': [0,0,0],'SHIRT': [0,(0,0,0)],'PANTS': [0,(0,0,0)],
+			'ITEM': None,'ACCESORIES': []}
 		self.ship = {'WING': [6,(180,10,10)],'BASE': [1,(250,10,10)],'COCKPIT': [0,(10,10,200)],'SPOILER': [0,(250,50,50)],
 			'PROPULSOR': [0,(100,100,100)],'TEXTURE': 0,'STICKERS': []}#[[0,20,20],[0,40,20]]}
+
+		self.headpos = [0,0]
+		self.headacc = 0.0
+		self.dotfind = (255,0,0)
+		self.eyes = [0,0]
+		self.blink = 100
+		self.emote = 'regular'
+		self.posture = 'regular'
 		self.gif = 0.0
 		self.donesprites = {}
 		self.editing = True
@@ -419,6 +435,64 @@ class Avatar:
 					#self.display[0].blit(img,(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y - i['RECT'].height - i['JUMP']))
 		return doll
 	
+	def freak(self):
+		if res.PAUSE < 2:
+			self.gif += 0.4
+			if int(self.gif) > 1: self.gif = 0
+			self.blink -= 1
+			if self.blink < 0: self.blink = np.random.randint(30,90)
+			self.headpos[1] = int(np.sin(self.headacc) * 3)
+			self.headacc += 0.1
+
+		'''for i in range(1):
+			self.eyes[i] += 1
+			if self.eyes[i] > 9: self.eyes[i] = -9'''
+		if self.blink > 5: blk = 0
+		else: blk = 1
+		sprstr = self.index + '.' + self.emote + '.ex' + str(self.eyes[0]) + '.ey' + str(self.eyes[1]) + \
+			'.hy' + str(self.headpos[0]) + '.hy' + str(self.headpos[1]) + '.' + str(int(self.gif)) + '.' + str(blk)
+		if sprstr in self.donesprites: srf = self.donesprites[sprstr]
+		else:
+			srf = pygame.Surface((96,128),pygame.SRCALPHA)
+			lst = ['body','eye','head']
+			for i in [x for x in lst if x in dtb.FREAKS[self.index]['AVATAR']]:
+				if i == 'eye':
+					for x in [-1,1]:
+						if self.blink > 5: add = self.emote
+						else: add = 'blink'
+						img = pygame.image.load('{}{}_eye_{}.png'.format(res.FREAKS_PATH,self.index,add)).convert()
+						#if self.cursor.x > xx - 5 and self.cursor.x < xx + 5: self.eyes[0] = self.cursor.x - xx
+						#if self.cursor.y > yy - 5 and self.cursor.y < yy + 5: self.eyes[0] = self.cursor.y - yy
+						cc = (1 + int(srf.get_width()/2) - int(img.get_width()/2) + int(not (img.get_width()%2)) + int(dtb.FREAKS[self.index]['EYES'][0] * x) - self.headpos[0],
+							int(srf.get_height()/2) - int(img.get_height()/2) + dtb.FREAKS[self.index]['EYES'][1] - self.headpos[1])
+						srf.blit(img, cc, pygame.Rect(1 - self.eyes[0],self.eyes[1],19,19))
+				else:
+					if i == 'head':
+						img = pygame.image.load('{}{}_head_{}.png'.format(res.FREAKS_PATH,self.index,self.emote)).convert_alpha()
+					if i == 'body':
+						if self.posture == 'backwards': add = '_backwards'
+						else: add = ''
+						img = pygame.image.load('{}{}_body{}.png'.format(res.FREAKS_PATH,self.index,add)).convert_alpha()
+					offset = [0,0]
+					for y in range(img.get_height()):
+						for x in range(img.get_width()):
+							if img.get_at((x,y))[0:3] == self.dotfind:
+								offset = [x,y]
+								img.set_at((x,y),c)
+							else: c = img.get_at((x,y))
+					if i == 'head':
+						offset[0] += self.headpos[0]
+						offset[1] += self.headpos[1]
+					cc = (int(srf.get_width()/2) - offset[0],int(srf.get_height()/2) - offset[1])
+					srf.blit(img,cc)
+				
+			if self.testing: mg = 2
+			else: mg = 1
+			srf = pygame.transform.scale(srf,(srf.get_width() * res.GSCALE * mg,srf.get_height() * res.GSCALE * mg))
+			self.donesprites[sprstr] = srf
+
+		return srf
+
 	def spaceship(self):
 		if res.PAUSE < 2: self.gif += 0.4
 		if int(self.gif) > 1: self.gif = 0
@@ -449,7 +523,7 @@ class Avatar:
 						offset = (0,0)
 						for y in range(img.get_height()):
 							for x in range(img.get_width()):
-								if img.get_at((x,y))[0:3] == (255,0,0):
+								if img.get_at((x,y))[0:3] == self.dotfind:
 									offset = (x,y)
 									img.set_at((x,y),c)
 								else: c = img.get_at((x,y))
@@ -462,7 +536,7 @@ class Avatar:
 						offset = (0,0)
 						for y in range(img.get_height()):
 							for x in range(img.get_width()):
-								if img.get_at((x,y))[0:3] == (255,0,0):
+								if img.get_at((x,y))[0:3] == self.dotfind:
 									offset = (x,y)
 									img.set_at((x,y),c)
 								else: c = img.get_at((x,y))
@@ -475,7 +549,7 @@ class Avatar:
 					offset = (0,0)
 					for y in range(img.get_height()):
 						for x in range(img.get_width()):
-							if img.get_at((x,y))[0:3] == (255,0,0):
+							if img.get_at((x,y))[0:3] == self.dotfind:
 								offset = (x,y)
 								img.set_at((x,y),c)
 							else: c = img.get_at((x,y))
@@ -538,9 +612,10 @@ class Avatar:
 		pressed, mouse = tools.event.get_pressed(None)
 		self.outside_events(pressed)
 		self.window.fill((0,0,0))
-		#self.surface.blit(self.overworld_draw(),(self.rect.x - 50,self.rect.y))
-		#self.surface.blit(self.doll(self.player,False),(20,20))
-		self.window.blit(self.spaceship(),(0,0))
+		if self.index in [i for i in range(10)]: img = self.doll()
+		elif self.index in dtb.FREAKS.keys(): img = self.freak()
+		elif self.index == 'ship': img = self.spaceship()
+		self.window.blit(img,(0,0))
 
 		lst = ['COLORS','BASE','WING','COCKPIT','SPOILER','PROPULSOR','TEXTURE','STICKERS']
 		for i in range(len(self.optrects)):
@@ -566,14 +641,15 @@ class Character:
 		self.id = 0
 		self.file = index
 		self.item = None
-		self.doll = None
+		self.doll = Avatar(index)
+		self.playing = False
 
 		#PLAYERS
 		if index in [str(i) for i in range(10)] + [i for i in range(10)]:
 			self.index = int(index)
-			self.doll = Avatar(0)
 			self.sprite = self.doll.spaceship()
 			self.vitality = 3
+			self.playing = True
 		#ENEMIES
 		elif index in dtb.FREAKS.keys():
 			self.index = index
@@ -584,15 +660,11 @@ class Character:
 
 		self.inv = GUI.Inventory(None,0)
 
-		self.eyes = [0,0]
-		self.blink = 100
-		self.emote = 'regular'
-
 		self.rect = pygame.Rect(int(pos[0]),int(pos[1]),self.sprite.get_width(),self.sprite.get_height())
 		self.mask = pygame.Rect(int(pos[0]),int(pos[1]),40,40)
 		self.btrng = [20,200]
 		self.animation = ''
-		self.direction = 3
+		self.direction = 0
 		self.posture = 0
 		self.speed = 2
 		self.hdpos = [0,0]
@@ -602,7 +674,6 @@ class Character:
 		self.gravity = -5
 		self.step = 10
 		#self.sprite = 'STANDD'
-		self.playing = False
 		self.fighting = False
 
 		self.hp = self.vitality
@@ -615,12 +686,6 @@ class Character:
 		self.follow = None
 		self.follmov = None
 		self.follend = None
-
-		'''self.guis['INVENTORY'].gui = GUI.Inventory((0,0),0)
-		self.player = {'HEAT': res.TEMPERATURE,'HEAD': 'D','SPRITE': 'STANDD',
-			'HAIR': res.CHARACTERS[0]['HAIR'],'SKIN': res.CHARACTERS[0]['SKIN'],
-			'ACCESORIES': self.guis['INVENTORY'].gui.find(0,['head'],'position'),'COSTUME': self.guis['INVENTORY'].gui.find(0,['clth_shirt1'],'position'),
-			'INVFRM': 0,'DMGTIM': 100,'SHK': 0,'NODES': []}'''
 					
 		self.time = 20
 		self.fade = 10
@@ -1016,20 +1081,10 @@ class Character:
 					#i['SPRITE'].blit(pygame.image.load(res.SPRITES_PATH + 'eff_death_' + str(i['FADE']) + '.png'), (0,0), special_flags=pygame.BLEND_SUB)
 					if i['FADE'] > 5: i['SPRITE'].fill((int((i['FADE'] - 5) * 50),10,10),None,pygame.BLEND_RGBA_MULT)
 					elif i['FADE'] > 0: i['SPRITE'].fill((200,10,10,int(i['FADE'] * 50)),None,pygame.BLEND_RGBA_MULT)
+				
 				#DRAW
 				if self.away == 0:
-					self.hdpos[1] = int(np.sin(self.acc) * 3)
-					self.acc += 0.1
-					self.surface.blit(pygame.image.load(res.FREAKS_PATH + (self.file) + '_body.png').convert_alpha(), (int(self.mask.x + dtb.FREAKS[self.file]['SKELETON']['body'][0]), int(self.mask.y + dtb.FREAKS[self.file]['SKELETON']['body'][1])))
-					for x in range(len(dtb.FREAKS[self.file]['SKELETON']['eye'])):
-						img = pygame.image.load(res.FREAKS_PATH + (self.file) + '_eye.png').convert()
-						offst = (int(img.get_width()/2),int(img.get_height()/2))
-						xx = int(self.mask.x + dtb.FREAKS[self.file]['SKELETON']['eye'][x][0] - offst[0])
-						yy = int(self.mask.y + dtb.FREAKS[self.file]['SKELETON']['eye'][x][1] - offst[1])
-						if self.cursor.x > xx - 5 and self.cursor.x < xx + 5: self.eyes[0] = self.cursor.x - xx
-						if self.cursor.y > yy - 5 and self.cursor.y < yy + 5: self.eyes[0] = self.cursor.y - yy
-						self.surface.blit(img, (xx + self.eyes[0] + self.hdpos[0],yy + self.eyes[1] + self.hdpos[1]))
-					self.surface.blit(pygame.image.load(res.FREAKS_PATH + (self.file) + '_head_' + self.emote + '.png').convert_alpha(), (int(self.mask.x + self.hdpos[0]), int(self.mask.y + self.hdpos[1])))
+					self.sprite = self.doll.freak()
 				else:
 					self.away += 1
 					szw = self.btsprite.get_width() - (int(self.btsprite.get_width()/20) * self.away)
@@ -1087,7 +1142,9 @@ class Character:
 				#if p['TYPE'] == 'gunshot':
 				#	if pygame.rect.colliderect(pygame.Rect(p['X'],p['Y'],2,2),self.cam) == False: p['DESTROY']
 
-		if self.doll: img = self.doll.spaceship()
+		if self.index in [i for i in range(10)]: img = self.doll.doll()
+		elif self.index in dtb.FREAKS.keys(): img = self.doll.freak()
+		elif self.index == 'ship': img = self.doll.spaceship()
 		self.surface.blit(self.sprite,(self.rect.x - int(self.sprite.get_width()/2),self.rect.y - int(self.sprite.get_height()/2)))
 
 		if self.testing: self.window.blit(self.surface,(0,0))
@@ -2973,6 +3030,7 @@ class Game:
 		self.cam = pygame.Rect(0,0,self.window.width,self.window.height)
 		self.camgrid = 1
 		self.campos = [0,0]
+		self.blackbars = [pygame.Rect(0,(sz.current_h - 60) * i,sz.current_w,60) for i in range(2)]
 		
 		self.rectdebug = False
 		self.disdbg = False
@@ -2987,16 +3045,20 @@ class Game:
 		self.dlg = None
 		self.counter = [[0,0,0]] #score counter, time counter
 		self.trsction = None
-		self.guis = {'FILES': GUI.Files((self.display.width,self.display.height)),'BKG': GUI.Backgrounds('stars'),
+
+		#halign = 0 #left
+		#halign = int(self.displayzw/2) - int((460/res.GSCALE)/2) #center
+		halign = self.window.width - 310 #right
+		self.guis = {'FILES': GUI.Files(pygame.Rect(halign,100,300,400)),'BKG': GUI.Backgrounds('mirrors'),
 			'VECTOR': GUI.VectorialDraw(),'3D': GUI.Pseudo3d(),'LEVEL': GUI.LevelMenu((self.window.width,self.window.height)),
 			'INVENTORY': GUI.Popup('Inventory',(400,300),0),'STATUS': GUI.Popup('Status',(300,300)),'TACTICS': GUI.Popup('Tactics',(300,300)),
 			'RADIO': GUI.Popup('Radio',(300,300)),'POPUPS': []
 			}
 		for i in self.guis:
-			if i != 'POPUPS': self.guis[i].show = False
-			else:
+			if i not in ['POPUPS','FILES','BKG']: self.guis[i].show = False
+			elif i == 'POPUPS':
 				for p in self.guis['POPUPS']: self.guis['POPUPS'][p].show = False
-		self.guis['BKG'].show = True
+			else: self.guis[i].show = True
 
 		#GRADIENTS
 		self.grd = []
@@ -5085,6 +5147,16 @@ class Game:
 			else: wbrh = self.winbar * 2
 			pygame.draw.rect(self.surfaces[0], (0, 0, 0), pygame.Rect(0,0,self.display.width,self.winbar))
 			pygame.draw.rect(self.surfaces[0], (0, 0, 0), pygame.Rect(0,self.display.height - wbrh,self.display.width,wbrh))'''
+		
+		#BLACKBARS
+		if self.blackbars[0].height > 0:
+			for i in self.blackbars: pygame.draw.rect(self.surfaces[1],(0,0,0),i)
+			if self.guis['FILES'].show:
+				self.surfaces[1].blit(res.FONTS['DEFAULT'].render(res.GNAME + ' v' + res.VERSION,True,(200,200,200)),(self.blackbars[0].x + 10,self.blackbars[0].y + 10))
+				self.surfaces[1].blit(res.FONTS['DEFAULT'].render(res.AUTHOR + ' (' + res.YEAR + ')',True,(200,200,200)),(self.blackbars[1].x + 10,self.blackbars[1].y + 10))
+		if res.PAUSE < 2 and self.blackbars[0].height > 0: self.blackbars[0].y -= 2; self.blackbars[0].height -= 2; self.blackbars[1].y += 2; self.blackbars[1].height -= 2
+		if res.PAUSE > 1 and self.blackbars[0].height < 60: self.blackbars[0].y += 2; self.blackbars[0].height += 2; self.blackbars[1].y -= 2; self.blackbars[1].height += 2
+
 		#STATUS
 		if self.sttsy > 0:
 			upsts = pygame.Surface((self.display.width,100))
@@ -5235,7 +5307,7 @@ class Game:
 			if i == 'POPUPS':
 				for p in self.guis[i]:
 					if self.guis[i][p].show: self.surfaces[1].blit(self.guis[i][p].draw(), (self.guis[i][p].rect.x,self.guis[i][p].rect.y))
-			elif i != 'BKG' and self.guis[i].show: self.surfaces[1].blit(self.guis[i].draw(), (0,0))
+			elif i != 'BKG' and self.guis[i].show: self.surfaces[1].blit(self.guis[i].draw(), (self.guis[i].rect.x,self.guis[i].rect.y))
 		#DIALOGS
 		if self.dlg: self.surfaces[1].blit(self.dlg.window,(0,0))
 		#EASTER EGG
@@ -5765,14 +5837,15 @@ if len(sys.argv) == 1:
 	f.close()
 #TERMINAL TESTING
 elif len(sys.argv) > 1:
-	hlp ='\tavatar - test avatar\n\tnpc (index) (x position) (y position) - test NPC\n\tdialog (index) - test dialog\n\t' + \
+	hlp ='\tavatar - test avatar (index)\n\tchar (index) (x position) (y position) - test NPC\n\tdialog (index) - test dialog\n\t' + \
 			'mpopen (file) - open map in GUI\n\tmprogue (file) - open map in terminal\n'
 	if sys.argv[1] == 'avatar':
-		t = Avatar(testing=True)
-		while True: t.test()
+		if len(sys.argv) > 2:
+			t = Avatar(sys.argv[2],testing=True)
+			while True: t.test()
+		else: print('\nFAILED: please, input avatar index')
 	elif sys.argv[1] in ['char','character']:
 		t = Character(sys.argv[2],(sys.argv[3],sys.argv[4]),testing=True)
-		t.playing = True
 		while True: t.test()
 	elif sys.argv[1] == 'dialog': Dialog(sys.argv[2],testing=True)
 	elif sys.argv[1] in ['mpopen','mprogue']:

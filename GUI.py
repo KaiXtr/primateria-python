@@ -32,7 +32,8 @@ class Test:
 		self.display = pygame.display.set_mode((800, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Backgrounds('stars'),Files((800,1280)),VectorialDraw(),Pseudo3d(),Popup('Inventory',(0,0),miniature=True),Popup('Phone',(100,200),miniature=True),Popup('minigames.Snake',(200,50))]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
+		self.menu = [Backgrounds('stars'),Files(pygame.Rect(0,0,800,1280)),VectorialDraw(),Pseudo3d(),Popup('Inventory',(0,0),miniature=True),
+			Popup('PC',(100,200),miniature=True),Popup('minigames.Snake',(200,50)),Popup('skeleton.gif',(50,50))]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
 		
 	def run(self):
 		res.HOVERTEXT = None
@@ -83,9 +84,10 @@ class Popup:
 		self.btrects = []
 		self.show = True
 		self.min = False
-		self.infobar = 28
+		self.infobar = 0
 		self.battery = 3600
 		self.deletable = deletable
+		self.imgs = {}
 		self.goback = None
 
 		#POPUP DIALOGBOXES
@@ -98,13 +100,28 @@ class Popup:
 		#APP MENUS
 		elif gui in ['Phone','PC','PDA']:
 			self.gui = gui
+			self.infobar = 28
 			sz = (180 * res.GSCALE,232 * res.GSCALE)
 			self.apps = ['Contacts','Email','Radio','Bestiary','Tasks','Status','Tactics','Settings','About']
-			if gui == 'PC': self.ratio = [600,400]; yy = 0
-			else: self.ratio = [400,300]; yy = self.infobar
+			if gui == 'PC':
+				self.imgs['BKG'] = pygame.image.load(res.BACKG_PATH + 'pcbkg_1.png').convert_alpha()
+				self.ratio = [600,400]
+				yy = 0
+			else:
+				self.imgs['BKG'] = pygame.image.load(res.BACKG_PATH + 'phn_' + str(res.PARTY[res.FORMATION][0]) + '.png').convert_alpha()
+				self.ratio = [400,300]
+				yy = self.infobar
 			for y in range(3):
 				for x in range(3):
 					self.btrects.append(pygame.Rect(self.bdsz + 20 + (60 * x),self.bdsz + self.top + yy + 20 + (60 * y),50,50))
+			for i in self.apps: self.imgs[i] = pygame.image.load(res.SPRITES_PATH + 'ph_' + i.lower() + '.png').convert_alpha()
+			for i in range(2): self.imgs['desktop_' + str(i)] = pygame.image.load(res.SPRITES_PATH + 'desktop_' + str(i) + '.png').convert_alpha()
+		#PLAYERS
+		elif gui.endswith('gif'):
+			sz = (400,300)
+			self.gui = eval('GifPlayer')(gui)
+			self.ratio = [self.gui.surface.get_width() + (self.bdsz * 2),self.gui.surface.get_height() + (self.bdsz * 2) + self.top]
+			gui = 'GifPlayer'
 		#DISPLAY GUIS
 		else:
 			sz = (400,300)
@@ -195,26 +212,37 @@ class Popup:
 		pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(self.bdsz,yy,self.ratio[0] - (self.bdsz * 2),self.ratio[1] - self.top - (self.bdsz * 2)))
 		#INFO BAR
 		if self.infobar and not self.min and self.battery > 0:
+			self.battery -= 1
 			dt = tools.text.digitstring(res.TIME[0],2) + ':' + tools.text.digitstring(res.TIME[1],2)
 			dtsz = self.ratio[0] - (self.bdsz * 2) - res.FONTS['DATETIME'].size(dt)[0] - 10
 			infbr = pygame.Surface((self.ratio[0] - (self.bdsz * 2),self.infobar))
 
-			infbr.blit(res.FONTS['DATETIME'].render(tools.text.digitstring(res.DATE[0],2) + '/' + tools.text.digitstring(res.DATE[1],2) + '/' + tools.text.digitstring(res.DATE[2],4), True, (255, 255, 255)), (3, 0))
-			infbr.blit(res.FONTS['DATETIME'].render(dt, True, (255, 255, 255)), (dtsz, 0))
 			#BATTERY ICON
-			pygame.draw.rect(infbr,(255,255,255),pygame.Rect(dtsz - 50,5,40,20),2)
-			pygame.draw.rect(infbr,(255,255,255),pygame.Rect(dtsz - 52,10,2,10))
-			if self.battery > 1000: col = (255,255,255)
-			else: col = (200,10,10)
-			if self.battery > 0: pygame.draw.rect(infbr,col,pygame.Rect(dtsz - 46 + 32 - int(32/(3600/self.battery)),9,int(32/(3600/self.battery)),12))
+			if self.gui == 'PC': add = 3; infbr.fill((50,50,200))
+			else:
+				add = 50
+				infbr.fill((0,0,0))
+				pygame.draw.rect(infbr,(255,255,255),pygame.Rect(dtsz - 40,5,40,20),2)
+				pygame.draw.rect(infbr,(255,255,255),pygame.Rect(dtsz - 42,10,2,10))
+				if self.battery > 1000: col = (255,255,255)
+				else: col = (200,10,10)
+				if self.battery > 0: pygame.draw.rect(infbr,col,pygame.Rect(dtsz - 4 - int(32/(3600/self.battery)),9,int(32/(3600/self.battery)),12))
+			
 			#SIGNAL ICON
 			if res.SIGNAL: rng = res.SIGNAL
 			else: rng = 4
 			for i in range(rng):
 				if res.SIGNAL == 0:
-					for v in [((0,4),(5,9)),((5,4),(0,9))]: pygame.draw.line(infbr,(255,255,255),(dtsz - 75 + v[0][0],v[0][1]),(dtsz - 75 + v[1][0],v[1][1]),2)
-				pygame.draw.rect(infbr,(255,255,255),pygame.Rect(dtsz - 60 - ((3 - i) * 4),8 + ((3 - i) * 4),2,16 - ((3 - i) * 4)))
+					for v in [((0,4),(5,9)),((5,4),(0,9))]: pygame.draw.line(infbr,(255,255,255),(dtsz - (add + 15) + v[0][0],v[0][1]),(dtsz - (add + 15) + v[1][0],v[1][1]),2)
+				pygame.draw.rect(infbr,(255,255,255),pygame.Rect(dtsz - add - ((3 - i) * 4),8 + ((3 - i) * 4),2,16 - ((3 - i) * 4)))
 			
+			#DATE AND HOUR
+			if self.gui != 'PC': infbr.blit(res.FONTS['DATETIME'].render(tools.text.digitstring(res.DATE[0],2) + '/' + tools.text.digitstring(res.DATE[1],2) + '/' + tools.text.digitstring(res.DATE[2],4), True, (255, 255, 255)), (3, 3))
+			infbr.blit(res.FONTS['DATETIME'].render(dt, True, (255, 255, 255)), (dtsz, 3))
+
+			#TASKBAR ICONS
+			for i in range(2): infbr.blit(self.imgs['desktop_' + str(i)],(3 + (30 * i),3))
+
 			if self.gui == 'PC': self.surface.blit(infbr,(self.bdsz,self.ratio[1] - self.bdsz - self.infobar))
 			else: self.surface.blit(infbr,(self.bdsz,self.bdsz + self.top))
 
@@ -227,11 +255,9 @@ class Popup:
 			self.surface.blit(res.FONTS['MESSAGE'].render(self.msg, True, (200, 200, 200)), (xx,yy + 5))
 		#APP MENUS
 		elif self.gui in ['Phone','PC','PDA']:
-			if self.gui in ['Phone','PDA']: img = pygame.image.load(res.BACKG_PATH + 'phn_' + str(res.PARTY[res.FORMATION][0]) + '.png')
-			else: img = pygame.image.load(res.BACKG_PATH + 'pcbkg_1.png')
-			self.surface.blit(img,(self.bdsz,yy))
+			self.surface.blit(self.imgs['BKG'],(self.bdsz,yy),pygame.Rect(0,0,600 - (self.bdsz * 2),400 - (self.bdsz * 2) - self.top - self.infobar))
 			for i in range(len(self.btrects)):
-				self.surface.blit(pygame.image.load(res.SPRITES_PATH + 'ph_' + self.apps[i].lower() + '.png'),(self.btrects[i].x,self.btrects[i].y))
+				self.surface.blit(self.imgs[self.apps[i]],(self.btrects[i].x,self.btrects[i].y))
 		#DISPLAY UI
 		else:
 			sz = (self.gui.surface.get_width() + (self.bdsz * 2),self.gui.surface.get_height() + (self.bdsz * 2) + self.top)
@@ -411,7 +437,8 @@ class Vkeyboard:
 
 class Backgrounds:
 	def __init__(self,type):
-		self.surface = pygame.Surface((600,600))
+		self.surface = pygame.Surface((800,600))
+		self.rect = pygame.Rect(0,0,600,600)
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.type = type
 		self.show = False
@@ -422,7 +449,7 @@ class Backgrounds:
 
 		self.lst = []
 		self.img = 0
-		self.transform = 1
+		self.transform = 4
 		self.blink = 0.0
 		self.x = 0
 		self.palette = [[(196,206,228),(250,0,0)],[(18,46,85),(0,250,0)]]
@@ -452,7 +479,7 @@ class Backgrounds:
 		from mutagen.mp3 import MP3
 		self.msc.pause()
 		pygame.mixer.music.pause()
-		res.MIXER[1].play(res.SOUND['NOISE'],-1)
+		res.MIXER[1].play(tools.mixer.noise(),-1)
 		kp = str(self.tv)
 		self.tv = 0
 		self.rectrot = 0
@@ -685,10 +712,35 @@ class Backgrounds:
 		
 		return self.surface
 
+class GifPlayer:
+	def __init__(self,file):
+		import PIL.ImageSequence
+		img = PIL.Image.open(res.SPRITES_PATH + file)
+		self.surface = pygame.Surface((img.size[0] * 2,img.size[1] * 2), pygame.SRCALPHA)
+		self.img = []
+		if img.is_animated:
+			for i in PIL.ImageSequence.Iterator(img):
+				self.img.append(pygame.transform.scale(pygame.image.fromstring(i.tobytes(), img.size, img.mode),(i.size[0] * 2,i.size[1] * 2)))
+			self.img = self.img[1:]
+		else: self.img = [img]
+		self.gif = 0.0
+		
+	def inside_events(self,pressed,mouse): pass
+							
+	def outside_events(self,pressed): pass
+
+	def draw(self):
+		self.surface.fill((0,0,0))
+		self.surface.blit(self.img[np.floor(self.gif).astype(int)], (0, 0))
+		self.gif += 0.2
+		if self.gif >= len(self.img): self.gif = 0.0
+		return self.surface
+
 class VectorialDraw:
-	def __init__(self):
+	def __init__(self,rect=pygame.Rect(0,0,300,300)):
 		sz = pygame.display.Info()
 		self.surface = pygame.Surface((sz.current_w,sz.current_h),pygame.SRCALPHA)
+		self.rect = rect
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.type = 'spiral'
 		self.index = 0
@@ -825,8 +877,9 @@ class VectorialDraw:
 		return self.surface
 
 class Pseudo3d:
-	def __init__(self):
-		self.surface = pygame.Surface((300,300),pygame.SRCALPHA)
+	def __init__(self,rect=pygame.Rect(0,0,300,300)):
+		self.surface = pygame.Surface((rect.x,rect.y),pygame.SRCALPHA)
+		self.rect = rect
 		self.clock = pygame.time.Clock()
 		self.show = False
 		self.axis = [0,0,0]
@@ -926,8 +979,9 @@ class Pseudo3d:
 		return self.surface
 
 class Files:
-	def __init__(self,sz):
-		self.surface = pygame.Surface(sz,pygame.SRCALPHA)
+	def __init__(self,rect):
+		self.surface = pygame.Surface((rect.width,rect.height),pygame.SRCALPHA)
+		self.rect = rect
 		self.show = False
 		self.wdw = None
 		self.curfnt = 'DEFAULT'
@@ -943,27 +997,20 @@ class Files:
 		
 		res.recent_data(0)
 		self.optrects = []
-		#halign = 0 #left
-		#halign = int(self.displayzw/2) - int((460/res.GSCALE)/2) #center
-		halign = sz[0] - 460 #right
 		for i in range(len(res.FILES)):
-			ss = np.floor(res.FILES[i][2]/1000)
+			ss = np.floor(res.FILES[i][2]/1000).astype(int)
 			mm = 0
 			hh = 0
 			while ss > 60: ss -= 60; mm += 1
 			while mm > 60: mm -= 60; hh += 1
-			if ss < 10: ss = '0' + str(ss)
-			else: ss = str(ss)
-			if mm < 10: mm = '0' + str(mm)
-			else: mm = str(mm)
-			if hh < 10: hh = '0' + str(hh)
-			else: hh = str(hh)
-			self.gmtim.append(hh + ' : ' + mm + ' : ' + ss)
-		for i in range(15): self.optrects.append(pygame.Rect(abs(halign - 40),100 + (i * 101),460,100))
-		self.grd = [tools.draw.gradient((sz[0],200),(0,0,0,200),(0,0,0,0)),
-		tools.draw.gradient((sz[0],200),(0,0,0,200),(0,0,0,0))]
+			self.gmtim.append(tools.text.digitstring(hh,2) + ' : ' + tools.text.digitstring(mm,2) + ' : ' + tools.text.digitstring(ss,2))
+		for i in range(15): self.optrects.append(pygame.Rect(0,0 + (i * 101),rect.width,100))
+		self.grd = [tools.draw.gradient((rect.width,200),(0,0,0,200),(0,0,0,0)),
+		tools.draw.gradient((rect.width,200),(0,0,0,200),(0,0,0,0))]
 	
 	def inside_events(self,pressed,mouse):
+		mouse.x -= self.rect.x
+		mouse.y -= self.rect.y
 		rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0]
 		if self.wdw:
 			self.wdw.inside_events(pressed)
@@ -974,14 +1021,14 @@ class Files:
 			if not self.wdw:
 				self.opt = -1
 				for i in range(rng[self.mnu]):
-					if pygame.Rect.colliderect(mouse,pygame.Rect(self.optrects[i].x,self.optrects[i].y + self.scroll,self.optrects[i].width,self.optrects[i].height)):
+					if pygame.Rect.colliderect(mouse,pygame.Rect(self.optrects[i].x,self.optrects[i].y - self.scroll,self.optrects[i].width,self.optrects[i].height)):
 						self.opt = i
-						if pressed[5][0]: #and self.optrects[i].width == 250:
+						if pressed[4][0]: #and self.optrects[i].width == 250:
 							#TITLE AND PAUSE MENU
 							if self.mnu in [0,1]:
 								if self.mnu == 1: lst = [0,1,2,3,4,5]
 								else: lst = [1,3,4,5]
-								if lst[i] == 0: self.classrun = False #CONTINUE
+								if lst[i] == 0: self.show = False; res.PAUSE = 0 #CONTINUE
 								if lst[i] == 1: self.mnu = 2 #LOAD GAME
 								if lst[i] == 2: self.mnu = 4 #SAVE GAME
 								if lst[i] == 3: self.wdw = Popup('Settings') #SETTINGS
@@ -1024,7 +1071,7 @@ class Files:
 									self.scroll = 0
 			#KEYBOARD
 			if res.MOUSE < 2:
-				if pressed[5][0]:
+				if pressed[4][0]:
 					if self.mnu == 4: self.mnu = 3
 				#SELECT
 				if pressed[0][0] and self.mnu == 3: self.opt -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
@@ -1045,14 +1092,14 @@ class Files:
 		scrl = 0
 		for i in range(rng[self.mnu]):
 			if self.opt == i:
-				if self.optrects[i].width < 250:
+				if self.optrects[i].width < self.rect.width:
 					self.optrects[i].width += 4
 					self.optrects[i].x -= 4
 				if self.optrects[i].y > int(self.surface.get_height()/2): scrl = -(self.optrects[i].height * i)
 				else: scrl = int(self.surface.get_height()/2) - int(self.optrects[i].height/2) - self.optrects[i].y
 				col = (255,255,0)
 			else:
-				if self.optrects[i].width > 230:
+				if self.optrects[i].width > self.rect.width - 20:
 					self.optrects[i].width -= 4
 					self.optrects[i].x += 4
 				col = (255,255,255)
@@ -1136,6 +1183,7 @@ class Inventory:
 		self.doneimages = {}
 		self.exzoom = 0
 		self.battle = False
+		self.click = pygame.Rect(0,0,0,0)
 		xx = 0
 		yy = 0
 		w = 30 * res.GSCALE
@@ -1283,6 +1331,7 @@ class Inventory:
 		elif i[0] == 'cigar' and float(i[1]) > 0: i[1] = str(float(i[1]) - 0.2)
 			
 	def inside_events(self,pressed,mouse):
+		self.click = mouse
 		#ACCESORIES SELECT
 		if self.itmov != '' and self.itmov[0] == 0:
 			for i in range(len(self.optrects[0][self.opt[2]][self.opt[1]][self.opt[0]][self.opt[3]])):
@@ -1291,20 +1340,7 @@ class Inventory:
 			if pressed[2][0] and self.opt[3] > 1: self.opt[3] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 			if pressed[3][0] and self.opt[3] < len(self.itmov): self.opt[3] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 		#SELECT ITEM
-		else:
-			for l in range(len(self.optrects)):
-				for u in range(len(self.optrects[l])):
-					for j in range(len(self.optrects[l][u])):
-						for i in range(len(self.optrects[l][u][j])):
-							rct = self.optrects[l][u][j][i][0]
-							optrct = pygame.Rect(rct.x + int(rct.width/2) - self.scroll[0],rct.y + int(rct.height*2) - self.scroll[1],rct.width,rct.height)
-							if pygame.Rect.colliderect(mouse,optrct):
-								self.opt[0] = i
-								self.opt[1] = j
-								self.opt[2] = u
-								if res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0] != '_':
-									res.HOVERTEXT = dtb.ITEMS[res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0]][0]
-								
+		else:					
 			if pressed[2][0]: self.opt[0] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 			if pressed[3][0]: self.opt[0] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 			if pressed[0][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
@@ -1614,6 +1650,20 @@ class Inventory:
 		if self.itmov != '' and self.itmov[0] == '_': self.itmov = ''
 		
 	def outside_events(self,pressed):
+		#SELECT ITEM
+		if self.itmov == '':
+			for l in range(len(self.optrects)):
+				for u in range(len(self.optrects[l])):
+					for j in range(len(self.optrects[l][u])):
+						for i in range(len(self.optrects[l][u][j])):
+							rct = self.optrects[l][u][j][i][0]
+							optrct = pygame.Rect(rct.x + int(rct.width/2) - self.scroll[0],rct.y + int(rct.height*2) - self.scroll[1],rct.width,rct.height)
+							if pygame.Rect.colliderect(self.click,optrct):
+								self.opt[0] = i
+								self.opt[1] = j
+								self.opt[2] = u
+								if res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0] != '_':
+									res.HOVERTEXT = dtb.ITEMS[res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0]][0]
 		#INVENTORY WHEEL
 		if pressed[6][0] and self.hld < 40: self.hld += 1
 		elif self.hld > 0: self.hld -= 1
@@ -1884,6 +1934,7 @@ class Inventory:
 class LevelMenu:
 	def __init__(self,sz):
 		self.surface = pygame.Surface(sz)
+		self.rect = pygame.Rect(0,0,300,300)
 		self.show = False
 		self.scroll = self.surface.get_width() + 50
 		self.inv = Inventory(None)

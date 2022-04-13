@@ -11,6 +11,8 @@ def sound_wave(wave, f=1000, length=1, fs=44100):
 	x = np.int16(x/np.max(np.abs(x)) * 5000)
 	return pygame.sndarray.make_sound(np.tile(x,(2,1)).T.copy(order='c'))
 
+def noise(): return sound_wave('noise')
+
 def audio_velocity(snd,value):
 	x = pygame.sndarray.array(snd)
 	if int(value): x = x[::int(value)]

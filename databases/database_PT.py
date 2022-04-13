@@ -195,7 +195,7 @@ FWEAKNESSES = {'gold':'ouro','silver':'prata','copper':'cobre','tin':'estanho','
 FREAKS = {
 '4.1.1': {'NAME': 'Gatacado','INFO': 'É um felino sobrenatural que flutua como um fantasma. Pequeno e ágil, porém bem frágil.',
 'OA': 4,'HEIGHT': '0,80','HABITAT': 'jungle','STRENGHT': 2,'AGILITY': 5,'RESISTANCE': 1,'VITALITY': 8,
-'PATH': 'horizontal','DODGE': 'walk','SKELETON': {'body': (12,39),'eye': [(13,26),(31,26)]},
+'PATH': 'horizontal','DODGE': 'walk','AVATAR': {'head','eye','body'},'EYES': (9,-15),
 'HABILITIES': [['Morder','O felino morde o oponente.',-5,1,40,1],['Arranhar','O felino usa suas garras para atacar o oponente.',-3,10,40,10],
 ['Ronronar','O felino ronrona, mostrando seu desprezo pela situação.',0,9,10,1],['Miar','O felino mia para o além, chamando outros felinos.',('4.1.0'),7,10,1]],
 'FOOD': 'ingredient_mice','WEAKNESS': 'LEAD','BLOOD': 10,'ITEM': None,'SONG': 'HEY_SAM','SCREAM': 1},
@@ -1581,7 +1581,7 @@ MENU = {'new_file': 'nova sessão','load_file': 'iniciar sessão','save_file': '
 'sfx': 'som','music': 'música','tts': 'narrador','cc': 'áudio descrição','speed': 'velocidade','censorship': 'censura',
 'bt_choose': 'escolba o botão','vibrate': 'vibrar',
 'conf': 'confirmar','info': 'info','yes': 'sim','no': 'não','ok': 'ok','cancel': 'cancelar',
-'Phone': 'celular','PC': 'computador','PDA': 'pda',
+'Phone': 'celular','PC': 'computador','PDA': 'pda','GifPlayer': 'gif',
 'not_email': 'Novo Email','not_contact': 'Novo contato adicionado!','not_wash': 'Sua roupa foi lavada!',
 'spaceship_colors': 'cores','spaceship_base': 'calota','spaceship_wing': 'asas','spaceship_cockpit': 'cabine','spaceship_spoiler': 'spoiler',
 'spaceship_propulsor': 'propulsor','spaceship_texture': 'textura','spaceship_stickers': 'adesivos'}
