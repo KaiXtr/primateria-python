@@ -1,7 +1,2 @@
-name: Buildozer Action
-uses: ArtemSBulgakov/buildozer-action@v1.1.3
-  with:
-    command: buildozer android debug
-    repository_root: .
-    workdir: .
-    buildozer_version: stable
+- name: Buildozer action
+  uses: ArtemSBulgakov/buildozer-action@v1.1.3
