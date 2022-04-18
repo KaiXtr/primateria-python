@@ -2,7 +2,7 @@
 and may not be redistributed without written permission.*/
 
 //Using SDL and standard IO
-#include <SDL.h>
+#include "sdl/SDL.h"
 #include <stdio.h>
 
 //Screen dimension constants

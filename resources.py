@@ -127,6 +127,7 @@ DISLEXIC = False #spaced font
 BTYPE = 2 #1=turns,2=dynamic,3=action
 AUTOSAVE = 10#in minutes
 AUTOBATTLE = False
+QUICKSTART = 5 #start from logos/start from title menu/start from files menu/start from chapters menu/start from last save/start from last session
 
 HOVERTEXT = None
 HINTEXT = None
@@ -151,7 +152,7 @@ INVENTORY[0] = [
 	[['clth_shirt1','7'],['_','0000'],['_','0000'],['_','0000'],['food_pizza_4cheese','0000']],
 	[['head_glasses1','0000'],['_','0'],['_','0000'],['_','0000'],['_','0000']],
 	[['head_hairclip','0000'],['_','0000'],['_','0000'],['_','0000'],['_','0000']],
-	[['bag1','0000'],['pow_bubble','0100'],['_','0000'],['cigar','0000'],['_','0000']]
+	[['bag1','0000'],['pow_bubble','0100'],['ammo.38_gold','0000'],['cigar','0000'],['tool_lighter1','0000']]
 	]
 STORAGE = [['amulet2','0000'],['amulet3','0000'],['_','0000'],['_','0000'],['_','0000']]
 PRODUCTS = []
@@ -160,7 +161,6 @@ BASKET = []
 for i in range(25): BASKET.append(['_','0000'])
 CHAT = ['@kaixtr: batatinha','@kanbz: quando nasce','@kaixtr: se esparrama','@kanbz: pelo chão.',
 '@kaixtr: meninha','@kanbz: quando dorme','@kaixtr: põe a mão','@kanbz: no coração.']
-WASH = []
 RANK = []
 
 CHARACTERS = [
@@ -221,9 +221,11 @@ for i in range(len(CHARACTERS)):
 	CHARACTERS[i]['XP'] = 50
 	CHARACTERS[i]['LEVEL'] = 1
 	CHARACTERS[i]['HEALTH'] = []
-	for j in ['BLESS','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
+	for j in ['ENERGY','SCORE','BLESS','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
 	'ACROBATICS','FURTIVITY','PERCEPTION','MEDICINE','IMUNITY','INFANTRY','INVESTIGATION','CRAFTING','CULINARY','DEATHS']:
 		CHARACTERS[i][j] = 0
+
+CHARACTERS[0]['SCORE'] = 1240
 
 RELATIONS = []
 for i in range(15):
@@ -396,7 +398,6 @@ def new_data(add=False):
 	com.execute("CREATE TABLE IF NOT EXISTS achievements (id integer,nb integer,got integer,date text)")
 	com.execute("CREATE TABLE IF NOT EXISTS inventory (id integer,item text,position text,properties text)")
 	com.execute("CREATE TABLE IF NOT EXISTS storage (id integer,it text,ip text)")
-	com.execute("CREATE TABLE IF NOT EXISTS wash (id integer,it text,nb text,date text)")
 	com.execute("CREATE TABLE IF NOT EXISTS rank (id integer,chp integer,level integer,score integer,time integer,paint integer,enemies integer,deaths integer)")
 	  
     #FILE ALREADY EXISTS
@@ -441,7 +442,9 @@ def load_data():
 	tbl = sqlite3.connect('userdata.db')
 	com = tbl.cursor()
 	
-	lst = ['lang','sfx','msc','ctrl','cursor','mouse','speed','color1','color2','color3','border','font','censor','hint','help','btype','dislexic']
+	com.execute("SELECT * FROM {}".format(i))
+	lst = [d[0] for d in com.description if d[0] != 'id']
+	#lst = ['lang','sfx','msc','cursor','mouse','speed','color1','color2','color3','border','font_face','censor','hint','help','btype','dislexic','mute','autosave','quickstart']
 	com.execute("SELECT {} FROM settings WHERE id={}".format(",".join(map(str,lst)),str(ID)))
 	vl = com.fetchall()[0]
 	for v in range(len(lst)):
@@ -658,14 +661,10 @@ def delete_data():
 	tbl = sqlite3.connect('userdata.db')
 	com = tbl.cursor()
 	
-	del FILES[0][ID]
-	del FILES[1][ID]
-	del FILES[2][ID]
-	del FILES[3][ID]
-	
+	del FILES[ID]
 	for i in ['files','settings','data','characters','party','contacts',
 	'callhist','inbox','tasks','tactical','bestiary','achievements','inventory',
-	'storage','wash','rank']:
+	'storage','rank']:
 		com.execute("DELETE FROM " + i + " WHERE id=" + str(ID))
 	
 	tbl.commit()

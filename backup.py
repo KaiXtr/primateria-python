@@ -2,10 +2,8 @@ import sys
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
+import secret
 
-ACCESS_TOKEN = ''
-APP_KEY = ''
-APP_SECRET = ''
 BPATH = '/backuptest.db'
 
 print('Hello World!')
@@ -34,8 +32,8 @@ def select_revision():
 	return revisions[0].rev
 
 if __name__ == '__main__':
-	if (len(ACCESS_TOKEN) == 0): print("ERROR: ACCESS_TOKEN NOT FOUND")
-	with dropbox.Dropbox(ACCESS_TOKEN) as dbx:
+	if (len(secret.DROPBOX_ACCESS_TOKEN) == 0): print("ERROR: ACCESS_TOKEN NOT FOUND")
+	with dropbox.Dropbox(secret.DROPBOX_ACCESS_TOKEN) as dbx:
 		try:
 			user = dbx.users_get_current_account()
 			print('uploading...')

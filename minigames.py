@@ -27,7 +27,7 @@ class Game:
 		self.display = pygame.display.set_mode((600, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.minigame = Piano()
+		self.minigame = Snake()
 		self.bkg = tools.draw.gradient((800,1280),(100,100,200),(200,100,100))
 		pygame.event.set_allowed([pygame.QUIT,pygame.VIDEORESIZE,pygame.MOUSEBUTTONDOWN,pygame.MOUSEBUTTONUP,pygame.KEYDOWN,pygame.KEYUP])
 
@@ -547,19 +547,19 @@ class Maze:
 		self.generate(100,100)
 
 	def generate(self,width,height):
-		self.mz = Image.new('RGB', (2*width + 1, 2*height + 1), 'black')
-		pixels = self.mz.load()
+		self.mz = pygame.Surface((2*width + 1, 2*height + 1))
+		pixels = [(0,0,0) for x in range(2 * width + 1) for y in range(2 * height + 1)]
 
 		pixels[1, 0] = (255, 255, 255)
 		pixels[-2, -1] = (255, 255, 255)
 
-		stack = LifoQueue()
+		stack = []
 		cells = np.zeros((width, height))
 		cells[0, 0] = 1
-		stack.put((0, 0))
+		stack.append((0, 0))
 
-		while not stack.empty():
-			x, y = stack.get()
+		while len(stack) > 0:
+			x, y = stack[-1]
 
 			adjacents = []
 			if x > 0 and cells[x - 1, y] == 0: adjacents.append((x - 1, y))
@@ -568,7 +568,7 @@ class Maze:
 			if y < height - 1 and cells[x, y + 1] == 0: adjacents.append((x, y + 1))
 
 			if adjacents:
-				stack.put((x, y))
+				stack.append((x, y))
 				neighbour = random.choice(adjacents)
 				neighbour_on_img = (neighbour[0]*2 + 1, neighbour[1]*2 + 1)
 				current_on_img = (x*2 + 1, y*2 + 1)
@@ -579,8 +579,13 @@ class Maze:
 				pixels[wall_to_remove] = (255, 255, 255)
 
 				cells[neighbour] = 1
-				stack.put(neighbour)
-		self.mz = pygame.image.fromstring(self.mz.tobytes(), self.mz.size, self.mz.mode)
+				stack.append(neighbour)
+			del stack[0]
+		p = 0
+		for y in range(2 * width + 1):
+			for x in range(2 * height + 1):
+				pygame.draw.rect(self.mz,pixels[p],pygame.Rect(x,y,2,2))
+				p += 1
 		
 	def inside_events(self,pressed,mouse):
 		pass
@@ -598,10 +603,27 @@ class Snake:
 	def __init__(self):
 		sz = pygame.display.Info()
 		self.surface = pygame.Surface((sz.current_w,sz.current_h))
-		self.pos = [[10,10],[10,9],[10,8]]
+		self.size = (60,60)
+		self.map = (int(self.surface.get_width()/self.size[0]),int(self.surface.get_height()/self.size[1]))
+		self.pos = [[2,4],[2,3],[2,2]]
+		for i in range(len(self.pos)):
+			for s in range(2): self.pos[i][s] *= self.size[s]
 		self.dir = 3
 		self.spd = 20
-		self.fd = [np.random.randint(2,20),np.random.randint(2,20)]
+		self.fd = [np.random.randint(0,self.map[0]) * self.size[0],np.random.randint(0,self.map[1]) * self.size[1]]
+		self.imgs = {str(i) + '_' + str(d): pygame.image.load(res.SPRITES_PATH + 'head_' + str(i) + '_0.png') for i in range(2) for d in range(4)}
+		self.bkg = []
+		for i in range(1):
+			c = False
+			srf = pygame.Surface((self.surface.get_width(),self.surface.get_height()))
+			for y in range(self.map[1]):
+				for x in range(self.map[0]):
+					if c: cl = (10,200,10)
+					else: cl = (10,180,10)
+					pygame.draw.rect(srf,cl,pygame.Rect(x * self.size[0],y * self.size[1],self.size[0],self.size[1]))
+					c = not c
+				c = not c
+			self.bkg.append(srf)
 		
 	def inside_events(self,pressed,mouse):
 		if pressed[2][0] and self.dir != 2: self.dir = 0
@@ -613,24 +635,32 @@ class Snake:
 
 	def draw(self):
 		self.surface.fill((0,0,0))
+		self.surface.blit(self.bkg[0],(0,0))
 
 		if self.spd > 0: self.spd -= 1
 		else:
 			del self.pos[-1]
 			self.pos.insert(0,self.pos[0].copy())
-			if self.dir == 0: self.pos[0][0] -= 1
-			if self.dir == 1: self.pos[0][1] -= 1
-			if self.dir == 2: self.pos[0][0] += 1
-			if self.dir == 3: self.pos[0][1] += 1
+			if self.dir == 0: self.pos[0][0] -= 1 * self.size[0]
+			if self.dir == 1: self.pos[0][1] -= 1 * self.size[1]
+			if self.dir == 2: self.pos[0][0] += 1 * self.size[0]
+			if self.dir == 3: self.pos[0][1] += 1 * self.size[1]
 			self.spd = 20 - np.floor(len(self.pos)/2)
 			if self.spd < 1: self.spd = 1
 			if self.pos[0] == self.fd:
-				self.fd = [np.random.randint(2,20),np.random.randint(2,20)]
+				self.fd = [np.random.randint(0,self.map[0]) * self.size[0],np.random.randint(0,self.map[1]) * self.size[1]]
+				while self.fd in self.pos: self.fd = [np.random.randint(0,self.map[0]) * self.size[0],np.random.randint(0,self.map[1]) * self.size[1]]
 				self.pos.append(self.pos[-1].copy())
 			if self.pos[0] in self.pos[1:]: self.__init__()
+			#self.spd = 0
 
-		for i in self.pos: pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(i[0] * 20,i[1] * 20,19,19))
-		pygame.draw.rect(self.surface,(200,100,100),pygame.Rect(self.fd[0] * 20,self.fd[1] * 20,19,19))
+		for i in range(len(self.pos)):
+			cor = (self.pos[i][0],self.pos[i][1])
+			if i == 0: self.surface.blit(self.imgs['0_' + str(self.dir)],cor)
+			else:
+				sz = (int(self.size[0]/(i)) - 1,int(self.size[1]/i) - 1)
+				pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(cor[0] + int(self.size[0]/2) - int(sz[0]/2),cor[1] + int(self.size[1]/2) - int(sz[1]/2),sz[0],sz[1]))
+		pygame.draw.rect(self.surface,(200,100,100),pygame.Rect(self.fd[0],self.fd[1],self.size[0] - 1,self.size[1] - 1))
 		
 		return self.surface
 

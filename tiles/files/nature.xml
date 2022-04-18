@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.2" name="nature" tilewidth="32" tileheight="32" rows="3" columns="6">
  <img source="../nature.png" width="192" height="96"/>
- <tile id="0" type="grass"/>
- <tile id="1" type="grass"/>
+ <tile id="0" type="grass" step="grass"/>
+ <tile id="1" type="grass" step="grass"/>
 
- <tile id="4" type="water"/>
- <tile id="5" type="dirt"/>
- <tile id="6" type="grass"/>
- <tile id="7" type="grass"/>
+ <tile id="4" type="water" step="water"/>
+ <tile id="5" type="dirt" step="dirt"/>
+ <tile id="6" type="grass" step="grass"/>
+ <tile id="7" type="grass" step="grass"/>
 
- <tile id="10" type="water"/>
- <tile id="11" type="dirt"/>
- <tile id="12" type="grass"/>
- <tile id="13" type="grass"/>
+ <tile id="10" type="water" step="water"/>
+ <tile id="11" type="dirt" step="dirt"/>
+ <tile id="12" type="grass" step="grass"/>
+ <tile id="13" type="grass" step="grass"/>
 
- <tile id="16" type="water"/>
- <tile id="17" type="dirt"/>
+ <tile id="16" type="water" step="water"/>
+ <tile id="17" type="dirt" step="dirt"/>
 
  <animation tile="0">
   <frame tile="0" duration="400"/>

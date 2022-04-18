@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_ttf.h>
+#include "sdl/SDL.h"
+#include "sdl/SDL_image.h"
+#include "sdl/SDL_mixer.h"
+#include "sdl/SDL_ttf.h"
 
 //Load Image
 extern "C" SDL_Texture *loadImage(SDL_Renderer *render, const char *src)
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 
 	//Mixer
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
-	Mix_Music *msc = loadMusic("snd.mp3");
+	Mix_Music *msc = loadMusic("sfx/cinematics/mystery.wav");
 	Mix_PlayMusic(msc, 1);
 
 	//Loop

@@ -14,9 +14,11 @@ def get_pressed(event):
 		if event and event.type != pygame.KEYDOWN: do = False
 		if do: pressed = [[pygame.key.get_pressed()[res.CONTROLS[p][i]] for p in range(4)] for i in range(len(res.ACTION))]
 	#MOUSE
-	if res.MOUSE == 2:
+	if res.MOUSE:
 		gt = pygame.mouse.get_pressed()
-		for i in range(len(gt)): pressed[4 + i][0] = gt[i]
+		if gt[0]: pressed[4][0] = gt[0]
+		if gt[2]: pressed[5][0] = gt[2]
+		if gt[1]: pressed[8][0] = gt[1]
 	#JOYSTICK
 	pygame.joystick.init()
 	connect = pygame.joystick.get_count()

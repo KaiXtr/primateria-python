@@ -1395,45 +1395,6 @@ EMAILS = [
 ['mendoncapietra7@cmail.com','Oiee',
 ['Só tô te testando menino']],
 ]
- 
-NEWS = {
-'01/01': [
-[['Polícia Municipal abre a renovação da carteira'],'Tereza Rocha',['Em 4 de abril, a Polícia Municipal abriu a renovação da carteira para mercenários. A carteira de identificação de Mercenário é \
-obrigatória não só por identificação, mas por questões de segurança, depois que a câmara dos deputados aprovou a reforma armamentista, qualquer cidadão com a identificação de mercenário é livre para portar \
-e possuir uma arma de fogo.','',' Recentemente, houveram vários casos de assassinatos não registrados pela polícia, pela incapacidade da polícia de analisar todos os casos separadamente, mercenários tem sido \
-recompensados para cuidar desses assassinatos misteriosos.','','Devido a isso os dados de homicídio por armas de fogo aumentaram consideravelmente no estado, isso se deve á facilidade de se obter uma arma e também de \
-reduzir a pena de um criminoso para servir ao estado como mercenário. O criminólogo Mauro Fidélis fala sobre a situação.','','"O que a polícia do rio de janeiro fez foi um ato irresponsável e inpensável, pois \
-graças á essa facilidade de se armar, vários criminosos podem se aproveitar e utilizá-las para fins maliciosos, e mesmo com tantos casos de homicídios não registrados, o que custava a polícia recrutar mais policiais ou \
-fazer uma investigação profunda e mais elaborada á respeito?"','','Sabendo disso, tudo o que podemos esperar é que os mercenários façam bom uso de seu poder bélico.']]
-],
- 
-'01/01': [
-[['Parque Nacional do Itatiaia é invadido'],'Jéssica Ramone',['Na tarde do dia anterior, um','caso que deixou autoridades','em estado de alerta, foram','filmadas imagens de vândalos',
-'invadindo o parque nacional.','','"não é o que se espera','dessa juventude, não é?", diz','Marcelo Marinho, fiscal do','IBAMA e principal supervisor','do parque','',
-'O Parque Nacional do Itatiaia','é uma área de preservação','da fauna brasileira protegida','por lei, pois é onde se','encontra o que resta da','mata atlântica, que vem','sofrendo drásticas degradações',
-'com o tempo.','','Mas o maior desafio do','parque não são os vândalos,','mas sim os mercenários,','vários invadem locais restritos','atrás das presas e do','dinheiro, colocando em risco',
-'a fauna e a flora da','natureza. A PRF já','possui conhecimento de tais','atos ediondos.','','"É lamentável, a gente pensa','que confia mas eles','só mostram que estamos',
-'se enganando", diz Paulo Sousa','','O IBAMA, instituição','responsável pelo monitoramento','do parque, emitiu uma nota','avisando que irão reforçar','a segurança no local,',
-'policiais militares armados','e cães de guarda são','apenas um pouco do','que os mercenários podem','temer de agora em','diante.']]
-],
- 
-'01/01': [
-[['Relato de assombração em Itatiaia pode ser verdadeiro'],'Jéssica Ramone',['Ás 11:30 da noite passada,','moradores de Itatiaia relataram','um caso incomum entre vários','da polícia, \
-foi registrado um','caso de uma assombração','(vulgo Poltergeist) na casa de','Maria Elisângela das Dores,','35 anos.','','"Não sabia o que fazer, eu nunca','imaginei que assombrações\
- ou','fantasmas realmente existissem,','sempre achei que eram apenas','contos de criança.", diz','Maria Elisângela.','','Apesar de inesperado e muito','estranho, o relato foi comprovado','\
-por filmagens do Departamento','de Detenção de Anomalias de','Itatiaia, além dos danos','causados pela assombração na','casa e nos moradores da região.','','Aparentemente este não é o','\
-único relato de moradores a','respeito de uma assombração,','foram registrados 5 relatos em','um único mês e 12 em 3 meses, mas','se as investigações persistirem','este pode ser o \
-primeiro','relato confirmado de uma','assombração no país.']],
-[['Engarrafamento na zona sul'],'Gisele Peres',['Muito trânsito']]
-],
-
-'01/01': [
-[['Museu Histórico de Petrópolis','é fechado por assombrações'],'Jéssica Ramone',['Na terça feira passada do dia 13 de Novembro, visitantes do Museu Imperial presenciaram uma cena assustadora, \
-As exposições começaram a atacar os visitantes, como é relatado por vários entrevistados.','"Foi começando devagar, uma pintura ia se despendurando da parede...uma estátua começava a piscar...\
-e quando percebe estão fechando os corredores e chamando os seguranças."','']],
-[['FLA x FLU'],'Gustavo Pinhão',['Muito disputado']]
-]
-}
 
 RANDNEWS = [[
 ('Polícia Federal',[
@@ -1496,6 +1457,38 @@ SIGNS = {
 }
 
 AVATAR = {
+'humanoid_head': ['redondo','quadrado','pontudo'],
+'humanoid_hair': ['careca','raspado','calvo','afro','cacheado curto','cacheado médio','cacheado longo','cacheado preso',
+	'crespo curto','crespo médio','crespo longo','crespo preso',
+	'liso curto','liso médio','liso longo','liso preso','dread curto','dread médio','dread longo','dread preso',
+	'trança curta','trança média','trança longa','trança presa'],
+'humanoid_eyes': ['redondo','puxado'],
+'humanoid_eyebrows': ['fino','médio','grosso','rena','monocelha','corte'],
+'humanoid_nose': ['fino','pontudo','longo','redondo','pequeno'],
+'humanoid_facialhair': ['bigode fino','bigode pequeno','barba rala','barba cheia','barba longa','barbicha','cavanhaque'],
+'humanoid_torso': ['sem seios','seios pequenos','seios grandes'],
+'humanoid_marks': ['sinal','cicatriz','sardas','vitiligo','queimadura','ferida'],
+'humanoid_tatoos': ['runas','fogo','água','terra','ar'],
+'humanoid_facepaint': ['listras','olhos','setas'],
+'humanoid_mask': ['jason','vampiro'],
+'humanoid_hat': ['boné','gorro curto','gorro longo','chapéu de sol','sombreiro','chapéu de palha','boina','chapéu de aviador'],
+'humanoid_glasses': ['óculos de grau redondo','óculos de grau quadrado','óculos escuros redondos','óculos escuros quadrados',
+	'óculos 3D','visor de proteção'],
+'humanoid_Lear': ['brinco pequeno','argola','piercing','alargador','fone'],
+'humanoid_Rear': [],
+'humanoid_neck': ['corrente','terço','memento','bandana'],
+'humanoid_piercings': ['esfera','barra'],
+'humanoid_Lhand': ['luva de pedreiro','luva de goleiro','luva de ciclista','luva sem dedos','luva de médico'],
+'humanoid_Rhand': [],
+'humanoid_Lpulse': ['relógio analógico','relógio digital','pulseira'],
+'humanoid_Rpulse': [],
+'humanoid_uppercloth': ['flanela','moletom','jaqueta','terno','avental','macacão'],
+'humanoid_shirt': [],
+'humanoid_pants': [],
+'humanoid_dress': ['saia','mini saia','tutu','vestido'],
+'humanoid_socks': [],
+'humanoid_feet': ['descalço','chinelo','chinelo chique','sapato esportivo','sapato social','bota','pantufa'],
+
 'spaceship_base': ['mandíbula','escaravelho','redondo','pontudo'],
 'spaceship_wing': ['para trás','pontudo','propulsores','duplo','redondo','plano','caça'],
 'spaceship_cockpit': ['redondo','estreito','duplo','janela'],
@@ -1581,7 +1574,7 @@ MENU = {'new_file': 'nova sessão','load_file': 'iniciar sessão','save_file': '
 'sfx': 'som','music': 'música','tts': 'narrador','cc': 'áudio descrição','speed': 'velocidade','censorship': 'censura',
 'bt_choose': 'escolba o botão','vibrate': 'vibrar',
 'conf': 'confirmar','info': 'info','yes': 'sim','no': 'não','ok': 'ok','cancel': 'cancelar',
-'Phone': 'celular','PC': 'computador','PDA': 'pda','GifPlayer': 'gif',
+'Phone': 'celular','PC': 'computador','PDA': 'pda','Image': 'imagem','AudioPlayer': 'áudio','GifPlayer': 'gif',
 'not_email': 'Novo Email','not_contact': 'Novo contato adicionado!','not_wash': 'Sua roupa foi lavada!',
 'spaceship_colors': 'cores','spaceship_base': 'calota','spaceship_wing': 'asas','spaceship_cockpit': 'cabine','spaceship_spoiler': 'spoiler',
 'spaceship_propulsor': 'propulsor','spaceship_texture': 'textura','spaceship_stickers': 'adesivos'}

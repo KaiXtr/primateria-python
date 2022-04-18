@@ -32,9 +32,10 @@ class Test:
 		self.display = pygame.display.set_mode((800, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Backgrounds('stars'),Files(pygame.Rect(0,0,800,1280)),VectorialDraw(),Pseudo3d(),Popup('Inventory',(0,0),miniature=True),
-			Popup('PC',(100,200),miniature=True),Popup('minigames.Snake',(200,50)),Popup('skeleton.gif',(50,50))]#Popup('Products',(50,200)),Popup('Basket',(100,100))]
-		
+		self.menu = [Pseudo3d(),Popup('Calendar',(100,100),miniature=True)]
+		self.counters = []#[Counter(8),Counter(5)]
+		self.img = pygame.image.load('SS1.jpg').convert()
+
 	def run(self):
 		res.HOVERTEXT = None
 		for event in pygame.event.get():
@@ -66,17 +67,27 @@ class Test:
 		for i in self.menu:
 			if type(i).__name__ == 'Popup': self.display.blit(i.draw(),(i.rect.x,i.rect.y))
 			else: self.display.blit(i.draw(),(0,0))
+		if len(self.menu) > 4:
+			img = self.menu[4].gui.wheel()
+			self.display.blit(img,(100 - int(img.get_width()/2),100 - int(img.get_height()/2)))
+		for i in range(len(self.counters)):
+			self.counters[i].update(int(self.time))
+			self.display.blit(self.counters[i].draw(),(0,i * 40))
 		if res.HOVERTEXT:
 			sz = self.font.size(res.HOVERTEXT)
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(int(mp[0]),int(mp[1]),sz[0] + 10,sz[1] + 10)
 			pygame.draw.rect(self.display,(10,10,10),mr)
 			self.display.blit(self.font.render(res.HOVERTEXT,True,res.COLOR),(mr.x + 5,mr.y + 5))
+
+		for i in res.MIXER:
+			if pygame.display.get_active(): i.set_volume(res.SFX)
+			elif res.MUTE: i.set_volume(0)
 		pygame.display.flip()
 		self.clock.tick(60)
 
 class Popup:
-	def __init__(self,gui,rect=(100,100),msg=None,miniature=None,deletable=True):
+	def __init__(self,gui,rect=(100,100),msg=None,miniature=None,deletable=True,border=True):
 		res.FONTS = {**res.FONTS,'MESSAGE': tools.text.font_size(res.FONTS['DEFAULT'],6)}
 		self.bdsz = 10
 		self.top = 50
@@ -89,6 +100,7 @@ class Popup:
 		self.deletable = deletable
 		self.imgs = {}
 		self.goback = None
+		self.drag = False
 
 		#POPUP DIALOGBOXES
 		if gui in ['conf','info']:
@@ -116,12 +128,14 @@ class Popup:
 					self.btrects.append(pygame.Rect(self.bdsz + 20 + (60 * x),self.bdsz + self.top + yy + 20 + (60 * y),50,50))
 			for i in self.apps: self.imgs[i] = pygame.image.load(res.SPRITES_PATH + 'ph_' + i.lower() + '.png').convert_alpha()
 			for i in range(2): self.imgs['desktop_' + str(i)] = pygame.image.load(res.SPRITES_PATH + 'desktop_' + str(i) + '.png').convert_alpha()
-		#PLAYERS
-		elif gui.endswith('gif'):
+		#MEDIA PLAYER
+		elif os.path.splitext(gui)[1][1:] in ('png','jpg','wav','ogg','mp3','gif'):
 			sz = (400,300)
-			self.gui = eval('GifPlayer')(gui)
+			self.gui = eval('MediaPlayer')(gui)
 			self.ratio = [self.gui.surface.get_width() + (self.bdsz * 2),self.gui.surface.get_height() + (self.bdsz * 2) + self.top]
-			gui = 'GifPlayer'
+			if self.gui.ext in ['png','jpg']: gui = 'Image'
+			if self.gui.ext in ['wav','ogg','mp3']: gui = 'AudioPlayer'
+			if self.gui.ext == 'gif': gui = 'GifPlayer'
 		#DISPLAY GUIS
 		else:
 			sz = (400,300)
@@ -132,20 +146,23 @@ class Popup:
 			self.ratio = [self.gui.surface.get_width() + (self.bdsz * 2),self.gui.surface.get_height() + (self.bdsz * 2) + self.top]
 
 		self.title = gui
-		self.surface = pygame.Surface(tuple(self.ratio))
-		self.brd = pygame.Surface(tuple(self.ratio))
-		self.brd.fill(res.COLOR)
-		for r in range(3):
-			col = [res.COLOR[0] - int(120/(r + 1)),res.COLOR[1] - int(120/(r + 1)),res.COLOR[2] - int(120/(r + 1))]
-			for i in range(len(col)):
-				if col[i] < 0: col[i] = 0
-			pygame.draw.rect(self.brd,tuple(col),pygame.Rect(r,r,self.ratio[0] - (r * 2),self.ratio[1] - (r * 2)),1)
-		for x in range(int(self.ratio[0]/10)):
-			for y in range(int(self.ratio[1]/10)):
-				self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
-		if gui.startswith('minigames.'): tt = dtb.MINIGAMES[self.title[10:]].lower()
-		else: tt = dtb.MENU[self.title]
-		self.brd.blit(res.FONTS['TITLE'].render(tt, True, (0, 0, 0)), (10, 10))
+		self.surface = pygame.Surface(tuple(self.ratio),pygame.SRCALPHA)
+
+		#POPUP BORDER
+		self.brd = pygame.Surface(tuple(self.ratio),pygame.SRCALPHA)
+		if border:
+			self.brd.fill(res.COLOR)
+			for r in range(3):
+				col = [res.COLOR[0] - int(120/(r + 1)),res.COLOR[1] - int(120/(r + 1)),res.COLOR[2] - int(120/(r + 1))]
+				for i in range(len(col)):
+					if col[i] < 0: col[i] = 0
+				pygame.draw.rect(self.brd,tuple(col),pygame.Rect(r,r,self.ratio[0] - (r * 2),self.ratio[1] - (r * 2)),1)
+			for x in range(int(self.ratio[0]/10)):
+				for y in range(int(self.ratio[1]/10)):
+					self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
+			if gui.startswith('minigames.'): tt = dtb.MINIGAMES[self.title[10:]].lower()
+			else: tt = dtb.MENU[self.title]
+			self.brd.blit(res.FONTS['TITLE'].render(tt, True, (0, 0, 0)), (10, 10))
 
 		self.msg = msg
 		self.rect = pygame.Rect(rect[0],rect[1],self.surface.get_width(),self.surface.get_height())
@@ -199,13 +216,15 @@ class Popup:
 			#GUI OPTIONS
 			elif self.battery > 0: self.gui.outside_events(pressed)
 			#DRAG POPUP
-			if pygame.Rect.colliderect(self.optrects[0],mr2): self.rect.x = mp[0] - 10; self.rect.y = mp[1] - 10
+			if pressed[4][0] and pygame.Rect.colliderect(self.optrects[0],mr2): self.drag = True
+			else: self.drag = False
+		if self.drag: self.rect.x = mp[0] - 10; self.rect.y = mp[1] - 10
 	
 	def draw(self):
 		if self.min == False:
 			self.surface.blit(self.brd,(0,0))
 			for i in self.optrects[1:]: pygame.draw.rect(self.surface,(200,100,100),i)
-		else: self.surface.fill((0,0,0))
+		else: self.surface.fill((0,0,0,0))
 		if self.gui == 'PC': yy = self.bdsz + self.top
 		else: yy = self.bdsz + self.top + self.infobar
 
@@ -287,14 +306,27 @@ class Popup:
 					pygame.draw.line(self.surface,(200,200,200),(self.bdsz + int(self.gui.surface.get_width()/2) - 20,yy + int(self.gui.surface.get_height()/2) - 20),(self.bdsz + int(self.gui.surface.get_width()/2) + 20,self.bdsz + self.top + int(self.gui.surface.get_height()/2) + 20),5)
 					pygame.draw.line(self.surface,(200,200,200),(self.bdsz + int(self.gui.surface.get_width()/2) + 20,yy + int(self.gui.surface.get_height()/2) - 20),(self.bdsz + int(self.gui.surface.get_width()/2) - 20,self.bdsz + self.top + int(self.gui.surface.get_height()/2) + 20),5)
 
-		mp = pygame.mouse.get_pos()
-		mr = pygame.Rect(int(mp[0] - self.rect.x),int(mp[1] - self.rect.y),2,2)
-		pygame.draw.rect(self.surface,(200,200,200),mr)
-
-		for i in res.MIXER:
-			if pygame.display.get_active(): i.set_volume(res.SFX)
-			elif res.MUTE: i.set_volume(0)
 		return self.surface
+
+class Counter:
+	def __init__(self,length):
+		self.sz = 10 * res.GSCALE
+		lst = [0,1,2,3,4,5,6,7,8,9,0]
+		self.img = pygame.Surface((self.sz,self.sz * len(lst)),pygame.SRCALPHA)
+		for i in range(len(lst)): self.img.blit(res.FONTS['DEFAULT'].render(str(lst[i]),True,(200,200,200)),(0,i * self.sz))
+		self.slots = [0 for i in range(length)]
+
+	def update(self,value):
+		lst = [i for i in tools.text.digitstring(value,len(self.slots))]
+		for i in range(len(self.slots)):
+			if self.slots[i] < int(lst[i]) * self.sz: self.slots[i] += 2
+			if int(lst[i]) == 0 and self.slots[i] > int(lst[i]): self.slots[i] += 2
+			if self.slots[i] >= (self.sz * 10): self.slots[i] = 0
+
+	def draw(self,space=6 * res.GSCALE):
+		srf = pygame.Surface((self.sz * len(self.slots),self.sz),pygame.SRCALPHA)
+		for i in range(len(self.slots)): srf.blit(self.img,(space * i,0),(0,self.slots[i],self.sz,self.sz))
+		return srf
 
 class Vkeyboard:
 	def __init__(self,rect,type='QWERTY',display=False):
@@ -436,7 +468,7 @@ class Vkeyboard:
 		return self.surface
 
 class Backgrounds:
-	def __init__(self,type):
+	def __init__(self,size,type):
 		self.surface = pygame.Surface((800,600))
 		self.rect = pygame.Rect(0,0,600,600)
 		self.font = pygame.font.SysFont("Arial", 64)
@@ -459,14 +491,8 @@ class Backgrounds:
 			for t in range(14):
 				self.lst.append([])
 				for r in range(2):
-					img = PIL.Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
-					if img.mode == 'RGBA':
-						nw = PIL.Image.new("RGB", img.size, (255, 255, 255))
-						nw.paste(img, mask=img.split()[3])
-						nw.save(res.BACKG_PATH + 'chp_' + str(t) + '.png', 'PNG', quality=100)
-						img = PIL.Image.open(res.BACKG_PATH + 'chp_' + str(t) + '.png')
-					if r: img = PIL.ImageOps.invert(img)
-					img = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
+					if r: img = tools.image.reverse(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+					else: img = pygame.image.load(res.BACKG_PATH + 'chp_' + str(t) + '.png')
 					sz = img.get_width()
 					srf = pygame.Surface((sz * 2,sz * 2))
 					srf.blit(img, (0,0))
@@ -474,6 +500,12 @@ class Backgrounds:
 					srf.blit(pygame.transform.flip(img,False,True), (0,sz))
 					srf.blit(pygame.transform.flip(img,True,True), (sz,sz))
 					self.lst[t].append(srf)
+		elif self.type == 'channels':
+			for i in range(48): self.lst.append(pygame.transform.scale(tools.image.rgb_channel(res.BACKG_PATH + 'chp_1.png',i),(120,120)))
+		elif self.type == 'tunnel':
+			img = tools.image.glitch(res.BACKG_PATH + 'chp_5.png').convert()
+			rpt = 16
+			for i in range(rpt): self.lst.append(pygame.transform.scale(img,(int(img.get_width()/rpt) * i,int(img.get_height()/rpt) * i)))
 		
 	def random(self,i=None):
 		from mutagen.mp3 import MP3
@@ -708,38 +740,87 @@ class Backgrounds:
 				self.img += 1
 			if self.img > len(self.lst) - 1: self.img = 0
 			self.blink += 0.02
-			if self.blink >= np.random.randint(1.0,2.0): self.blink = 0.0
+			if self.blink >= np.random.randint(1.0,3.0): self.blink = 0.0
+		elif self.type == 'channels':
+			cc = 0
+			for y in range(6):
+				for x in range(8):
+					self.surface.blit(self.lst[cc], (self.lst[cc].get_width() * x,self.lst[cc].get_height() * y))
+					cc += 1
+		elif self.type == 'tunnel':
+			for i in self.lst[::-1]: self.surface.blit(i,(int(self.surface.get_width()/2) - int(i.get_width()/2),int(self.surface.get_height()/2) - int(i.get_height()/2)))
 		
 		return self.surface
 
-class GifPlayer:
+class MediaPlayer:
 	def __init__(self,file):
-		import PIL.ImageSequence
-		img = PIL.Image.open(res.SPRITES_PATH + file)
-		self.surface = pygame.Surface((img.size[0] * 2,img.size[1] * 2), pygame.SRCALPHA)
-		self.img = []
-		if img.is_animated:
-			for i in PIL.ImageSequence.Iterator(img):
-				self.img.append(pygame.transform.scale(pygame.image.fromstring(i.tobytes(), img.size, img.mode),(i.size[0] * 2,i.size[1] * 2)))
-			self.img = self.img[1:]
-		else: self.img = [img]
+		self.ext = os.path.splitext(file)[1][1:]
+		self.img = None
+		self.snd = None
+		self.play = 0
+		self.stime = 0
+		self.offset = [0,0]
+		self.zoom = 100
 		self.gif = 0.0
+		self.optrects = []
+
+		if self.ext in ['png','jpg']:
+			self.img = [pygame.image.load(res.SPRITES_PATH + file)]
+			self.surface = pygame.Surface((self.img[0].get_width() * 2,self.img[0].get_height() * 2), pygame.SRCALPHA)
+		elif self.ext in ['wav','ogg','mp3']:
+			self.zoom = 0.5
+			self.surface = pygame.Surface((300,400),pygame.SRCALPHA)
+			self.snd = pygame.mixer.Sound(file)
+			self.img = [tools.mixer.audio_display(self.snd,zoomt=self.zoom)]
+		elif self.ext == 'gif':
+			import PIL.ImageSequence
+			img = PIL.Image.open(res.SPRITES_PATH + file)
+			self.surface = pygame.Surface((img.size[0] * 2,img.size[1] * 2), pygame.SRCALPHA)
+			self.img = []
+			if img.is_animated:
+				for i in PIL.ImageSequence.Iterator(img):
+					self.img.append(pygame.transform.scale(pygame.image.fromstring(i.tobytes(), img.size, img.mode),(i.size[0] * 2,i.size[1] * 2)))
+				self.img = self.img[1:]
+			else: self.img = [img]
 		
-	def inside_events(self,pressed,mouse): pass
+	def inside_events(self,pressed,mouse):
+		if self.ext in ['wav','ogg','mp3']:
+			if pressed[4][0]:
+				if res.MIXER[1].get_busy():
+					if self.play: res.MIXER[1].pause(); self.play = 0
+					else: res.MIXER[1].unpause(); self.play = 1
+				else: res.MIXER[1].play(self.snd); self.play = 1
+			if pressed[5][0]: res.MIXER[1].stop(); self.play = 0
 							
-	def outside_events(self,pressed): pass
+	def outside_events(self,pressed):
+		if self.ext in ['png','jpg']:
+			if pressed[0][0] and self.offset[1] > -0.5 * self.zoom: self.offset[1] -= 1
+			if pressed[1][0] and self.offset[1] < 0.5 * self.zoom: self.offset[1] += 1
+			if pressed[2][0] and self.offset[0] > -0.5 * self.zoom: self.offset[0] -= 1
+			if pressed[3][0] and self.offset[0] < 0.5 * self.zoom: self.offset[0] += 1
+			if pressed[4][0] and self.zoom < 200: self.zoom += 1
+			if pressed[5][0] and self.zoom > 50: self.zoom -= 1
 
 	def draw(self):
 		self.surface.fill((0,0,0))
-		self.surface.blit(self.img[np.floor(self.gif).astype(int)], (0, 0))
-		self.gif += 0.2
-		if self.gif >= len(self.img): self.gif = 0.0
+		if self.snd:
+			self.surface.blit(self.img[0],(-(int(self.img[0].get_width()/100) * self.stime),0))
+			if self.play: self.stime += 1
+			if res.MIXER[1].get_busy() == False: self.stime = 0
+			pygame.draw.rect(self.surface,res.COLOR,pygame.Rect(0,self.img[0].get_height() + 10,self.surface.get_width(),10))
+			pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(int(((self.surface.get_width() - 10)/100) * self.stime),self.img[0].get_height() + 10,10,10))
+		elif self.img:
+			img = self.img[np.floor(self.gif).astype(int)]
+			if self.ext not in ['gif']: img = pygame.transform.scale(img,(int((img.get_width() * 2)/100) * self.zoom,int((img.get_height() * 2)/100) * self.zoom))
+			self.surface.blit(img, (int(self.surface.get_width()/2) - int(img.get_width()/2) + self.offset[0], int(self.surface.get_height()/2) - int(img.get_height()/2) + self.offset[1]))
+			if len(self.img) > 1:
+				self.gif += 0.2
+				if self.gif >= len(self.img): self.gif = 0.0
 		return self.surface
 
 class VectorialDraw:
 	def __init__(self,rect=pygame.Rect(0,0,300,300)):
-		sz = pygame.display.Info()
-		self.surface = pygame.Surface((sz.current_w,sz.current_h),pygame.SRCALPHA)
+		self.surface = pygame.Surface((rect.width,rect.height),pygame.SRCALPHA)
 		self.rect = rect
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.type = 'spiral'
@@ -877,39 +958,43 @@ class VectorialDraw:
 		return self.surface
 
 class Pseudo3d:
-	def __init__(self,rect=pygame.Rect(0,0,300,300)):
-		self.surface = pygame.Surface((rect.x,rect.y),pygame.SRCALPHA)
+	def __init__(self,rect=pygame.Rect(0,0,300,300),dots=True):
+		self.surface = pygame.Surface((rect.width,rect.height),pygame.SRCALPHA)
 		self.rect = rect
 		self.clock = pygame.time.Clock()
 		self.show = False
 		self.axis = [0,0,0]
 		self.index = 3
 		self.center = [(2,2,2),(2,2,2),(2,2,2),(3,3,3),(2,2,2),(2,2,2)]
+		self.dots = dots
+		self.faces = []
+		self.textures = []
+		self.donetextures = {}
+
 		#TETRAEDRO
 		if self.index == 0:
 			self.vrtx = [[1,4,1],[4,4,1],[2,4,4],[2,1,2]]
 			self.edges = [[0,1],[1,2],[2,0],[0,3],[1,3],[2,3]]
 			self.faces = [[0,1,2],[0,1,3],[1,2,3],[2,0,3]]
+			self.textures = ['SS1.jpg','SS1.jpg','SS1.jpg','SS1.jpg']
 		#PIRÂMIDE
 		if self.index == 1:
 			self.vrtx = [[1,4,1],[4,4,1],[4,4,4],[1,4,4],[2,1,2]]
 			self.edges = [[0,1],[1,2],[2,3],[3,0],[0,4],[1,4],[2,4],[3,4]]
-			self.faces = []
 		#OCTAEDRO
 		if self.index == 2:
 			self.vrtx = [[1,2,1],[3,2,1],[3,2,3],[1,2,3],[2,1,2],[2,3,2]]
 			self.edges = [[0,1],[1,2],[2,3],[3,0],[0,4],[1,4],[2,4],[3,4],[0,5],[1,5],[2,5],[3,5]]
-			self.faces = []
 		#HEXAEDRO REGULAR
 		if self.index == 3:
 			self.vrtx = [[1,1,1],[4,1,1],[4,4,1],[1,4,1],[1,1,4],[4,1,4],[4,4,4],[1,4,4]]
 			self.edges = [[0,1],[1,2],[2,3],[3,0],[0,4],[1,5],[2,6],[3,7],[4,5],[5,6],[6,7],[7,4]]
-			self.faces = []
+			self.faces = [[0,1,2,3],[4,5,6,7],[4,5,1,0],[6,7,3,2],[1,5,6,2],[4,0,3,7]]
+			#self.textures = ['SS1.jpg','SS1.jpg','SS1.jpg','SS1.jpg','SS1.jpg','SS1.jpg']
 		#DODECAEDRO
 		if self.index == 4:
 			self.vrtx = [[3,2,1],[5,3,1],[4,4,1],[1,4,1],[3,2,1]]
 			self.edges = []
-			self.faces = []
 		#ICOSAEDRO
 		if self.index == 5:
 			self.vrtx = [[3,0,2],[5,1,2],[5,3,2],[3,4,2],[1,3,2],[1,1,2],
@@ -918,7 +1003,6 @@ class Pseudo3d:
 				[6,7],[7,8],[8,6],[9,11],[11,10],[10,9],
 				[0,6],[0,7],[1,7],[2,7],[2,8],[3,8],[4,8],[4,6],[5,6],
 				[0,9],[1,9],[1,11],[2,11],[3,11],[3,10],[4,10],[5,10],[5,9]]
-			self.faces = []
 
 	def inside_events(self,pressed,mouse): pass
 
@@ -950,9 +1034,30 @@ class Pseudo3d:
 			
 		return vrtx
 
+	def textureGet(self,file,vrtx):
+		vv = ''
+		for i in vrtx: vv += '.' + str(i[0]) + ':' + str(i[1])
+		txtstr = file + vv
+		if txtstr in self.donetextures: return self.donetextures[txtstr]
+		else:
+			print(txtstr)
+			img = PIL.Image.open(file)
+			pa = [(0,0),(img.size[0],0),img.size,(0,img.size[1])]
+			#vrtx = [(0,0),(img.size[0],-200),(img.size[0],img.size[1] + 200),(0,img.size[1])]
+			m = []
+			for p1, p2 in zip(pa,vrtx):
+				m.append([p1[0],p1[1],1,0,0,0,-p2[0] * p1[0],-p2[0] * p1[1]])
+				m.append([0,0,0,p1[0],p1[1],1,-p2[1] * p1[0],-p2[1] * p1[1]])
+			A = np.matrix(m, dtype=float)
+			B = np.array(vrtx).reshape(8)
+			coffs = np.array(np.dot(np.linalg.inv(A.T * A) * A.T, B)).reshape(8)
+			img = img.transform(img.size,PIL.Image.PERSPECTIVE,coffs,PIL.Image.BICUBIC)
+			srf = pygame.image.fromstring(img.tobytes(),img.size,img.mode).convert()
+			self.donetextures[txtstr] = srf
+			return srf
+
 	def draw(self):
-		self.surface.fill((0,0,0,0))
-		
+		self.surface.fill((0,0,0))
 		sz = 30
 		cc = 200
 		lst = self.rotate([i.copy() for i in self.vrtx],self.axis[0],'x')
@@ -961,21 +1066,27 @@ class Pseudo3d:
 		col = ((200,10,10),(10,200,10),(10,10,200),(200,200,10),(10,200,200))
 		c = 0
 		for e in range(len(self.faces)):
+			if len(self.faces[e]) < 4: self.faces[e].append(0)
 			args = []
+			txt = []
 			for v in self.faces[e]:
 				node = lst[v]
 				args.append(((node[0] * sz) + cc, (node[1] * sz) + cc))
-			pygame.draw.polygon(self.surface,col[c],args)
+				txt.append((int(node[0] * sz),int(node[1] * sz)))
+			#txt[-1] = (10,10)
+			if self.textures and e < 4: self.surface.blit(self.textureGet(self.textures[e],txt),args[0])
+			else: pygame.draw.polygon(self.surface,col[c],args)
+			if self.dots: pygame.draw.circle(self.surface,(200,200,200),args[0],5)
 			c += 1
 			if c > len(col) - 1: c = 0
 		for e in range(len(self.edges)):
-				n0 = self.edges[e][0]
-				n1 = self.edges[e][1]
-				node0 = lst[n0]
-				node1 = lst[n1]
-				cor1 = ((node0[0] * sz) + cc, (node0[1] * sz) + cc)
-				cor2 = ((node1[0] * sz) + cc, (node1[1] * sz) + cc)
-				pygame.draw.line(self.surface,(200,200,200),cor1,cor2)
+			n0 = self.edges[e][0]
+			n1 = self.edges[e][1]
+			node0 = lst[n0]
+			node1 = lst[n1]
+			cor1 = ((node0[0] * sz) + cc, (node0[1] * sz) + cc)
+			cor2 = ((node1[0] * sz) + cc, (node1[1] * sz) + cc)
+			pygame.draw.line(self.surface,(200,200,200),cor1,cor2)
 		return self.surface
 
 class Files:
@@ -1013,7 +1124,7 @@ class Files:
 		mouse.y -= self.rect.y
 		rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0]
 		if self.wdw:
-			self.wdw.inside_events(pressed)
+			self.wdw.inside_events(pressed,mouse)
 			if self.wdw.gui == None: self.wdw = None
 		#MOUSE
 		if res.MOUSE > 0:
@@ -1169,7 +1280,6 @@ class Inventory:
 			self.surface = pygame.Surface((srf[0] * res.GSCALE,srf[1] * res.GSCALE), pygame.SRCALPHA)
 			self.fade = srf[0] + 400
 		else: self.surface = pygame.Surface((0,0))
-		self.whl = pygame.Surface((60,60),pygame.SRCALPHA)
 		self.srf = None
 		self.hld = 0
 		self.spn = 0
@@ -1363,7 +1473,7 @@ class Inventory:
 		if self.opt[2] > len(res.PARTY[res.FORMATION]) - 1: self.opt[2] = 0
 
 		ch = res.CHARACTERS[res.PARTY[res.FORMATION][self.opt[2]]]
-		lst = [res.STORAGE,res.BASKET,res.WASH,None,res.BASKET,res.PRODUCTS]
+		lst = [res.STORAGE,res.BASKET,res.BASKET,None,res.BASKET,res.PRODUCTS]
 		if self.type == 6 and self.opt[0] < 5: it = res.PRODUCTS[self.opt[0] + (self.opt[1] * 5) - 5]
 		elif self.opt[0] > 4 and self.type > 1: it = lst[self.type - 2][self.opt[0] + (self.opt[1] * 5) - 5]
 		else: it = res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]]
@@ -1588,14 +1698,7 @@ class Inventory:
 						if chk:
 							for i in range(5): res.STORAGE.append(['_','0000'])
 					res.MIXER[0].play(res.SOUND['EQUIP'])
-					if self.type == 4:
-						if res.TIME[0] >= 10: hh = str(res.TIME[0])
-						else: hh = '0' + str(res.TIME[0])
-						if res.TIME[1] >= 10: mm = str(res.TIME[1])
-						else: mm = '0' + str(res.TIME[1])
-						if (self.opt[0] + (self.opt[1] * 5) - 5) > len(res.WASH):
-							res.WASH.append([self.itmov[0],'0000',hh + mm])
-						else: it = [self.itmov[0],'0000',hh + mm]
+					if self.type == 4: self.itmov[1] = 'WASHING: ' + str(tools.text.digitstring(hh,2)) + str(tools.text.digitstring(mm,2))
 					else: it = self.itmov.copy()
 					self.itmov = ''
 					if self.battle:
@@ -1664,8 +1767,9 @@ class Inventory:
 								self.opt[2] = u
 								if res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0] != '_':
 									res.HOVERTEXT = dtb.ITEMS[res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0]][0]
-		#INVENTORY WHEEL
-		if pressed[6][0] and self.hld < 40: self.hld += 1
+		#INVENTORY WHEEL 
+		if pressed[4][0]:
+			if self.hld < 80: self.hld += 1
 		elif self.hld > 0: self.hld -= 1
 		
 	def itimg(self,it):
@@ -1705,17 +1809,26 @@ class Inventory:
 		return pygame.transform.scale(img,(img.get_width() * res.GSCALE,img.get_height() * res.GSCALE))
 		
 	def wheel(self):
-		self.whl.fill((0,0,0,0))
-		pygame.draw.circle(self.whl,(0,0,0),(30,30),30)
-		self.spn += int((self.spn - (self.opt[0] * 2))/5)
-		a = int(self.spn)
-		for i in res.INVENTORY[res.PARTY[res.FORMATION][0]][4][1:]:
-			xx = int(np.cos(a) * 5) + 30
-			yy = int(np.sin(a) * 5) + 30
-			if self.opt[0] == a - 1: pygame.draw.arc(self.whl,res.COLOR,pygame.Rect(0,0,60,60),a,a + 1)
-			if i[0] != '_': self.whl.blit(self.itimg(i[0]),(xx,yy))
-			a += 1
-		return self.whl
+		if self.hld > 40:
+			sz = (self.hld - 40) * 2
+			srf = pygame.Surface((sz * 2,sz * 2),pygame.SRCALPHA)
+			pygame.draw.circle(srf,(0,0,0),(sz,sz),sz)
+			self.spn += int((self.spn - (self.opt[0] * 2))/5)
+			r = int(sz/2)
+			crc = int(2 * np.pi * sz)
+			for i in range(4):
+				img = None
+				offset = [sz,sz]
+				if res.INVENTORY[res.PARTY[res.FORMATION][0]][4][i + 1][0] != '_':
+					img = self.itimg(res.INVENTORY[res.PARTY[res.FORMATION][0]][4][i + 1][0])
+					offset[0] -= int(img.get_width()/2)
+					offset[1] -= int(img.get_height()/2)
+				xx = int(np.cos(crc * (i + 1)) * r) + offset[0]
+				yy = int(np.sin(crc * (i + 1)) * r) + offset[1]
+				if self.opt[0] == i + 1: pygame.draw.arc(srf,res.COLOR,pygame.Rect(0,0,sz * 2,sz * 2),crc * i,crc * (i + 1) + 1,5)
+				if img: srf.blit(img,(xx,yy))
+			return srf
+		else: return pygame.Surface((0,0))
 		
 	def bar(self,where,row,column,orientation):
 		lst = []
@@ -1942,7 +2055,7 @@ class LevelMenu:
 		dvd3 = np.floor((160 * res.GSCALE)/3)
 		for i in range(3): self.optrects.append(pygame.Rect(dvd3 * i,0,dvd3,40))
 		self.opt = [0,0]
-		self.mnu = 1
+		self.mnu = 3
 		self.hpl = 0
 
 		if self.mnu == 2:
@@ -1976,11 +2089,14 @@ class LevelMenu:
 		self.surface.fill((0,0,0))
 		if self.scroll > 0: self.scroll -= 10
 
-		#LEVEL START
+		#CHAPTER START
 		if self.mnu == 0:
 			self.surface.blit(res.FONTS['DEFAULT'].render(dtb.CITIES[0][0],True,(200,200,200)),(0,0))
-		#WIN SCREEN
+		#LEVEL START
 		if self.mnu == 1:
+			self.surface.blit(res.FONTS['DEFAULT'].render(dtb.CITIES[0][0],True,(200,200,200)),(0,0))
+		#WIN SCREEN
+		if self.mnu == 2:
 			pd = 200 - (50 * res.GSCALE) + self.scroll
 			#LABEL
 			if self.hpl < 0: self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU['victory'], True, (255,255,255)), (pd + 30, 100))
@@ -2034,12 +2150,12 @@ class LevelMenu:
 				self.surface.blit(res.FONTS['TITLE'].render(ch['NAME'].lower(), True, (255,255,255)), (800 + self.scroll, 30))
 				self.surface.blit(res.FONTS['DEFAULT'].render(dtb.MENU['level_up'] + str(dtb.CNAMES[ch['CLASS']][ch['LEVEL'] - 1]) + ' !', True, (255,255,255)), ((800 + self.scroll) * res.GSCALE, 70 * res.GSCALE))
 		#LOST SCREEN
-		elif self.mnu == 2:
+		elif self.mnu == 3:
 			sz = int(self.surface.get_width()/2) - int(res.FONTS['TITLE'].size(dtb.MENU['lost'])[0]/2)
 			self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU['lost'], True, (255,255,255)), (sz + self.scroll, 100))
 			self.surface.blit(res.FONTS['DEFAULT'].render('-$100', True, (255,255,255)), (sz + self.scroll, 240))
 		#LEVEL END
-		elif self.mnu == 3:
+		elif self.mnu == 4:
 			pass
 		
 		return self.surface
@@ -2047,6 +2163,7 @@ class LevelMenu:
 class Calendar:
 	def __init__(self, size=(160 * res.GSCALE,160 * res.GSCALE)):
 		self.surface = pygame.Surface(size, pygame.SRCALPHA)
+		self.ratio = [size,(400,400)]
 		self.scroll = 0
 		self.optrects = []
 		dvd3 = np.floor((160 * res.GSCALE)/3)
@@ -2063,8 +2180,8 @@ class Calendar:
 			if pygame.Rect.colliderect(mouse,self.optrects[self.mnu][i]): self.opt[0] = i'''
 		if pressed[0][0]: self.opt[0] -= 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
 		if pressed[1][0]: self.opt[0] += 1; res.MIXER[0].play(res.SOUND['MENU_VER'])
-		if pressed[2][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
-		if pressed[3][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+		if pressed[2][0]: self.opt[1] += 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
+		if pressed[3][0]: self.opt[1] -= 1; res.MIXER[0].play(res.SOUND['MENU_HOR'])
 
 		if self.opt[0] < 0: self.opt[0] = len(res.CALENDAR) - 1; self.opt[1] = 0
 		if self.opt[0] > len(res.CALENDAR) - 1: self.opt[0] = 0; self.opt[1] = 0
@@ -2075,6 +2192,23 @@ class Calendar:
 					
 	def outside_events(self,pressed):
 		pass
+
+	def miniature(self):
+		ww = self.ratio[1]
+		srf = pygame.Surface(ww)
+		srf.fill((0,0,0))
+
+		dt = tools.text.digitstring(res.DATE[0],2) + '/' + tools.text.digitstring(res.DATE[1],2) + '/' + tools.text.digitstring(res.DATE[2],2)
+		tm = tools.text.digitstring(res.TIME[0],2) + ':' + tools.text.digitstring(res.TIME[1],2) + ':' + tools.text.digitstring(res.TIME[2],2)
+
+		sz = res.FONTS['DEFAULT'].size(dtb.CITIES[0][0])
+		srf.blit(res.FONTS['DEFAULT'].render(dtb.CITIES[0][0],True,(200,200,200)),(int(ww[0]/2) - int(sz[0]/2),int(ww[1]/2) - int(sz[1] * 2)))
+		sz = res.FONTS['DEFAULT'].size(dt)
+		srf.blit(res.FONTS['DEFAULT'].render(dt,True,(200,200,200)),(int(ww[0]/2) - int(sz[0]/2),int(ww[1]/2) - int(sz[1] * 0.5)))
+		sz = res.FONTS['DEFAULT'].size(tm)
+		srf.blit(res.FONTS['DEFAULT'].render(tm,True,(200,200,200)),(int(ww[0]/2) - int(sz[0]/2),int(ww[1]/2) + int(sz[1] * 1.0)))
+
+		return srf
 
 	def draw(self):
 		self.surface.fill((10,10,10,0))
@@ -3020,7 +3154,12 @@ class Status:
 		if self.opt > len(res.PARTY[res.FORMATION]) - 1: self.opt = 0
 					
 	def outside_events(self,pressed): pass
-		
+	
+	def hud(self,sz):
+		srf = pygame.Surface(sz,pygame.SRCALPHA)
+
+		return srf
+
 	def miniature(self):
 		self.mnsrf.fill((10,10,10))
 		

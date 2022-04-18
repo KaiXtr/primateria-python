@@ -21,7 +21,7 @@ def audio_velocity(snd,value):
 
 def audio_display(snd,offset=0,zoomt=0.1,zooma=0.01):
 	snd = pygame.sndarray.array(snd)
-	srf = pygame.Surface((300,300))
+	srf = pygame.Surface((len(snd) * zoomt,300))
 	srf.fill((0,0,0))
 
 	for i in range(len(snd)):
