@@ -1,4 +1,5 @@
 <data lang="PT" charset="utf-8">
+	<!--CHAPTER INTRO-->
 	<chapter id="0">
 		Medo é desconhecer<br/>
 		Não entender e não compreender<br/>
@@ -53,6 +54,8 @@
 		Um lugar que muitos chamam<br/>
 		De Setesalém
 	</chapter>
+	
+	<!--STORY DIALOGS-->
 	<dialog key="HHINTRO"><sleep time="100"/>Quem está aí?<input/><prologue/><goto room="hauntedhouse_0" x="0" y="0"/></dialog>
 	<dialog key="DALIBOR">
 		<select>
@@ -277,4 +280,85 @@
 		<answer/>Tava te procurando.<answer/>Mesmo?<answer/>Todo mundo tá procurando você!<answer/>Sério?<answer/>
 		Sim! o que tá fazendo aí?<answer/>Tava só-<spk/>Vai logo pra sala!<jmp/><party/>
 	</dialog>
+
+	<!--TUTORIALS-->
+	<tutorial key="TUTMOV" scenes="4">
+		<scene id="0">
+			Use os botões <add ckey="0"/> e <add ckey="1"/> para navegar, selecione com <add ckey="4"/> e cancele com 
+			<add ckey="5"/><sleep time="300"/><jmp/>
+		</scene>
+		<scene id="1">
+			Use os botões <add ckey="0"/>,<add ckey="1"/>,<add ckey="2"/> e <add ckey="3"/> para se movimentar.
+			<sleep time="200"/><jmp/>
+		</scene>
+		<scene id="2">
+			Pressione <add ckey="4"/> para interagir com o ambiente.<sleep time="200"/><jmp/>
+		</scene>
+		<scene id="3">
+			Segure <add ckey="5"/> para correr.<sleep time="200"/><jmp/>
+		</scene>
+	</tutorial>
+	<tutorial key="TUTINV" scenes="3">
+		<scene id="0">
+			Antes disso, você sabe mexer nas suas coisas?<answer/>Como assim?<answer/>Você sabe... suas coisas!<input/>
+			Sua mochila<input time="100"/>Seu inventário.
+			<select>
+				<option text="Sei sim (pular tutorial)">
+					Ah, que bom!<br/>Mas se você tiver alguma dúvida, pode sempre perguntar!<input/>
+				</option>
+				<option text="Mais ou menos (tutorial pra experientes)">
+					Já mexeu com esse tipo de coisa antes, né?<input/>O jeito que mexo é um pouco diferente.<input/><jmp scene="1"/>
+				</option>
+				<option text="Não... (tutorial pra iniciantes)">
+				 Nunca mexeu com inventário antes? Não se preocupe! Vou te ensinar direitinho!<input/><jmp scene="2"/>
+				</option>
+			</select>
+		</scene>
+		<scene id="1">
+			Seu inventário possui limite de volume e espaço dependendo da mochila que estiver usando.<input/>A mochila que está 
+			usando aparece no quadrado do cantinho, e você não consegue usar os items da mochila se ela não estiver naquele 
+			quadrado.<input/>Os itens da mochila ficam ocupando a maior parte do inventário, mas há também 4 espaços para 
+			vestimenta e 4 espaços para equipamento.<input/>Estes quadrados não ocupam espaço da mochila, óbvio.<input/>Para usar 
+			seus itens, pressione <add ckey="4"/>, e mova seus itens por aí com <add ckey="5"/>.<input/>Ao movê-los, você pode 
+			oferecer itens para outras pessoas, organizar o inventário e combinar itens ao juntá-los no mesmo espaço.<input/>
+			É assim que você recarrega sua arma combinando uma pistola e uma caixa de munição, por exemplo.<input/>E acho que é 
+			só isso... ah, sim! Se quiser saber mais detalhes de itens, você pode ver suas informações ao segurá-los, e examiná-los 
+			de perto ao apertar <add ckey="4"/> enquanto segura o item. Você só saberá de algumas informações se usá-las antes, 
+			como o poder de vitalidade de vários alimentos.<input/>Pra resumir, usar o inventário não é complicado, muito menos 
+			chato. Então não sinta medo de fuçar suas coisas.<input/>
+		</scene>
+		<scene id="2">
+			Como já deve saber, você deve acessar seu inventário (<add ckey="6"/>) para mexer em seus itens.<input/>
+			Aqui estão todas as suas... Uísque?<answer/>Voltei a beber.<answer/>Entendi...<input/>Enfim, é muito importante 
+			mexer no seu inventário. Mas você não pode guardar tudo o que você quiser!<input/>Cada item tem um volume e um peso, 
+			assim como a mochila que estiver usando.<input/>Por isso você precisa ver o que você precisa mesmo levar.<input/>
+			Claro que tem coisas que realmente não precisa levar. Como por exemplo essa garrafa vazia que tá ocupando espaço!
+			<input/>Sempre que terminar de usar suas coisas, você precisa jogar o lixo fora! Alguns itens não deixam lixo, 
+			mas a maioria deixa.<answer/>Beleza, eu não sou otário.<answer/>E vê se joga o lixo no lugar certo, tá?<answer/>
+			Tá, tá. E o que mais?<answer/>Os 4 quadradinhos em pé são as coisas que está vestindo.<input/>
+			Só vai estar vestindo as roupas se estiverem nesse espaço. A mesma coisa acontece com os 4 quadradinhos deitados.
+			<input/>É onde ficam seus equipamentos e armas para batalha.<input/>O quadradinho no canto é sua mochila. 
+			Você vai encontrar mochilas que carregam mais itens, e você pode trocar por aqui.<input/>Por último, você pode usar 
+			seus itens apertando <add ckey="4"/>.<input/>Você também pode mover seus itens apertando <add ckey="5"/>.<input/>
+			Desse jeito você pode equipar itens, juntar itens e até dar para outras pessoas.<input/>Também é desse jeito que você 
+			recarrega armas, coloca tempero nas comidas e confecciona objetos. Basta colocar um item em cima de outro item.<input/>
+			Nem sempre vai dar certo, mas só vai saber se tentar! O inventário é bem legal para se mexer. Por isso não tenha medo 
+			de ficar brincando com ele.<input/>
+		</scene>
+	</tutorial>
+	<tutorial key="TUTSIG">
+		Você apenas consegue utilizar certos aplicativos do celular se tiver sinal de rede. O sinal de rede é maior em 
+		áreas urbanas e menor em florestas.<sleep time="300"/>
+	</tutorial>
+
+	<!--DEVELOPERS COMMENTARY-->
+	<devcom key="I">
+		A criação do primeiro nível serviu tanto como tutorial quanto como aquele típico início que começa no final. <br/>
+		Isso acabou se mostrando muito útil, na verdade, pois ao introduzir o jogador em um ponto da história onde os <br/>
+		personagens se encontram em um nível mais atlo, era mais fácil justificar e introduzir certas dinâmicas de gameplay.
+	</devcom>
+	<devcom key="II">
+		A ordem dos personagens foi alterada algumas vezes, pois ela obedece á ordem na qual os capítulos do jogo aparecem. <br/>
+		Anteriormente, certos personagens apareciam antes de outros e vice-versa.
+	</devcom>
 </data>

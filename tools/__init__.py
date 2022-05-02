@@ -16,6 +16,7 @@ mixer = __import__('mixer')
 physics = __import__('physics')
 text = __import__('text')
 time = __import__('time')
+
 '''for i in ('data','draw','event','mixer','physics','text'):
 	eval("{} = __import__('./{}')".format(i,i))'''
 

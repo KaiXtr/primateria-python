@@ -32,7 +32,7 @@ class Test:
 		self.display = pygame.display.set_mode((800, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Pseudo3d(),Popup('Calendar',(100,100),miniature=True)]
+		self.menu = [Pseudo3d(),Popup('Calendar',(100,100),miniature=True),Popup('docs/LICENSE.FLAC.txt',(50,50))]
 		self.counters = []#[Counter(8),Counter(5)]
 		self.img = pygame.image.load('SS1.jpg').convert()
 
@@ -113,7 +113,6 @@ class Popup:
 		elif gui in ['Phone','PC','PDA']:
 			self.gui = gui
 			self.infobar = 28
-			sz = (180 * res.GSCALE,232 * res.GSCALE)
 			self.apps = ['Contacts','Email','Radio','Bestiary','Tasks','Status','Tactics','Settings','About']
 			if gui == 'PC':
 				self.imgs['BKG'] = pygame.image.load(res.BACKG_PATH + 'pcbkg_1.png').convert_alpha()
@@ -130,12 +129,16 @@ class Popup:
 			for i in range(2): self.imgs['desktop_' + str(i)] = pygame.image.load(res.SPRITES_PATH + 'desktop_' + str(i) + '.png').convert_alpha()
 		#MEDIA PLAYER
 		elif os.path.splitext(gui)[1][1:] in ('png','jpg','wav','ogg','mp3','gif'):
-			sz = (400,300)
 			self.gui = eval('MediaPlayer')(gui)
 			self.ratio = [self.gui.surface.get_width() + (self.bdsz * 2),self.gui.surface.get_height() + (self.bdsz * 2) + self.top]
 			if self.gui.ext in ['png','jpg']: gui = 'Image'
 			if self.gui.ext in ['wav','ogg','mp3']: gui = 'AudioPlayer'
 			if self.gui.ext == 'gif': gui = 'GifPlayer'
+		#TEXT READER
+		elif os.path.splitext(gui)[1][1:] in ('txt','md'):
+			self.gui = eval('TextReader')(gui)
+			self.ratio = [self.gui.surface.get_width() + (self.bdsz * 2),self.gui.surface.get_height() + (self.bdsz * 2) + self.top]
+			gui = 'TextReader'
 		#DISPLAY GUIS
 		else:
 			sz = (400,300)
@@ -214,7 +217,7 @@ class Popup:
 					if pygame.Rect.colliderect(mr2,self.btrects[i]):
 						res.HOVERTEXT = dtb.MENU[self.apps[i]]
 			#GUI OPTIONS
-			elif self.battery > 0: self.gui.outside_events(pressed)
+			elif self.battery > 0: res.HINTEXT = self.title.upper(); self.gui.outside_events(pressed)
 			#DRAG POPUP
 			if pressed[4][0] and pygame.Rect.colliderect(self.optrects[0],mr2): self.drag = True
 			else: self.drag = False
@@ -469,7 +472,7 @@ class Vkeyboard:
 
 class Backgrounds:
 	def __init__(self,size,type):
-		self.surface = pygame.Surface((800,600))
+		self.surface = pygame.Surface(size)
 		self.rect = pygame.Rect(0,0,600,600)
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.type = type
@@ -1437,7 +1440,7 @@ class Inventory:
 			if int(i[1]) > 0: i[1] = str(int(i[1]) - 1)
 			if int(i[1]) == 0:
 				res.MIXER[0].play(res.SOUND['HIT'])
-				res.CHARACTERS[u]['HP'] -= dtb.ITEMS[i[0]][5]['DAMAGE']
+				res.CHARACTERS[u]['VITALITY'] -= dtb.ITEMS[i[0]][5]['DAMAGE']
 		elif i[0] == 'cigar' and float(i[1]) > 0: i[1] = str(float(i[1]) - 0.2)
 			
 	def inside_events(self,pressed,mouse):
@@ -1505,12 +1508,12 @@ class Inventory:
 							res.MIXER[0].play(res.SOUND['HEAL'])
 							hl = dtb.ITEMS[drk][5]
 							if it in res.CHARACTERS[self.opt[2]]['FAVFOOD']: hl += int(hl/2)
-							ch['HP'] += hl
+							ch['VITALITY'] += hl
 							ch['THIRST'] += dtb.ITEMS[drk][6]
 							if it[0].startswith('drink') and res.DISITEMS[it[0]] == 0:
 								res.DISITEMS[it[0]] = 1
-							if ch['HP'] > dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]:
-								ch['HP'] = dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]
+							if ch['VITALITY'] > dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]:
+								ch['VITALITY'] = dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]
 						else:
 							res.MIXER[0].play(res.SOUND['INCONSCIOUS'])
 							ch['HEALTH'] = 10
@@ -1753,6 +1756,10 @@ class Inventory:
 		if self.itmov != '' and self.itmov[0] == '_': self.itmov = ''
 		
 	def outside_events(self,pressed):
+		#HINTEXT
+		if self.itmov == '': res.HINTEXT = 'INVENTORY_ITEMS'
+		elif self.itmov[0] == 0: res.HINTEXT = 'INVENTORY_ACCESORIES'
+		else: res.HINTEXT = 'INVENTORY_HOLD'
 		#SELECT ITEM
 		if self.itmov == '':
 			for l in range(len(self.optrects)):
@@ -2126,7 +2133,7 @@ class LevelMenu:
 				img = pygame.image.load(res.SPRITES_PATH + 'who_' + str(res.PARTY[res.FORMATION][i]) + '.png')
 				self.surface.blit(pygame.transform.scale(img,(img.get_width() * res.GSCALE,img.get_height() * res.GSCALE)), (pd - 10, 160 + (i * 50)))
 				pygame.draw.rect(self.surface, (50, 50, 50), pygame.Rect(pd + 30,160 + (i * 50),200,40))
-				if ch['XP'] > 0: pygame.draw.rect(self.surface, (0, 255, 100), pygame.Rect(pd + 30,160 + (i * 50),int(200/(dtb.NEXTLEVEL[ch['LEVEL']]/ch['XP'])),40))
+				if ch['EXPERIENCE'] > 0: pygame.draw.rect(self.surface, (0, 255, 100), pygame.Rect(pd + 30,160 + (i * 50),int(200/(dtb.NEXTLEVEL[ch['LEVEL']]/ch['EXPERIENCE'])),40))
 			
 			#LEVEL UP
 			bw = (self.surface.get_width() * 2) - pd
@@ -2243,7 +2250,6 @@ class GPS:
 		self.optrects = []
 		self.xy = [80,80]
 		self.zoom = 200
-		self.hpctrl = 'PHONE_MAP'
 		
 		if res.SIGNAL > 0:
 			if self.mp == None:
@@ -2335,7 +2341,7 @@ class GPS:
 			for i in self.en:
 				xx = (i['RECT'].x - 15) * self.mp.get_width()/(self.rm.width * self.rm.tilewidth)
 				yy = (i['RECT'].y - 15) * self.mp.get_height()/(self.rm.height * self.rm.tileheight)
-				if i['HP'] > 0 and i['RECT'].x > 0 and i['RECT'].y > 0:
+				if i['VITALITY'] > 0 and i['RECT'].x > 0 and i['RECT'].y > 0:
 					scr[0].blit(pygame.image.load(res.SPRITES_PATH + 'mp_anomaly.png'), (mpx + ((self.zoom/self.mp.get_width()) * xx),mpy + ((self.zoom/self.mp.get_height()) * yy)))
 		else: scr[1].blit(res.FONTS['CALIBRI'].render(dtb.MENU[15], True, (255, 255, 255)), (25, 200))
 
@@ -2345,6 +2351,32 @@ class GPS:
 
 		return scr
 
+class TextReader:
+	def __init__(self,txt):
+		self.surface = pygame.Surface((200 * res.GSCALE,200 * res.GSCALE), pygame.SRCALPHA)
+		file = []
+		with open(txt,'r') as f:
+			file += f.readlines()
+		txt = tools.text.wrap(file,res.FONTS['DEFAULT'],self.surface.get_width() - 40)
+		self.text = []
+		for i in range(len(txt)): self.text.append(res.FONTS['DEFAULT'].render(txt[i],True,(10,10,10)))
+		self.txtsz = res.FONTS['DEFAULT'].size(txt[0])[1] + 10
+		self.scroll = 0
+		
+	def inside_events(self,pressed,mouse): pass
+							
+	def outside_events(self,pressed):
+		if pressed[0][0] and self.scroll > 0: self.scroll -= 2
+		if pressed[1][0] and self.scroll < self.txtsz * len(self.text): self.scroll += 2
+
+	def draw(self):
+		self.surface.fill((200,200,200))
+		for i in range(len(self.text)):
+			self.surface.blit(self.text[i], (10, (10 + (i * self.txtsz)) - self.scroll))
+		pygame.draw.rect(self.surface,(10,10,10),pygame.Rect(self.surface.get_width() - 10,0,10,self.surface.get_height()))
+		pygame.draw.rect(self.surface,res.COLOR,pygame.Rect(self.surface.get_width() - 10,int((self.surface.get_height()/(self.txtsz * len(self.text))) * (self.scroll + 1)),10,10))
+		return self.surface
+
 class Contacts:
 	def __init__(self):
 		self.img = pygame.image.load(res.BACKG_PATH + 'phone.png')
@@ -2352,7 +2384,6 @@ class Contacts:
 		self.vkb = Vkeyboard((160 * res.GSCALE,200 * res.GSCALE),type='CALC',display=True)
 		self.scrpos = (39,46)
 		self.rqst = True
-		self.hpctrl = 'PHONE_CONTACTS'
 		self.ingame = 0
 		self.scroll = 0
 		self.optrects = []
@@ -2431,7 +2462,7 @@ class Contacts:
 						elif self.mnu == 1:
 							res.FORMATION = self.opt[1]
 							for i in res.PARTY[res.FORMATION]:
-								res.CHARACTERS[i]['HP'] = dtb.CLASSES[res.CHARACTERS[i]['CLASS']]['RESISTANCE'][res.CHARACTERS[i]['LEVEL']]
+								res.CHARACTERS[i]['VITALITY'] = dtb.CLASSES[res.CHARACTERS[i]['CLASS']]['RESISTANCE'][res.CHARACTERS[i]['LEVEL']]
 							res.MIXER[1].play(res.SOUND['PARTY_CHANGE'])
 							self.mnu = 0
 							self.opt = [0,0]
@@ -2728,7 +2759,6 @@ class Radio:
 		self.surface = pygame.Surface((160 * res.GSCALE,110 * res.GSCALE), pygame.SRCALPHA)
 		self.rdsrf = pygame.Surface((90 * res.GSCALE,25 * res.GSCALE))
 		self.ratio = [(160 * res.GSCALE,110 * res.GSCALE),(90 * res.GSCALE,25 * res.GSCALE)]
-		self.hpctrl = 'PHONE_RADIO'
 		self.onoff = False
 		self.load = ''
 		self.msc = 0
@@ -2853,7 +2883,6 @@ class Camera:
 		self.scroll = 0
 		self.optrects = []
 		self.opt = 0
-		self.hpctrl = 'PHONE_CAMERA'
 		res.recent_data(0)
 		self.optrects = []
 		for i in range(len(res.FILES[0]) + 1):
@@ -2907,7 +2936,6 @@ class Camera:
 		
 	def photo(self,bg,foes,xpos):
 		self.rqst = False
-		self.hpctrl = 'PHONE_PHOTO'
 		self.surface.fill((0,0,0))
 		self.surface.blit(bg, (-xpos, -88))
 		for i in foes:
@@ -2917,7 +2945,6 @@ class Camera:
 		
 	def draw(self):
 		self.rqst = False
-		self.hpctrl = 'PHONE_CAMERA'
 		sz = self.surface.get_width() #button width
 		self.surface.fill((0,0,0))
 		self.surface.blit(pygame.image.load(res.BACKG_PATH + 'phn_' + str(res.PARTY[res.FORMATION][0]) + '.png'), (0, 0))
@@ -3154,11 +3181,6 @@ class Status:
 		if self.opt > len(res.PARTY[res.FORMATION]) - 1: self.opt = 0
 					
 	def outside_events(self,pressed): pass
-	
-	def hud(self,sz):
-		srf = pygame.Surface(sz,pygame.SRCALPHA)
-
-		return srf
 
 	def miniature(self):
 		self.mnsrf.fill((10,10,10))
@@ -3171,9 +3193,11 @@ class Status:
 		self.mnsrf.blit(res.FONTS['TITLE'].render(nn.lower(), True, (255, 255, 255)), (20, 20))
 		
 		low = 0
-		lst = [(ch['HP'],dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']])]
-		if eq[0].startswith('gun'): lst.append((dtb.ITEMS[eq[0]][5]['CAPACITY'],eq[1]))
-		else: lst.append((ch['SANITY'],100))
+		lst = [(ch['VITALITY'],dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']])] #VITALITY BAR
+		if eq[0].startswith('gun'): lst.append((dtb.ITEMS[eq[0]][5]['CAPACITY'],eq[1])) #AMMO BAR
+		elif eq[0].startswith('magic'): lst.append((ch['ENERGY'],100)) #ENERGY BAR
+		else: lst.append((ch['SANITY'],100)) #SANITY BAR
+
 		for i in range(len(lst)):
 			pygame.draw.rect(self.mnsrf, (50, 50, 50), pygame.Rect(20,120 + (i * 60),sz - 40,40))
 			if self.bars[self.opt][i] > 0: pygame.draw.rect(self.mnsrf, (200,200,10), pygame.Rect(20,120 + (i * 60),int((sz - 40)/self.bars[self.opt][i]),40))
@@ -3184,12 +3208,11 @@ class Status:
 					res.MIXER[0].play(res.SOUND['HP_LOSS'])
 					self.bars[self.opt][i] -= 1
 				pygame.draw.rect(self.mnsrf, col, pygame.Rect(20,120 + (i * 60),int((sz - 40)/(lst[i][1]/lst[i][0])),40))
-		
 		if len(ch['HEALTH']) > 0: self.mnsrf.blit(pygame.image.load(res.SPRITES_PATH + 'hl_' + str(ch['HEALTH'][0]) + '.png'), (22, 122))
 				
 		#if self.equip[p] == 6: hpcol = (100, 100, 100)
-		if low == 1 and self.sfx.get_busy() == False: res.MIXER[0].play(res.SOUND['HP_LOW'])
-		if low == 2 and self.sfx.get_busy() == False: res.MIXER[0].play(res.SOUND['DYING'])
+		if low == 1 and res.MIXER[1].get_busy() == False: res.MIXER[1].play(res.SOUND['HP_LOW'])
+		if low == 2 and res.MIXER[1].get_busy() == False: res.MIXER[1].play(res.SOUND['DYING'])
 		
 		return self.mnsrf
 
@@ -3214,7 +3237,7 @@ class Status:
 			txsz = res.FONTS['CALIBRI'].size(lst[i])
 			self.surface.blit(res.FONTS['CALIBRI'].render(lst[i], True, (255, 255, 255)), ((sz * res.GSCALE) - 40 - txsz[0], 100 + (i * 30)))
 		#BARS
-		lst = [(ch['HP'],dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]),(ch['SANITY'],100),(ch['HUNGER'],1000),(ch['THIRST'],1000),(ch['SLEEP'],1000)]
+		lst = [(ch['VITALITY'],dtb.CLASSES[ch['CLASS']]['RESISTANCE'][ch['LEVEL']]),(ch['SANITY'],100),(ch['HUNGER'],1000),(ch['THIRST'],1000),(ch['SLEEP'],1000)]
 		for i in range(len(lst)):
 			#self.surface.blit(res.FONTS['CALIBRI'].render('hp:', True, (255, 255, 255)), (20, 260))
 			pygame.draw.rect(self.surface, (50, 50, 50), pygame.Rect(40,200 + (i * 30),200,20))

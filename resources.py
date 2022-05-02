@@ -15,6 +15,8 @@ SPLASH = None
 ICON = 'icon.ico'
 DEBUG = True
 GSCALE = 2 #game ratio ÷ window ratio
+INTERPOLATE = 'bilinear'
+FULLSCREEN = 0
 FPS = 60
 
 BACKG_PATH = 'backgrounds/'
@@ -105,9 +107,12 @@ CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,p
 	[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
 	[pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS,pygame.K_KP_MINUS]]
 JOYSTICK = [0,1,2,3,4,5,6,7,None,None,None,8,None,6,7,0,1,2,3,0,1,None,None]
+
+#SETTINGS
+SETTRIBUTES = ['MOUSE','VIBRATE','SFX','MSC','MUTE','DTYPE','SPEED','COLOR','CAMACC','BORDER','CENSORSHIP',
+	'HELP','HINT','CURSOR','TMNU','CC','DISLEXIC','BTYPE','AUTOSAVE','AUTOBATTLE','QUICKSTART']
 MOUSE = 1 #keyboard only/keyboard and mouse/touchpad/joystick
 VIBRATE = False #vibrate controlller
-
 SFX = 1.0
 MSC = 1.0
 MUTE = 1 #mute when game is minimized
@@ -139,7 +144,7 @@ CONTACTS = []
 INBOX = []
 TASKS = [['CH10',2]]
 TACTICAL = [['1.0','1.1'],['2.0'],[],[],[],[]]
-BESTIARY = [{'N': '4.1.1','ID': '1','DATE': (3,3,2007),'SEEN': 2},{'N': '2.1.1','ID': '2','DATE': (3,3,2007),'SEEN': 2}]
+BESTIARY = {'4.1.1': {'ID': '1','DATE': (3,3,2007),'SEEN': 2},'2.1.1': {'ID': '2','DATE': (3,3,2007),'SEEN': 2}}
 INVENTORY = []
 for u in range(6):
 	INVENTORY.append([])
@@ -162,6 +167,10 @@ for i in range(25): BASKET.append(['_','0000'])
 CHAT = ['@kaixtr: batatinha','@kanbz: quando nasce','@kaixtr: se esparrama','@kanbz: pelo chão.',
 '@kaixtr: meninha','@kanbz: quando dorme','@kaixtr: põe a mão','@kanbz: no coração.']
 RANK = []
+
+CHATTRIBUTES = [['VITALITY','HEALTH','EXPERIENCE','LEVEL','SANITY','HUNGER','THIRST','SLEEP','BONUS'],
+	['ENERGY','SCORE','BLESS','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
+	'ACROBATICS','FURTIVITY','PERCEPTION','MEDICINE','IMUNITY','INFANTRY','INVESTIGATION','CRAFTING','CULINARY','DEATHS']]
 
 CHARACTERS = [
 {'NAME': 'Sidney','LASTNAME': 'Barreto','NICK': 'Sid','PRONOUN': 'he','BIRTH': (3,3,1985),'HOMETOWN': 'ITATIAIA/RJ','BLOOD': 'A+','CLASS': 'mercenary','SUBCLASS': 'gunslinger',
@@ -217,14 +226,11 @@ for i in range(len(CHARACTERS)):
 	CHARACTERS[i]['SLEEP'] = 1000
 	CHARACTERS[i]['SANITY'] = 100
 	CHARACTERS[i]['RACE'] = 'human'
-	CHARACTERS[i]['HP'] = 100
-	CHARACTERS[i]['XP'] = 50
+	CHARACTERS[i]['VITALITY'] = 100
+	CHARACTERS[i]['EXPERIENCE'] = 50
 	CHARACTERS[i]['LEVEL'] = 1
 	CHARACTERS[i]['HEALTH'] = []
-	for j in ['ENERGY','SCORE','BLESS','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
-	'ACROBATICS','FURTIVITY','PERCEPTION','MEDICINE','IMUNITY','INFANTRY','INVESTIGATION','CRAFTING','CULINARY','DEATHS']:
-		CHARACTERS[i][j] = 0
-
+	for j in CHATTRIBUTES[1]: CHARACTERS[i][j] = 0
 CHARACTERS[0]['SCORE'] = 1240
 
 RELATIONS = []
@@ -330,7 +336,7 @@ def new_data(add=False):
 		 
 		for i in range(6):
 			'''CHARACTERS[i]['NAME'] = ''
-			CHARACTERS[i]['LASTNAME'] = '''
+			CHARACTERS[i]['LASTNAME'] = '''''
 			CHARACTERS[i]['LEVEL'] = 0
 			CHARACTERS[i]['XP'] = 90
 			CHARACTERS[i]['BONUS'] = [3,3,3,3,3]
@@ -375,15 +381,15 @@ def new_data(add=False):
 		RANK = []
 	
 	#CREATE TABLES
+	txt = ''
+	for i in CHATTRIBUTES[0] + CHATTRIBUTES[1]: txt += i.lower() + " integer,"
+
 	com.execute("CREATE TABLE IF NOT EXISTS settings (id integer,lang text,sfx integer,msc integer,ctrl integer,mouse integer,cursor integer,speed integer,color1 integer,color2 integer,color3 integer,border integer,\
 			font text,censor integer,hint integer,help integer,btype integer,dislexic integer)")
 	com.execute("CREATE TABLE IF NOT EXISTS controls (id integer,player integer,key integer,value integer)")
 	com.execute("CREATE TABLE IF NOT EXISTS paths (id integer,backg text,sprites text,chars text,temp text,items text,freaks text,sfx text,music text,maps text,tiles text,fonts text)")
 	com.execute("CREATE TABLE IF NOT EXISTS data (id integer,gt integer,fr integer,map text,x integer,y integer,time text,date text,weather integer,chapter integer,shortcut text)")
-	com.execute("CREATE TABLE IF NOT EXISTS characters (id integer,n integer,name text,lastname text,level integer,hp integer,xp integer,health integer,morality integer,hc integer,ht integer,fh integer,\
-	hunger integer,thirst integer,sleep integer,b1 integer,b2 integer,b3 integer,b4 integer,b5 integer,inspiration integer,intimidation integer,persuasion integer,animals integer,spirits integer,\
-	stamina integer,atletism integer,acrobatics integer,furtivity integer,perception integer,medicine integer,imunity integer,\
-	infantry integer,investigation integer,crafting integer,culinary integer,deaths integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS characters (id integer,n integer,name text,lastname text,{})".format(txt))
 	com.execute("CREATE TABLE IF NOT EXISTS chapters (id integer,n integer,progress integer)")
 	com.execute("CREATE TABLE IF NOT EXISTS dlgsav (id integer,who text,vl integer)")
 	com.execute("CREATE TABLE IF NOT EXISTS disitems (id integer,it text,vl integer)")

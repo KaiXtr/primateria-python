@@ -95,6 +95,25 @@
 		<input/>Enfim...Eu quero trazer uma revolução no mundo do entretenimento...<input/>
 	</dialog>
 
+	<tutorial key="TUTGB">
+		Mas como vocês ganham dinheiro?<answer/>Isso é interessante.<input/>Nós caçadores de anomalias ganhamos dinheiro com 
+		contratos. Recebemos uma ligação e uma pessoa paga a gente para fazer um serviço.<input/>Seja um monstro que está 
+		atrapalhando um fazendeiro ou uma aberração que matou vários civis.<answer/>Meu Deus...<spk/>...mas o mais daora' é quando 
+		vamos numa casa assombrada ou algo do tipo! É bem legal!<answer/>Entendi...<answer/>Mas na maioria das vezes...<input/>
+		Ganhamos dinheiro expurgando mesmo.<answer/>Expurgando?<answer/>Exterminando anomalias.<input/>Essas que ficam zanzando 
+		por aí, sabe?<answer/>São muitas?<answer/>Deve pensar que não são tantas mas é porque elas preferem a natureza.<input/>
+		Houve um tempo que elas atormentavam as cidades, todas elas.<input/>Mas graças á PRF a gente conseguiu controlar as 
+		anomalias.<answer/>Mas por que a Polícia Rodoviária?<answer/>É uma longa história.<input/>Voltando ao assunto, a gente 
+		ganha uma graninha com isso daqui.<answer time="50"/>O que é isso?<answer/>Nós chamamos de "Sangue Verde"... mas não 
+		sabemos o que é de verdade.<input/>Apenas que todas as anomalias tem essa coisa dentro deles.<input/>A gente vende o sangue 
+		verde em frasquinhos. Sempre que expurgamos alguma anomalia, pegamos um pouco do sangue verde nela.<input/>Não conseguimos 
+		pegar muito porque a maioria seca rapidinho. Além disso a gente derrama muito enfrentando elas.<sleep time="100"/><answer/>
+		Vocês ganham dinheiro vendendo sangue?!<answer/>Daora né?<answer/>Quem diabos iria comprar sangue de monstros?<input/>
+		Na moral?<input/>Sei também não.<input/>Mas eu ganho grana, então isso é o que importa.<input/>A gente leva os frascos 
+		para um banco de sangue e eles nos pagam.<answer/>Que nojo.<input/>Já estou me arrependendo.<answer/>Deixa de graça! Você 
+		vai amar!<input/>
+	</tutorial>
+
 	<news date="01/01">
 		<h1>Polícia Municipal abre a renovação da carteira</h1><br/>
 		<h2>Tereza Rocha</h2><br/>
@@ -279,7 +298,7 @@
 			Michael Koch
 		<a href='https://fund.krita.org/'>Apoie o desenvolvimento do Krita</a>
 		LMMS STAFF:
-		<a href='https://www.paypal.com/donate/?item_name=Donation+to+LMMS&cmd=_donations&business=donations%40lmms.io'>Apoie o desenvolvimento do LMMS</a>
+		<a href='https://lmms.io/get-involved'>Apoie o desenvolvimento do LMMS</a>
 
 		<a href='Twitter.com/kaixtr'><img src='../sprites/social_0.png'/>Twitter: @kaixtr</a>
 		<a href='Twitter.com/kaixtr'><img src='../sprites/social_1.png'/>Github: @kaixtr</a>

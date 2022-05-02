@@ -1,4 +1,6 @@
 import sys
+sys.path.insert(0,"C:/Users/kaixtr/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0/LocalCache/local-packages/Python310/site-packages")
+
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError

@@ -59,7 +59,7 @@ def get_pressed(event):
 	#print(['PLAYER ' + str(p + 1) + ': ' + str([int(pressed[i][p]) for i in range(len(res.ACTION))]) for p in range(4)])
 	return pressed, click
 
-def wait(self):
+def wait():
 	waiting = True
 	'''pressed = self.get_pressed(None)
 	for i in pressed:
