@@ -14,9 +14,9 @@ import PIL.ImageOps
 import tools
 import minigames
 import resources as res
-sys.path.insert(0,'databases')
-if res.FILES != []: dtb = __import__('database_' + res.FILES[0][4])
-else: dtb = __import__('database_' + res.MAINLANG)
+
+if res.FILES != []: exec(f'import databases.database_{res.FILES[0][4]} as dtb')
+else: exec(f'import databases.database_{res.MAINLANG} as dtb')
 
 class Test:
 	def __init__(self):
@@ -32,7 +32,7 @@ class Test:
 		self.display = pygame.display.set_mode((800, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Pseudo3d(),Popup('Calendar',(100,100),miniature=True),Popup('docs/LICENSE.FLAC.txt',(50,50))]
+		self.menu = [Pseudo3d(),Popup('Calendar',(100,100),miniature=True),Popup('docs/LICENSE.FLAC.txt',(50,50)),Popup('Inventory',(10,10))]
 		self.counters = []#[Counter(8),Counter(5)]
 		self.img = pygame.image.load('SS1.jpg').convert()
 
@@ -155,11 +155,13 @@ class Popup:
 		self.brd = pygame.Surface(tuple(self.ratio),pygame.SRCALPHA)
 		if border:
 			self.brd.fill(res.COLOR)
+			#BORDER SHADE
 			for r in range(3):
 				col = [res.COLOR[0] - int(120/(r + 1)),res.COLOR[1] - int(120/(r + 1)),res.COLOR[2] - int(120/(r + 1))]
 				for i in range(len(col)):
 					if col[i] < 0: col[i] = 0
 				pygame.draw.rect(self.brd,tuple(col),pygame.Rect(r,r,self.ratio[0] - (r * 2),self.ratio[1] - (r * 2)),1)
+			#BORDER TEXTURE
 			for x in range(int(self.ratio[0]/10)):
 				for y in range(int(self.ratio[1]/10)):
 					self.brd.blit(pygame.image.load(res.SPRITES_PATH + 'border_' + str(res.BORDER) + '.png'), (x * 10,y * 10))
@@ -488,27 +490,29 @@ class Backgrounds:
 		self.blink = 0.0
 		self.x = 0
 		self.palette = [[(196,206,228),(250,0,0)],[(18,46,85),(0,250,0)]]
-		if self.type == 'stars':
-			self.lst = [[np.random.randint(0,self.surface.get_width()),np.random.randint(0,self.surface.get_height()),np.random.uniform(0.1,1)] for i in range(50)]
-		elif self.type in ['mirrors','kaleidoscope']:
-			for t in range(14):
-				self.lst.append([])
-				for r in range(2):
-					if r: img = tools.image.reverse(res.BACKG_PATH + 'chp_' + str(t) + '.png')
-					else: img = pygame.image.load(res.BACKG_PATH + 'chp_' + str(t) + '.png')
-					sz = img.get_width()
-					srf = pygame.Surface((sz * 2,sz * 2))
-					srf.blit(img, (0,0))
-					srf.blit(pygame.transform.flip(img,True,False), (sz,0))
-					srf.blit(pygame.transform.flip(img,False,True), (0,sz))
-					srf.blit(pygame.transform.flip(img,True,True), (sz,sz))
-					self.lst[t].append(srf)
-		elif self.type == 'channels':
-			for i in range(48): self.lst.append(pygame.transform.scale(tools.image.rgb_channel(res.BACKG_PATH + 'chp_1.png',i),(120,120)))
-		elif self.type == 'tunnel':
-			img = tools.image.glitch(res.BACKG_PATH + 'chp_5.png').convert()
-			rpt = 16
-			for i in range(rpt): self.lst.append(pygame.transform.scale(img,(int(img.get_width()/rpt) * i,int(img.get_height()/rpt) * i)))
+
+		if size != (0,0):
+			if self.type == 'stars':
+				self.lst = [[np.random.randint(0,self.surface.get_width()),np.random.randint(0,self.surface.get_height()),np.random.uniform(0.1,1)] for i in range(50)]
+			elif self.type in ['mirrors','kaleidoscope']:
+				for t in range(14):
+					self.lst.append([])
+					for r in range(2):
+						if r: img = tools.image.reverse(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+						else: img = pygame.image.load(res.BACKG_PATH + 'chp_' + str(t) + '.png')
+						sz = img.get_width()
+						srf = pygame.Surface((sz * 2,sz * 2))
+						srf.blit(img, (0,0))
+						srf.blit(pygame.transform.flip(img,True,False), (sz,0))
+						srf.blit(pygame.transform.flip(img,False,True), (0,sz))
+						srf.blit(pygame.transform.flip(img,True,True), (sz,sz))
+						self.lst[t].append(srf)
+			elif self.type == 'channels':
+				for i in range(48): self.lst.append(pygame.transform.scale(tools.image.rgb_channel(res.BACKG_PATH + 'chp_1.png',i),(120,120)))
+			elif self.type == 'tunnel':
+				img = tools.image.glitch(res.BACKG_PATH + 'chp_5.png').convert()
+				rpt = 16
+				for i in range(rpt): self.lst.append(pygame.transform.scale(img,(int(img.get_width()/rpt) * i,int(img.get_height()/rpt) * i)))
 		
 	def random(self,i=None):
 		from mutagen.mp3 import MP3
@@ -1060,7 +1064,7 @@ class Pseudo3d:
 			return srf
 
 	def draw(self):
-		self.surface.fill((0,0,0))
+		self.surface.fill((0,0,0,0))
 		sz = 30
 		cc = 200
 		lst = self.rotate([i.copy() for i in self.vrtx],self.axis[0],'x')
@@ -1269,7 +1273,7 @@ class Files:
 class Inventory:
 	def __init__(self,srf=None,typ=0):
 		res.FONTS = {**res.FONTS,'DESCRIPTION': pygame.font.Font(res.FONTS_PATH + 'BohemianTypewriter.ttf', 9 * res.GSCALE)}
-		self.allowlimit = False
+		self.allowlimit = True
 		self.allowtrash = False
 		self.allowbag = False
 		srf = (400,300)
@@ -1288,7 +1292,9 @@ class Inventory:
 		self.spn = 0
 		self.itmov = ''
 		self.type = typ
-		self.opt = [0,0,0,0]
+		self.opt = [1,4,0,0]
+		self.slctmd = False
+		self.slctlst = []
 		self.scroll = [0,0]
 		self.shake = 0
 		self.arrow = 0
@@ -1298,7 +1304,7 @@ class Inventory:
 		self.battle = False
 		self.click = pygame.Rect(0,0,0,0)
 		xx = 0
-		yy = 0
+		yy = 80
 		w = 30 * res.GSCALE
 		h = 30 * res.GSCALE
 		b = 2
@@ -1307,7 +1313,7 @@ class Inventory:
 		self.optrects = []
 		for l in range(len(lst[self.type])):
 			x = 10
-			y = 45
+			y = 0
 			self.optrects.append([])
 			for u in range(3):
 				if self.type < 2: xx = (200 * u * res.GSCALE)
@@ -1325,7 +1331,7 @@ class Inventory:
 					x = 10
 					y += h + b
 				x = 10
-				y = 45
+				y = 0
 		img = pygame.image.load(res.ITEMS_PATH + 'shade.png').convert_alpha()
 		self.imgs = {'shade': pygame.transform.scale(img,(img.get_width() * res.GSCALE,img.get_height() * res.GSCALE))}
 		for i in res.PARTY[res.FORMATION]:
@@ -1481,7 +1487,9 @@ class Inventory:
 		elif self.opt[0] > 4 and self.type > 1: it = lst[self.type - 2][self.opt[0] + (self.opt[1] * 5) - 5]
 		else: it = res.INVENTORY[res.PARTY[res.FORMATION][self.opt[2]]][self.opt[1]][self.opt[0]]
 
-		if pressed[4][0] and self.opt[0] < 4:
+		#MULTIPLE SELECTION
+		if pressed[4][0] and self.opt[0] < 4 and self.slctmd: self.slctlst.append(self.opt[0:3])
+		if pressed[4][0] and self.opt[0] < 4 and self.slctmd == False:
 			#USING ITEMS
 			if self.itmov == '' or self.itmov[0] == 0:
 				prb = np.random.randint(0,100)
@@ -1669,8 +1677,14 @@ class Inventory:
 					self.opt[2] = 1
 					self.type = 0
 			else: res.MIXER[0].play(res.SOUND['ERROR'])
+
+		#REMOVE SELECTION
+		if pressed[5][0] and self.slctmd:
+			self.slctlst = []
+			self.slctmd = False
+
 		#MOVE ITEMS
-		if pressed[5][0]:
+		elif pressed[5][0] and self.slctmd == False:
 			#TRASH
 			if self.type == 1 and it[0] != '_': it = ['_','0000']; res.MIXER[0].play(res.SOUND['FILE_DELETE'])
 			elif self.itmov != '':
@@ -1774,9 +1788,10 @@ class Inventory:
 								self.opt[2] = u
 								if res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0] != '_':
 									res.HOVERTEXT = dtb.ITEMS[res.INVENTORY[self.opt[2]][self.opt[1]][self.opt[0]][0]][0]
-		#INVENTORY WHEEL 
+		#INVENTORY WHEEL
 		if pressed[4][0]:
 			if self.hld < 80: self.hld += 1
+			if self.hld > 40: self.slctmd = True
 		elif self.hld > 0: self.hld -= 1
 		
 	def itimg(self,it):
@@ -1837,19 +1852,29 @@ class Inventory:
 			return srf
 		else: return pygame.Surface((0,0))
 		
-	def bar(self,where,row,column,orientation):
+	def bar(self,where,row,column,orientation,background=(0,0,0),padding=0,spacing=10):
 		lst = []
 		if isinstance(row,tuple):
 			for x in res.INVENTORY[where][row[0]:row[1]]: lst.append(x[column])
 		if isinstance(column,tuple): lst = res.INVENTORY[where][row][column[0]:column[1]]
-		if orientation == 'horizontal': srf = pygame.Surface((20 + (len(lst) * 40),50))
-		if orientation == 'vertical': srf = pygame.Surface((50,20 + (len(lst) * 40)))
-		srf.fill((0,0,0))
+
+		img = self.itimg(lst[0][0])
+		if orientation == 'horizontal': srf = pygame.Surface(((padding * 2) + (len(lst) * (img.get_width() + spacing)) - spacing,(padding * 2) + img.get_height()),pygame.SRCALPHA)
+		if orientation == 'vertical': srf = pygame.Surface(((padding * 2) + img.get_width(),(padding * 2) + (len(lst) * (img.get_height() + spacing)) - spacing),pygame.SRCALPHA)
+		srf.fill(background)
 		x = 0
 		for i in lst:
 			if i[0] != '_':
-				if orientation == 'horizontal': srf.blit(self.itimg(i[0]),(10 + (x * 40),10))
-				if orientation == 'vertical': srf.blit(self.itimg(i[0]),(10,10 + (x * 40)))
+				img = self.itimg(i[0])
+				if orientation == 'horizontal':
+					srf.blit(img,(padding + (x * (img.get_width() + spacing)),padding))
+					if self.opt[0:3] == [x + column[0],row,where]:
+						pygame.draw.rect(srf,res.COLOR,pygame.Rect(padding + (x * (img.get_width() + spacing)),srf.get_height() - 2,img.get_width(),2))
+				if orientation == 'vertical':
+					srf.blit(img,(padding,padding + (x * (img.get_height() + spacing))))
+					if self.opt[0:3] == [column,x + row[0],where]:
+						pygame.draw.rect(srf,res.COLOR,pygame.Rect(2,padding + (x * (img.get_height() + spacing)),2,img.get_height()))
+				
 			x += 1
 		return srf
 		
@@ -1874,6 +1899,7 @@ class Inventory:
 
 		#if self.type in [1,5]: rct.x = self.optrects[mnc][j][i].x - self.scroll[0]
 		#else: rct.y = self.optrects[mnc][j][i].y - self.scroll[0]
+
 		#DRAW ITEMS
 		ptinv = [res.INVENTORY[x] for x in range(len(res.INVENTORY)) if x in res.PARTY[res.FORMATION]]
 		lst = [[ptinv],[ptinv],[ptinv,res.STORAGE],[ptinv,res.PRODUCTS],[ptinv,res.BASKET],[res.BASKET,res.PRODUCTS]]
@@ -1903,8 +1929,12 @@ class Inventory:
 						else: cl = (200,200,200)
 						if ll == 1: rct = self.optrects[ll][0][n][j][0]
 						else: rct = self.optrects[ll][n][j][i][0]
+						
 						if trigg == True:
-							pygame.draw.rect(self.surface,cl,rct)
+							if self.slctmd:
+								if [i,j,mnc] in self.slctlst: pygame.draw.rect(self.surface,cl,rct)
+								else: pygame.draw.rect(self.surface,cl,rct,3)
+							else: pygame.draw.rect(self.surface,cl,rct)
 							#ITEM DURATION
 							for dr in [['tube',(10,200,10),5],['bottle',(100,100,200),5],['vest',(153,153,153),6],['cigar',(153,153,153),500],
 								['gun',(255,183,183),'CAPACITY'],['phone',(255,226,173),3600]]:
@@ -1917,28 +1947,31 @@ class Inventory:
 										drct.height = int(rct.height/(dv/float(it[1])))
 										drct.y += rct.height - drct.height
 										pygame.draw.rect(self.surface,dr[1],drct)
-							#DRAW SPRITES
+							#DRAW IMAGES
 							if it[0] != '_':
-								self.surface.blit(self.itimg(it[0]),(rct.x,rct.y))
+								img = self.itimg(it[0])
+								self.surface.blit(img,(rct.x + int(rct.width/2) - int(img.get_width()/2),rct.y + int(rct.height/2) - int(img.get_height()/2)))
 								if i > 0 and j < 4:
 									vlm += dtb.ITEMS[it[0]][3]
 									wei += dtb.ITEMS[it[0]][4]
 				#VOLUME AND WEIGHT
 				lst = [['volume',vlm],['weight',wei]]
 				sz = res.FONTS['DEFAULT'].size(res.CHARACTERS[n]['NAME'])[0]
-				if self.type in [0,1]:
-					pos = [((55 + (210 * mnc) - self.scroll[0]) * res.GSCALE, 15 * res.GSCALE),((55 + (210 * mnc) - self.scroll[0]) * res.GSCALE, 30 * res.GSCALE),(((40 + (210 * mnc) - self.scroll[0]) * res.GSCALE) - sz, 15 * res.GSCALE)]
-				else:
-					pos = [(55 * res.GSCALE, (15 + (210 * mnc) - self.scroll[0]) * res.GSCALE),(55 * res.GSCALE, (30 + (210 * mnc) - self.scroll[0]) * res.GSCALE),((40 * res.GSCALE) - sz, (15 + (210 * mnc) - self.scroll[0]) * res.GSCALE)]
+				if self.type in [0,1]: #POSITIONS FOR HORIZONTAL SCROLLING
+					pos = [((120 + (400 * mnc) - self.scroll[0]), 15),((120 + (400 * mnc) - self.scroll[0]), 40),(20 + (400 * mnc) - self.scroll[0], 15)]
+				else: #POSITIONS FOR VERTICAL SCROLLING
+					pos = [(55 * res.GSCALE, (15 + (210 * mnc) - self.scroll[0]) * res.GSCALE),(55 * res.GSCALE, (30 + (210 * mnc) - self.scroll[0]) * res.GSCALE),(40 - sz, (15 + (210 * mnc) - self.scroll[0]))]
 				if self.allowlimit:
 					for i in range(2):
-						self.surface.blit(res.FONTS['DEFAULT'].render(dtb.MENU[lst[i][0]], True, (255, 255, 255)), pos[i])
-						pygame.draw.rect(self.surface, (100, 100, 100), pygame.Rect(pos[i][0],pos[i][1],80,10))
+						self.surface.blit(res.FONTS['DESCRIPTION'].render(dtb.MENU[lst[i][0]], True, (255, 255, 255)), pos[i])
+						pygame.draw.rect(self.surface, (100, 100, 100), pygame.Rect(pos[i][0] + 100,pos[i][1],80,20))
 						if vlm > 0 and res.INVENTORY[n][4][0][0] != '_':
-							pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(pos[i][0],pos[i][1],int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/lst[i][1])),10))
+							pygame.draw.rect(self.surface, (255, 255, 255), pygame.Rect(pos[i][0] + 100,pos[i][1],int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/lst[i][1])),20))
 							if self.itmov != '' and self.itmov[0] != 0:
-								pygame.draw.rect(self.surface, (200, 10, 10), pygame.Rect(pos[i][0] + int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/lst[i][1])),pos[i][1],int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/dtb.ITEMS[self.itmov[0]][3])),10))
-				self.surface.blit(res.FONTS['DEFAULT'].render(res.CHARACTERS[n]['NAME'], True, (255, 255, 255)),pos[2])
+								pygame.draw.rect(self.surface, (200, 10, 10), pygame.Rect(pos[i][0] + 100 + int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/lst[i][1])),pos[i][1],int(80/(dtb.ITEMS[res.INVENTORY[n][4][0][0]][3]/dtb.ITEMS[self.itmov[0]][3])),20))
+				
+				#CHARACTERS INFO
+				self.surface.blit(res.FONTS['DESCRIPTION'].render(res.CHARACTERS[n]['NAME'], True, (255, 255, 255)),(pos[2][0],pos[2][1] + 40))
 				self.surface.blit(self.imgs[n],(pos[2]))
 				mnc += 1
 			ll += 1
@@ -2354,16 +2387,20 @@ class GPS:
 class TextReader:
 	def __init__(self,txt):
 		self.surface = pygame.Surface((200 * res.GSCALE,200 * res.GSCALE), pygame.SRCALPHA)
+		res.FONTS = {**res.FONTS,**{'TEXTREAD': pygame.font.Font(res.FONTS_PATH + 'BohemianTypewriter.ttf', 6 * res.GSCALE)}}
 		file = []
 		with open(txt,'r') as f:
 			file += f.readlines()
-		txt = tools.text.wrap(file,res.FONTS['DEFAULT'],self.surface.get_width() - 40)
+		txt = tools.text.wrap(file,res.FONTS['TEXTREAD'],self.surface.get_width() - 40)
 		self.text = []
-		for i in range(len(txt)): self.text.append(res.FONTS['DEFAULT'].render(txt[i],True,(10,10,10)))
-		self.txtsz = res.FONTS['DEFAULT'].size(txt[0])[1] + 10
+		for i in range(len(txt)): self.text.append(res.FONTS['TEXTREAD'].render(txt[i],True,(10,10,10)))
+		self.txtsz = res.FONTS['TEXTREAD'].size(txt[0])[1] + 10
 		self.scroll = 0
 		
-	def inside_events(self,pressed,mouse): pass
+	def inside_events(self,pressed,mouse):
+		dv = int((self.txtsz * len(self.text))/100)
+		if pressed[0][0] and self.scroll > 0: self.scroll -= dv * (pressed[0][0] + 1)
+		if pressed[1][0] and self.scroll < self.txtsz * len(self.text): self.scroll += dv * (pressed[1][0] + 1)
 							
 	def outside_events(self,pressed):
 		if pressed[0][0] and self.scroll > 0: self.scroll -= 2

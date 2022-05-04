@@ -10,15 +10,24 @@ def get_pressed(event):
 	click = pygame.Rect(pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1],2,2)
 	#KEYBOARD
 	if res.MOUSE < 2:
-		do = True
-		if event and event.type != pygame.KEYDOWN: do = False
-		if do: pressed = [[pygame.key.get_pressed()[res.CONTROLS[p][i]] for p in range(4)] for i in range(len(res.ACTION))]
+		if event:
+			if event.type == pygame.KEYDOWN:
+				pressed = [[event.key == res.CONTROLS[p][i] for p in range(4)] for i in range(len(res.ACTION))]
+		else: pressed = [[pygame.key.get_pressed()[res.CONTROLS[p][i]] for p in range(4)] for i in range(len(res.ACTION))]
 	#MOUSE
 	if res.MOUSE:
-		gt = pygame.mouse.get_pressed()
-		if gt[0]: pressed[4][0] = gt[0]
-		if gt[2]: pressed[5][0] = gt[2]
-		if gt[1]: pressed[8][0] = gt[1]
+		do = False
+		if event:
+			if event.type == pygame.MOUSEBUTTONDOWN: do = True
+		else: do = True
+		if do:
+			gt = pygame.mouse.get_pressed()
+			if gt[0]: pressed[4][0] = gt[0]
+			if gt[2]: pressed[5][0] = gt[2]
+			if gt[1]: pressed[8][0] = gt[1]
+		if event and event.type == pygame.MOUSEWHEEL:
+			if event.y > 0: pressed[0][0] = abs(event.y)
+			if event.y < 0: pressed[1][0] = abs(event.y)
 	#JOYSTICK
 	pygame.joystick.init()
 	connect = pygame.joystick.get_count()

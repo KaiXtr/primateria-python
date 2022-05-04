@@ -1,10 +1,46 @@
 import pygame
 import numpy as np
 
-def bar(vl,sz,col1,col2,type=0):
+def bar(vl,sz,col1,col2,type='regular',stacksize=10,stackspacing=2):
 	srf = pygame.Surface(sz,pygame.SRCALPHA)
 	srf.fill(col1)
-	if vl[0] > 0: pygame.draw.rect(srf,col2,pygame.Rect(0,0,int(sz[0]/(vl[1]/vl[0])),sz[0]))
+	if vl[0] > 0:
+		if isinstance(type,int):
+			type = ('regular','levels','stack')[type]
+
+		if type in ('regular','levels'):
+			if sz[0] > sz[1]: rct = pygame.Rect(0,0,int(sz[0]/(vl[1]/vl[0])),sz[1]) #HORIZONTAL BAR
+			else: rct = pygame.Rect(0,sz[1] - int(sz[1]/(vl[1]/vl[0])),sz[0],int(sz[1]/(vl[1]/vl[0]))) #VERTICAL BAR
+			pygame.draw.rect(srf,col2,rct)
+			szadd = 0
+			shdrng = 6
+			for r in range(shdrng):
+				col = [col2[0] - int((40 * shdrng)/(r + 1)),col2[1] - int((40 * shdrng)/(r + 1)),col2[2] - int((40 * shdrng)/(r + 1))]
+				for i in range(len(col)):
+					if col[i] < 0: col[i] = 0
+				brsz = int(((rct.height/5)/shdrng) * (r + 1))
+				if sz[0] > sz[1]:pygame.draw.rect(srf,tuple(col),pygame.Rect(0,szadd,rct.width,brsz))
+				pygame.draw.rect(srf,tuple(col),pygame.Rect(0,sz[1] - brsz - szadd,rct.width,brsz))
+				szadd += brsz
+
+		if type == 'stack':
+			for i in range(stacksize):
+				if float(vl[0]/(vl[1]/stacksize)) >= i + 1:
+					if sz[0] > sz[1]:
+						stsz = int(sz[1]/(stacksize - 1))
+						rct = pygame.Rect(stackspacing + (i * (stsz + stackspacing)),stackspacing,stsz,sz[1] - (stackspacing * 2)) #HORIZONTAL BAR
+					else:
+						stsz = int(sz[0]/(stacksize - 1))
+						rct = pygame.Rect(stackspacing,sz[1] - ((i + 1) * (stsz + stackspacing)),sz[0] - (stackspacing * 2),stsz) #VERTICAL BAR
+					pygame.draw.rect(srf,col2,rct)
+
+	if type == 'levels':
+		lvls = 3
+		for i in range(lvls):
+			if sz[0] > sz[1]: rct = pygame.Rect(int((sz[0]/lvls)/2) + (int(sz[0]/lvls) * i),0,2,sz[1]) #HORIZONTAL BAR
+			else: rct = pygame.Rect(0,int((sz[1]/lvls)/2) + (int(sz[1]/lvls) * i),sz[0],2) #VERTICAL BAR
+			pygame.draw.rect(srf,(200,200,200),rct)
+
 	return srf
 
 def transiction(size, limit, speed=5, type='fade', col=(0,0,0)):

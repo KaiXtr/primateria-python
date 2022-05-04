@@ -195,10 +195,10 @@ FWEAKNESSES = {'gold':'ouro','silver':'prata','copper':'cobre','tin':'estanho','
 FREAKS = {
 '4.1.1': {'NAME': 'Gatacado','INFO': 'É um felino sobrenatural que flutua como um fantasma. Pequeno e ágil, porém bem frágil.',
 'OA': 4,'HEIGHT': '0,80','HABITAT': 'jungle','STRENGHT': 2,'AGILITY': 5,'RESISTANCE': 1,'VITALITY': 8,
-'PATH': ((0,500),(500,0),(0,-500)),'DODGE': 'walk','AVATAR': {'head','eye','body'},'EYES': (9,-15),
+'PATH': ((0,300),(500,0),(0,-300)),'DODGE': 'walk','AVATAR': {'head','eye','body'},'EYES': (9,-15),
 'HABILITIES': [['Morder','O felino morde o oponente.',-5,1,40,1],['Arranhar','O felino usa suas garras para atacar o oponente.',-3,10,40,10],
 ['Ronronar','O felino ronrona, mostrando seu desprezo pela situação.',0,9,10,1],['Miar','O felino mia para o além, chamando outros felinos.',('4.1.0'),7,10,1]],
-'FOOD': 'ingredient_mice','WEAKNESS': 'LEAD','BLOOD': 10,'ITEM': None,'SONG': 'HEY_SAM','SCREAM': 1},
+'FOOD': 'ingredient_mice','WEAKNESS': 'LEAD','BLOOD': 10,'ITEM': 'reactor1','SONG': 'HEY_SAM','SCREAM': 1},
    
 'lizardshrimp': {'NAME': 'Camaraleão','INFO': 'É um réptil que se fundiu com um camarão, não se sabe se é um alimento apetitoso.',
 'HEIGHT': '0,23','HABITAT': 'jungle','TYPE': 'reptile',

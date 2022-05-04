@@ -13,17 +13,13 @@ import platform
 import numpy as np
 import psutil
 
-import PIL.Image
-import PIL.ImageOps
-
 import tools
 import resources as res
 import minigames as mng
 import GUI
 
-sys.path.insert(0,'databases')
-if res.FILES != []: dtb = __import__('database_' + res.FILES[0][4])
-else: dtb = __import__('database_' + res.MAINLANG)
+if res.FILES != []: exec(f'import databases.database_{res.FILES[0][4]} as dtb')
+else: exec(f'import databases.database_{res.MAINLANG} as dtb')
 
 class Initialize:
 	def __init__(self):
@@ -116,13 +112,13 @@ class Initialize:
 			res.ITEMS_PATH = pth + 'sprites/items/it_'
 			res.SFX_PATH = pth + 'sfx/'
 			
-			sys.path.insert(0,os.path.realpath(pth))
-			if res.FILES != []: pdtb = __import__('addons_' + res.FILES[0][4])
-			else: pdtb = __import__(pth + 'addons_' + res.MAINLANG)
+			if res.FILES != []: pdtb = 'plugins.' + p + '.' + 'addons_' + res.MAINLANG 
+			else: pdtb = 'plugins.' + p + '.' + 'addons_PT'
+			exec(f'import {pdtb}')
 
-			dtb.FREAKS = {**dtb.FREAKS,**pdtb.FREAKS}
-			dtb.ITEMS = {**dtb.ITEMS,**pdtb.ITEMS}
-			dtb.MENU = {**dtb.MENU,**pdtb.MENU}
+			dtb.FREAKS = {**dtb.FREAKS,**eval(pdtb).FREAKS}
+			dtb.ITEMS = {**dtb.ITEMS,**eval(pdtb).ITEMS}
+			dtb.MENU = {**dtb.MENU,**eval(pdtb).MENU}
 
 			th = [
 				threading.Thread(target=res.sfx,args=()),
@@ -546,15 +542,19 @@ class Avatar:
 		return srf
 
 	def spaceship(self):
-		if res.PAUSE < 2: self.gif += 0.4
+		if res.PAUSE < 2: self.gif += 0.2
 		if int(self.gif) > 1: self.gif = 0
+
+		if self.direction == 3: gg = 0
+		elif self.direction == 7: gg = 2
+		else: gg = 1
 
 		stk = ''
 		for i in self.ship['STICKERS']: stk += str(i[0]) + '.x' + str(i[1]) + '.y' + str(i[2])
 		sprstr = ''
 		for i in ['BASE','WING','COCKPIT','SPOILER','PROPULSOR']:
 			sprstr += str(self.ship[i][0]) + 'r' + str(self.ship[i][1][0]) + 'g' + str(self.ship[i][1][1]) + 'b' + str(self.ship[i][1][2]) + '.'
-		sprstr += str(self.ship['TEXTURE']) + '.' + stk + str(int(self.gif))
+		sprstr += str(self.ship['TEXTURE']) + '.' + stk + str(gg + int(self.gif))
 		if sprstr in self.donesprites: srf = self.donesprites[sprstr]
 		else:
 			srf = pygame.Surface((64,96),pygame.SRCALPHA)
@@ -563,7 +563,7 @@ class Avatar:
 			for i in self.ship['STICKERS']: coords['STICKERS_' + str(self.ship['STICKERS'][i][0])] = self.ship['STICKERS'][i][1:3]
 			
 			#JET
-			img = pygame.image.load('{}spaceship_jet_{}_{}.png'.format(res.TEMP_PATH,str(0),str(int(self.gif)))).convert_alpha()
+			img = pygame.image.load('{}spaceship_jet_{}_{}.png'.format(res.TEMP_PATH,str(0),str(gg + int(self.gif)))).convert_alpha()
 			cc = (int(srf.get_width()/2) + coords['PROPULSOR'][0] - int(img.get_width()/2),
 				int(srf.get_height()/2) + coords['PROPULSOR'][1])
 			srf.blit(img,cc)
@@ -709,6 +709,7 @@ class Character:
 		if index in [str(i) for i in range(10)] + [i for i in range(10)]:
 			self.playing = True
 			self.index = int(index)
+			self.doll.direction = 0
 			self.sprite = self.doll.spaceship()
 			self.mask = self.doll.mask
 			self.hp = res.CHARACTERS[res.PARTY[res.FORMATION][self.index]]['VITALITY']
@@ -723,6 +724,7 @@ class Character:
 		else:
 			self.index = index
 			self.talk = file
+			self.doll.direction = 0
 			self.sprite = self.doll.spaceship()
 			self.mask = self.doll.mask
 			self.hp = 1
@@ -866,29 +868,43 @@ class Character:
 					#SHOOTING
 					if res.ACTION[a] == 'shoot':
 						sht = None
-						for f in ['bubble','doublebubble','triplebubble','bounce','plasma','phantom','follow']:
-							if sht == None: sht = self.inv.find(res.PARTY[res.FORMATION][self.index],'pow_' + f,'value')
+						for f in ['pow_bubble','pow_doublebubble','pow_triplebubble','pow_bounce','pow_plasma','pow_phantom','pow_follow',
+							'reactor1','reactor2','reactor2','reactor3','reactor4','reactor5','reactor6','reactor7']:
+							if sht == None: sht = self.inv.find(res.PARTY[res.FORMATION][self.index],f,'value')
 						if sht != None:
 							if sht[1] > 0:
 								nn = res.INVENTORY[sht[0][0]][sht[0][1]][sht[0][2]][sht[0][3]]
-								qq = 1; ww = 0; ff = None; pp = 0
+								qq = 1
 								if nn == 'pow_doublebubble': qq = 2
 								if nn == 'pow_triplebubble': qq = 3
-								if nn == 'pow_plasma': pp = 1
-								if nn == 'pow_bounce': ww = 1
-								if nn == 'pow_phantom': ww = 2
-								if nn == 'pow_follow': ff = None
-								for q in range(qq):
-									rt = 6
-									#rt = self.direction - 1
+								if nn.startswith('reactor'):
+									if sht[1] < 4: qq = sht[1]
 
-									self.particles.append(['particle',{'TYPE': 'gunshot',
-									'RECT': pygame.Rect(self.rect.x + self.mask.x + int(self.mask.width/2) - 3,self.rect.y + self.mask.y + int(self.mask.height/2) - 3,6,6),
-									'COLOR': (100,150,200),'RADIUS': 3,'DIRECTION': (rt) * ((np.pi * 2)/8), 'SPEED': 8,'WALL' : ww,'FOLLOW': ff,
-									'POWER': pp,'DAMAGE': 3,'EMISSOR': self.file,'DEPTH': self.rect.y,'DESTROY': False},self.rect.y])
+								for q in range(qq):
+									pdict = {'TYPE': 'gunshot','RECT': pygame.Rect(self.rect.x + self.mask.x + int(self.mask.width/2) - 3,self.rect.y + self.mask.y + int(self.mask.height/2) - 3,6,6),
+										'DAMAGE': 1,'COLOR': (100,150,200),'RADIUS': 3,'DIRECTION': 0, 'SPEED': dtb.ITEMS[nn][5]['SPEED'],'DAMAGE': 3,'EMISSOR': self.file,'DEPTH': self.rect.y,'DESTROY': False}
+									
+									pdict['DIRECTION'] = 6 * ((np.pi * 2)/8)
+									#pdict['DIRECTION'] = (self.direction - 1) * ((np.pi * 2)/8)
+
+									if nn == 'pow_plasma': pdict['TYPE'] = 'megunshot'
+									if nn == 'pow_bounce': pdict['WALL'] = 1
+									if nn == 'pow_phantom': pdict['WALL'] = 2
+									if nn == 'pow_follow': pdict['FOLLOW'] = None
+
+									if nn.startswith('reactor'):
+										if sht[1] == 2: pdict['RECT'].x += (q * dtb.ITEMS[nn][5]['SPACING']) - int(dtb.ITEMS[nn][5]['SPACING']/2)
+										if sht[1] == 3: pdict['DIRECTION'] = (np.pi * (4/dtb.ITEMS[nn][5]['ANGLE'])) + ((np.pi * 2)/dtb.ITEMS[nn][5]['ANGLE']) * q
+										if sht[1] == 4:
+											pdict['GIF'] = 0.0
+											pdict['IMAGE'] = []
+											for a in (0,1,2,1): pdict['IMAGE'].append(pygame.image.load(res.SPRITES_PATH + 'missile_' + str(a) + '.png').convert_alpha())
+									self.particles.append(['particle',pdict,0])
+								
 								res.MIXER[0].play(res.SOUND['SHOOT_1'])
-								sht[1] -= 1
+								if nn.startswith('pow_'): sht[1] -= 1
 								if sht[1] == 0: nn = 'pow_bubble'
+
 								res.INVENTORY[sht[0][0]][sht[0][1]][sht[0][2]][sht[0][3]] = nn
 								res.INVENTORY[sht[0][0]][sht[0][1]][sht[0][2]][sht[0][3] + 1] = str(sht[1])
 							else: res.MIXER[0].play(res.SOUND['ERROR'])
@@ -997,6 +1013,12 @@ class Character:
 						self.posture = res.ACTION[a]
 					#HOLDFIRE
 					if pressed[a][self.index] and res.ACTION[a] == 'shoot':
+						if self.holdfire > 20:
+							self.particles.append(['particle',{'TYPE': 'blood',
+								'RECT': pygame.Rect(self.rect.x + self.mask.x + int(self.mask.width/2) - 10 + np.random.randint(-5,5),
+									self.rect.y + self.mask.y + int(self.mask.height/2) - 10 + np.random.randint(-5,5),0,0),
+								'COLOR': (200,200,200),'RADIUS': np.random.randint(2,2 + int(self.holdfire/10)),'FADE': np.random.uniform(0.1,0.2),
+								'DIRECTION': (np.random.uniform(0,8)) * ((np.pi * 2)/8), 'SPEED': np.random.randint(1,1 + int(self.holdfire/20)),'EMISSOR': self.file,'DEPTH': self.rect.y,'DESTROY': False},self.rect.y])
 						if self.holdfire < 100: self.holdfire += 1
 						hld = True
 				#HOLDFIRE RELEASE
@@ -1004,10 +1026,10 @@ class Character:
 					if self.holdfire >= 100:
 						rt = 6
 						#rt = self.direction - 1
-						self.particles.append(['particle',{'TYPE': 'gunshot',
+						self.particles.append(['particle',{'TYPE': 'megunshot',
 						'RECT': pygame.Rect(self.rect.x + self.mask.x + int(self.mask.width/2) - 10,self.rect.y + self.mask.y + int(self.mask.height/2) - 10,20,20),
 						'COLOR': (200,10,10),'RADIUS': 10,'DIRECTION': (rt) * ((np.pi * 2)/8), 'SPEED': 8,'WALL' : 0,'FOLLOW': 0,
-						'POWER': 1,'DAMAGE': 3,'EMISSOR': self.file,'DEPTH': self.rect.y,'DESTROY': False},self.rect.y])
+						'POWER': 1,'DAMAGE': 30,'EMISSOR': self.file,'DEPTH': self.rect.y,'DESTROY': False},self.rect.y])
 						res.MIXER[0].play(res.SOUND['SHOOT_2'])
 					self.holdfire = 0
 
@@ -1121,23 +1143,119 @@ class Character:
 						self.animation = spr + lst[c]
 		if self.speed < 0: self.speed = 0
 	
+	def colide(self,i):
+		do = False
+		msk = pygame.Rect(self.rect.x + self.mask.x,self.rect.y + self.mask.y,self.mask.width,self.mask.height)
+		if i[0] == 'char' and i[1].talk == None and pygame.Rect.colliderect(msk, pygame.Rect \
+			(i[1].rect.x + i[1].mask.x,i[1].rect.y + i[1].mask.y,i[1].mask.width,i[1].mask.height)): do = True
+		if i[0] == 'particle' and i[1]['TYPE'] in ['gunshot','megunshot'] and i[1]['EMISSOR'] != self.file and pygame.Rect.colliderect(msk, i[1]['RECT']): do = True
+
+		if i[0] == 'char' and do:
+			if isinstance(self.file,int):
+				if isinstance(i[1].file,int): do = False
+				elif i[1].talk: do = False
+				if len([1 for c in res.CHARACTERS if 2 in c['HEALTH']]): do = False
+			else: do = False
+		if self.talk: do = False
+
+		if do and self.fighting == False:
+			#BATTLE ENTER
+			if res.BTYPE < 3 and i[0] == 'char':
+				if i[1].fighting != 'mercenary': self.foe.append(i[1])
+				else: self.mrc.append(i[1])
+				i[1].fighting = True
+
+				if (len(self.foe) + len(self.mrc)) == 1:
+					if res.BESTIARY[i[1].file]['SEEN'] == 0 and int(i[1].type[0:2]) < 1: self.turn = -6
+					#if self.turn != -6: self.turn = -self.facing(i,self.player[0])
+					self.turn = -1
+					self.fight()
+			#DAMAGE
+			elif self.invfrm == 0:
+				#REGULAR DAMAGE
+				if self.hp > 0:
+					if i[0] == 'particle':
+						dmg = i[1]['DAMAGE']
+						if i[1]['TYPE'] == 'gunshot': i[1]['DESTROY'] = True
+					else: dmg = i[1].strenght
+					self.hp -= dmg
+					self.particles.append(['particle',{'TYPE': 'text','TEXT': str(dmg),'RECT': pygame.Rect(self.rect.x + np.random.randint(-5,5),self.rect.y,self.rect.width,self.rect.height),
+							'GRAVITY': -5,'GRAVACC': 0.5,'GRAVLIMIT': 0,'SHADE': 1, 'SHAKE': 0, 'COLOR': (200,200,200),
+							'ALPHA': 250,'ALPHADE': 10,'TIME': 10,'LIMIT': 3,'EMISSOR': self.file,'DEPTH': self.rect.y,'DESTROY': False},self.rect.y])
+						
+					if isinstance(self.file,int):
+						res.MIXER[1].play(res.SOUND['DAMAGE_1'])
+						res.CHARACTERS[res.PARTY[res.FORMATION][self.file]]['VITALITY'] = self.hp
+						self.invfrm = 120
+					elif self.file in dtb.FREAKS.keys(): res.MIXER[1].play(res.SOUND['SCREAM1'])
+					#self.guis['STATUS'].show = True
+				#DEATH
+				if self.hp <= 0:
+					#GAME OVER
+					if isinstance(self.file,int): res.MIXER[1].play(res.SOUND['BATTLE_LOST'])
+					#ENEMY PURGE
+					elif self.file in dtb.FREAKS.keys():
+						sc = 10
+						if i[0] == 'particle':
+							if i[1]['TYPE'] == 'gunshot':
+								i[1]['DESTROY'] = True
+								sc = 25
+							else: sc = 30
+						res.MIXER[2].play(res.SOUND['EXPLOSION_1'])
+						res.CHARACTERS[res.PARTY[res.FORMATION][i[1]['EMISSOR']]]['SCORE'] += sc
+						self.particles.append(['particle',{'TYPE': 'explode', 'RECT': self.rect.copy(),'GIF': 0.0,'TIME': 0,'LIMIT': 3,'EMISSOR': self.file,'DEPTH': self.rect.y,'DESTROY': False},self.rect.y])
+						self.particles.append(['particle',{'TYPE': 'text','TEXT': str(sc),'RECT': self.rect.copy(),'GRAVITY': -5,'GRAVACC': 0.2,'GRAVLIMIT': 5,'SHADE': 1, 'SHAKE': 0, 'COLOR': (200,200,200),
+							'ALPHA': 250,'ALPHADE': 10,'TIME': 30,'LIMIT': 3,'EMISSOR': self.file,'DEPTH': self.rect.y,'DESTROY': False},self.rect.y])
+						for p in range(50):
+							self.particles.append(['particle',{'TYPE': 'blood',
+								'RECT': pygame.Rect(self.rect.x + self.mask.x + int(self.mask.width/2) - 10 + np.random.randint(-5,5),
+									self.rect.y + self.mask.y + int(self.mask.height/2) - 10 + np.random.randint(-5,5),0,0),
+								'COLOR': (200,200,200),'RADIUS': np.random.randint(2,6),'FADE': 0.05,
+								'DIRECTION': (np.random.uniform(0,8)) * ((np.pi * 2)/8), 'SPEED': np.random.randint(1,6),'EMISSOR': self.file,'DEPTH': self.rect.y,'DESTROY': False},self.rect.y])
+						if self.item:
+							img = self.inv.itimg(self.item)
+							self.particles.append(['item',{'IMAGE': img,'ITEM': self.item,'RECT': self.rect.copy(),'FLOAT': 0,'ACC': 2,'ACCLIMIT': 5,'ACCSPD': 0.1,'DESTROY': False},100])
+						self.destroy = True
+		#GET ITEM
+		elif i[0] == 'item' and isinstance(self.file,int) and pygame.Rect.colliderect(self.rect,i[1]['RECT']):
+			if i[1]['ITEM'].startswith('bomb'):
+				res.INVENTORY[res.PARTY[res.FORMATION][self.file]][4][1][0] = i[1]['ITEM']
+				res.INVENTORY[res.PARTY[res.FORMATION][self.file]][4][1][1] = '3'
+			elif i[1]['ITEM'].startswith('pow_bubble'):
+				res.INVENTORY[res.PARTY[res.FORMATION][self.file]][4][2][0] = i[1]['ITEM']
+				res.INVENTORY[res.PARTY[res.FORMATION][self.file]][4][2][1] = '3'
+			elif i[1]['ITEM'].startswith('reactor'):
+				for s in range(2):
+					if res.INVENTORY[res.PARTY[res.FORMATION][self.file]][4][1 + s][0] in ['_','reactor0']:
+						res.INVENTORY[res.PARTY[res.FORMATION][self.file]][4][1 + s][0] = i[1]['ITEM']
+						res.INVENTORY[res.PARTY[res.FORMATION][self.file]][4][1 + s][1] = '0'
+			else: self.guis['INVENTORY'].gui.add(res.PARTY[res.FORMATION][0],i[1]['ITEM'])
+			res.MIXER[0].play(res.SOUND['ITEM_GET'])
+
+			img = []
+			for a in range(8): img.append(pygame.image.load(res.SPRITES_PATH + 'pop_' + str(a) + '.png').convert_alpha())
+			self.particles.append(['particle',{'TYPE': 'pop','IMAGE': img,'GIF': 0.0,'RECT': i[1]['RECT'].copy(),'DESTROY': False},0])
+			i[1]['DESTROY'] = True
+
 	def overworld_draw(self,target,camera=pygame.Rect(0,0,0,0)):
 		#VISIBLITY
 		visible = True
 		if isinstance(self.file,int):
-			if 23 in res.CHARACTERS[res.PARTY[res.FORMATION][self.file]]['HEALTH']: visible = False
 			visible = not bool(self.invfrm%2)
+			if 23 in res.CHARACTERS[res.PARTY[res.FORMATION][self.file]]['HEALTH']: visible = False
 
 		if visible:
 			#RECTDEBUG
-			rectdebug = True
+			rectdebug = False
 			if rectdebug:
 				srf = pygame.Surface((self.mask.width,self.mask.height)); srf.fill((200,0,0))
 				target.blit(srf,(self.rect.x + self.mask.x,self.rect.y + self.mask.y))
 				pygame.draw.rect(target,(200,0,0),self.rect,3)
 
 			#DRAW
-			if self.doll: img = self.doll.spaceship().copy()
+			if self.doll:
+				self.doll.direction = self.direction
+				img = self.doll.spaceship().copy()
 			if self.index in dtb.FREAKS.keys():
 				img = pygame.image.load(res.FREAKS_PATH + (self.index) + '_mini.png')
 
@@ -1153,10 +1271,6 @@ class Character:
 			shd.fill((10,10,10),None,pygame.BLEND_RGBA_MULT)
 			shd.set_alpha(100)
 			target.blit(shd, (sxx, self.rect.y))
-
-			#HOLDFIRE
-			if self.holdfire > 20:
-				pygame.draw.circle(img,(200,200,200),(int(img.get_width()/2),int(img.get_height()/2)),int((self.holdfire - 20)/2))
 
 			#ARROW
 			if pygame.Rect.colliderect(self.click,pygame.Rect(self.mask.x + self.rect.x,self.mask.y + self.rect.y,self.mask.width,self.mask.height)):
@@ -1529,7 +1643,9 @@ class MapHandler(xml.sax.ContentHandler):
 		self.rqst = None
 
 		if file:
-			if file.endswith('png'): self.pixelmap(PIL.Image.open(res.MAPS_PATH + file))
+			if file.endswith('png'):
+				import PIL.Image
+				self.pixelmap(PIL.Image.open(res.MAPS_PATH + file))
 			else:
 				parser = xml.sax.make_parser()
 				parser.setFeature(xml.sax.handler.feature_namespaces, 0)
@@ -3279,7 +3395,7 @@ class Game:
 		self.trsction = None
 		self.counters = [GUI.Counter(7)]
 		self.vkb = GUI.Vkeyboard(pygame.Rect(0,0,400,400))
-		self.guis = {'FILES': GUI.Files(pygame.Rect(0,100,300,400)),'BKG': None,
+		self.guis = {'FILES': GUI.Files(pygame.Rect(0,100,300,400)),'BKG': GUI.Backgrounds((0,0),'stars'),
 			'VECTOR': GUI.VectorialDraw(),'3D': GUI.Pseudo3d(),'LEVEL': GUI.LevelMenu((0,0)),
 			'INVENTORY': GUI.Popup('Inventory',(400,300),0),'STATUS': GUI.Popup('Status',(300,300)),
 			'TACTICS': GUI.Popup('Tactics',(300,300)),'RADIO': GUI.Popup('Radio',(300,300)),'POPUPS': []
@@ -3380,7 +3496,7 @@ class Game:
 		halign = size[0] - 310 #right
 		self.vkb.rect.width = size[0]
 		self.guis['FILES'].rect.x = halign
-		self.guis['BKG'] = GUI.Backgrounds(size,'mirrors')
+		self.guis['BKG'].__init__(size,self.guis['BKG'].type)
 		self.guis['LEVEL'].surface = pygame.Surface(size)
 
 		#GRADIENTS
@@ -3956,7 +4072,8 @@ class Game:
 						self.mnu = 1
 					if self.opt < 0: self.opt = len(res.TACTICAL) - 1
 					if self.opt > len(res.TACTICAL) - 1: self.opt = 0
-			#OPEN N' CLOSE MENUS
+			
+			#OPEN N' CLOSE MENUS AND UPGRADE
 			for i in range(len(res.ACTION)):
 				if self.pressed[i][0]:
 					if res.ACTION[i] == 'pause' and self.guis['FILES'].mnu == 1:
@@ -3979,7 +4096,14 @@ class Game:
 							if self.guis['INVENTORY'].gui.type == 2: self.dlg = Dialog('DEPOSIT')
 							if self.battle: self.mnu = 1
 					if res.ACTION[i] == 'shortcut': pass
-
+					if res.ACTION[i] == 'upgrade':
+						if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['ENERGY'] > 0:
+							res.CHARACTERS[res.PARTY[res.FORMATION][0]]['ENERGY'] -= 33
+							res.INVENTORY[res.PARTY[res.FORMATION][0]][4][1][1] = int(res.INVENTORY[res.PARTY[res.FORMATION][0]][4][1][1]) + 1
+							res.MIXER[1].play(res.SOUND['EQUIP'])
+						if res.CHARACTERS[res.PARTY[res.FORMATION][0]]['ENERGY'] < 0:
+							res.CHARACTERS[res.PARTY[res.FORMATION][0]]['ENERGY'] = 0
+			
 			#DEVICE OPTIONS
 			mnuchk = None
 			if mnuchk and self.pressed[mnuchk[3]][0] and self.dev != None and self.guis['INVENTORY'].gui.find(res.PARTY[res.FORMATION][0],'phone') != None and self.guis['INVENTORY'].gui.type == 0:
@@ -4231,7 +4355,7 @@ class Game:
 				self.transtype = 'bars'
 				self.dlg['CAMERA'] = 0
 
-			self.guis['BKG'] = GUI.Backgrounds((self.window.width,self.window.height),'mirrors')
+			self.guis['BKG'].__init__((self.window.width,self.window.height),'mirrors')
 			
 			#PLAY SONG
 			'''if len(self.foe) > 0: sng = res.MUSIC_PATH + self.foe[0].song.lower() + '.mp3'
@@ -4785,19 +4909,19 @@ class Game:
 		return ddg
 		
 	def particle(self, p):
-		rectdebug = True
+		rectdebug = False
 		if rectdebug: rctdbg = pygame.Surface((p['RECT'].width,p['RECT'].height)); rctdbg.fill((200,0,0))
 		#POP
-		if p['TYPE'] == 'pop':
+		if p['TYPE'] == '':
 			img = pygame.image.load(res.SPRITES_PATH + 'pop_' + str(int(p['GIF'])) + '.png').convert_alpha()
 			self.surfaces[1].blit(img,(p['RECT'].x - self.cam.x,p['RECT'].y - self.cam.y))
-			if p['GIF'] < 8: p['GIF'] += 1
+			if p['GIF'] < 8: p['GIF'] += 0.5
 			if p['GIF'] >= 8: p['DESTROY'] = True
 		
 		#TEXT
 		elif p['TYPE'] == 'text':
 			srf = pygame.Surface((100,50),pygame.SRCALPHA)
-			srf.fill((0,0,0))
+			srf.fill((0,0,0,0))
 			srf.set_alpha(p['ALPHA'])
 			if p['TIME'] > 0:
 				if p['SHAKE'] != 0:
@@ -4878,19 +5002,31 @@ class Game:
 			if p['GIF'] > 8: p['DESTROY'] = True
 		
 		#GREENBLOOD & GUNSHOT
-		elif p['TYPE'] in ['blood','gunshot']:
+		elif p['TYPE'] in ['pop','blood','gunshot','megunshot']:
 			p['RECT'].x += int(np.cos(p['DIRECTION']) * p['SPEED'])
 			p['RECT'].y += int(np.sin(p['DIRECTION']) * p['SPEED'])
 			if p['TYPE'] == 'blood':
-				p['RADIUS'] -= 0.25
+				p['RADIUS'] -= p['FADE']
 				if p['RADIUS'] < 0.0: p['RADIUS'] = 0.0
-				rct = p['RECT']
+				rct = pygame.Rect(p['RECT'].x,p['RECT'].y,p['RADIUS'] * 2,p['RADIUS'] * 2)
 			else: rct = pygame.Rect(p['RECT'].x - self.cam.x,p['RECT'].y - self.cam.y,p['RECT'].width,p['RECT'].height)
-			if rectdebug: self.surfaces[1].blit(rctdbg,(p['RECT'].x - self.cam.x,p['RECT'].y - self.cam.y))
-			pygame.draw.ellipse(self.surfaces[1], p['COLOR'], rct)
-			if p['TYPE'] == 'blood' and p['RADIUS'] <= 0.0: p['DESTROY'] = True
+
+			if 'IMAGE' in p.keys():
+				if p['GIF'] < len(p['IMAGE']) - 1: p['GIF'] += 0.5
+				if p['GIF'] >= len(p['IMAGE']) - 1:
+					if p['IMAGE'][np.floor(p['GIF']).astype(int)] == None: p['DESTROY'] = True
+					p['GIF'] = 0.0
+				if p['IMAGE'][np.floor(p['GIF']).astype(int)]:
+					self.surfaces[1].blit(p['IMAGE'][np.floor(p['GIF']).astype(int)], (rct.x,rct.y))
+			else: pygame.draw.ellipse(self.surfaces[1], p['COLOR'], rct)
+			
+			if p['RADIUS'] <= 0.0: p['DESTROY'] = True
 			if p['TYPE'] == 'gunshot':
 				if pygame.Rect.colliderect(p['RECT'],self.cam) == False: p['DESTROY'] = True
+
+			if p['TYPE'] == 'megunshot':
+				self.objects.append(['particle',{'TYPE': 'blood','RECT': p['RECT'].copy(),'COLOR': (200,200,200),'RADIUS': 6,'FADE': 0.5,
+					'DIRECTION': 0, 'SPEED': 0,'EMISSOR': p,'DEPTH': 0,'DESTROY': False},0])
 		
 		#SPIN
 		elif p['TYPE'] == 'spin':
@@ -4994,63 +5130,17 @@ class Game:
 				#CHARACTER
 				if y[0] == 'char' and self.colide(obj.rect,cm):
 					obj.overworld_draw(self.surfaces[1],self.cam)
-					#AI MOVE
 					if obj.file in dtb.FREAKS.keys(): obj.overworld_move()
+
+					#HOLDFIRE BAR
+					if obj.holdfire > 15: self.surfaces[1].blit(tools.draw.bar((obj.holdfire,100),(20,40),(10,10,10),(200,10,10),'stack',5),(obj.rect.x,obj.rect.y))
+
 					#if self.map.hscroll != 0 and i['RECT'].x < self.cam.x - self.map.tilewidth: res.CHARACTERS[res.PARTY[res.FORMATION][obj.index]]['VITALITY'] = 0
 					#if self.map.vscroll != 0 and i['RECT'].y < self.cam.y - self.map.tileheight: res.CHARACTERS[res.PARTY[res.FORMATION][obj.index]]['VITALITY'] = 0
 
 					#CHARACTER COLISION
-					for i in [o for o in self.objects if o[0] in ['char','particle']]:
-						do = False
-						msk = pygame.Rect(obj.rect.x + obj.mask.x,obj.rect.y + obj.mask.y,obj.mask.width,obj.mask.height)
-						if i[0] == 'char' and i[1] != obj and i[1].talk == None and pygame.Rect.colliderect(msk, pygame.Rect \
-							(i[1].rect.x + i[1].mask.x,i[1].rect.y + i[1].mask.y,i[1].mask.width,i[1].mask.height)): do = True
-						if i[0] == 'particle' and i[1]['EMISSOR'] != obj.file and pygame.Rect.colliderect(msk, i[1]['RECT']): do = True
+					for i in [o for o in self.objects if o[0] in ['char','particle','item'] and o[1] != obj]: obj.colide(i)
 
-						if i[0] == 'char' and do:
-							if isinstance(obj.file,int):
-								if isinstance(i[1].file,int): do = False
-								elif i[1].talk: do = False
-								if len([1 for c in res.CHARACTERS if 2 in c['HEALTH']]): do = False
-							else: do = False
-
-						if do and obj.fighting == False:
-							#BATTLE ENTER
-							if res.BTYPE < 3 and i[0] == 'char':
-								if i[1].fighting != 'mercenary': self.foe.append(i[1])
-								else: self.mrc.append(i[1])
-								i[1].fighting = True
-
-								if (len(self.foe) + len(self.mrc)) == 1:
-									if res.BESTIARY[i[1].file]['SEEN'] == 0 and int(i[1].type[0:2]) < 1: self.turn = -6
-									#if self.turn != -6: self.turn = -self.facing(i,self.player[0])
-									self.turn = -1
-									self.fight()
-							#DAMAGE
-							elif obj.invfrm == 0:
-								#REGULAR DAMAGE
-								if obj.hp > 0:
-									if i[0] == 'particle': obj.hp -= i[1]['DAMAGE']
-									else: obj.hp -= i[1].strenght
-									if isinstance(obj.file,int):
-										res.MIXER[1].play(res.SOUND['DAMAGE_1'])
-										res.CHARACTERS[res.PARTY[res.FORMATION][obj.file]]['VITALITY'] = obj.hp
-										obj.invfrm = 120
-									elif obj.file in dtb.FREAKS.keys(): res.MIXER[1].play(res.SOUND['SCREAM1'])
-									self.guis['STATUS'].show = True
-								#DEATH
-								else:
-									#GAME OVER
-									if isinstance(obj.file,int): res.MIXER[1].play(res.SOUND['BATTLE_LOST'])
-									#ENEMY PURGE
-									elif obj.file in dtb.FREAKS.keys():
-										res.MIXER[2].play(res.SOUND['EXPLOSION_1'])
-										sc = 25
-										res.CHARACTERS[res.PARTY[res.FORMATION][i[1]['EMISSOR']]]['SCORE'] += sc
-										rqstlst.append(['particle',{'TYPE': 'explode', 'RECT': obj.rect.copy(),'GIF': 0.0,'TIME': 0,'LIMIT': 3,'EMISSOR': obj.file,'DEPTH': obj.rect.y,'DESTROY': False},obj.rect.y])
-										rqstlst.append(['particle',{'TYPE': 'text','TEXT': str(sc),'RECT': obj.rect.copy(),'GRAVITY': -5,'GRAVACC': 0.2,'GRAVLIMIT': 5,'SHADE': 1, 'SHAKE': 0, 'COLOR': (200,200,200),
-											'ALPHA': 250,'ALPHADE': 10,'TIME': 30,'LIMIT': 3,'EMISSOR': obj.file,'DEPTH': obj.rect.y,'DESTROY': False},obj.rect.y])
-										obj.destroy = True
 					#TILE COLISION
 					for tl in range(0):
 						if i['STEP'] > 0: i['STEP'] -= 1
@@ -5124,23 +5214,21 @@ class Game:
 										self.soundplay('STEP_MOTOR',0)
 										if i['SPEED'] > 0: i['STEP'] = np.floor(12/i['SPEED'])
 					y[2] = obj.rect.y
-				#ENEMIES, NPCS AND VEHICLES ARE ALSO CHARACTERS CLASSES
-				'''#ENEMIES
-				if y[0] == 'enemy':
-					for i in self.enemies:
-						if i.id == y[1] and self.colide(i.rect,cm): self.surfaces[0].blit(i.sprite,(i.rect.x,i.rect.y)); y[2] = i.rect.y
-				#NPCS
-				elif y[0] == 'npc':
-					for i in self.npcs:
-						if i['N'] == y[1] and self.colide(i['RECT'],cm): self.npc(i); y[2] = i['RECT'].y
-				#VEHICLES
-				elif y[0] == 'vehicle':
-					for i in self.vehicles:
-						if i['N'] == y[1] and self.colide(i['RECT'],cm): self.vehicle(i); y[2] = i['RECT'].y'''
+				
 				#PORTALS
 				if y[0] == 'portal' and self.colide(obj['RECT'],cm): self.portal(obj); y[2] = y[1]['RECT'].y
+				
 				#PARTICLES
-				if y[0] == 'particle': self.particle(y[1])
+				if y[0] == 'particle': self.particle(y[1]); y[2] = 0
+				
+				#ITEMS
+				elif y[0] == 'item':
+					if pygame.Rect.colliderect(y[1]['RECT'],cm):
+						y[1]['FLOAT'] = int(np.sin(y[1]['ACC']) * y[1]['ACCLIMIT'])
+						y[1]['ACC'] += y[1]['ACCSPD']
+						self.surfaces[1].blit(y[1]['IMAGE'], (y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y + y[1]['FLOAT']))
+					y[2] = y[1]['RECT'].y
+
 				#SIGNS
 				elif y[0] == 'sign':
 					if self.colide(y[1]['RECT'],cm) and self.turn != -6:
@@ -5150,30 +5238,7 @@ class Game:
 							self.surfaces[1].blit(res.FONTS['DEFAULT'].render(dtb.SIGNS[y[1]['TEXT']], True, (0,0,0)), ((5 + y[1]['RECT'].x - self.cam.x) * res.GSCALE,(5 + y[1]['RECT'].y - self.cam.y) * res.GSCALE))
 						else: self.surfaces[1].blit(res.FONTS['DEFAULT'].render(y[1]['TEXT'], True, (250,250,250)), ((y[1]['RECT'].x - self.cam.x - np.floor(self.cam.x/5)) * res.GSCALE,(y[1]['RECT'].y - self.cam.y - np.floor(self.cam.y/5)) * res.GSCALE))
 					y[2] = y[1]['RECT'].y
-				#ITEMS
-				elif y[0] == 'item':
-					if self.colide(y[1]['RECT'],cm):
-						if y[1]['DIRECTION'] == False:
-							y[1]['ACC'] -= 1
-							if y[1]['ACC'] < -3: y[1]['DIRECTION'] = True
-						if y[1]['DIRECTION']:
-							y[1]['ACC'] += 1
-							if y[1]['ACC'] > 3: y[1]['DIRECTION'] = False
-						y[1]['FLOAT'] += int(y[1]['ACC'])
-						self.surfaces[0].blit(y[1]['IMAGE'], (y[1]['RECT'].x - self.cam.x,y[1]['RECT'].y - self.cam.y + y[1]['FLOAT']))
-						for p in range(len(self.player)):
-							if self.colide(self.player[p]['RECT'],y[1]['RECT']):
-								if y[1]['ITEM'].startswith('bomb'):
-									res.INVENTORY[res.PARTY[res.FORMATION][p]][4][1][0] = y[1]['ITEM']
-									res.INVENTORY[res.PARTY[res.FORMATION][p]][4][1][1] = '3'
-								elif y[1]['ITEM'].startswith('pow_bubble'):
-									res.INVENTORY[res.PARTY[res.FORMATION][p]][4][2][0] = y[1]['ITEM']
-									res.INVENTORY[res.PARTY[res.FORMATION][p]][4][2][1] = '3'
-								else: self.guis['INVENTORY'].gui.add(res.PARTY[res.FORMATION][0],y[1]['ITEM'])
-								res.MIXER[0].play(res.SOUND['ITEM_GET'])
-								self.particles.append({'TYPE': 'pop','GIF': 0.0,'X': y[1]['RECT'].x,'Y': y[1]['RECT'].y})
-								y[1]['DESTROY'] = True
-					y[2] = y[1]['RECT'].y
+
 				#MOVE
 				elif obj == 'move':
 					if self.colide(y[1]['RECT'],cm):
@@ -5370,6 +5435,16 @@ class Game:
 					if res.BTYPE == 1: self.fight()
 					else: self.turn = 0
 		
+		#HUD
+		self.surfaces[1].blit(tools.draw.bar((int(res.INVENTORY[res.PARTY[res.FORMATION][0]][4][1][1]),5),(20,40),(10,10,10),(200,200,10),'stack',5),(20,40))
+		self.surfaces[1].blit(self.guis['INVENTORY'].gui.bar(0,4,(1,3),'horizontal',background=(0,0,0,0)),(50,40))
+		self.surfaces[1].blit(tools.draw.bar((res.CHARACTERS[res.PARTY[res.FORMATION][0]]['ENERGY'],99),(self.window.height - int(self.window.height/10),40),(10,10,10),(10,200,10),'levels'),(150,40))
+		
+		#COUNTERS
+		for i in range(len(self.counters)):
+			self.counters[i].update(res.CHARACTERS[0]['SCORE'])
+			self.surfaces[1].blit(self.counters[i].draw(),(10,10 + (i * 40)))
+
 		#BLACKBARS
 		if self.blackbars[0].height > 0:
 			for i in self.blackbars: pygame.draw.rect(self.surfaces[1],(0,0,0),i)
@@ -5425,19 +5500,11 @@ class Game:
 				for p in self.guis[i]:
 					if self.guis[i][p].show: self.surfaces[1].blit(self.guis[i][p].draw(), (self.guis[i][p].rect.x,self.guis[i][p].rect.y))
 			elif i != 'BKG' and self.guis[i].show: self.surfaces[1].blit(self.guis[i].draw(), (self.guis[i].rect.x,self.guis[i].rect.y))
-		
-		#HUD
-		self.surfaces[1].blit(tools.draw.bar((res.CHARACTERS[0]['ENERGY'],100),(200,20),(10,10,10),(10,200,10)),(100,20))
 
 		#DIALOGS
 		if self.dlg: self.surfaces[1].blit(self.dlg.draw(),(0,0))
 		#EASTER EGG
 		if self.cityname == 'TWNN': self.surfaces[0].blit(pygame.image.load(res.SPRITES_PATH + 'TWNN.png').convert_alpha(), (35,0))
-		
-		#COUNTERS
-		for i in range(len(self.counters)):
-			self.counters[i].update(res.CHARACTERS[0]['SCORE'])
-			self.surfaces[1].blit(self.counters[i].draw(),(10,10 + (i * 40)))
 		
 		#NOTIFICATIONS
 		self.notification = [i for i in self.notification if i['TEXT'] != None]
@@ -5879,6 +5946,7 @@ if len(sys.argv) == 1:
 	f = open('log.txt','w')
 	f.write(g.log)
 	f.close()
+
 #TERMINAL TESTING
 elif len(sys.argv) > 1:
 	hlp ='\tavatar - test avatar (index)\n\tchar (index) (x position) (y position) - test NPC\n\tdialog (index) - test dialog\n\t' + \

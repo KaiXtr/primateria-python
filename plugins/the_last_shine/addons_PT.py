@@ -167,13 +167,14 @@ ITEMS = {
 'parts': ['peças',[''],0,0,0,0],
 'stellar_star': ['estrela estelar',[''],0,0,0,0],
 
-'ammo_plasma': ['reator de plasma',[''],0,0,0,0],
-'ammo_fire': ['reator de combustão',[''],0,0,0,1],
-'ammo_bubble': ['reator de bolha',[''],0,0,0,2],
-'ammo_missile': ['reator de torpedos',[''],0,0,0,3],
-'ammo_wave': ['reator de ondas',[''],0,0,0,4],
-'ammo_electric': ['reator de eletricidade',[''],0,0,0,4],
-'ammo_stellar': ['reator estelar',[''],0,0,0,4],
+'reactor0': ['reator vazio',[''],0,0,0,{'SPACING': 0,'SPEED': 0,'ANGLE': 0}],
+'reactor1': ['reator de plasma',[''],10,0,0,{'SPACING': 40,'SPEED': 8,'ANGLE': 16}],
+'reactor2': ['reator de combustão',[''],25,0,0,1],
+'reactor3': ['reator de bolha',[''],50,0,0,2],
+'reactor4': ['reator de torpedos',[''],120,0,0,3],
+'reactor5': ['reator de ondas',[''],250,0,0,4],
+'reactor6': ['reator de eletricidade',[''],500,0,0,4],
+'reactor7': ['reator estelar',[''],1200,0,0,4],
 
 'shield_regular': ['escudo',[''],0,0,0,4],
 

@@ -97,9 +97,9 @@ TEMPERATURE = 25
 WEATHER = 0
 
 PAUSE = 2
-#None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip/inventory/chat/pause
+#None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip/upgrade/inventory/chat/pause
 CLICK = ['move','equip']
-ACTION = ['walk','walk','walk','walk','shoot','run','inventory','pause','shortcut']
+ACTION = ['walk','walk','walk','walk','shoot','run','upgrade','pause','shortcut']
 EQUIP = [0,0,0]
 SHORTCUT = [1,0,1]
 CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
@@ -157,7 +157,7 @@ INVENTORY[0] = [
 	[['clth_shirt1','7'],['_','0000'],['_','0000'],['_','0000'],['food_pizza_4cheese','0000']],
 	[['head_glasses1','0000'],['_','0'],['_','0000'],['_','0000'],['_','0000']],
 	[['head_hairclip','0000'],['_','0000'],['_','0000'],['_','0000'],['_','0000']],
-	[['bag1','0000'],['pow_bubble','0100'],['ammo.38_gold','0000'],['cigar','0000'],['tool_lighter1','0000']]
+	[['bag1','0000'],['reactor1','1'],['reactor0','0'],['cigar','0000'],['tool_lighter1','0000']]
 	]
 STORAGE = [['amulet2','0000'],['amulet3','0000'],['_','0000'],['_','0000'],['_','0000']]
 PRODUCTS = []
@@ -232,6 +232,7 @@ for i in range(len(CHARACTERS)):
 	CHARACTERS[i]['HEALTH'] = []
 	for j in CHATTRIBUTES[1]: CHARACTERS[i][j] = 0
 CHARACTERS[0]['SCORE'] = 1240
+CHARACTERS[0]['ENERGY'] = 83
 
 RELATIONS = []
 for i in range(15):
