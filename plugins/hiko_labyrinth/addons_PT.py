@@ -79,24 +79,24 @@ FREAKS = {
 }
 
 ITEMS = {
-'bomb_regular': ['bomba',['Destroem blocos que atrapalham seu caminho, mas cuidado para não ser atingido também! Novas bombas surgem na MBEM.'],0,0,0,0],
-'bomb_slime': ['bomba de meleca',['Ao explodir, deixam meleca grudenta no chão, o que faz seu advesário andar mais devagar.'],0,0,0,1],
-'bomb_bolt': ['bomba trovejante',['Quando explode, solta 4 rajadas em 4 direções que destroem tudo em seu caminho.'],0,0,0,2],
-'bomb_grenade': ['granada',['Ao invés de deixar em um canto, você arremessa a bomba!'],0,0,0,3],
-'bomb_tactical': ['bomba tática',['Só é ativada quando você dá o sinal.'],0,0,0,4],
+'bomb_regular': {'NAME': 'bomba','DESCRIPTION': 'Destroem blocos que atrapalham seu caminho, mas cuidado para não ser atingido também! Novas bombas surgem na MBEM.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 0},
+'bomb_slime': {'NAME': 'bomba de meleca','DESCRIPTION': 'Ao explodir, deixam meleca grudenta no chão, o que faz seu advesário andar mais devagar.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 1},
+'bomb_bolt': {'NAME': 'bomba trovejante','DESCRIPTION': 'Quando explode, solta 4 rajadas em 4 direções que destroem tudo em seu caminho.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 2},
+'bomb_grenade': {'NAME': 'granada','DESCRIPTION': 'Ao invés de deixar em um canto, você arremessa a bomba!','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 3},
+'bomb_tactical': {'NAME': 'bomba tática','DESCRIPTION': 'Só é ativada quando você dá o sinal.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 4},
 
-'letter': ['letra',['Use para fazer seu personagem crescer!'],0,0,0,0],
-'pow_bubble': ['bolha',['Use para mandar seus inimigos para fora do labirinto!'],0,0,0,0],
-'pow_doublebubble': ['bolha dupla',['Se um já é bom, dois é melhor.'],0,0,0,1],
-'pow_triplebubble': ['bolha tripla',['Dois é bom, três é demais.'],0,0,0,2],
-'pow_bounce': ['bolha saltitante',['Quica nas paredes do labirinto.'],0,0,0,3],
-'pow_plasma': ['bolha de plasma',['Ao atingir seu advesário, todos os pisos pintados por ele voltam á cor branca.'],0,0,0,4],
-'pow_phantom': ['bolha fantasmagórica',['Ela atravessa as paredes do labirinto.'],0,0,0,5],
-'pow_follow': ['bolha perseguidora',['Persegue o inimigo mais próximo.'],0,0,0,6],
-'pow_speed': ['bota de velocidade',['Faz você andar mais rápido.'],0,0,0,7],
-'pow_slow': ['bota de lentidão',['Faz você andar mais devagar.'],0,0,0,8],
-'pow_invert': ['inversor',['Inverte os controles dos jogadores.'],0,0,0,9],
-'pow_bolt': ['relâmpago',['Solta um raio congelante no seu advesário, que fica 10 segundos sem se mexer.'],0,0,0,10]
+'letter': {'NAME': 'letra','DESCRIPTION': 'Use para fazer seu personagem crescer!','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 0},
+'pow_bubble': {'NAME': 'bolha','DESCRIPTION': 'Use para mandar seus inimigos para fora do labirinto!','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 0},
+'pow_doublebubble': {'NAME': 'bolha dupla','DESCRIPTION': 'Se um já é bom, dois é melhor.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 1},
+'pow_triplebubble': {'NAME': 'bolha tripla','DESCRIPTION': 'Dois é bom, três é demais.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 2},
+'pow_bounce': {'NAME': 'bolha saltitante','DESCRIPTION': 'Quica nas paredes do labirinto.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 3},
+'pow_plasma': {'NAME': 'bolha de plasma','DESCRIPTION': 'Ao atingir seu advesário, todos os pisos pintados por ele voltam á cor branca.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 4},
+'pow_phantom': {'NAME': 'bolha fantasmagórica','DESCRIPTION': 'Ela atravessa as paredes do labirinto.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 5},
+'pow_follow': {'NAME': 'bolha perseguidora','DESCRIPTION': 'Persegue o inimigo mais próximo.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 6},
+'pow_speed': {'NAME': 'bota de velocidade','DESCRIPTION': 'Faz você andar mais rápido.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 7},
+'pow_slow': {'NAME': 'bota de lentidão','DESCRIPTION': 'Faz você andar mais devagar.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 8},
+'pow_invert': {'NAME': 'inversor','DESCRIPTION': 'Inverte os controles dos jogadores.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 9},
+'pow_bolt': {'NAME': 'relâmpago','DESCRIPTION': 'Solta um raio congelante no seu advesário, que fica 10 segundos sem se mexer.','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERITES': 10}
 }
 
 MENU = {}

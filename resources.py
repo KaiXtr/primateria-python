@@ -71,7 +71,7 @@ CHAPTER = 1
 MAP = None
 PX = 0
 PY = 0
-SIGNAL = 0
+SIGNAL = 3
 TIME = [14,30,0] #hour-minute-second
 DATE = [25,12,2007,1,1] #day-month-year-week-moon
 CALENDAR = []
@@ -96,17 +96,20 @@ for y in range(10):
 TEMPERATURE = 25
 WEATHER = 0
 
-PAUSE = 2
-#None/camera/move/walk/look/squat/shoot/jump/run/bomb/equip/upgrade/inventory/chat/pause
-CLICK = ['move','equip']
-ACTION = ['walk','walk','walk','walk','shoot','run','upgrade','pause','shortcut']
-EQUIP = [0,0,0]
+PAUSE = 0
+#None/camera/move/walk/look/squat/shoot/swap/jump/run/bomb/equip/upgrade/inventory/chat/pause
+CLICK = ['shoot','swap','shoot']
+ACTION = ['walk','walk','walk','walk','shoot','swap','upgrade','pause','shortcut']
+COMBINATIONS = [(4,5,'bomb')]
+SEQUENCES = [(0,0,1,1,2,3,2,3,4,5,6,"res.CHARACTERS[0]['ENERGY'] = 100")]
+EQUIP = [2,4,0]
 SHORTCUT = [1,0,1]
 CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
 	[pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS,pygame.K_KP_MINUS],
 	[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
 	[pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS,pygame.K_KP_MINUS]]
 JOYSTICK = [0,1,2,3,4,5,6,7,None,None,None,8,None,6,7,0,1,2,3,0,1,None,None]
+COMBO = []
 
 #SETTINGS
 SETTRIBUTES = ['MOUSE','VIBRATE','SFX','MSC','MUTE','DTYPE','SPEED','COLOR','CAMACC','BORDER','CENSORSHIP',
@@ -129,7 +132,7 @@ TMNU = False #option to start on title screen or jump right into the first file
 TTS = False #text-to-speech
 CC = False #close caption
 DISLEXIC = False #spaced font
-BTYPE = 2 #1=turns,2=dynamic,3=action
+BTYPE = 3 #1=turns,2=dynamic,3=action
 AUTOSAVE = 10#in minutes
 AUTOBATTLE = False
 QUICKSTART = 5 #start from logos/start from title menu/start from files menu/start from chapters menu/start from last save/start from last session
@@ -153,11 +156,11 @@ for u in range(6):
 		for x in range(5):
 			INVENTORY[u][y].append(['_','0000'])
 INVENTORY[0] = [
-	[['amulet1','0000'],['phone','3600','simcard1','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
+	[['shield_regular','0'],['phone','3600','simcard1','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
 	[['clth_shirt1','7'],['_','0000'],['_','0000'],['_','0000'],['food_pizza_4cheese','0000']],
 	[['head_glasses1','0000'],['_','0'],['_','0000'],['_','0000'],['_','0000']],
 	[['head_hairclip','0000'],['_','0000'],['_','0000'],['_','0000'],['_','0000']],
-	[['bag1','0000'],['reactor1','1'],['reactor0','0'],['cigar','0000'],['tool_lighter1','0000']]
+	[['bag1','0000'],['reactor2','5'],['reactor3','1'],['cigar','0000'],['tool_lighter1','0000']]
 	]
 STORAGE = [['amulet2','0000'],['amulet3','0000'],['_','0000'],['_','0000'],['_','0000']]
 PRODUCTS = []
@@ -170,7 +173,7 @@ RANK = []
 
 CHATTRIBUTES = [['VITALITY','HEALTH','EXPERIENCE','LEVEL','SANITY','HUNGER','THIRST','SLEEP','BONUS'],
 	['ENERGY','SCORE','BLESS','MORALITY','INSPIRATION','INTIMIDATION','PERSUASION','ANIMALS','SPIRITS','STAMINA','ATLETISM',
-	'ACROBATICS','FURTIVITY','PERCEPTION','MEDICINE','IMUNITY','INFANTRY','INVESTIGATION','CRAFTING','CULINARY','DEATHS']]
+	'ACROBATICS','FURTIVITY','PERCEPTION','MEDICINE','IMUNITY','INFANTRY','INVESTIGATION','CRAFTING','CULINARY','KILLS','DEATHS']]
 
 CHARACTERS = [
 {'NAME': 'Sidney','LASTNAME': 'Barreto','NICK': 'Sid','PRONOUN': 'he','BIRTH': (3,3,1985),'HOMETOWN': 'ITATIAIA/RJ','BLOOD': 'A+','CLASS': 'mercenary','SUBCLASS': 'gunslinger',
@@ -232,7 +235,7 @@ for i in range(len(CHARACTERS)):
 	CHARACTERS[i]['HEALTH'] = []
 	for j in CHATTRIBUTES[1]: CHARACTERS[i][j] = 0
 CHARACTERS[0]['SCORE'] = 1240
-CHARACTERS[0]['ENERGY'] = 83
+CHARACTERS[0]['ENERGY'] = 120
 
 RELATIONS = []
 for i in range(15):
@@ -678,9 +681,10 @@ def delete_data():
 	com.close()
 	tbl.close()
 
-def spr():
+def sprites():
 	global SPRITES
 	
+	#HUMANS
 	dirs = ['U','LU','L','LD','D','RD','R','RU']
 	movs = [('STAND',[0,1,2,3]),('TIREDSTAND',[0,0,1,1]),('SEAT',[0]),('DRIVE',[0]),
 	('JUMP',[0,1]),('WALK',[0,1,2,1,0,3,4,3]),('RUN',[0,1,2,1,0,3,4,3])]
@@ -707,9 +711,7 @@ def spr():
 					else: spr = pygame.image.load(TEMP_PATH + 'body_' + m[0].lower() + d + fn + '.png').convert_alpha()
 					SPRITES[m[0] + d].append(spr)
 	
-def animals():
-	global SPRITES
-	
+	#ANIMALS
 	SPRITES['PIGEON_WALKL'] = []
 	SPRITES['PIGEON_WALKR'] = []
 	SPRITES['PIGEON_FLYL'] = []
@@ -737,26 +739,6 @@ def animals():
 			SPRITES['DOG' + str(a) + '_WALKL'].append(pygame.transform.flip(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_walk_' + str(i) + '.png').convert(),True,False))
 			SPRITES['DOG' + str(a) + '_WALKR'].append(pygame.image.load(SPRITES_PATH + 'ani_dog' + str(a) + '_walk_' + str(i) + '.png').convert())
 
-def battlesprites():
-	global SPRITES
-	
-	for a in (1,2,3,9,10):
-		SPRITES['ATTACKIMATION_' + str(a)] = []
-		i = 0
-		while True:
-			try:
-				SPRITES['ATTACKIMATION_' + str(a)].append(pygame.image.load(SPRITES_PATH + 'attackimation_' + str(a) + '_' + str(i) + '.png').convert())
-				i += 1
-			except: break
-	for e in (6,8,9):
-		SPRITES['EFFECT_' + str(e)] = []
-		i = 0
-		while True:
-			try:
-				SPRITES['EFFECT_' + str(e)].append(pygame.image.load(SPRITES_PATH + 'eff_' + str(e) + '_' + str(i) + '.png').convert())
-				i += 1
-			except: break
-
 def fonts():
 	global FONTS
 	pygame.font.init()
@@ -769,7 +751,7 @@ def fonts():
 		'DATETIME': pygame.font.Font(FONTS_PATH + 'datetype.ttf', 8 * GSCALE),
 		'CONTROLKEYS': pygame.font.Font(FONTS_PATH + 'controlkeys.ttf', 15)}
 
-def sfx():
+def sfx(ignore=True):
 	global SOUND
 
 	sys.path.insert(0,os.path.realpath('./') + '\\databases')
@@ -777,13 +759,13 @@ def sfx():
 	else: dtb = __import__('database_' + MAINLANG)
 
 	for j in os.listdir(SFX_PATH[:-1]):
-		if j[:-4].upper() in SOUND.keys(): print(dtb.ERROR['sound_exists'].format(j))
+		if j[:-4].upper() in SOUND.keys() and ignore == False: print(dtb.ERROR['sound_exists'].format(j))
 		if j.endswith('.wav'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
 		elif j.endswith('.ogg'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
 		else:
 			for i in os.listdir(SFX_PATH + j):
 				if i.endswith('.wav'):
-					if i[:-4].upper() in SOUND.keys(): print(dtb.ERROR['sound_exists'].format(i))
+					if i[:-4].upper() in SOUND.keys() and ignore == False: print(dtb.ERROR['sound_exists'].format(i))
 					SOUND[i[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j + '/' + i)
 
 if os.path.basename(sys.argv[0]) == os.path.basename(__file__):

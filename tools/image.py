@@ -35,7 +35,7 @@ def rgb_channel(file,value):
 
 	srf = PIL.Image.open(file)
 	srf = srf.convert(srf.mode,channels[value])
-	return pygame.image.fromstring(srf.tobytes(),srf.size,srf.mode)
+	return pygame.image.fromstring(srf.tobytes(),srf.size,srf.mode).convert_alpha()
 
 def glitch(file):
 	img = PIL.Image.open(file)
