@@ -69,8 +69,9 @@ LANG = 'PT'
 GAMETIME = 0
 CHAPTER = 1
 MAP = None
-PX = 0
-PY = 0
+PLAYER = [200,300]
+PX = 200
+PY = 100
 SIGNAL = 3
 TIME = [14,30,0] #hour-minute-second
 DATE = [25,12,2007,1,1] #day-month-year-week-moon
@@ -97,17 +98,45 @@ TEMPERATURE = 25
 WEATHER = 0
 
 PAUSE = 0
-#None/camera/move/walk/look/squat/shoot/swap/jump/run/bomb/equip/upgrade/inventory/chat/pause
 CLICK = ['shoot','swap','shoot']
-ACTION = ['walk','walk','walk','walk','shoot','swap','upgrade','pause','shortcut']
+ACTION = ['walk','walk','walk','walk','shoot_unidirectional','swap','upgrade','pause','shortcut']
 COMBINATIONS = [(4,5,'bomb')]
-SEQUENCES = [(0,0,1,1,2,3,2,3,4,5,6,"res.CHARACTERS[0]['ENERGY'] = 100")]
+SEQUENCES = [(0,0,1,1,2,3,2,3,4,5,6,"res.CHARACTERS[0]['ENERGY'] = 100"),(1,2,0,3,1,2,0,3,1,2,0,3,"res.CHARACTERS[0]['BONUS'][2] = 10")]
 EQUIP = [2,4,0]
 SHORTCUT = [1,0,1]
 CONTROLS = [[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
 	[pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS,pygame.K_KP_MINUS],
 	[pygame.K_w,pygame.K_s,pygame.K_a,pygame.K_d,pygame.K_g,pygame.K_h,pygame.K_RETURN,pygame.K_BACKSPACE,pygame.K_INSERT],
 	[pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_KP0,pygame.K_KP_ENTER,pygame.K_KP_MULTIPLY,pygame.K_KP_MINUS,pygame.K_KP_MINUS]]
+'''
+CONTROLS = [{
+	'walk_up': pygame.K_w,
+	'walk_down': pygame.K_s,
+	'walk_left': pygame.K_a,
+	'walk_right': pygame.K_d,
+	'shoot_unidirectional': pygame.K_g,
+	'shoot_directional': None,
+	'shoot_mouse': None,
+	'swap': pygame.K_h,
+	'upgrade': pygame.K_RETURN,
+	'pause': pygame.K_BACKSPACE,
+	'shortcut': pygame.K_INSERT,
+	'camera': None,
+	'move': None,
+	'turn_left': None,
+	'turn_right': None,
+	'look': None,
+	'squat': None,
+	'jump': None,
+	'run': None,
+	'bomb': None,
+	'equip': None,
+	'chat': None,
+	'screenshot': None,
+	'record': None,
+}
+]
+'''
 JOYSTICK = [0,1,2,3,4,5,6,7,None,None,None,8,None,6,7,0,1,2,3,0,1,None,None]
 COMBO = []
 
@@ -135,7 +164,7 @@ DISLEXIC = False #spaced font
 BTYPE = 3 #1=turns,2=dynamic,3=action
 AUTOSAVE = 10#in minutes
 AUTOBATTLE = False
-QUICKSTART = 5 #start from logos/start from title menu/start from files menu/start from chapters menu/start from last save/start from last session
+QUICKSTART = 1 #start from logos/start from title menu/start from files menu/start from chapters menu/start from last save/start from last session
 
 HOVERTEXT = None
 HINTEXT = None
@@ -279,34 +308,25 @@ def recent_data(m,opt=0):
 			prt += str(i)
 		com.execute("UPDATE files SET chp = {}, gt = {}, lang = '{}', party = '{}' WHERE id = {}".format(CHAPTER,GAMETIME,LANG,prt,opt))
 		tbl.commit()
-	#NEW FILE
-	elif m == 2:
-		ID = opt
-		CHAPTER = 0
-		GAMETIME = 0
-		LANG = 'PT'
-		FILES.append([ID,'Matt',CHAPTER,GAMETIME,LANG,'0'])
-		com.execute("INSERT INTO files VALUES ({},'{}',{},{},'{}','0')".format(ID,'Matt',CHAPTER,GAMETIME,LANG,'0'))
-		tbl.commit()
-	#ADD FILE
-	elif m == 3:
-		ID = opt
-		prt = ''
-		for i in PARTY[FORMATION]: prt += str(i)
-		FILES.append(ID,'Matt',CHAPTER,GAMETIME,LANG,prt)
-		com.execute("INSERT INTO files VALUES ({},'{}',{},{},'{}','0')".format(ID,'Matt',CHAPTER,GAMETIME,LANG,'0'))
-		tbl.commit()
 	com.close()
 	tbl.close()
 
-def new_data(add=False):
+def new_data(add=0,opt=0):
 	global ID, LANG, SFX, MSC, CONTROLS, SPEED, COLOR, INVENTORY, STORAGE, WASH, RANK, WEATHER, BORDER, CHARACTERS, TASKPIN, MINIMAP, SCENE, CENSORSHIP, HINT, HELP,\
 	FORMATION, MAP, PX, PY, TIME, DATE, CHAPTER, GAS, GAMETIME, PARTY, CONTACTS, CALLHIST, INBOX, TASKS, TACTICAL, BESTIARY, ACHIEVEMENTS, DISITEMS, RELATIONS
  
 	tbl = sqlite3.connect('userdata.db')
 	com = tbl.cursor()
 	
-	if add == False:
+	if add == 1:
+		ID = opt
+		CHAPTER = 0
+		GAMETIME = 0
+		LANG = 'PT'
+		FILES.append([ID,'Matt',CHAPTER,GAMETIME,LANG,'0'])
+		com.execute(f"INSERT INTO files VALUES ({ID},'{'Matt'}',{CHAPTER},{GAMETIME},'{LANG}','0')")
+
+	if add > 1:
 		LANG = 'PT'
 		SFX = 1.5
 		MSC = 0.0
@@ -326,16 +346,16 @@ def new_data(add=False):
 		DISLEXIC = False
 		BTYPE = 2
 		
-		TIME = [0,32,0]
-		DATE = [25,12,2007,1,1]
 		WEATHER = 0
 		CHAPTER = 0
 		SCENE = 0
 		GAMETIME = 0
 		FORMATION = 0
-		MAP = dtb.CHAPTERS[CHAPTER][5][0]
-		PX = dtb.CHAPTERS[CHAPTER][5][1]
-		PY = dtb.CHAPTERS[CHAPTER][5][2]
+		TIME = dtb.CHAPTERS[CHAPTER][3]
+		DATE = dtb.CHAPTERS[CHAPTER][2]
+		MAP = dtb.CHAPTERS[CHAPTER][4][0]
+		PX = dtb.CHAPTERS[CHAPTER][4][1]
+		PY = dtb.CHAPTERS[CHAPTER][4][2]
 		SHORTCUT = [1,1,4]
 		 
 		for i in range(6):
@@ -384,60 +404,66 @@ def new_data(add=False):
 		WASH = [] #[('clth_shirt00','0000','0000')]
 		RANK = []
 	
-	#CREATE TABLES
+	#CREATE CHARACTER TABLE
 	txt = ''
-	for i in CHATTRIBUTES[0] + CHATTRIBUTES[1]: txt += i.lower() + " integer,"
+	for i in CHATTRIBUTES[0] + CHATTRIBUTES[1]: txt += ',' + i.lower() + " integer"
+	com.execute("CREATE TABLE IF NOT EXISTS characters (id integer,n integer,name text,lastname text{})".format(txt))
 
-	com.execute("CREATE TABLE IF NOT EXISTS settings (id integer,lang text,sfx integer,msc integer,ctrl integer,mouse integer,cursor integer,speed integer,color1 integer,color2 integer,color3 integer,border integer,\
-			font text,censor integer,hint integer,help integer,btype integer,dislexic integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS controls (id integer,player integer,key integer,value integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS paths (id integer,backg text,sprites text,chars text,temp text,items text,freaks text,sfx text,music text,maps text,tiles text,fonts text)")
-	com.execute("CREATE TABLE IF NOT EXISTS data (id integer,gt integer,fr integer,map text,x integer,y integer,time text,date text,weather integer,chapter integer,shortcut text)")
-	com.execute("CREATE TABLE IF NOT EXISTS characters (id integer,n integer,name text,lastname text,{})".format(txt))
-	com.execute("CREATE TABLE IF NOT EXISTS chapters (id integer,n integer,progress integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS dlgsav (id integer,who text,vl integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS disitems (id integer,it text,vl integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS relations (id integer,w1 integer,w2 integer,vl integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS party (id integer,n integer,p1 integer,p2 integer,p3 integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS contacts (id integer,n integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS callhist (id integer,n integer,w integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS inbox (id integer,n integer,red integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS tasks (id integer,tsk text,don integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS tactical (id integer,n integer,pl1 integer,pl2 integer,pl3 integer,pl4 integer)")
-	com.execute("CREATE TABLE IF NOT EXISTS bestiary (id integer,name text,nb text,date text,seen int)")
+	#CREATE SETTINGS TABLE
+	txt = ''
+	for i in ['id','lang','sfx','msc','cursor','mouse','speed','color1','color2','color3','border','font_face','censor','hint','help','btype','dislexic','mute','autosave','quickstart']:
+		txt += ',' + i.lower()
+		if i in ['lang','font_face']: txt += ' text'
+		else: txt += ' integer'
+	com.execute("CREATE TABLE IF NOT EXISTS settings ({})".format(txt[1:]))
+
+	#CREATE EVERY OTHER TABLE
 	com.execute("CREATE TABLE IF NOT EXISTS achievements (id integer,nb integer,got integer,date text)")
+	com.execute("CREATE TABLE IF NOT EXISTS bestiary (id integer,name text,nb text,date text,seen int)")
+	com.execute("CREATE TABLE IF NOT EXISTS callhist (id integer,n integer,w integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS contacts (id integer,n integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS controls (id integer,player integer,key integer,value integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS chapters (id integer,n integer,progress integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS data (id integer,gt integer,fr integer,map text,x integer,y integer,time text,date text,weather integer,chapter integer,shortcut text)")
+	com.execute("CREATE TABLE IF NOT EXISTS disitems (id integer,it text,vl integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS dlgsav (id integer,who text,vl integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS inbox (id integer,n integer,red integer)")
 	com.execute("CREATE TABLE IF NOT EXISTS inventory (id integer,item text,position text,properties text)")
-	com.execute("CREATE TABLE IF NOT EXISTS storage (id integer,it text,ip text)")
+	com.execute("CREATE TABLE IF NOT EXISTS party (id integer,n integer,p1 integer,p2 integer,p3 integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS paths (id integer,backg text,sprites text,chars text,temp text,items text,freaks text,sfx text,music text,maps text,tiles text,fonts text)")
 	com.execute("CREATE TABLE IF NOT EXISTS rank (id integer,chp integer,level integer,score integer,time integer,paint integer,enemies integer,deaths integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS relations (id integer,w1 integer,w2 integer,vl integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS storage (id integer,it text,ip text)")
+	com.execute("CREATE TABLE IF NOT EXISTS tactical (id integer,n integer,pl1 integer,pl2 integer,pl3 integer,pl4 integer)")
+	com.execute("CREATE TABLE IF NOT EXISTS tasks (id integer,tsk text,don integer)")
 	  
     #FILE ALREADY EXISTS
-	for i in ['files','settings','data','characters','party','contacts',
-	'callhist','inbox','tasks','tactical','bestiary','achievements','inventory',
-	'storage','wash','rank']:
+	for i in ['achievements','bestiary','callhist','contacts','controls','chapters','data','disitems','dlgsav','files',
+		'inbox','inventory','party','paths','rank','relations','storage','tactical','tasks']:
 		com.execute("DELETE FROM " + i + " WHERE id=" + str(ID))
 	
 	#INSERT NEW VALUES
-	com.execute("INSERT INTO settings VALUES ({},'PT',0.8,0.6,0,0,2,2,242,30,30,0,'BohemianTypewriter.ttf',1,1,1,2,0)".format(ID))
 	for i in range(len(CONTROLS)):
 		for l in range(len(CONTROLS[i])): com.execute("INSERT INTO controls VALUES ({},{},{},{})".format(ID,i,l,CONTROLS[i][l]))
+	
 	com.execute("INSERT INTO paths VALUES (0,'{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}')".format(BACKG_PATH,SPRITES_PATH,CHARS_PATH,TEMP_PATH,ITEMS_PATH,FREAKS_PATH,SFX_PATH,MUSIC_PATH,MAPS_PATH,TILES_PATH,FONTS_PATH))
 	com.execute("INSERT INTO data VALUES ({},0,0,'hauntedhouse_0',0,0,'0030','2512200711',0,0,'001')".format(ID))
-	for i in range(len(CHARACTERS)): com.execute("INSERT INTO characters VALUES({},{},'','',0,0,0,0,0,100,100,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)".format(ID,i))
+	#for i in range(len(CHARACTERS)): com.execute("INSERT INTO characters VALUES({},{},'','',0,0,0,0,0,100,100,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)".format(ID,i))
 	for i in range(len(dtb.CHAPTERS)): com.execute("INSERT INTO chapters VALUES ({},{},0)".format(ID,i))
-	for i in DLGSAV:
-		com.execute("INSERT INTO dlgsav VALUES({},'{}',0)".format(ID,i))
-	for i in DISITEMS:
-		com.execute("INSERT INTO disitems VALUES({},'{}',0)".format(ID,i))
+	for i in dtb.FREAKS.items(): com.execute("INSERT INTO bestiary VALUES({},'{}','xxxxxx','000000',0)".format(ID,i[0]))
+	for i in DLGSAV: com.execute("INSERT INTO dlgsav VALUES({},'{}',0)".format(ID,i))
+	for i in DISITEMS: com.execute("INSERT INTO disitems VALUES({},'{}',0)".format(ID,i))
 	com.execute("INSERT INTO party VALUES({},0,1,2,0)".format(ID))
+	com.execute("INSERT INTO settings VALUES ({},'PT',0.8,0.6,0,0,2,242,30,30,0,'BohemianTypewriter.ttf',1,1,1,2,0,0,0,0)".format(ID))
+	for i in range(25): com.execute("INSERT INTO storage VALUES({},'_','0000')".format(ID))
+	
 	for i in range(15):
 		for j in range(15):
 			com.execute("INSERT INTO relations VALUES({},'{}','{}',0)".format(ID,str(i),str(j)))
-	for i in dtb.FREAKS.items(): com.execute("INSERT INTO bestiary VALUES({},'{}','xxxxxx','000000',0)".format(ID,i[0]))
 	for u in range(6):
 		for x in range(5):
 			for y in range(5):
 				com.execute("INSERT INTO inventory VALUES({},'_','{}{}{}0','0000')".format(ID,u,x,y))
-	for i in range(25): com.execute("INSERT INTO storage VALUES({},'_','0000')".format(ID))
 	for i in range(len(dtb.CHAPTERS)):
 		for l in range(8): com.execute("INSERT INTO rank VALUES ({},{},{},0,0,0,0,0)".format(ID,i,l))
 	
@@ -754,10 +780,6 @@ def fonts():
 def sfx(ignore=True):
 	global SOUND
 
-	sys.path.insert(0,os.path.realpath('./') + '\\databases')
-	if FILES != []: dtb = __import__('database_' + FILES[0][4])
-	else: dtb = __import__('database_' + MAINLANG)
-
 	for j in os.listdir(SFX_PATH[:-1]):
 		if j[:-4].upper() in SOUND.keys() and ignore == False: print(dtb.ERROR['sound_exists'].format(j))
 		if j.endswith('.wav'): SOUND[j[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j)
@@ -767,6 +789,10 @@ def sfx(ignore=True):
 				if i.endswith('.wav'):
 					if i[:-4].upper() in SOUND.keys() and ignore == False: print(dtb.ERROR['sound_exists'].format(i))
 					SOUND[i[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j + '/' + i)
+
+sys.path.insert(0,os.path.realpath('./') + '\\databases')
+if FILES != []: dtb = __import__('database_' + FILES[0][4])
+else: dtb = __import__('database_' + MAINLANG)
 
 if os.path.basename(sys.argv[0]) == os.path.basename(__file__):
 	#SHOW TABLES ON TERMINAL

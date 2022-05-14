@@ -13,6 +13,6 @@
  <tile id="9" type="street" step="stone"/>
  <tile id="10" type="street" step="stone"/>
  <tile id="11" type="fall" step="brick"/>
- <tile id="12" type="moving" step="brick"/>
+ <tile id="12" type="sidewalk" step="brick"/>
  <tile id="13" type="sidewalk" step="brick"/>
 </tileset>

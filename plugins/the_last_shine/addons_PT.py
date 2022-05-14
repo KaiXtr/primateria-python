@@ -210,6 +210,10 @@ ITEMS = {
 'bomb_timed': {'NAME': 'bomba relógio','DESCRIPTION': '','PRICE': 0,'VOLUME': 0,'WEIGHT': 0,'PROPERTIES': {'EXPLOSION': 2000,'DETONATE': 60}},
 }
 
+TASKINDEX = {
+'NAJJMATHO': [{'NAME': 'Campanha'},{'NAME': 'Contrarrelógio','TIME': -6000},{'NAME': 'Sobrevivência','DEATHS': 0},{'NAME': 'Extermínio','KILLS': -1}],
+}
+
 AVATAR = {
 'spaceship_base': ['mandíbula','escaravelho','redondo','pontudo'],
 'spaceship_wing': ['para trás','pontudo','propulsores','duplo','redondo','plano','caça'],

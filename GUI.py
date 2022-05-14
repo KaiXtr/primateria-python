@@ -32,9 +32,9 @@ class Test:
 		self.display = pygame.display.set_mode((800, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Pseudo3d(),LevelMenu((800,800),3),Popup('Ranking',(200,200),border=False)]#,Popup('docs/LICENSE.FLAC.txt',(50,50)),Popup('Inventory',(10,10))]
-		self.counters = []#[Counter(8),Counter(5)]
+		self.menu = [LevelMenu((600,600),4)]
 		self.img = pygame.image.load('SS1.jpg').convert()
+		self.offset = 0
 
 	def run(self):
 		res.HOVERTEXT = None
@@ -70,15 +70,16 @@ class Test:
 		if len(self.menu) > 4:
 			img = self.menu[4].gui.wheel()
 			self.display.blit(img,(100 - int(img.get_width()/2),100 - int(img.get_height()/2)))
-		for i in range(len(self.counters)):
-			self.counters[i].update(int(self.time))
-			self.display.blit(self.counters[i].draw(),(0,i * 40))
 		if res.HOVERTEXT:
 			sz = self.font.size(res.HOVERTEXT)
 			mp = pygame.mouse.get_pos()
 			mr = pygame.Rect(int(mp[0]),int(mp[1]),sz[0] + 10,sz[1] + 10)
 			pygame.draw.rect(self.display,(10,10,10),mr)
 			self.display.blit(self.font.render(res.HOVERTEXT,True,res.COLOR),(mr.x + 5,mr.y + 5))
+
+		#self.display.blit(tools.draw.image_wave(pygame.image.load(res.BACKG_PATH + 'bump_0.png'),10,16,offset=self.offset),(0,0))
+		self.offset += 1
+		if self.offset > 100: self.offset = 0
 
 		for i in res.MIXER:
 			if pygame.display.get_active(): i.set_volume(res.SFX)
@@ -477,9 +478,7 @@ class Vkeyboard:
 		return self.surface
 
 class Backgrounds:
-	def __init__(self,size,type):
-		self.surface = pygame.Surface(size)
-		self.rect = pygame.Rect(0,0,600,600)
+	def __init__(self,size,*type):
 		self.font = pygame.font.SysFont("Arial", 64)
 		self.type = type
 		self.show = False
@@ -488,19 +487,46 @@ class Backgrounds:
 		self.banimation = {'INDEX': None, 'GIF': 0}
 		self.bbg = {'IMAGE': None, 'X': 0, 'ACC': 0, 'DIRECTION': False}
 
-		self.lst = []
+		self.lst = {}
 		self.img = 0
 		self.transform = 4
 		self.blink = 0.0
+		self.scroll = 0
+		self.limit = 0
 		self.x = 0
 		self.palette = [[(196,206,228),(250,0,0)],[(18,46,85),(0,250,0)]]
 
+		self.resize(size)
+
+	def resize(self,size):
+		self.surface = pygame.Surface(size)
+		self.rect = pygame.Rect(0,0,size[0],size[1])
 		if size != (0,0):
-			if self.type == 'stars':
-				self.lst = [[np.random.randint(0,self.surface.get_width()),np.random.randint(0,self.surface.get_height()),np.random.uniform(0.1,1)] for i in range(50)]
-			elif self.type in ['mirrors','kaleidoscope']:
+			if 'stars' in self.type:
+				self.lst['STARS'] = [[np.random.randint(0,self.surface.get_width()),np.random.randint(0,self.surface.get_height()),np.random.uniform(0.1,1)] for i in range(50)]
+			if 'daytime' in self.type:
+				img = pygame.image.load(res.BACKG_PATH + 'sky.png').convert()
+				self.lst['SKY'] = pygame.Surface((600,img.get_height() * 2))
+				for i in range(20):
+					self.lst['SKY'].blit(img,(img.get_width() * i,0))
+					self.lst['SKY'].blit(img,(img.get_width() * i,img.get_height()))
+				for i in [('SUN',(200,200,0)),('MOON',(250,250,250))]:
+					srf = pygame.Surface((32,32),pygame.SRCALPHA)
+					pygame.draw.ellipse(srf,i[1],pygame.Rect(0,0,32,32))
+					self.lst[i[0]] = srf
+			if 'starmap' in self.type:
+				self.lst['STARMAP'] = pygame.image.load(res.BACKG_PATH + 'starmap.png').convert()
+			if 'parallax' in self.type:
+				img = pygame.image.load(res.BACKG_PATH + 'bt_jungle.png').convert()
+				self.limit = img.get_width()
+				self.lst['PARALLAX'] = []
+				self.lst['PARALLAX'].append(pygame.Surface((img.get_width() * 3,img.get_height())))
+				for i in range(3):
+					self.lst['PARALLAX'][0].blit(img,(img.get_width() * i,0))
+			if 'mirrors' in self.type:
+				self.lst['MIRRORS'] = []
 				for t in range(14):
-					self.lst.append([])
+					self.lst['MIRRORS'].append([])
 					for r in range(2):
 						if r: img = tools.image.reverse(res.BACKG_PATH + 'chp_' + str(t) + '.png')
 						else: img = pygame.image.load(res.BACKG_PATH + 'chp_' + str(t) + '.png')
@@ -510,14 +536,16 @@ class Backgrounds:
 						srf.blit(pygame.transform.flip(img,True,False), (sz,0))
 						srf.blit(pygame.transform.flip(img,False,True), (0,sz))
 						srf.blit(pygame.transform.flip(img,True,True), (sz,sz))
-						self.lst[t].append(srf)
-			elif self.type == 'channels':
-				for i in range(48): self.lst.append(pygame.transform.scale(tools.image.rgb_channel(res.BACKG_PATH + 'chp_1.png',i),(120,120)).convert())
-			elif self.type == 'tunnel':
-				img = tools.image.glitch(res.BACKG_PATH + 'chp_5.png').convert()
+						self.lst['MIRRORS'][t].append(srf)
+			if 'channels' in self.type:
+				self.lst['CHANNELS'] = []
+				for i in range(48): self.lst['CHANNELS'].append(pygame.transform.scale(tools.image.rgb_channel(res.BACKG_PATH + 'chp_1.png',i),(120,120)).convert())
+			if 'tunnel' in self.type:
+				img = pygame.image.load(res.BACKG_PATH + 'chp_5.png').convert()
 				rpt = 16
-				for i in range(rpt): self.lst.append(pygame.transform.scale(img,(int(img.get_width()/rpt) * i,int(img.get_height()/rpt) * i)))
-		
+				self.lst['TUNNEL'] = []
+				for i in range(rpt): self.lst['TUNNEL'].append(pygame.transform.scale(img,(int(img.get_width()/rpt) * i,int(img.get_height()/rpt) * i)))
+	
 	def random(self,i=None):
 		from mutagen.mp3 import MP3
 		self.msc.pause()
@@ -681,85 +709,78 @@ class Backgrounds:
 				res.MIXER[2].play(pygame.mixer.Sound(res.MUSIC_PATH + 'fate_occurrences.mp3'),-1)
 				self.ton.stop()
 				self.mnu = 6
-		return self.display
-	
-	def bdraw(self):
-		pass
-		'''moved background display to Background class
-			yy = -(int(res.GSCALE/3) * 10)
-			if self.turn == -4:
-				self.surfaces[0].blit(self.bbg['IMAGE'], (self.bbg['X'], yy))
-				self.surfaces[0].blit(self.bbg['IMAGE'], (self.bbg['X'] - 600, yy))
-				if self.display.width > 600:
-					self.surfaces[0].blit(self.bbg['IMAGE'], (self.bbg['X'] + 600, yy))
-				self.bbg['X'] += 5
-				if self.bbg['X'] > 600: self.bbg['X'] = 0
-			elif self.bbg['IMAGE'] != None:
-				self.surfaces[0].blit(self.bbg['IMAGE'], (int(self.bbg['X'] * 0.5), yy))
-				if self.display.width > 595:
-					self.surfaces[0].blit(self.bbg['IMAGE'], (int(self.bbg['X'] * 0.5) + 600, yy))
-				if self.obstacles:
-					self.surfaces[0].blit(self.bbg['IMAGE'], (int(self.bbg['X'] * 0.5) - 600, yy))
-					self.bbg['X'] += 5
-					if self.bbg['X'] > 600: self.bbg['X'] = 0
-					self.bbg['ACC'] = 0
-				else:
-					if self.bbg['DIRECTION']:
-						self.bbg['ACC'] += 0.05
-						if self.bbg['ACC'] > 1:
-							self.bbg['DIRECTION'] = False
-					elif self.bbg['DIRECTION'] == False:
-						self.bbg['ACC'] -= 0.05
-						if self.bbg['ACC'] < -1:
-							self.bbg['DIRECTION'] = True
-					self.bbg['X'] += self.bbg['ACC']'''
 
 	def draw(self):
 		self.surface.fill((0,0,0))
 		sz = 400
-		if self.type == 'stars':
+		if 'STARS' in self.lst:
 			xx = 0; yy = 0
-			if self.transform in [1,2,8]: xx = self.x
-			if self.transform in [4,5,6]: xx = -self.x
-			if self.transform in [2,3,4]: yy = self.x
-			if self.transform in [6,7,8]: yy = -self.x
-			for i in self.lst:
-				pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(i[0] + int(xx * i[2]),i[1] + int(yy * i[2]),2,2))
-			self.x += 2
-			'''if self.x%120 == 0:
-				add = [[np.random.randint(0,self.surface.get_width()),np.random.randint(0,self.surface.get_height()),np.random.uniform(0.1,1)] for i in range(50)]
-				for i in add: self.lst.append(i)'''
-		elif self.type == 'mirrors':
-			bimg = self.lst[self.img][np.floor(self.blink).astype(int)]
+			if self.transform in [1,2,8]: xx = 1
+			if self.transform in [4,5,6]: xx = -1
+			if self.transform in [2,3,4]: yy = 1
+			if self.transform in [6,7,8]: yy = -1
+			self.lst['STARS'] = [i for i in self.lst['STARS'] if i[0] > 0 and i[1] < self.surface.get_height()]
+			for i in range(len(self.lst['STARS'])):
+				self.lst['STARS'][i][0] += xx * self.lst['STARS'][i][2]
+				self.lst['STARS'][i][1] += yy * self.lst['STARS'][i][2]
+				pygame.draw.circle(self.surface,(200,200,200),tuple(self.lst['STARS'][i][:2]),1)
+			self.scroll += 1
+			if self.scroll >= 240 and len(self.lst['STARS']) < 250:
+				for i in range(np.random.randint(10,30)):
+					self.lst['STARS'].append([np.random.randint(0,self.surface.get_width() * 2),np.random.randint(-50,0),np.random.uniform(0.1,1)])
+					self.lst['STARS'].append([np.random.randint(self.surface.get_width(),self.surface.get_width() + 50),np.random.randint(0,self.surface.get_width() * 2),np.random.uniform(0.1,1)])
+				self.scroll = 0
+		if 'SKY' in self.lst:
+			self.surface.blit(self.lst['SKY'],(0,-int(self.lst['SKY'].get_height()/(3600/(1 + res.TIME[1] + (res.TIME[0] * 60))))))
+		if 'SUN' in self.lst:
+			dd = (((np.pi * 2)/1440) * (res.TIME[1] + (res.TIME[0] * 60))) - (np.pi * 1.5)
+			self.surface.blit(self.lst['SUN'],(int(np.cos(dd) * 200) + int(600/2),int(np.sin(dd) * 200) + int(600/2)))
+		if 'MOON' in self.lst:
+			shd = self.lst['MOON'].copy()
+			pygame.draw.ellipse(shd,(0,0,0),pygame.Rect(0,0,shd.get_width(),shd.get_height()))
+			srf = self.lst['MOON'].copy()
+			srf.blit(shd,(int(srf.get_width()/4) * (-res.DATE[4] + 4),0),None,pygame.BLEND_RGBA_SUB)
+			self.surface.blit(srf,(int(np.cos(-dd) * 200) + int(600/2),int(np.sin(-dd) * 200) + int(600/2)))
+			tools.time.datetime_update(240)
+		if 'STARMAP' in self.lst:
+			self.surface.blit(self.lst['STARMAP'],(-int(self.lst['STARMAP'].get_width()/(3600/(1 + res.TIME[1] + (res.TIME[0] * 60)))),0),None,pygame.BLEND_RGBA_ADD)
+			tools.time.datetime_update(60)
+		if 'PARALLAX' in self.lst:
+			for i in range(len(self.lst['PARALLAX'])): self.surface.blit(self.lst['PARALLAX'][i], (-self.scroll,0))
+			self.scroll += 2
+			if self.scroll >= self.limit: self.scroll = 0
+		if 'MIRRORS' in self.lst:
+			bimg = self.lst['MIRRORS'][self.img][np.floor(self.blink).astype(int)]
 			ww = bimg.get_width() - sz
 			hh = bimg.get_height() - sz
 			if self.transform == 0:
-				self.surface.blit(bimg.convert(), (0,0),(ww - self.x,0,sz,sz))
-				self.surface.blit(pygame.transform.flip(bimg,True,False).convert(), (sz,0),(self.x,0,sz,sz))
+				self.surface.blit(bimg.convert(), (0,0),(ww - self.scroll,0,sz,sz))
+				self.surface.blit(pygame.transform.flip(bimg,True,False).convert(), (sz,0),(self.scroll,0,sz,sz))
 			if self.transform > 0:
-				if self.transform in [1,2]: xx = self.x
-				if self.transform in [3,4]: xx = -self.x
-				if self.transform in [1,3]: yy = self.x
-				if self.transform in [2,4]: yy = -self.x
+				if self.transform in [1,2]: xx = self.scroll
+				if self.transform in [3,4]: xx = -self.scroll
+				if self.transform in [1,3]: yy = self.scroll
+				if self.transform in [2,4]: yy = -self.scroll
 				self.surface.blit(bimg.convert(), (0,0),(ww - xx,hh - yy,sz,sz))
 				self.surface.blit(pygame.transform.flip(bimg,True,False).convert(), (sz,0),(xx,hh - yy,sz,sz))
 				self.surface.blit(pygame.transform.flip(bimg,False,True).convert(), (0,sz),(ww - xx,yy,sz,sz))
 				self.surface.blit(pygame.transform.flip(bimg,True,True).convert(), (sz,sz),(xx,yy,sz,sz))
-			self.x += 2
-			if self.x > 0:
-				self.x = -ww
+			self.scroll += 2
+			if self.scroll > 0:
+				self.scroll = -ww
 				self.img += 1
 			if self.img > len(self.lst) - 1: self.img = 0
 			self.blink += 0.02
 			if self.blink >= np.random.randint(1.0,3.0): self.blink = 0.0
-		elif self.type == 'channels':
+		if 'CHANNELS' in self.lst:
 			cc = 0
 			for y in range(6):
 				for x in range(8):
-					self.surface.blit(self.lst[cc], (self.lst[cc].get_width() * x,self.lst[cc].get_height() * y))
+					self.surface.blit(self.lst['CHANNELS'][cc], (self.lst['CHANNELS'][cc].get_width() * x,self.lst['CHANNELS'][cc].get_height() * y))
 					cc += 1
-		elif self.type == 'tunnel':
-			for i in self.lst[::-1]: self.surface.blit(i,(int(self.surface.get_width()/2) - int(i.get_width()/2),int(self.surface.get_height()/2) - int(i.get_height()/2)))
+		if 'TUNNEL' in self.lst:
+			for i in self.lst['TUNNEL'][::-1]:
+				self.surface.blit(i,(int(self.surface.get_width()/2) - int(i.get_width()/2),int(self.surface.get_height()/2) - int(i.get_height()/2)))
 		
 		return self.surface
 
@@ -1133,7 +1154,8 @@ class Files:
 	def inside_events(self,pressed,mouse):
 		mouse.x -= self.rect.x
 		mouse.y -= self.rect.y
-		rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0]
+		if len(res.FILES) > 0: rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0]
+		else: rng = [4,6,1,1,1,0,0]
 		if self.wdw:
 			self.wdw.inside_events(pressed,mouse)
 			if self.wdw.gui == None: self.wdw = None
@@ -1148,13 +1170,15 @@ class Files:
 						if pressed[4][0]: #and self.optrects[i].width == 250:
 							#TITLE AND PAUSE MENU
 							if self.mnu in [0,1]:
+								sz = (int(self.surface.get_width()/2),int(self.surface.get_height()/2))
+								sz = (0,0)
 								if self.mnu == 1: lst = [0,1,2,3,4,5]
 								else: lst = [1,3,4,5]
 								if lst[i] == 0: self.show = False; res.PAUSE = 0 #CONTINUE
 								if lst[i] == 1: self.mnu = 2 #LOAD GAME
 								if lst[i] == 2: self.mnu = 4 #SAVE GAME
-								if lst[i] == 3: self.wdw = Popup('Settings') #SETTINGS
-								if lst[i] == 4: self.wdw = Popup('About') #ABOUT
+								if lst[i] == 3: self.wdw = Popup('Settings',sz) #SETTINGS
+								if lst[i] == 4: self.wdw = Popup('About',sz) #ABOUT
 								if lst[i] == 5: pygame.quit(); exit() #EXIT GAME
 							#FILE SELECT
 							elif self.mnu in [2,4]:
@@ -1165,14 +1189,12 @@ class Files:
 									self.mnu = 3
 								#NEW GAME
 								else:
-									res.ID = self.opt
-									res.MIXER[0].play(res.SOUND['FILE_NEW'])
-									res.new_data()
-									#res.recent_data(2,self.opt)
+									res.MIXER[0].play(res.SOUND['FILE_SAVE'])
 									pygame.mixer.music.fadeout(3000)
-									self.msc.fadeout(3000)
-									self.ton.fadeout(3000)
-									self.mnu = 7
+									res.new_data(1,self.opt)
+									self.show = False
+									res.PAUSE = 0
+									#self.mnu = 7
 							#CHAPTER SELECT
 							elif self.mnu == 3:
 								#LOAD GAME
@@ -1180,7 +1202,7 @@ class Files:
 									res.MIXER[0].play(res.SOUND['FILE_LOAD'])
 									res.load_data()
 									res.CHAPTER = self.opt
-									self.msc.stop()
+									pygame.mixer.music.stop()
 									self.scroll = int(50/res.GSCALE)
 									self.wait = 50
 									self.mnu = 8
@@ -1209,7 +1231,9 @@ class Files:
 	
 	def draw(self):
 		self.surface.fill((0,0,0,0))
-		rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0]
+		if len(res.FILES) > 0: rng = [4,6,len(res.FILES),res.FILES[res.ID][2] + 2,len(res.FILES),0,0,0,0]
+		else: rng = [4,6,1,2,1,0,0,0,0]
+		
 		#FILES/CHAPTERS MENU
 		scrl = 0
 		for i in range(rng[self.mnu]):
@@ -1247,11 +1271,13 @@ class Files:
 					self.surface.blit(res.FONTS[self.curfnt].render(dtb.CHAPTERS[i][0], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 10 + self.scroll))
 					self.surface.blit(res.FONTS[self.curfnt].render(dtb.CHAPTERS[i][1], True, (0,0,0)), (self.optrects[i].x + 10, self.optrects[i].y + 30 + self.scroll))
 				else: self.surface.blit(res.FONTS[self.curfnt].render(dtb.MENU['delete_file'], True, (0,0,0)), (self.optrects[i].x + 70, self.optrects[i].y + 20 + self.scroll))
+		
 		#SETTINGS/ABOUT MENU
-		if self.wdw: srf = self.surface.blit(self.wdw.draw(),(100,100))
+		if self.wdw: srf = self.surface.blit(self.wdw.draw(),(self.wdw.rect.x,self.wdw.rect.y))
 		if self.mnu in [3,4]:
 			if self.scroll > scrl and self.scroll - 1 != scrl: self.scroll -= 2
 			if self.scroll < scrl and self.scroll + 1 != scrl: self.scroll += 2
+		
 		#RECAP
 		if self.mnu == 7:
 			self.surface.blit(self.bbgs[res.CHAPTER + 1][0], (0,np.floor(-self.scroll)))
@@ -1265,6 +1291,7 @@ class Files:
 			if self.scroll > (self.displayzh + int(lt/res.GSCALE)) - int(100/res.GSCALE) or self.skip:
 				self.msc.fadeout(5000)
 				self.classrun = False
+		
 		#LOAD GAME RECAP
 		if self.mnu == 8:
 			if self.wait > 0: self.wait -= 1 * res.FPS
@@ -2102,15 +2129,20 @@ class LevelMenu:
 		self.scroll = self.surface.get_width() + 50
 		self.inv = Inventory(None)
 		self.optrects = []
-		dvd3 = np.floor((160 * res.GSCALE)/3)
-		for i in range(3): self.optrects.append(pygame.Rect(dvd3 * i,0,dvd3,40))
 		self.opt = [0,0]
 		self.mnu = mnu
 		self.hpl = 0
+		self.time = 11 * res.FPS
 
 		if self.mnu == 2:
 			pygame.mixer.music.fadeout(500)
 			res.MIXER[0].play(res.SOUND['BATTLE_LOST'])
+		if self.mnu == 4:
+			for i in range(2):
+				self.optrects.append(pygame.Rect(int(sz[0]/2) - 80,(int(sz[1]/8) * 5) + (i * 50),160,40))
+		else:
+			dvd3 = np.floor((160 * res.GSCALE)/3)
+			for i in range(3): self.optrects.append(pygame.Rect(dvd3 * i,0,dvd3,40))
 		
 	def inside_events(self,pressed,mouse):
 		for i in range(len(self.optrects)):
@@ -2205,8 +2237,16 @@ class LevelMenu:
 			sz = int(self.surface.get_width()/2) - int(res.FONTS['TITLE'].size(dtb.MENU['lost'])[0]/2)
 			self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU['lost'], True, (255,255,255)), (sz + self.scroll, 100))
 			self.surface.blit(res.FONTS['DEFAULT'].render('-$100', True, (255,255,255)), (sz + self.scroll, 240))
-		#LEVEL END
+		#CONTINUE SCREEN
 		elif self.mnu == 4:
+			sz = res.FONTS['DEFAULT'].size(dtb.MENU['continue'])
+			self.surface.blit(res.FONTS['DEFAULT'].render(dtb.MENU['continue'],True,(200,200,200)),(int(self.surface.get_width()/2) - int(sz[0]/2) + self.scroll,int(self.surface.get_height()/4) - int(sz[1]/2)))
+			self.surface.blit(res.FONTS['DEFAULT'].render(str(int(self.time/res.FPS)),True,(200,200,200)),(int(self.surface.get_width()/2) + self.scroll,int(self.surface.get_height()/2)))
+			for i in self.optrects: pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(i.x + self.scroll,i.y,i.width,i.height))
+			if self.scroll <= 0: self.time -= 1
+			if self.time <= 0: self.mnu = 3
+		#LEVEL END
+		elif self.mnu == 5:
 			pass
 		
 		return self.surface
@@ -3420,7 +3460,7 @@ class Ranking:
 					rr += 1
 		else: self.surface.blit(res.FONTS['DEFAULT'].render(dtb.MENU['no_signal'], True, (255, 255, 255)), (25, 140))
 
-		return self.surface
+		return self.surface  
 		
 class Settings:
 	def __init__(self):

@@ -130,6 +130,23 @@ def transiction(size, limit, speed=5, type='fade', col=(0,0,0)):
 def noise_img(mean, std, size):
 	return pygame.surfarray.make_surface(np.random.normal(mean,std,size))
 
+def interpolate(col1,col2):
+	pass
+
+def image_wave(img,amp,freq,offset=0,orientation='vertical'):
+	srf = pygame.Surface((img.get_width() + (amp * 2),img.get_height() + (amp * 2)),pygame.SRCALPHA)
+	if orientation == 'horizontal': sz = int(img.get_width()/freq)
+	if orientation == 'vertical': sz = int(img.get_height()/freq)
+
+	for i in range(freq):
+		if i%2: mm = 1
+		else: mm = -1
+		for j in range(10):
+			srf.blit(img,(int(amp/10) * j * mm,(i * sz) + (int(sz/10) * j) + offset),\
+				pygame.Rect(0,(i * sz) + (int(sz/10) * j) + offset,img.get_width(),int(sz/10)))
+
+	return srf
+
 def gradient(size,top,bottom,value=0,direction='vertical'):
 	srf = pygame.Surface(size,pygame.SRCALPHA)
 	srf.fill(top)

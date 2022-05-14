@@ -1511,7 +1511,8 @@ MENU = {'new_file': 'nova sessão','load_file': 'iniciar sessão','save_file': '
 'Storage': 'depositar','Products': 'produtos','Basket': 'carrinho','Wash': 'lavar','Mercator': 'Mercador','Trash': 'lixeira',
 'armor': 'proteção','duration': 'duração','damage': 'dano','recharge': 'recarga','cadency': 'cadência','capacity': 'capacidade',
 'gauge': 'calibre','vitality': 'vitalidade','hunger': 'fome','thirst': 'sede','storage': 'depositar',
-'success': 'sucesso','fail': 'falha','touche': 'touché','strike': 'strike','ko': 'nocaute','one_more': 'oitra vez','miss': 'errou...','victory': 'vitória','perfect': 'perfeito','lost': 'derrota','level_up': 'foi promovido para',
+'success': 'sucesso','fail': 'falha','touche': 'touché','strike': 'strike','ko': 'nocaute','one_more': 'oitra vez','miss': 'errou...',
+'victory': 'vitória','perfect': 'perfeito','lost': 'derrota','continue': 'continuar?','level_up': 'foi promovido para',
 'GPS': 'mapa','Contacts': 'contatos','Email': 'emails','Newspaper': 'notícias','Radio': 'música','Camera': 'galeria','Bestiary': 'bestiário','Calendar': 'calendário',
 'Tasks': 'tarefas','Status': 'ficha','Tactics': 'táticas','Achievements': 'conquistas','Ranking': 'placar','Help': 'ajuda','Settings': 'ajustes','About': 'sobre',
 'no_signal': 'sem sinal','no_credit': 'sem saldo','no_freaks': 'nenhuma anomalia registrada','empty': 'nada por aqui','calling': 'chamando',
@@ -1523,7 +1524,8 @@ MENU = {'new_file': 'nova sessão','load_file': 'iniciar sessão','save_file': '
 'bt_choose': 'escolba o botão','vibrate': 'vibrar',
 'conf': 'confirmar','info': 'info','yes': 'sim','no': 'não','ok': 'ok','cancel': 'cancelar',
 'Phone': 'celular','PC': 'computador','PDA': 'pda','Image': 'imagem','AudioPlayer': 'áudio','GifPlayer': 'gif','TextReader': 'arquivo',
-'not_email': 'Novo Email','not_contact': 'Novo contato adicionado!','not_wash': 'Sua roupa foi lavada!'}
+'not_email': 'Novo Email','not_contact': 'Novo contato adicionado!','not_wash': 'Sua roupa foi lavada!',
+'left_to_go': '{}{} para chegar em'}
 
 HOLIDAYS = [(1,1,'Feliz ano novo!'),(3,8,'Feliz dia da mulher!'),(3,15,'É aniversário do autor!'),(4,7,'Feliz páscoa!'),(4,22,'Feliz dia da terra!'),(10,31,'Feliz Halloween!'),(12,25,'Feliz natal!')]
 

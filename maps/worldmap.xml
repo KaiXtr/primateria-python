@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" orientation="isometric" renderorder="left-up" width="20" height="20" tilewidth="32" tileheight="32" infinite="0">
+	<background src="starmap.png"/>
+	<objects>
+		<place name="Najjmatho" fullname="Najjmatho Sabbath" task="NAJJMATHO" x="3" y="3"/>
+		<place name="Jomyll" x="5" y="3"/>
+		<place name="Inzebo" fullname="Inzebo Enganzebze" x="7" y="3"/>
+	</objects>
+</map>
