@@ -215,13 +215,10 @@ TASKINDEX = {
 }
 
 AVATAR = {
-'spaceship_base': ['mandíbula','escaravelho','redondo','pontudo'],
-'spaceship_wing': ['para trás','pontudo','propulsores','duplo','redondo','plano','caça'],
-'spaceship_cockpit': ['redondo','estreito','duplo','janela'],
-'spaceship_spoiler': ['duplo','traseiro','pequeno','nenhum'],
-'spaceship_propulsor': ['convencional'],
-'spaceship_texture': ['nenhum'],
+'spaceship_base': ['calota','mandíbula','escaravelho','redondo','pontudo'],
+'spaceship_wing': ['asas','para trás','pontudo','propulsores','duplo','redondo','plano','caça'],
+'spaceship_cockpit': ['cabine','redondo','estreito','duplo','janela'],
+'spaceship_spoiler': ['spoiler','duplo','traseiro','pequeno','nenhum'],
+'spaceship_propulsor': ['propulsor','convencional'],
+'spaceship_texture': ['textura','nenhum'],
 }
-
-MENU = {'spaceship_base': 'calota','spaceship_wing': 'asas','spaceship_cockpit': 'cabine','spaceship_spoiler': 'spoiler',
-	'spaceship_propulsor': 'propulsor','spaceship_texture': 'textura','spaceship_stickers': 'adesivos'}

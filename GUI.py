@@ -32,7 +32,7 @@ class Test:
 		self.display = pygame.display.set_mode((800, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [LevelMenu((600,600),4)]
+		self.menu = [Backgrounds((800,600),'mirrors')]
 		self.img = pygame.image.load('SS1.jpg').convert()
 		self.offset = 0
 
@@ -710,6 +710,13 @@ class Backgrounds:
 				self.ton.stop()
 				self.mnu = 6
 
+	def get_color(self):
+		col = list(self.surface.get_at((int(self.surface.get_width()/2),int(self.surface.get_height()/2))))
+		for i in range(len(col)):
+			col[i] += 100
+			if col[i] > 255: col[i] = 255
+		return tuple(col)
+
 	def draw(self):
 		self.surface.fill((0,0,0))
 		sz = 400
@@ -741,7 +748,7 @@ class Backgrounds:
 			srf = self.lst['MOON'].copy()
 			srf.blit(shd,(int(srf.get_width()/4) * (-res.DATE[4] + 4),0),None,pygame.BLEND_RGBA_SUB)
 			self.surface.blit(srf,(int(np.cos(-dd) * 200) + int(600/2),int(np.sin(-dd) * 200) + int(600/2)))
-			tools.time.datetime_update(240)
+			#tools.time.datetime_update(240)
 		if 'STARMAP' in self.lst:
 			self.surface.blit(self.lst['STARMAP'],(-int(self.lst['STARMAP'].get_width()/(3600/(1 + res.TIME[1] + (res.TIME[0] * 60)))),0),None,pygame.BLEND_RGBA_ADD)
 			tools.time.datetime_update(60)
@@ -2132,7 +2139,15 @@ class LevelMenu:
 		self.opt = [0,0]
 		self.mnu = mnu
 		self.hpl = 0
-		self.time = 11 * res.FPS
+		self.time = 0
+		self.imgs = {}
+		
+		if mnu == 4: self.time = 11 * res.FPS
+		elif mnu == 3:
+			for i in range(6):
+				img = pygame.image.load(res.SPRITES_PATH + 'who_' + str(i) + '.png').convert_alpha()
+				self.imgs[i] = pygame.transform.scale(img,(img.get_width() * res.GSCALE * 2,img.get_height() * res.GSCALE * 2))
+			self.time = 3 * res.FPS
 
 		if self.mnu == 2:
 			pygame.mixer.music.fadeout(500)
@@ -2174,9 +2189,13 @@ class LevelMenu:
 		#CHAPTER START
 		if self.mnu == 0:
 			self.surface.blit(res.FONTS['DEFAULT'].render(dtb.CITIES[0][0],True,(200,200,200)),(0,0))
+		
 		#LEVEL START
 		if self.mnu == 1:
 			self.surface.blit(res.FONTS['DEFAULT'].render(dtb.CITIES[0][0],True,(200,200,200)),(0,0))
+			if self.scroll <= 0: self.time -= 1
+			if self.time <= 0: self.show = False; res.PAUSE = 0
+		
 		#WIN SCREEN
 		if self.mnu == 2:
 			pd = 200 - (50 * res.GSCALE) + self.scroll
@@ -2232,11 +2251,19 @@ class LevelMenu:
 				
 				self.surface.blit(res.FONTS['TITLE'].render(ch['NAME'].lower(), True, (255,255,255)), (800 + self.scroll, 30))
 				self.surface.blit(res.FONTS['DEFAULT'].render(dtb.MENU['level_up'] + str(dtb.CNAMES[ch['CLASS']][ch['LEVEL'] - 1]) + ' !', True, (255,255,255)), ((800 + self.scroll) * res.GSCALE, 70 * res.GSCALE))
-		#LOST SCREEN
+		
+		#CHARACTERS SCREEN
 		elif self.mnu == 3:
-			sz = int(self.surface.get_width()/2) - int(res.FONTS['TITLE'].size(dtb.MENU['lost'])[0]/2)
-			self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU['lost'], True, (255,255,255)), (sz + self.scroll, 100))
-			self.surface.blit(res.FONTS['DEFAULT'].render('-$100', True, (255,255,255)), (sz + self.scroll, 240))
+			wdt = 80
+			pd = 20
+			sz = int(self.surface.get_width()/2) - int((len(res.CHARACTERS) * (wdt + pd))/2) + self.scroll
+			for i in range(len(res.CHARACTERS)):
+				if res.CHARACTERS[i]['VITALITY'] > 0:
+					pygame.draw.rect(self.surface,(200,200,10),pygame.Rect(sz + (i * (wdt + pd)) - 3,int(self.surface.get_height()/2) - int(wdt/2) - 3,wdt + 6,wdt + 6))
+				self.surface.blit(self.imgs[i],(sz + (i * (wdt + pd)),int(self.surface.get_height()/2) - int(wdt/2)))
+			if self.scroll <= 0: self.time -= 1
+			if self.time <= 0: self.show = False; res.PAUSE = 0
+
 		#CONTINUE SCREEN
 		elif self.mnu == 4:
 			sz = res.FONTS['DEFAULT'].size(dtb.MENU['continue'])
@@ -2244,9 +2271,16 @@ class LevelMenu:
 			self.surface.blit(res.FONTS['DEFAULT'].render(str(int(self.time/res.FPS)),True,(200,200,200)),(int(self.surface.get_width()/2) + self.scroll,int(self.surface.get_height()/2)))
 			for i in self.optrects: pygame.draw.rect(self.surface,(200,200,200),pygame.Rect(i.x + self.scroll,i.y,i.width,i.height))
 			if self.scroll <= 0: self.time -= 1
-			if self.time <= 0: self.mnu = 3
-		#LEVEL END
+			if self.time <= 0: self.mnu = 5
+
+		#LOST SCREEN
 		elif self.mnu == 5:
+			sz = int(self.surface.get_width()/2) - int(res.FONTS['TITLE'].size(dtb.MENU['lost'])[0]/2)
+			self.surface.blit(res.FONTS['TITLE'].render(dtb.MENU['lost'], True, (255,255,255)), (sz + self.scroll, 100))
+			self.surface.blit(res.FONTS['DEFAULT'].render('-$100', True, (255,255,255)), (sz + self.scroll, 240))
+		
+		#LEVEL END
+		elif self.mnu == 6:
 			pass
 		
 		return self.surface

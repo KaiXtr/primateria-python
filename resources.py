@@ -145,8 +145,8 @@ SETTRIBUTES = ['MOUSE','VIBRATE','SFX','MSC','MUTE','DTYPE','SPEED','COLOR','CAM
 	'HELP','HINT','CURSOR','TMNU','CC','DISLEXIC','BTYPE','AUTOSAVE','AUTOBATTLE','QUICKSTART']
 MOUSE = 1 #keyboard only/keyboard and mouse/touchpad/joystick
 VIBRATE = False #vibrate controlller
-SFX = 1.0
-MSC = 1.0
+SFX = 0.0
+MSC = 0.0
 MUTE = 1 #mute when game is minimized
 DTYPE = 1 #type of dialog
 SPEED = 2 #dialog speed
@@ -155,7 +155,7 @@ CAMACC = 10 #player camera acceleration
 BORDER = 0 #UI border
 CENSORSHIP = 2 #censor mature content
 HELP = True #tutorials and hints along the game
-HINT = True #display instructions on bottom of screen
+HINT = False #display instructions on bottom of screen
 CURSOR = 0 #custom cursor
 TMNU = False #option to start on title screen or jump right into the first file
 TTS = False #text-to-speech
@@ -164,7 +164,7 @@ DISLEXIC = False #spaced font
 BTYPE = 3 #1=turns,2=dynamic,3=action
 AUTOSAVE = 10#in minutes
 AUTOBATTLE = False
-QUICKSTART = 1 #start from logos/start from title menu/start from files menu/start from chapters menu/start from last save/start from last session
+QUICKSTART = 4 #start from logos/start from title menu/start from files menu/start from chapters menu/start from last save/start from last session
 
 HOVERTEXT = None
 HINTEXT = None
@@ -185,7 +185,7 @@ for u in range(6):
 		for x in range(5):
 			INVENTORY[u][y].append(['_','0000'])
 INVENTORY[0] = [
-	[['shield_regular','0'],['phone','3600','simcard1','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
+	[['_','0'],['phone','3600','simcard1','0003'],['tube100','0050'],['wallet','0100','creditcard1','0100','id_card1','0000'],['food_pizza_chicken','9999']],
 	[['clth_shirt1','7'],['_','0000'],['_','0000'],['_','0000'],['food_pizza_4cheese','0000']],
 	[['head_glasses1','0000'],['_','0'],['_','0000'],['_','0000'],['_','0000']],
 	[['head_hairclip','0000'],['_','0000'],['_','0000'],['_','0000'],['_','0000']],
@@ -222,7 +222,8 @@ CHARACTERS = [
  
 {'NAME': 'Lúcia', 'LASTNAME': 'Figueiredo','NICK': 'Lúci','PRONOUN': 'she','BIRTH': (3,3,1985),'HOMETOWN': 'NITERÓI/RJ','BLOOD': 'O+','CLASS': 'watchman','SUBCLASS': 'detective',
 'HAIR': [0,6,0],'SKIN': 1,'FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'pentecostal evangelic','FEAR': 'inorganic','FLAW': 'cigarette addict'},
-
+]
+'''
 {'NAME': 'Maicon', 'LASTNAME': 'Neves','NICK': None,'PRONOUN': 'he','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'hunter','SUBCLASS': 'warrior',
 'HAIR': [0,1,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'baptist evangelic','FEAR': 'psychic','FLAW': 'alcoholic'},
 
@@ -250,7 +251,7 @@ CHARACTERS = [
 {'NAME': 'Dalibor', 'LASTNAME': 'Marković','NICK': 'Sr.Dalibor','PRONOUN': 'he','BIRTH': (3,3,1985),'ID': '0013','BLOOD': 'O+','CLASS': 'watchman','SUBCLASS': 'detective',
 'HAIR': [0,13,0],'SKIN': '0','FAVFOOD': ['food_juice_orange','food_fish'],'IDEOLOGY': 'ortodox catholic','FEAR': 'psychic','FLAW': 'alcoholic'}
 ]
-
+'''
 for i in range(len(CHARACTERS)):
 	CHARACTERS[i]['BONUS'] = [0,0,0,0,0]
 	CHARACTERS[i]['HUNGER'] = 1000
@@ -258,11 +259,12 @@ for i in range(len(CHARACTERS)):
 	CHARACTERS[i]['SLEEP'] = 1000
 	CHARACTERS[i]['SANITY'] = 100
 	CHARACTERS[i]['RACE'] = 'human'
-	CHARACTERS[i]['VITALITY'] = 100
+	CHARACTERS[i]['VITALITY'] = 0
 	CHARACTERS[i]['EXPERIENCE'] = 50
 	CHARACTERS[i]['LEVEL'] = 1
 	CHARACTERS[i]['HEALTH'] = []
 	for j in CHATTRIBUTES[1]: CHARACTERS[i][j] = 0
+CHARACTERS[0]['VITALITY'] = 100
 CHARACTERS[0]['SCORE'] = 1240
 CHARACTERS[0]['ENERGY'] = 120
 
@@ -301,6 +303,7 @@ def recent_data(m,opt=0):
 			com.execute("INSERT INTO files VALUES (0,'Matt',0,0,'PT','0')")
 			tbl.commit()
 			FILES = [[0,'Matt',0,0,'PT',[0]]]
+		print(FILES)
 	#UPDATE FILE
 	elif m == 1:
 		prt = ''
@@ -325,6 +328,8 @@ def new_data(add=0,opt=0):
 		LANG = 'PT'
 		FILES.append([ID,'Matt',CHAPTER,GAMETIME,LANG,'0'])
 		com.execute(f"INSERT INTO files VALUES ({ID},'{'Matt'}',{CHAPTER},{GAMETIME},'{LANG}','0')")
+
+		MAP = 'worldmap'
 
 	if add > 1:
 		LANG = 'PT'

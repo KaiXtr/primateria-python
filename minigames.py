@@ -9,9 +9,9 @@ import os
 
 import tools
 import resources as res
-sys.path.insert(0,'databases')
-if res.FILES != []: dtb = __import__('database_' + res.FILES[0][4])
-else: dtb = __import__('database_' + res.MAINLANG)
+
+if res.FILES != []: exec(f'import databases.database_{res.FILES[0][4]} as dtb')
+else: exec(f'import databases.database_{res.MAINLANG} as dtb')
 
 pygame.init()
 
