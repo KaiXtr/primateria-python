@@ -482,7 +482,7 @@ class Avatar:
 				else: sprstr += str(self.humanoid[i]) + '.'
 			sprstr += 'ex' + str(self.eyes[0]) + '.ey' + str(self.eyes[1]) + '.' + str(np.floor(self.gif).astype(int)) + '.' + str(self.blink < 5)
 		
-		print(sprstr)
+		if self.testing: print(sprstr)
 		if sprstr in self.donesprites: srf = self.donesprites[sprstr]
 		else:
 			srf = pygame.Surface((80,200),pygame.SRCALPHA)
@@ -774,11 +774,11 @@ class Avatar:
 		pressed, mouse = tools.event.get_pressed(None)
 		self.outside_events(pressed)
 		self.window.fill((100,100,100))
-		if self.index in [str(i) for i in range(10)]: img = self.doll()
+		if self.index in [str(i) for i in range(10)]: img = self.bigsprite()
 		elif self.index in dtb.FREAKS.keys(): img = self.freak()
 		elif self.index == 'ship': img = self.spaceship()
 
-		self.menu('humanoid')
+		#self.menu('humanoid')
 		self.window.blit(img,(0,0))
 		pygame.draw.rect(self.window,(200,0,0),pygame.Rect(self.eyes[0] * res.GSCALE * 2,self.eyes[1] * res.GSCALE * 2,5,5))
 
@@ -793,7 +793,7 @@ class Character:
 		self.id = 0
 		self.file = index
 		self.item = None
-		self.doll = Avatar(index)
+		self.doll = Avatar(index,testing)
 		self.playing = False
 		self.talk = None
 		self.seat = []
@@ -1851,10 +1851,12 @@ class MapHandler(xml.sax.ContentHandler):
 		self.mnu = 0
 		
 		self.listener = (150,150)
-		'''self.obj = {'PLAYER_0': Character(0,(3 * 30,4 * 30)),'ITEM_0': {'RECT': pygame.Rect(30,8 * 30,25,25)}}
-		for x in range(1): self.obj['NPC_' + str(x)] = Character('4.1.1',(x * 30,2 * 30))
-		for x in range(1): self.obj['CAR_' + str(x)] = Character('4.1.1',(x * 30,4 * 30))
-		self.obj['PLAYER_0'].playing = True'''
+		if self.testing:
+			self.obj = {'PLAYER_0': Character(0,(3 * 30,4 * 30)),'ITEM_0': {'RECT': pygame.Rect(30,8 * 30,25,25)}}
+			for x in range(1): self.obj['NPC_' + str(x)] = Character('4.1.1',(x * 30,2 * 30))
+			for x in range(1): self.obj['CAR_' + str(x)] = Character('4.1.1',(x * 30,4 * 30))
+			self.obj['PLAYER_0'].playing = True
+		else: self.obj = {}
 		self.paths = {'SIDEWALK': [],'STREET': [],'CROSSING': []}
 		self.traflight = 0
 
@@ -1913,7 +1915,7 @@ class MapHandler(xml.sax.ContentHandler):
 		#GET TILE LAYERS
 		if tag in lst: self.srflvl = lst.index(tag)
 		if tag == 'layer':
-			dct = {i[0]: i[1] for i in attributes.items()}
+			dct = {i[0]: int(i[1]) for i in attributes.items()}
 			if 'name' not in dct.keys(): dct['name'] = 'layer ' + str(self.srflvl)
 			dct['data'] = []
 			dct['tiles'] = []
@@ -6180,6 +6182,7 @@ class Game:
 		#DEVICE INFORMATION
 		#if res.DEBUG: print(f'CPU: {psutil.cpu_percent(tg)} | RAM: {psutil.virtual_memory()[2]}')
 
+os.system("cls")
 Initialize()
 #REGULAR PLAY
 if len(sys.argv) == 1:
@@ -6193,20 +6196,26 @@ if len(sys.argv) == 1:
 
 #TERMINAL TESTING
 elif len(sys.argv) > 1:
-	hlp ='\tavatar - test avatar (index)\n\tchar (index) (x position) (y position) - test NPC\n\tdialog (index) - test dialog\n\t' + \
+	hlp ='\tavatar (index) - test avatar\n\tchar (index) (x position) (y position) - test NPC\n\tdialog (index) - test dialog\n\t' + \
 			'mpopen (file) - open map in GUI\n\tmprogue (file) - open map in terminal\n'
 	
 	if sys.argv[1] == 'avatar':
 		if len(sys.argv) > 2:
 			t = Avatar(sys.argv[2],testing=True)
 			while True: t.test()
-		else: print('\nFAILED: please, input avatar index')
+		else: print('\navatar - test avatar (index)')
 	
 	elif sys.argv[1] in ['char','character']:
-		t = Character(sys.argv[2],(sys.argv[3],sys.argv[4]),testing=True)
-		while True: t.test()
+		if len(sys.argv) > 4:
+			t = Character(sys.argv[2],(sys.argv[3],sys.argv[4]),testing=True)
+			while True: t.test()
+		else: print('\nchar - test NPC\n\tindex: the character id\n\tx position: the x coordinate of the character\n\ty position: the y coordinate of the character' + \
+			'\n\nInsert a freak key like 4.1.1 to test an enemy or a number between 0-10 to test a player.\nOtherwise, the index tests an NPC.')
 	
-	elif sys.argv[1] == 'dialog': Dialog(sys.argv[2],testing=True)
+	elif sys.argv[1] == 'dialog':
+		if len(sys.argv) > 2: Dialog(sys.argv[2],testing=True)
+		else: print('\ndialog - test dialog\n\tindex: the dialog id\n\nSearch for dialog indexes in databases folder xml files.\nExample:\n\t' + \
+			'<dialog key="POPCORN_KART">')
 	
 	elif sys.argv[1] in ['mpopen','mprogue']:
 		if len(sys.argv) > 2:
@@ -6217,7 +6226,13 @@ elif len(sys.argv) > 1:
 				while True: t.run()
 			if sys.argv[1] == 'mprogue':
 				t.roguemap()
-		else: print('\nFAILED: please, input a xml map file')
+		else:
+			txt = ''
+			for f in os.listdir('maps'):
+				if f.endswith('.xml'): txt += f'\t{f}\n'
+				if f.endswith('.tmx'): txt += f'\t{f}\n'
+			print('\nmpopen - open an xml map file.\nmmprogue - open an xml map file in the prompt.\n\tfile: the file path of the xml file.\n\n' + \
+			'Xml files are always located in the maps folder.\nTmx files are also suported.\nMAPS FILES:\n' + txt)
 	else: print(hlp)
 else: print('missing arguments')
 pygame.quit()
