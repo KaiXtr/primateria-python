@@ -795,9 +795,8 @@ def sfx(ignore=True):
 					if i[:-4].upper() in SOUND.keys() and ignore == False: print(dtb.ERROR['sound_exists'].format(i))
 					SOUND[i[:-4].upper()] = pygame.mixer.Sound(SFX_PATH + j + '/' + i)
 
-sys.path.insert(0,os.path.realpath('./') + '\\databases')
-if FILES != []: dtb = __import__('database_' + FILES[0][4])
-else: dtb = __import__('database_' + MAINLANG)
+if FILES != []: exec(f'import databases.database_{FILES[0][4]} as dtb')
+else: exec(f'import databases.database_{MAINLANG} as dtb')
 
 if os.path.basename(sys.argv[0]) == os.path.basename(__file__):
 	#SHOW TABLES ON TERMINAL

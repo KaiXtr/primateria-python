@@ -1523,7 +1523,7 @@ MENU = {'new_file': 'nova sessão','load_file': 'iniciar sessão','save_file': '
 'gameplay': 'geral','sound': 'áudio','controls': 'controles',
 'lang': 'idioma','border': 'borda','hints': 'dicas','tutorials': 'tutoriais','cursor': 'cursor','dislexic': 'dislexia',
 'sfx': 'som','music': 'música','tts': 'narrador','cc': 'áudio descrição','speed': 'velocidade','censorship': 'censura',
-'bt_choose': 'escolba o botão','vibrate': 'vibrar',
+'bt_choose': 'escolha o botão','vibrate': 'vibrar',
 'conf': 'confirmar','info': 'info','yes': 'sim','no': 'não','ok': 'ok','cancel': 'cancelar',
 'Phone': 'celular','PC': 'computador','PDA': 'pda','Image': 'imagem','AudioPlayer': 'áudio','GifPlayer': 'gif','TextReader': 'arquivo',
 'not_email': 'Novo Email','not_contact': 'Novo contato adicionado!','not_wash': 'Sua roupa foi lavada!',

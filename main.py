@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-sys.path.insert(0,"C:/Users/kaixtr/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0/LocalCache/local-packages/Python310/site-packages")
+#sys.path.insert(0,"C:/Users/kaixtr/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0/LocalCache/local-packages/Python310/site-packages")
 
 import pygame
 import xml.sax
@@ -3841,12 +3841,12 @@ class Game:
 		#res.PX = 100
 		#res.PY = 100
 		#PLAYERS
-		'''for i in range(1): self.objects['CHAR_0'] = [Character(i,(res.PX,res.PY)),res.PY]
+		for i in range(1): self.objects['CHAR_0'] = [Character(i,(res.PX,res.PY)),res.PY]
 		self.objects['CHAR_0'][0].playing = True
 		self.map = MapHandler(res.MAP)
 		self.mapcache[res.MAP] = self.map
 		self.tilmap = [[i,i] for i in self.map.surfaces]
-		self.objects = {**self.objects,**self.map.objects}'''
+		self.objects = {**self.objects,**self.map.objects}
 		for i in tools.draw.transiction((self.window.width,self.window.height),1,-100,'fade'): self.trsction = i; self.run()
 	
 	def resize(self, size):

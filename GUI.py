@@ -32,7 +32,7 @@ class Test:
 		self.display = pygame.display.set_mode((800, 600),pygame.RESIZABLE | pygame.SRCALPHA)
 		self.font = pygame.font.SysFont("Arial", 30)
 		self.clock = pygame.time.Clock()
-		self.menu = [Backgrounds((800,600),'mirrors')]
+		self.menu = [Pseudo3d()]
 		self.img = pygame.image.load('SS1.jpg').convert()
 		self.offset = 0
 
